@@ -1,5 +1,5 @@
 /*
-  TouchDeck (secret codename) based on the FreeDeck idea by Koriwi.
+  FreeTouchDeck (secret codename) based on the FreeDeck idea by Koriwi.
   It uses the TFT_eSPI library by Bodmer for the display and touch functionality and
   the ESP32-BLE-Keyboard library by T-vK. For loading configuration it uses 
   ArduinoJson V6.
