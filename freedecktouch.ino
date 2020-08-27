@@ -27,7 +27,7 @@
 #include "homelogos.h" // Logos for the home screen are here
 #include "musiclogos.h" // Logos for the music screen are here
 #include "obslogos.h" // Logos for the OBS screen are here
-#include "browerslogos.h" // Logos for the browers screen are here
+#include "browserlogos.h" // Logos for the browers screen are here
 
 #include "tft_config.h" // Configuration data for TFT_eSPI
 
@@ -38,7 +38,7 @@
 #include <BleKeyboard.h>
 #include <ArduinoJson.h>
 
-BleKeyboard bleKeyboard("TouchDeck", "Made by me");
+BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 TFT_eSPI tft = TFT_eSPI();
 
