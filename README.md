@@ -1,7 +1,8 @@
 # FreeDeckTouch
- For interfaing with various app using a touchscreen
+ For interfaing with various app using a touchscreen.
 
-# Colour names and their decimal value. Needed for the generalconfig.json.
+# Colour names and their decimal value
+ Needed for the generalconfig.json.
 
 TFT_BLACK 0
 TFT_NAVY 15
