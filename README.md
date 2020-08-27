@@ -1,5 +1,5 @@
 # FreeDeckTouch
- For interfaing with various app using a touchscreen.
+ For interfacing with various app using a touchscreen.
 
 # Colour names and their decimal value
  Needed for the generalconfig.json.
