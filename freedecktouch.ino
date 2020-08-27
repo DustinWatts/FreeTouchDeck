@@ -1,13 +1,15 @@
 /*
   TouchDeck (secret codename) based on the FreeDeck idea by Koriwi.
   It uses the TFT_eSPI library by Bodmer for the display and touch functionality and
-  the ESP32-BLE-Keyboard library by T-vK.
+  the ESP32-BLE-Keyboard library by T-vK. For loading configuration it uses 
+  ArduinoJson V6.
 
   The following libraries must be installed:
   
   - https://github.com/adafruit/Adafruit-GFX-Library (also available trough Library Manager)
   - https://github.com/Bodmer/TFT_eSPI
   - https://github.com/T-vK/ESP32-BLE-Keyboard
+  - https://github.com/bblanchon/ArduinoJson (also available trough Library Manager)
 
   As this is an early Pre-alpha version, the code is ugly and sometimes way more complicated
   then necessary. It also lacks good documentation and comments in the code.
