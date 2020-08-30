@@ -14,12 +14,14 @@
     </style>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-  
+    
   </head>
   <body>
     <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;"><h1>FreeTouchDeck Configurator</h1></div>
     <div style="text-align:left;display:inline-block;min-width:260px;">
       <form method='post' action='/saveconfig.htm'>
+
+
 
       Menu Button Colour: 
       <br/><input id='menubuttoncolor' name='menubuttoncolor' length='' placeholder='' value=''>
@@ -29,6 +31,8 @@
       <br/><input id='logocolor' name='logocolor' length='' placeholder='' value=''>
       Background Colour:
       <br/><input id='background' name='background' length='' placeholder='' value=''>
+      Logo 05:
+      <br/><input id='logo05' name='logo05' length='' placeholder='' value=''>
       <br/><br/><button type='save'>Save configuration</button>
       
       </form>
@@ -43,6 +47,7 @@
           document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
           document.getElementById("logocolor").value = data.logocolor;
           document.getElementById("background").value = data.background;
+          //document.getElementById("logo05").value = data.logo05;
         })
         .catch((err) => {
         // No error handling for now

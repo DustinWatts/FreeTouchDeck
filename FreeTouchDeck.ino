@@ -50,13 +50,11 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
-const char* ssid = "YOUR_WIFI_SSID";
-const char* password = "YOUR_WIFI_PASSWORD";
+const char* ssid = "  ";
+const char* password = "  ";
 const char* host = "FreeTouchDeck";
-WebServer server(80);
 
-//holds the current upload
-File fsUploadFile;
+WebServer server(80);
 
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
@@ -91,8 +89,17 @@ int pageNum = 0; // placeholder for the pagenumber we are on (0 indicates home)
 uint8_t rowArray[6] = {0,0,0,1,1,1}; // Every button has a row associated with it
 uint8_t colArray[6] = {0,1,2,0,1,2}; // Every button has a column associated with it
 
-struct Homepage {
-  const unsigned char *logo;
+struct Logos {
+  char logo0[64];
+  char logo1[64];
+  char logo2[64];
+  char logo3[64];
+  char logo4[64];
+  char logo5[64];
+};
+
+struct Generallogos {
+  char homebutton[64];
 };
 
 struct Config {
@@ -104,8 +111,14 @@ struct Config {
 };
 
 Config generalconfig;
-
-Homepage homepage; 
+Generallogos generallogo;
+Logos screen0;
+Logos screen1; 
+Logos screen2; 
+Logos screen3; 
+Logos screen4; 
+Logos screen5;
+Logos screen6; 
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
@@ -116,7 +129,52 @@ void setup() {
   
   // Use serial port
   Serial.begin(9600);
+
+  //HTML to RGB test...
+
+  char* html = "%2361dfff";
+  Serial.println(html);
+  unsigned long rgb888 = convertHTMLtoRGB888(html);
+  Serial.println(rgb888);
+  unsigned int rgb565 = convertRGB888ToRGB565(rgb888);
+  Serial.println(rgb565);
+
+  if (!SPIFFS.begin()) {
+    Serial.println("SPIFFS initialisation failed!");
+    while (1) yield(); // Stay here twiddling thumbs waiting
+  }
+  Serial.println("\r\nSPIFFS initialised.");
+
+//------------------TFT/Touch Initialization ------------------------------------------------------------------------
+    
+  // Initialise the TFT screen
+  tft.init();
+
+  // Set the rotation before we calibrate
+  tft.setRotation(1);
+
+  // Clear the screen
+  tft.fillScreen(TFT_BLACK);
+
+  // Draw a spalsh screen
+  drawBmp("/freetouchdeck_logo.bmp", 0, 0);
+  tft.setCursor(1, 3);
+  tft.setTextFont(2);
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.print("Loading version 0.8.1");
+  delay(1000);
   
+  
+  // Calibrate the touch screen and retrieve the scaling factors
+  touch_calibrate();
+
+  // Load the General Config
+  loadGeneralConfig();
+
+  // Setup the Font used for plain text
+  tft.setFreeFont(LABEL_FONT);
+
 //------------------WIFI Initialization ------------------------------------------------------------------------
 
   Serial.printf("Connecting to %s\n", ssid);
@@ -148,30 +206,14 @@ void setup() {
     }
   });
 
+  // Save config handle
   server.on("/saveconfig.htm", HTTP_POST, saveconfig);
 
-//------------------TFT/Touch Initialization ------------------------------------------------------------------------
-    
-  // Initialise the TFT screen
-  tft.init();
-
-  // Set the rotation before we calibrate
-  tft.setRotation(1);
-
-  // Calibrate the touch screen and retrieve the scaling factors
-  touch_calibrate();
-
-  // Clear the screen
-  tft.fillScreen(TFT_BLACK);
-
-  // Load the General Config
-  loadGeneralConfig();
+  // Favicon Handle
+  server.on("/favicon.ico", HTTP_GET, faviconhandle);
 
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
-
-  // Setup the Font used for plain text
-  tft.setFreeFont(LABEL_FONT);
 
   // Draw keypad
   drawKeypad();
@@ -439,107 +481,107 @@ void drawlogo(int logonumber, int col, int row, uint16_t fgcolor){
   if(pageNum == 0){
     //Draw Home screen logo's
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), music_home, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen0.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), obs_home, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen0.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), ff_home, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen0.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), mail, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen0.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), discord, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen0.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), settings, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen0.logo5, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }else if (pageNum == 1){
     // pageNum 1 contains the Music logo's
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), mute, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen1.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), volume_down, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen1.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), volume_up, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen1.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), play, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen1.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), stop_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen1.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), home_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }else if (pageNum == 2){
     // pageNum 2 contains the obs logo's
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), scene1, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen2.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen2.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen2.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen2.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen2.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), home_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }else if (pageNum == 3){
     // pageNum 3 contains the Firefox logo's
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), newtab, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen3.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen3.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen3.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen3.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen3.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), home_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }else if (pageNum == 4){
     // pageNum 4 contains the Mail logo's
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen4.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen4.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen4.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen4.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen4.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), home_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }else if (pageNum == 5){
     // pageNum 5 contains the Discord logo's
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen5.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen5.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen5.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen5.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen5.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), home_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }else if (pageNum == 6){
-    // pageNum 6 contains the Settings logo's
+    //pageNum6 contains settings logos
     if(logonumber == 0){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), spanner, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen6.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 1){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen6.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 2){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen6.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 3){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen6.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 4){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), empty_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(screen6.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }else if(logonumber == 5){
-    tft.drawXBitmap(KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y), home_button, logoWidth, logoHeight, fgcolor);
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
   }
 }
@@ -552,7 +594,7 @@ void loadGeneralConfig(){
 
   File generalconfigfile = SPIFFS.open("/generalconfig.json", "r");
 
-  const size_t capacity = JSON_ARRAY_SIZE(6) + 113;
+  const size_t capacity = 5*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(11) + 778;
   DynamicJsonDocument doc(capacity);
 
   DeserializationError error = deserializeJson(doc, generalconfigfile);
@@ -569,15 +611,130 @@ void loadGeneralConfig(){
     return;
   }
 
-  int menubuttoncolor = doc["menubuttoncolor"]; // Get the colour for the menu and back home buttons. 
-  int functionbuttoncolor = doc["functionbuttoncolor"]; //Get the colour for the function buttons.
-  int logocolor = doc["logocolor"]; //Get the colour for the function buttons.
-  int bgcolor = doc["background"]; //Get the colour for the function buttons.
+  const char* menubuttoncolor = doc["menubuttoncolor"]; // Get the colour for the menu and back home buttons.
+  const char* functionbuttoncolor = doc["functionbuttoncolor"]; //Get the colour for the function buttons.
+  const char* logocolor = doc["logocolor"]; //Get the colour for the function buttons.
+  const char* bgcolor = doc["background"]; //Get the colour for the function buttons.
 
-  generalconfig.menuButtonColour = menubuttoncolor; // Pass the colour to generalconfig
-  generalconfig.functionButtonColour = functionbuttoncolor; // Pass the colour to generalconfig
-  generalconfig.logoColour = logocolor; // Pass the colour to generalconfig
-  generalconfig.backgroundColour = bgcolor; // Use default colour if failed to parse json
+  //generalconfig.menuButtonColour = menubuttoncolor; // Pass the colour to generalconfig
+
+  char menubuttoncolorchar[64];
+  strcpy (menubuttoncolorchar,menubuttoncolor);
+  unsigned long rgb888menubuttoncolor = convertHTMLtoRGB888(menubuttoncolorchar);
+  //Serial.println(rgb888);
+  generalconfig.menuButtonColour = convertRGB888ToRGB565(rgb888menubuttoncolor);
+
+  char functionbuttoncolorchar[64];
+  strcpy (functionbuttoncolorchar,functionbuttoncolor);
+  unsigned long rgb888functionbuttoncolor = convertHTMLtoRGB888(functionbuttoncolorchar);
+  //Serial.println(rgb888);
+  generalconfig.functionButtonColour = convertRGB888ToRGB565(rgb888functionbuttoncolor);
+
+  char logocolorchar[64];
+  strcpy (menubuttoncolorchar,logocolor);
+  unsigned long rgb888logocolor = convertHTMLtoRGB888(logocolorchar);
+  //Serial.println(rgb888);
+  generalconfig.logoColour = convertRGB888ToRGB565(rgb888logocolor);
+
+  char backgroundcolorchar[64];
+  strcpy (backgroundcolorchar,bgcolor);
+  unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
+  //Serial.println(rgb888);
+  generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
+
+
+  //Get general logos
+  const char* logohome = doc["homebuttonlogo"];
+  strcpy (generallogo.homebutton,logohome);
+
+  //Get logos for buttons
+  const char* logo00 = doc["screen0"]["logo0"];
+  const char* logo01 = doc["screen0"]["logo1"];
+  const char* logo02 = doc["screen0"]["logo2"];
+  const char* logo03 = doc["screen0"]["logo3"];
+  const char* logo04 = doc["screen0"]["logo4"];
+  const char* logo05 = doc["screen0"]["logo5"]; // Only screen 0 has 6 buttons
+
+  strcpy (screen0.logo0,logo00);
+  strcpy (screen0.logo1,logo01);
+  strcpy (screen0.logo2,logo02);
+  strcpy (screen0.logo3,logo03);
+  strcpy (screen0.logo4,logo04);
+  strcpy (screen0.logo5,logo05); // Only screen 0 has 6 buttons
+
+  const char* logo10 = doc["screen1"]["logo0"];
+  const char* logo11 = doc["screen1"]["logo1"];
+  const char* logo12 = doc["screen1"]["logo2"];
+  const char* logo13 = doc["screen1"]["logo3"];
+  const char* logo14 = doc["screen1"]["logo4"];
+
+  strcpy (screen1.logo0,logo10);
+  strcpy (screen1.logo1,logo11);
+  strcpy (screen1.logo2,logo12);
+  strcpy (screen1.logo3,logo13);
+  strcpy (screen1.logo4,logo14);
+
+  const char* logo20 = doc["screen2"]["logo0"];
+  const char* logo21 = doc["screen2"]["logo1"];
+  const char* logo22 = doc["screen2"]["logo2"];
+  const char* logo23 = doc["screen2"]["logo3"];
+  const char* logo24 = doc["screen2"]["logo4"];
+
+  strcpy (screen2.logo0,logo20);
+  strcpy (screen2.logo1,logo21);
+  strcpy (screen2.logo2,logo22);
+  strcpy (screen2.logo3,logo23);
+  strcpy (screen2.logo4,logo24);
+
+  const char* logo30 = doc["screen3"]["logo0"];
+  const char* logo31 = doc["screen3"]["logo1"];
+  const char* logo32 = doc["screen3"]["logo2"];
+  const char* logo33 = doc["screen3"]["logo3"];
+  const char* logo34 = doc["screen3"]["logo4"];
+
+  strcpy (screen3.logo0,logo30);
+  strcpy (screen3.logo1,logo31);
+  strcpy (screen3.logo2,logo32);
+  strcpy (screen3.logo3,logo33);
+  strcpy (screen3.logo4,logo34);
+
+  const char* logo40 = doc["screen4"]["logo0"];
+  const char* logo41 = doc["screen4"]["logo1"];
+  const char* logo42 = doc["screen4"]["logo2"];
+  const char* logo43 = doc["screen4"]["logo3"];
+  const char* logo44 = doc["screen4"]["logo4"];
+
+  strcpy (screen4.logo0,logo40);
+  strcpy (screen4.logo1,logo41);
+  strcpy (screen4.logo2,logo42);
+  strcpy (screen4.logo3,logo43);
+  strcpy (screen4.logo4,logo44);
+
+  const char* logo50 = doc["screen5"]["logo0"];
+  const char* logo51 = doc["screen5"]["logo1"];
+  const char* logo52 = doc["screen5"]["logo2"];
+  const char* logo53 = doc["screen5"]["logo3"];
+  const char* logo54 = doc["screen5"]["logo4"];
+
+  strcpy (screen5.logo0,logo50);
+  strcpy (screen5.logo1,logo51);
+  strcpy (screen5.logo2,logo52);
+  strcpy (screen5.logo3,logo53);
+  strcpy (screen5.logo4,logo54);
+
+  const char* logo60 = doc["screen6"]["logo0"];
+  const char* logo61 = doc["screen6"]["logo1"];
+  const char* logo62 = doc["screen6"]["logo2"];
+  const char* logo63 = doc["screen6"]["logo3"];
+  const char* logo64 = doc["screen6"]["logo4"];
+
+  strcpy (screen6.logo0,logo60);
+  strcpy (screen6.logo1,logo61);
+  strcpy (screen6.logo2,logo62);
+  strcpy (screen6.logo3,logo63);
+  strcpy (screen6.logo4,logo64);
+
+
 
   generalconfigfile.close();
 
@@ -804,4 +961,190 @@ bool handleFileRead(String path) {
     return true;
   }
   return false;
+}
+
+void faviconhandle(){
+
+    File file = SPIFFS.open("/favicon.ico", "r");
+    server.streamFile(file, "image/x-icon");
+    file.close();
+  
+}
+
+//--------------------RBG888 to RGB565 conversion ------------------------
+
+unsigned long convertHTMLtoRGB888(char* html){ // convert HTML (#xxxxxx to RGB888)
+
+    //char* input="%2361dfff";
+    char* hex = html + 3; 
+    unsigned long rgb = strtoul (hex, NULL, 16);
+    return rgb;
+}
+
+unsigned int convertRGB888ToRGB565(unsigned long rgb){ //convert 24 bit RGB to 16bit 5:6:5 RGB
+ 
+  return(((rgb&0xf80000)>>8)|((rgb&0xfc00)>>5)|((rgb&0xf8)>>3));
+}
+
+// ----------------- BMP Drawing ----------------------------------------
+
+void drawBmpTransparent(const char *filename, int16_t x, int16_t y) {
+
+  if ((x >= tft.width()) || (y >= tft.height())) return;
+
+  fs::File bmpFS;
+
+  // Open requested file on SD card
+  bmpFS = SPIFFS.open(filename, "r");
+
+  //Serial.print("Opening file: ");
+  //Serial.print(filename);
+
+  if (!bmpFS)
+  {
+    Serial.print("Bitmap not found: ");
+    Serial.print(filename);
+    return;
+  }
+
+  uint32_t seekOffset;
+  uint16_t w, h, row, col;
+  uint8_t  r, g, b;
+
+  uint32_t startTime = millis();
+
+  if (read16(bmpFS) == 0x4D42)
+  {
+    read32(bmpFS);
+    read32(bmpFS);
+    seekOffset = read32(bmpFS);
+    read32(bmpFS);
+    w = read32(bmpFS);
+    h = read32(bmpFS);
+
+    if ((read16(bmpFS) == 1) && (read16(bmpFS) == 24) && (read32(bmpFS) == 0))
+    {
+      y += h - 1;
+
+      bool oldSwapBytes = tft.getSwapBytes();
+      tft.setSwapBytes(true);
+      bmpFS.seek(seekOffset);
+
+      uint16_t padding = (4 - ((w * 3) & 3)) & 3;
+      uint8_t lineBuffer[w * 3 + padding];
+
+      for (row = 0; row < h; row++) {
+        
+        bmpFS.read(lineBuffer, sizeof(lineBuffer));
+        uint8_t*  bptr = lineBuffer;
+        uint16_t* tptr = (uint16_t*)lineBuffer;
+        // Convert 24 to 16 bit colours
+        for (uint16_t col = 0; col < w; col++)
+        {
+          b = *bptr++;
+          g = *bptr++;
+          r = *bptr++;
+          *tptr++ = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+        }
+
+        // Push the pixel row to screen, pushImage will crop the line if needed
+        // y is decremented as the BMP image is drawn bottom up
+        tft.pushImage(x, y--, w, 1, (uint16_t*)lineBuffer, TFT_BLACK);
+      }
+      tft.setSwapBytes(oldSwapBytes);
+      //Serial.print("Loaded in "); Serial.print(millis() - startTime);
+      //Serial.println(" ms");
+    }
+    else Serial.println("BMP format not recognized.");
+  }
+  bmpFS.close();
+}
+
+
+void drawBmp(const char *filename, int16_t x, int16_t y) {
+
+  if ((x >= tft.width()) || (y >= tft.height())) return;
+
+  fs::File bmpFS;
+
+  // Open requested file on SD card
+  bmpFS = SPIFFS.open(filename, "r");
+
+  if (!bmpFS)
+  {
+    Serial.print("File not found");
+    return;
+  }
+
+  uint32_t seekOffset;
+  uint16_t w, h, row, col;
+  uint8_t  r, g, b;
+
+  uint32_t startTime = millis();
+
+  if (read16(bmpFS) == 0x4D42)
+  {
+    read32(bmpFS);
+    read32(bmpFS);
+    seekOffset = read32(bmpFS);
+    read32(bmpFS);
+    w = read32(bmpFS);
+    h = read32(bmpFS);
+
+    if ((read16(bmpFS) == 1) && (read16(bmpFS) == 24) && (read32(bmpFS) == 0))
+    {
+      y += h - 1;
+
+      bool oldSwapBytes = tft.getSwapBytes();
+      tft.setSwapBytes(true);
+      bmpFS.seek(seekOffset);
+
+      uint16_t padding = (4 - ((w * 3) & 3)) & 3;
+      uint8_t lineBuffer[w * 3 + padding];
+
+      for (row = 0; row < h; row++) {
+        
+        bmpFS.read(lineBuffer, sizeof(lineBuffer));
+        uint8_t*  bptr = lineBuffer;
+        uint16_t* tptr = (uint16_t*)lineBuffer;
+        // Convert 24 to 16 bit colours
+        for (uint16_t col = 0; col < w; col++)
+        {
+          b = *bptr++;
+          g = *bptr++;
+          r = *bptr++;
+          *tptr++ = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
+        }
+
+        // Push the pixel row to screen, pushImage will crop the line if needed
+        // y is decremented as the BMP image is drawn bottom up
+        tft.pushImage(x, y--, w, 1, (uint16_t*)lineBuffer);
+      }
+      tft.setSwapBytes(oldSwapBytes);
+      //Serial.print("Loaded in "); Serial.print(millis() - startTime);
+      //Serial.println(" ms");
+    }
+    else Serial.println("BMP format not recognized.");
+  }
+  bmpFS.close();
+}
+
+// These read 16- and 32-bit types from the SD card file.
+// BMP data is stored little-endian, Arduino is little-endian too.
+// May need to reverse subscript order if porting elsewhere.
+
+uint16_t read16(fs::File &f) {
+  uint16_t result;
+  ((uint8_t *)&result)[0] = f.read(); // LSB
+  ((uint8_t *)&result)[1] = f.read(); // MSB
+  return result;
+}
+
+uint32_t read32(fs::File &f) {
+  uint32_t result;
+  ((uint8_t *)&result)[0] = f.read(); // LSB
+  ((uint8_t *)&result)[1] = f.read();
+  ((uint8_t *)&result)[2] = f.read();
+  ((uint8_t *)&result)[3] = f.read(); // MSB
+  return result;
 }

@@ -1,6 +1,57 @@
 {
-  "menubuttoncolor": 1007,
-  "functionbuttoncolor": 34429,
-  "logocolor": 65535,
-  "background": 30720
+	"menubuttoncolor": "%23003f62",
+	"functionbuttoncolor": "%2300b79a",
+	"logocolor": "%23ffffff",
+	"background": "%23620003",
+	"homebuttonlogo": "/logos/home.bmp",
+	"screen0": {
+		"logo0": "/logos/music.bmp",
+  		"logo1": "/logos/obs.bmp",
+  		"logo2": "/logos/firefox.bmp",
+  		"logo3": "/logos/mail.bmp",
+  		"logo4": "/logos/youtube.bmp",
+		"logo5": "/logos/settings.bmp"
+	},
+	"screen1": {
+		"logo0": "/logos/question.bmp",
+  		"logo1": "/logos/question.bmp",
+  		"logo2": "/logos/question.bmp",
+  		"logo3": "/logos/question.bmp",
+  		"logo4": "/logos/question.bmp"
+	},
+	"screen2": {
+		"logo0": "/logos/question.bmp",
+  		"logo1": "/logos/question.bmp",
+  		"logo2": "/logos/question.bmp",
+  		"logo3": "/logos/question.bmp",
+  		"logo4": "/logos/question.bmp"
+	},
+	"screen3": {
+		"logo0": "/logos/question.bmp",
+  		"logo1": "/logos/question.bmp",
+  		"logo2": "/logos/question.bmp",
+  		"logo3": "/logos/question.bmp",
+  		"logo4": "/logos/question.bmp"
+	},
+	"screen4": {
+		"logo0": "/logos/question.bmp",
+  		"logo1": "/logos/question.bmp",
+  		"logo2": "/logos/question.bmp",
+  		"logo3": "/logos/question.bmp",
+  		"logo4": "/logos/question.bmp"
+	},
+	"screen5": {
+		"logo0": "/logos/question.bmp",
+  		"logo1": "/logos/question.bmp",
+  		"logo2": "/logos/question.bmp",
+  		"logo3": "/logos/question.bmp",
+  		"logo4": "/logos/question.bmp"
+	},
+	"screen6": {
+		"logo0": "/logos/question.bmp",
+  		"logo1": "/logos/question.bmp",
+  		"logo2": "/logos/question.bmp",
+  		"logo3": "/logos/question.bmp",
+  		"logo4": "/logos/question.bmp"
+	}
 }
