@@ -26,10 +26,6 @@
 #include <pgmspace.h>  // PROGMEM support header
 
 #include "FS.h" // File System header
-#include "homelogos.h" // Logos for the home screen are here
-#include "musiclogos.h" // Logos for the music screen are here
-#include "obslogos.h" // Logos for the OBS screen are here
-#include "browserlogos.h" // Logos for the browers screen are here
 
 #include "tft_config.h" // Configuration data for TFT_eSPI
 
@@ -50,8 +46,8 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
-const char* ssid = "  ";
-const char* password = "  ";
+const char* ssid = " ";
+const char* password = " ";
 const char* host = "FreeTouchDeck";
 
 WebServer server(80);
@@ -88,6 +84,9 @@ int pageNum = 0; // placeholder for the pagenumber we are on (0 indicates home)
 
 uint8_t rowArray[6] = {0,0,0,1,1,1}; // Every button has a row associated with it
 uint8_t colArray[6] = {0,1,2,0,1,2}; // Every button has a column associated with it
+
+char logopath[64] = "/logos/"; //path to the directory the logo are in ! including leading AND trailing / !
+char templogopath[64] = "";
 
 struct Logos {
   char logo0[64];
@@ -162,7 +161,7 @@ void setup() {
   tft.setTextFont(2);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.print("Loading version 0.8.1");
+  tft.print("Loading version 0.8.2");
   delay(1000);
   
   
@@ -211,6 +210,8 @@ void setup() {
 
   // Favicon Handle
   server.on("/favicon.ico", HTTP_GET, faviconhandle);
+
+  server.on("/list", HTTP_GET, handleFileList);
 
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
@@ -594,7 +595,7 @@ void loadGeneralConfig(){
 
   File generalconfigfile = SPIFFS.open("/generalconfig.json", "r");
 
-  const size_t capacity = 5*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(11) + 778;
+  const size_t capacity = 6*JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(12) + 659;
   DynamicJsonDocument doc(capacity);
 
   DeserializationError error = deserializeJson(doc, generalconfigfile);
@@ -642,12 +643,14 @@ void loadGeneralConfig(){
   //Serial.println(rgb888);
   generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
 
-
   //Get general logos
   const char* logohome = doc["homebuttonlogo"];
-  strcpy (generallogo.homebutton,logohome);
+  strcpy (templogopath,logopath); // cpy the logo path (char logopath[64] = "/logos/") to templogopath
+  strcat(templogopath,logohome); // append the logo filename (const char*) to templogopath
+  strcpy (generallogo.homebutton,templogopath); // cpy the logo filename + path to generallogo.homebutton
+  strcpy (templogopath,logopath); // empty the templogopath so we can re-use it
 
-  //Get logos for buttons
+  //Get logos for screen 0 buttons
   const char* logo00 = doc["screen0"]["logo0"];
   const char* logo01 = doc["screen0"]["logo1"];
   const char* logo02 = doc["screen0"]["logo2"];
@@ -655,84 +658,228 @@ void loadGeneralConfig(){
   const char* logo04 = doc["screen0"]["logo4"];
   const char* logo05 = doc["screen0"]["logo5"]; // Only screen 0 has 6 buttons
 
-  strcpy (screen0.logo0,logo00);
-  strcpy (screen0.logo1,logo01);
-  strcpy (screen0.logo2,logo02);
-  strcpy (screen0.logo3,logo03);
-  strcpy (screen0.logo4,logo04);
-  strcpy (screen0.logo5,logo05); // Only screen 0 has 6 buttons
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo00);
+  strcpy (screen0.logo0,templogopath);
+  strcpy (templogopath,logopath);
 
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo01);
+  strcpy (screen0.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo02);
+  strcpy (screen0.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo03);
+  strcpy (screen0.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo04);
+  strcpy (screen0.logo4,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo05);
+  strcpy (screen0.logo5,templogopath);
+  strcpy (templogopath,logopath);
+
+  // Get logos for screen 1 buttons
   const char* logo10 = doc["screen1"]["logo0"];
   const char* logo11 = doc["screen1"]["logo1"];
   const char* logo12 = doc["screen1"]["logo2"];
   const char* logo13 = doc["screen1"]["logo3"];
   const char* logo14 = doc["screen1"]["logo4"];
 
-  strcpy (screen1.logo0,logo10);
-  strcpy (screen1.logo1,logo11);
-  strcpy (screen1.logo2,logo12);
-  strcpy (screen1.logo3,logo13);
-  strcpy (screen1.logo4,logo14);
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo10);
+  strcpy (screen1.logo0,templogopath);
+  strcpy (templogopath,logopath);
 
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo11);
+  strcpy (screen1.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo12);
+  strcpy (screen1.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo13);
+  strcpy (screen1.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo14);
+  strcpy (screen1.logo4,templogopath);
+  strcpy (templogopath,logopath);
+
+
+  // Get logos for screen 2 buttons
   const char* logo20 = doc["screen2"]["logo0"];
   const char* logo21 = doc["screen2"]["logo1"];
   const char* logo22 = doc["screen2"]["logo2"];
   const char* logo23 = doc["screen2"]["logo3"];
   const char* logo24 = doc["screen2"]["logo4"];
 
-  strcpy (screen2.logo0,logo20);
-  strcpy (screen2.logo1,logo21);
-  strcpy (screen2.logo2,logo22);
-  strcpy (screen2.logo3,logo23);
-  strcpy (screen2.logo4,logo24);
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo20);
+  strcpy (screen2.logo0,templogopath);
+  strcpy (templogopath,logopath);
 
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo21);
+  strcpy (screen2.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo22);
+  strcpy (screen2.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo23);
+  strcpy (screen2.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo24);
+  strcpy (screen2.logo4,templogopath);
+  strcpy (templogopath,logopath);
+
+  // Get logos for screen 3 buttons
   const char* logo30 = doc["screen3"]["logo0"];
   const char* logo31 = doc["screen3"]["logo1"];
   const char* logo32 = doc["screen3"]["logo2"];
   const char* logo33 = doc["screen3"]["logo3"];
   const char* logo34 = doc["screen3"]["logo4"];
 
-  strcpy (screen3.logo0,logo30);
-  strcpy (screen3.logo1,logo31);
-  strcpy (screen3.logo2,logo32);
-  strcpy (screen3.logo3,logo33);
-  strcpy (screen3.logo4,logo34);
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo30);
+  strcpy (screen3.logo0,templogopath);
+  strcpy (templogopath,logopath);
 
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo31);
+  strcpy (screen3.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo32);
+  strcpy (screen3.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo33);
+  strcpy (screen3.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo34);
+  strcpy (screen3.logo4,templogopath);
+  strcpy (templogopath,logopath);
+
+  // Get logos for screen 4 buttons
   const char* logo40 = doc["screen4"]["logo0"];
   const char* logo41 = doc["screen4"]["logo1"];
   const char* logo42 = doc["screen4"]["logo2"];
   const char* logo43 = doc["screen4"]["logo3"];
   const char* logo44 = doc["screen4"]["logo4"];
 
-  strcpy (screen4.logo0,logo40);
-  strcpy (screen4.logo1,logo41);
-  strcpy (screen4.logo2,logo42);
-  strcpy (screen4.logo3,logo43);
-  strcpy (screen4.logo4,logo44);
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo40);
+  strcpy (screen4.logo0,templogopath);
+  strcpy (templogopath,logopath);
 
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo41);
+  strcpy (screen4.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo42);
+  strcpy (screen4.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo43);
+  strcpy (screen4.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo44);
+  strcpy (screen4.logo4,templogopath);
+  strcpy (templogopath,logopath);
+
+// Get logos for screen 5 buttons
   const char* logo50 = doc["screen5"]["logo0"];
   const char* logo51 = doc["screen5"]["logo1"];
   const char* logo52 = doc["screen5"]["logo2"];
   const char* logo53 = doc["screen5"]["logo3"];
   const char* logo54 = doc["screen5"]["logo4"];
 
-  strcpy (screen5.logo0,logo50);
-  strcpy (screen5.logo1,logo51);
-  strcpy (screen5.logo2,logo52);
-  strcpy (screen5.logo3,logo53);
-  strcpy (screen5.logo4,logo54);
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo50);
+  strcpy (screen5.logo0,templogopath);
+  strcpy (templogopath,logopath);
 
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo51);
+  strcpy (screen5.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo52);
+  strcpy (screen5.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo53);
+  strcpy (screen5.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo54);
+  strcpy (screen5.logo4,templogopath);
+  strcpy (templogopath,logopath);
+
+// Get logos for screen 6 buttons
   const char* logo60 = doc["screen6"]["logo0"];
   const char* logo61 = doc["screen6"]["logo1"];
   const char* logo62 = doc["screen6"]["logo2"];
   const char* logo63 = doc["screen6"]["logo3"];
   const char* logo64 = doc["screen6"]["logo4"];
 
-  strcpy (screen6.logo0,logo60);
-  strcpy (screen6.logo1,logo61);
-  strcpy (screen6.logo2,logo62);
-  strcpy (screen6.logo3,logo63);
-  strcpy (screen6.logo4,logo64);
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo60);
+  strcpy (screen6.logo0,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo61);
+  strcpy (screen6.logo1,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo62);
+  strcpy (screen6.logo2,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo63);
+  strcpy (screen6.logo3,templogopath);
+  strcpy (templogopath,logopath);
+
+  strcpy (templogopath,logopath);
+  strcat(templogopath,logo64);
+  strcpy (screen6.logo4,templogopath);
+  strcpy (templogopath,logopath);
 
 
 
@@ -797,6 +944,42 @@ void handleRestart(){
 
 }
 
+//void saveconfig(){ OLD!
+//
+//  // Delete existing file, otherwise the configuration is appended to the file
+//  SPIFFS.remove("/generalconfig.json");
+//
+//  // Open file for writing
+//  File file = SPIFFS.open("/generalconfig.json", "w");
+//  if (!file) {
+//    Serial.println(F("Failed to create file"));
+//    return;
+//  }
+//
+//  //Create a JSON document and a JSON object
+//
+//  StaticJsonDocument<256> doc;
+//  JsonObject obj1 = doc.to<JsonObject>();
+//
+//  // Loop trough all agruments received and append them to our object
+//  for (int i = 0; i < server.args(); i++) {
+//    uint16_t value = server.arg(i).toInt();
+//    obj1[server.argName(i)] = value;
+//  }
+//
+//  // Serialize JSON to file
+//  if (serializeJsonPretty(doc, file) == 0) {
+//    Serial.println(F("Failed to write to file"));
+//  }
+//
+//  // Close the file
+//  file.close();
+//
+//  // Display "Configuration saved" page
+//  handleFileRead("/saveconfig.htm");
+//  
+//}
+
 void saveconfig(){
 
   // Delete existing file, otherwise the configuration is appended to the file
@@ -810,14 +993,69 @@ void saveconfig(){
   }
 
   //Create a JSON document and a JSON object
-  StaticJsonDocument<256> doc;
-  JsonObject obj1 = doc.to<JsonObject>();
+  StaticJsonDocument<1700> doc;
 
-  // Loop trough all agruments received and append them to our object
-  for (int i = 0; i < server.args(); i++) {
-    uint16_t value = server.arg(i).toInt();
-    obj1[server.argName(i)] = value;
+  JsonObject obj1 = doc.to<JsonObject>();
+  JsonObject screen0  = doc.createNestedObject("screen0");
+  JsonObject screen1  = doc.createNestedObject("screen1");
+  JsonObject screen2  = doc.createNestedObject("screen2");
+  JsonObject screen3  = doc.createNestedObject("screen3");
+  JsonObject screen4  = doc.createNestedObject("screen4");
+  JsonObject screen5  = doc.createNestedObject("screen5");
+  JsonObject screen6  = doc.createNestedObject("screen6");
+
+  // Because the first 4 arguments are the colors, we loop
+  for (int i = 0; i < 4; i++) {
+    obj1[server.argName(i)] = server.arg(i);
   }
+
+  // Create the homebuttonlogo JSON object
+  obj1["homebuttonlogo"] = "home.bmp";
+
+  // Now we parse the rest of the JSON here
+
+  screen0["logo0"] = server.arg("screen0image0");
+  screen0["logo1"] = server.arg("screen0image1");
+  screen0["logo2"] = server.arg("screen0image2");
+  screen0["logo3"] = server.arg("screen0image3");
+  screen0["logo4"] = server.arg("screen0image4");
+  screen0["logo5"] = server.arg("screen0image5");
+
+  screen1["logo0"] = server.arg("screen1image0");
+  screen1["logo1"] = server.arg("screen1image1");
+  screen1["logo2"] = server.arg("screen1image2");
+  screen1["logo3"] = server.arg("screen1image3");
+  screen1["logo4"] = server.arg("screen1image4");
+
+  screen2["logo0"] = server.arg("screen2image0");
+  screen2["logo1"] = server.arg("screen2image1");
+  screen2["logo2"] = server.arg("screen2image2");
+  screen2["logo3"] = server.arg("screen2image3");
+  screen2["logo4"] = server.arg("screen2image4");
+
+  screen3["logo0"] = server.arg("screen3image0");
+  screen3["logo1"] = server.arg("screen3image1");
+  screen3["logo2"] = server.arg("screen3image2");
+  screen3["logo3"] = server.arg("screen3image3");
+  screen3["logo4"] = server.arg("screen3image4");
+
+  screen4["logo0"] = server.arg("screen4image0");
+  screen4["logo1"] = server.arg("screen4image1");
+  screen4["logo2"] = server.arg("screen4image2");
+  screen4["logo3"] = server.arg("screen4image3");
+  screen4["logo4"] = server.arg("screen4image4");
+
+  screen5["logo0"] = server.arg("screen5image0");
+  screen5["logo1"] = server.arg("screen5image1");
+  screen5["logo2"] = server.arg("screen5image2");
+  screen5["logo3"] = server.arg("screen5image3");
+  screen5["logo4"] = server.arg("screen5image4");
+
+  screen6["logo0"] = server.arg("screen6image0");
+  screen6["logo1"] = server.arg("screen6image1");
+  screen6["logo2"] = server.arg("screen6image2");
+  screen6["logo3"] = server.arg("screen6image3");
+  screen6["logo4"] = server.arg("screen6image4");
 
   // Serialize JSON to file
   if (serializeJsonPretty(doc, file) == 0) {
@@ -930,6 +1168,8 @@ String getContentType(String filename) {
     return "application/x-gzip";
   } else if (filename.endsWith(".json")) {
     return "application/json";
+  } else if (filename.endsWith(".bmp")) {
+    return "image/bmp";
   }
   return "text/plain";
 }
@@ -971,12 +1211,51 @@ void faviconhandle(){
   
 }
 
+void handleFileList() {
+  if (!server.hasArg("dir")) {
+    server.send(500, "text/plain", "BAD ARGS");
+    return;
+  }
+
+  String path = server.arg("dir");
+  Serial.println("handleFileList: " + path);
+
+
+  File root = SPIFFS.open(path);
+  path = String();
+  int filecount = 0;
+
+  String output = "[";
+  if(root.isDirectory()){
+      File file = root.openNextFile();
+      while(file){
+          if (output != "[") {
+            output += ',';
+          }
+
+          output += "{\"";
+          output += filecount;
+          output += "\":\"";
+          output += String(file.name()).substring(7);
+          output += "\"}";
+          file = root.openNextFile();
+          filecount++;
+      }
+
+      file.close();
+  }
+  output += "]";
+  server.send(200, "application/json", output);
+
+  root.close();
+}
+
 //--------------------RBG888 to RGB565 conversion ------------------------
 
 unsigned long convertHTMLtoRGB888(char* html){ // convert HTML (#xxxxxx to RGB888)
 
-    //char* input="%2361dfff";
-    char* hex = html + 3; 
+    //char* input="#61dfff";
+    char* hex = html + 1; 
     unsigned long rgb = strtoul (hex, NULL, 16);
     return rgb;
 }
