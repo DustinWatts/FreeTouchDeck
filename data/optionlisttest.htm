@@ -1,0 +1,88 @@
+<html>
+<head>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+</head>
+<body>
+<form method='get' action='/saveconfigtest.htm'>
+<select id="screen0action0" name="screen0action0"></select>
+<br/>
+<select id="screen0value0" name="screen0value0"></select>
+
+<br/><button style='cursor: pointer;' type='save'>Save configuration</button>
+
+</form>
+
+</body>
+
+
+
+
+<script>
+
+var items = [{
+    name: 'Do Nothing',
+    value: '0',
+    subitems: [{
+        name: '--',
+        value: '0'
+      }]
+  },
+  {
+    name: 'Delay',
+    value: '1',
+    subitems: [{
+        name: '100ms',
+        value: '200'
+      },
+      {
+        name: '200ms',
+        value: '200'
+      }
+    ]
+  },
+  {
+    name: 'Mediakey',
+    value: '3',
+    subitems: [{
+        name: 'Mute',
+        value: '0'
+      },
+      {
+        name: 'Play',
+        value: '4'
+      }
+    ]
+  }
+];
+
+
+$(function() {
+  var temp = {};
+
+  $.each(items, function() {
+    $("<option />")
+      .attr("value", this.value)
+      .html(this.name)
+      .appendTo("#screen0action0");
+    temp[this.value] = this.subitems;
+  });
+
+  $("#screen0action0").change(function() {
+    var value = $(this).val();
+    var menu = $("#screen0value0");
+
+    menu.empty();
+    $.each(temp[value], function() {
+      $("<option />")
+        .attr("value", this.value)
+        .html(this.name)
+        .appendTo(menu);
+    });
+  }).change();
+
+
+});
+
+</script>
+</html>
