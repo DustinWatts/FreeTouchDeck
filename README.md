@@ -1,4 +1,4 @@
 # FreeDeckTouch
- For interfacing with various apps using a touchscreen.
+ For interfacing with PC/MAC using a touchscreen and BLE.
 
 # Documentation Needed!
