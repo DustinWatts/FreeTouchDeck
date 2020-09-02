@@ -56,6 +56,8 @@ const char* host = "FreeTouchDeck";
 
 WebServer server(80);
 
+File fsUploadFile;
+
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 TFT_eSPI tft = TFT_eSPI();
@@ -214,7 +216,7 @@ void setup() {
   tft.setTextFont(2);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.print("Loading version 0.8.3"); // Version 0.8.3 now loads the button actions from JSON
+  tft.print("Loading version 0.8.4"); // Version 0.8.4 allows for uploading custom bmp files through configurator
   delay(1000);
   
   // Calibrate the touch screen and retrieve the scaling factors
@@ -257,8 +259,18 @@ void setup() {
     }
   });
 
+   server.on("/upload", HTTP_GET, []() {                  // if the client requests the upload page
+    if (!handleFileRead("/upload.htm"))                   // send it if it exists
+      server.send(404, "text/plain", "404: Not Found");   // otherwise, respond with a 404 (Not Found) error
+  });
+
+  server.on("/upload", HTTP_POST,                         // if the client posts to the upload page
+    [](){ server.send(200); },                            // Send status 200 (OK) to tell the client we are ready to receive
+    handleFileUpload                                      // Receive and save the file
+  );
+
   // Save config handle
-  server.on("/saveconfig.htm", HTTP_POST, saveconfig);
+  server.on("/saveconfig.htm", HTTP_POST, saveconfigtest);
 
   // Favicon Handle
   server.on("/favicon.ico", HTTP_GET, faviconhandle);
@@ -277,7 +289,7 @@ void setup() {
 
 }
 
-//------------------------------------------------------------------------------------------
+//--------------------- LOOP ---------------------------------------------------------------------
 
 void loop(void) {
   
@@ -819,7 +831,7 @@ void bleKeyboardAction(int action, int value, char* symbol){
 
 // ------------ Load JSON File --------------------------------------------------
 
-// Json parsing function is in a seperate header file because it is really long ;)
+// TODO: Move JSON parsing function is in a seperate header file because it is really long ;)
 
 void loadGeneralConfig(){
 
@@ -2419,8 +2431,64 @@ void saveconfig(){
 
   // Display "Configuration saved" page
   handleFileRead("/saveconfig.htm");
+}
+
+// ------------ SAVE CONFIG TEST ------------------- 
+
+void saveconfigtest(){
+
+  // Delete existing file, otherwise the configuration is appended to the file
+//  SPIFFS.remove("/generalconfig.json");
+//
+//  // Open file for writing
+//  File file = SPIFFS.open("/generalconfig.json", "w");
+//  if (!file) {
+//    Serial.println(F("Failed to create file"));
+//    return;
+//  }
+
+//  //Create a JSON document and JSON objects
+//  const size_t capacity = 72*JSON_ARRAY_SIZE(3) + 36*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(6) + 6*JSON_OBJECT_SIZE(11) + JSON_OBJECT_SIZE(12) + 742;
+//  DynamicJsonDocument doc(capacity);
+//
+//  JsonObject obj1 = doc.to<JsonObject>();
+//  JsonObject screen0  = doc.createNestedObject("screen0");
+//  JsonObject screen1  = doc.createNestedObject("screen1");
+//  JsonObject screen2  = doc.createNestedObject("screen2");
+//  JsonObject screen3  = doc.createNestedObject("screen3");
+//  JsonObject screen4  = doc.createNestedObject("screen4");
+//  JsonObject screen5  = doc.createNestedObject("screen5");
+//  JsonObject screen6  = doc.createNestedObject("screen6");
+
+// Printing to Serial all the arguments received. FOR TESTING PURPOSES
+
+  for (int i = 0; i < server.args(); i++) {
+    Serial.print(server.argName(i));
+    Serial.print(" = ");
+    Serial.println(server.arg(i));
+    Serial.println("--------------");
+  }
+
+  // Create the homebuttonlogo JSON object
+//  obj1["homebuttonlogo"] = "home.bmp";
+
+  // Now we parse the rest of the JSON here
+
+
+//  // Serialize JSON to file
+//  if (serializeJsonPretty(doc, file) == 0) {
+//    Serial.println(F("Failed to write to file"));
+//  }
+
+//  // Close the file
+//  file.close();
+
+  // Display "Configuration saved" page
+  handleFileRead("/saveconfig.htm");
   
 }
+
+
 
 //----------- TOUCH Calibration -------------------------------------------------------------------------------
 
@@ -2602,6 +2670,36 @@ void handleFileList() {
   root.close();
 }
 
+// ----- Handle File Upload -------
+
+void handleFileUpload() {
+  if (server.uri() != "/upload") {
+    return;
+  }
+  HTTPUpload& upload = server.upload();
+  if (upload.status == UPLOAD_FILE_START) {
+    String filename = upload.filename;
+    if (!filename.startsWith("/")) {
+      filename = "/logos/" + filename; // TODO: This should not be hard-coded!
+    }
+    Serial.print("handleFileUpload Name: "); Serial.println(filename);
+    fsUploadFile = SPIFFS.open(filename, "w");
+    filename = String();
+  } else if (upload.status == UPLOAD_FILE_WRITE) {
+    //DBG_OUTPUT_PORT.print("handleFileUpload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
+    if (fsUploadFile) {
+      fsUploadFile.write(upload.buf, upload.currentSize);
+    }
+  } else if (upload.status == UPLOAD_FILE_END) {
+    if (fsUploadFile) {
+      fsUploadFile.close();
+      handleFileRead("/upload.htm");
+    }
+    Serial.print("handleFileUpload Size: "); Serial.println(upload.totalSize);
+    handleFileRead("/upload.htm");
+  }
+}
+
 //--------------------RBG888 to RGB565 conversion ------------------------
 
 unsigned long convertHTMLtoRGB888(char* html){ // convert HTML (#xxxxxx to RGB888)
@@ -2635,7 +2733,7 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y) {
   {
     Serial.print("Bitmap not found: ");
     Serial.print(filename);
-    return;
+    bmpFS = SPIFFS.open("/logos/question.bmp", "r");
   }
 
   uint32_t seekOffset;
