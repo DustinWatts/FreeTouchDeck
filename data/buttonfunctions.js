@@ -1,363 +1,4 @@
-<!DOCTYPE html>
-<html lang="en"> 
-  <head>
-    <link rel="shortcut icon" href="">
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>
-    <title>FreeTouchDeck Configurator</title>
-    <style>
- 		body{text-align: center;font-family:verdana;color:#000088;width:99%;}
- 		.form button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;}
-
-    
-		.tab {
-		  overflow: hidden;
-		  border: 1px solid #ccc;
-		  background-color: #8cd7ff;
-		  width:100%;
-		}
-
-		.tab button {
-		  background-color: inherit;
-		  float: left;
-		  border: none;
-		  outline: none;
-		  cursor: pointer;
-		  padding: 14px 16px;
-		  transition: 0.3s;
-		  font-family:verdana;
-		  color:#000000;
-		}
-
-		.tab button:hover {
-		  background-color: #1fa3ec;
-		}
-
-		.tab button.active {
-		  background-color: #1fa3ec;
-		}
-
-		.tabcontent {
-		  display: none;
-		  padding: 6px 12px;
-		  border: 1px solid #1fa3ec;
-		  border-top: none;
-		}
-
-</style>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-    
-  </head>
-  <body> <h1>FreeTouchDeck Configurator</h1> <form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
-
-  		<!-- Menu -->
-		<div class="tab">
-		  <button class="tablinks" onclick="openMenu(event, 'general')">General</button>
-		  <button class="tablinks" onclick="openMenu(event, 'home')">Home Menu</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu1')">Menu 1</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu2')">Menu 2</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu3')">Menu 3</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu4')">Menu 4</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu5')">Menu 5</button>
-		  <button class="tablinks" onclick="openMenu(event, 'uploadimage')">Upload</button>
-
-		</div>
-
-		<!-- Tab Intro -->
-		<div id="intro" class="tabcontent">
-		  <h3>Welcome</h3>
-		  <p>
-		  	Welcome to the configurator! Select an option/page from the top menu. If you have any questions, join the discord server #html link. Some more text here to explain what to do.
-		  </p>
-		</div>
-		<!-- Tab General -->
-		<div id="general" class="tabcontent">
-		  <h3>General Settings</h3>
-		  <p>
-		  	<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
-      <h2>Colors</h2></div>
-      <form method='post' id="uploadconfig" action='/saveconfig.htm'>
-
-      <div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
-        &nbsp;&nbsp;Menu Button Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='menubuttoncolor' name='menubuttoncolor' type="color" value=''>
-        &nbsp;&nbsp;Function Button Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='functionbuttoncolor' name='functionbuttoncolor' type="color" value=''>
-        &nbsp;&nbsp;Font Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='logocolor' name='logocolor' type="color" value=''>
-        &nbsp;&nbsp;Background Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='background' name='background' type="color" value=''></div>
-		  </p>
-		</div>
-		<!-- Tab Home Menu -->
-		<div id="home" class="tabcontent">
-		  <h3>Home Menu</h3>
-		  <p>This is the Home Menu settings page</p>
-		</div>
-		<!-- Tab Menu 1 -->
-		<div id="menu1" class="tabcontent">
-		  <h3>Menu 1</h3>
-		  <p>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0 
-				<br/>Image:
-				<select class="images" id='screen1logo0' name='screen1logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button0action0' name='screen1button0action0'></select>
-				<select class="actions" id='screen1button0value0' name='screen1button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button0action1' name='screen1button0action1'></select> 
-				<select class="actions" id='screen1button0value1' name='screen1button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button0action2' name='screen1button0action2'></select>
-				<select class="actions" id='screen1button0value2' name='screen1button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen1logo1' name='screen1logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button1action0' name='screen1button1action0'></select>
-				<select class="actions" id='screen1button1value0' name='screen1button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button1action1' name='screen1button1action1'></select> 
-				<select class="actions" id='screen1button1value1' name='screen1button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button1action2' name='screen1button1action2'></select>
-				<select class="actions" id='screen1button1value2' name='screen1button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen1logo2' name='screen1logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button2action0' name='screen1button2action0'></select>
-				<select class="actions" id='screen1button2value0' name='screen1button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button2action1' name='screen1button2action1'></select> 
-				<select class="actions" id='screen1button2value1' name='screen1button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button2action2' name='screen1button2action2'></select>
-				<select class="actions" id='screen1button2value2' name='screen1button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen1logo3' name='screen1logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button3action0' name='screen1button3action0'></select>
-				<select class="actions" id='screen1button3value0' name='screen1button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button3action1' name='screen1button3action1'></select> 
-				<select class="actions" id='screen1button3value1' name='screen1button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button3action2' name='screen1button3action2'></select>
-				<select class="actions" id='screen1button3value2' name='screen1button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen1logo4' name='screen1logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button4action0' name='screen1button4action0'></select>
-				<select class="actions" id='screen1button4value0' name='screen1button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button4action1' name='screen1button4action1'></select> 
-				<select class="actions" id='screen1button4value1' name='screen1button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button4action2' name='screen1button4action2'></select>
-				<select class="actions" id='screen1button4value2' name='screen1button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen1logo5' name='screen1logo5'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button5action0' name='screen1button5action0'></select>
-				<select class="actions" id='screen1button5value0' name='screen1button5value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button5action1' name='screen1button5action1'></select> 
-				<select class="actions" id='screen1button5value1' name='screen1button5value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button5action2' name='screen1button5action2'></select>
-				<select class="actions" id='screen1button5value2' name='screen1button5value2'></select>
-			</td>
-			
-			</tr>
-			</tbody>
-			</table>
-		  </p>
-		</div>
-		<!-- Tab Menu 2 -->
-		<div id="menu2" class="tabcontent">
-		  <h3>Menu 2</h3>
-		  <p>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0
-				<br/>Image:
-				<select class="images" id='screen2logo0' name='screen2logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button0action0' name='screen2button0action0'></select>
-				<select class="actions" id='screen2button0value0' name='screen2button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button0action1' name='screen2button0action1'></select> 
-				<select class="actions" id='screen2button0value1' name='screen2button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button0action2' name='screen2button0action2'></select>
-				<select class="actions" id='screen2button0value2' name='screen2button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen2logo1' name='screen2logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button1action0' name='screen2button1action0'></select>
-				<select class="actions" id='screen2button1value0' name='screen2button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button1action1' name='screen2button1action1'></select> 
-				<select class="actions" id='screen2button1value1' name='screen2button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button1action2' name='screen2button1action2'></select>
-				<select class="actions" id='screen2button1value2' name='screen2button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen2logo2' name='screen2logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button2action0' name='screen2button2action0'></select>
-				<select class="actions" id='screen2button2value0' name='screen2button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button2action1' name='screen2button2action1'></select> 
-				<select class="actions" id='screen2button2value1' name='screen2button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button2action2' name='screen2button2action2'></select>
-				<select class="actions" id='screen2button2value2' name='screen2button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen2logo3' name='screen2logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button3action0' name='screen2button3action0'></select>
-				<select class="actions" id='screen2button3value0' name='screen2button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button3action1' name='screen2button3action1'></select> 
-				<select class="actions" id='screen2button3value1' name='screen2button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button3action2' name='screen2button3action2'></select>
-				<select class="actions" id='screen2button3value2' name='screen2button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen2logo4' name='screen2logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button4action0' name='screen2button4action0'></select>
-				<select class="actions" id='screen2button4value0' name='screen2button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button4action1' name='screen2button4action1'></select> 
-				<select class="actions" id='screen2button4value1' name='screen2button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button4action2' name='screen2button4action2'></select>
-				<select class="actions" id='screen2button4value2' name='screen2button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen2logo5' name='screen2logo5'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button5action0' name='screen2button5action0'></select>
-				<select class="actions" id='screen2button5value0' name='screen2button5value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button5action1' name='screen2button5action1'></select> 
-				<select class="actions" id='screen2button5value1' name='screen2button5value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button5action2' name='screen2button5action2'></select>
-				<select class="actions" id='screen2button5value2' name='screen2button5value2'></select>
-			</td>
-			
-			</tr>
-			</tbody>
-			</table>
-		  </p>
-		</div> 
-		<!-- Tab Menu 3 -->
-		<div id="menu3" class="tabcontent">
-		  <h3>Menu 3</h3>
-		  <p>This is the Menu 3 page</p>
-		</div> 
-		<!-- Tab Menu 4 -->
-		<div id="menu4" class="tabcontent">
-		  <h3>Menu 4</h3>
-		  <p>This is the Menu 4 page</p>
-		</div>
-		<!-- Tab Menu 5 -->
-		<div id="menu5" class="tabcontent">
-		  <h3>Menu 5</h3>
-		  <p>This is the Menu 5 page</p>
-		</div> 
-		<!-- Upload Logo -->
-		<div id="uploadimage" class="tabcontent">
-		  <h3>Upload a new logo</h3>
-		  <br/> Some test here....<br/>
-		  <p><div class="form" style="width: 10%; text-align: : center; margin: auto;">
-		  	<input form="uploadfile" type="file" name="name" accept=".bmp"><br/><br/>
-    		<button form="uploadfile" type="save">Upload</button>
-    	</div>
-		  </p>
-		</div> 
-		
-
-	</div>
-	<div class="form" style="width: 50%; text-align: : center; margin: auto;">
-		<br/><button style='cursor: pointer;' form="uploadconfig" type='save'>Save configuration</button>
-		<i>Every menu page will be saved!</i>
-
-		
-	</div>
-	<!-- Menu Handler -->
-    <script>
-
-		function openMenu(evt, menuitem) {
-		  // Declare all variables
-		  var i, tabcontent, tablinks;
-
-		  // Get all elements with class="tabcontent" and hide them
-		  tabcontent = document.getElementsByClassName("tabcontent");
-		  for (i = 0; i < tabcontent.length; i++) {
-		    tabcontent[i].style.display = "none";
-		  }
-
-		  // Get all elements with class="tablinks" and remove the class "active"
-		  tablinks = document.getElementsByClassName("tablinks");
-		  for (i = 0; i < tablinks.length; i++) {
-		    tablinks[i].className = tablinks[i].className.replace(" active", "");
-		  }
-
-		  // Show the current tab, and add an "active" class to the button that opened the tab
-		  document.getElementById(menuitem).style.display = "block";
-		  evt.currentTarget.className += " active";
-		}
-
-		document.addEventListener('DOMContentLoaded',openMenu(event, 'intro'), false);
-
-    </script>
-
-    <script>
-		    var items = [{
+	var items = [{
 		    name: 'Do Nothing',
 		    value: '0',
 		    subitems: [{
@@ -389,6 +30,14 @@
 		    ]
 		  },
 		  {
+		    name: 'Extra Options',
+		    value: '2',
+		    subitems: [{
+		        name: '--',
+		        value: '0'
+		      }]
+		  },
+		  {
 		    name: 'Mediakey',
 		    value: '3',
 		    subitems: [{
@@ -396,11 +45,11 @@
 		        value: '1'
 		      },
 		      {
-		        name: 'Volume Up',
+		        name: 'Volume Down',
 		        value: '2'
 		      },
 		      {
-		        name: 'Volume Down',
+		        name: 'Volume Up',
 		        value: '3'
 		      },
 		      {
@@ -412,6 +61,116 @@
 		        value: '5'
 		      }
 		    ]
+		  },
+		  {
+		    name: 'Send Letter',
+		    value: '4',
+		    subitems: [{
+		        name: 'a',
+		        value: 'a'
+		      },
+		      {
+		        name: 'b',
+		        value: 'b'
+		      },
+		      {
+		        name: 'c',
+		        value: 'c'
+		      },
+		      {
+		        name: 'd',
+		        value: 'd'
+		      },
+		      {
+		        name: 'e',
+		        value: 'e'
+		      },
+		      {
+		        name: 'f',
+		        value: 'f'
+		      },
+		      {
+		        name: 'g',
+		        value: 'g'
+		      },
+		      {
+		        name: 'h',
+		        value: 'h'
+		      },
+		      {
+		        name: 'i',
+		        value: 'i'
+		      },
+		      {
+		        name: 'j',
+		        value: 'j'
+		      },
+		      {
+		        name: 'k',
+		        value: 'k'
+		      },
+		      {
+		        name: 'l',
+		        value: 'l'
+		      },
+		      {
+		        name: 'm',
+		        value: 'm'
+		      },
+		      {
+		        name: 'n',
+		        value: 'n'
+		      },
+		      {
+		        name: 'o',
+		        value: 'o'
+		      },
+		      {
+		        name: 'p',
+		        value: 'p'
+		      },
+		      {
+		        name: 'q',
+		        value: 'q'
+		      },
+		      {
+		        name: 'r',
+		        value: 'r'
+		      },
+		      {
+		        name: 's',
+		        value: 's'
+		      },
+		      {
+		        name: 't',
+		        value: 't'
+		      },
+		      {
+		        name: 'u',
+		        value: 'u'
+		      },
+		      {
+		        name: 'v',
+		        value: 'v'
+		      },
+		      {
+		        name: 'w',
+		        value: 'w'
+		      },
+		      {
+		        name: 'x',
+		        value: 'x'
+		      },
+		      {
+		        name: 'y',
+		        value: 'y'
+		      },
+		      {
+		        name: 'z',
+		        value: 'z'
+		      }
+
+		      ]
 		  },
 		  {
 		    name: 'Function Keys',
@@ -447,8 +206,11 @@
 		      {
 		        name: 'Right GUI',
 		        value: '8'
-		      }
-		    ]
+		      },
+		      {
+		        name: 'Release All',
+		        value: '9'
+		      }]
 		  }
 		];
 
@@ -1159,7 +921,7 @@ $.each(items, function() {
 		  }).change();
 
 		  // Menu1 button5
-$.each(items, function() {
+			$.each(items, function() {
 		    $("<option />")
 		      .attr("value", this.value)
 		      .html(this.name)
@@ -1222,108 +984,516 @@ $.each(items, function() {
 		    });
 		  }).change();
 
-
-
+		  // menu3 Button0
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button0action0");
+		    temp[this.value] = this.subitems;
 		  });
-	</script>
 
-	    <!-- Load Config data from JSON -->
+		  $("#screen3button0action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button0value0");
 
-	<script>
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
 
-    	var logolist = [];
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button0action1");
+		    temp[this.value] = this.subitems;
+		  });
 
-        var selects = document.getElementsByClassName('images');
+		  $("#screen3button0action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button0value1");
 
-        fetch('generalconfig.json')
-        .then((response) => {
-          return response.json()
-        })
-        .then((data) => {
-        document.getElementById("menubuttoncolor").value = data.menubuttoncolor;
-        document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
-        document.getElementById("logocolor").value = data.logocolor;
-        document.getElementById("background").value = data.background;
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
 
-        // document.getElementById("screen0logo0").add(new Option(data.screen0.logo0));
-        // document.getElementById("screen0logo1").add(new Option(data.screen0.logo1));
-        // document.getElementById("screen0logo2").add(new Option(data.screen0.logo2));
-        // document.getElementById("screen0logo3").add(new Option(data.screen0.logo3));
-        // document.getElementById("screen0logo4").add(new Option(data.screen0.logo4));
-        // document.getElementById("screen0logo5").add(new Option(data.screen0.logo5));
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button0action2");
+		    temp[this.value] = this.subitems;
+		  });
 
-        document.getElementById("screen1logo0").add(new Option(data.screen1.logo0));
-        document.getElementById("screen1logo1").add(new Option(data.screen1.logo1));
-        document.getElementById("screen1logo2").add(new Option(data.screen1.logo2));
-        document.getElementById("screen1logo3").add(new Option(data.screen1.logo3));
-        document.getElementById("screen1logo4").add(new Option(data.screen1.logo4));
+		  $("#screen3button0action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button0value2");
 
-        document.getElementById("screen2logo0").add(new Option(data.screen2.logo0));
-        document.getElementById("screen2logo1").add(new Option(data.screen2.logo1));
-        document.getElementById("screen2logo2").add(new Option(data.screen2.logo2));
-        document.getElementById("screen2logo3").add(new Option(data.screen2.logo3));
-        document.getElementById("screen2logo4").add(new Option(data.screen2.logo4));
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
 
-        // document.getElementById("screen3image0").add(new Option(data.screen3.logo0));
-        // document.getElementById("screen3image1").add(new Option(data.screen3.logo1));
-        // document.getElementById("screen3image2").add(new Option(data.screen3.logo2));
-        // document.getElementById("screen3image3").add(new Option(data.screen3.logo3));
-        // document.getElementById("screen3image4").add(new Option(data.screen3.logo4));
+		  // menu3Button 1
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button1action0");
+		    temp[this.value] = this.subitems;
+		  });
 
-        // document.getElementById("screen4image0").add(new Option(data.screen4.logo0));
-        // document.getElementById("screen4image1").add(new Option(data.screen4.logo1));
-        // document.getElementById("screen4image2").add(new Option(data.screen4.logo2));
-        // document.getElementById("screen4image3").add(new Option(data.screen4.logo3));
-        // document.getElementById("screen4image4").add(new Option(data.screen4.logo4));
+		  $("#screen3button1action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button1value0");
 
-        // document.getElementById("screen5image0").add(new Option(data.screen5.logo0));
-        // document.getElementById("screen5image1").add(new Option(data.screen5.logo1));
-        // document.getElementById("screen5image2").add(new Option(data.screen5.logo2));
-        // document.getElementById("screen5image3").add(new Option(data.screen5.logo3));
-        // document.getElementById("screen5image4").add(new Option(data.screen5.logo4));
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
 
-        // document.getElementById("screen6image0").add(new Option(data.screen6.logo0));
-        // document.getElementById("screen6image1").add(new Option(data.screen6.logo1));
-        // document.getElementById("screen6image2").add(new Option(data.screen6.logo2));
-        // document.getElementById("screen6image3").add(new Option(data.screen6.logo3));
-        // document.getElementById("screen6image4").add(new Option(data.screen6.logo4));
-        })
-        .then((data) => {
-            // THEN 3
-            fetch('http://freetouchdeck.local/list?dir=/logos')
-          .then((response2) => {
-            return response2.json()
-          })
-          .then((data2) => {
-          data2.forEach(obj => {
-          Object.entries(obj).forEach(([key, value]) => {
-              logolist.push(`${value}`);
-              var i = selects.length;
-              while (i--) {
-                var select = selects[i];
-                  select.add(new Option(`${value}`, `${value}`));
-              }
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button1action1");
+		    temp[this.value] = this.subitems;
+		  });
 
-              console.log("Index: " + `${key}` + "Value: " + `${value}`);
+		  $("#screen3button1action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button1value1");
 
-              
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
 
-          });
-          });
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button1action2");
+		    temp[this.value] = this.subitems;
+		  });
 
-          })
-          .catch((err) => {
-          // No error handling for now
-          })
+		  $("#screen3button1action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button1value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu3 Button2
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button2action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button2action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button2value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button2action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button2action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button2value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button2action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button2action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button2value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu3 button3
+		$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button3action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button3action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button3value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button3action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button3action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button3value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button3action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button3action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button3value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu3 button4
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button4action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button4action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button4value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button4action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button4action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button4value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button4action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button4action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button4value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu3 button5
+		$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button5action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button5action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button5value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button5action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button5action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button5value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen3button5action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen3button5action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen3button5value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu4 Button0
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button0action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button0action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button0value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button0action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button0action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button0value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button0action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button0action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button0value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button1action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button1action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button1value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button1action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button1action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button1value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button1action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button1action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button1value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
 
 
-        })
-        .catch((err) => {
-        // No error handling for now
-        })
-
-    </script>
-
-
-  </body>
-</html>
+		});

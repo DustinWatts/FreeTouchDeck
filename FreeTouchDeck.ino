@@ -23,8 +23,8 @@
   tft_config.h holds the configuration for the TFT display and the touch controller. This is where
   SPI pins are defined. Uncomment the lines needed for your display.
 
-  !* Before uploadings this sketch, make sure you have set everything that is needed
-  in tft_config.h. Select the right screendriver and the board (ESP or other) you are
+  !* Before uploading this sketch, make sure you have set everything that is needed
+  in tft_config.h. Select the right screendriver and the board (ESP32 is the only one tested) you are
   using. Also make sure TOUCH_CS is defines correctly.
   
 */
@@ -119,8 +119,7 @@ struct Logos {
   char logo5[32];
 };
 
-
-
+// Struct 3 actions and 3 value per button
 struct Actions {
   uint8_t action0;
   uint8_t value0;
@@ -216,14 +215,16 @@ void setup() {
   tft.setTextFont(2);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.print("Loading version 0.8.4"); // Version 0.8.4 allows for uploading custom bmp files through configurator
+  tft.print("Loading version 0.8.4"); // Version 0.8.5 Has a working config page for menu 1
   delay(1000);
   
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
 
   // Load the General Config
-  loadGeneralConfig();
+  loadConfig("colors");
+  loadConfig("homescreen");
+  loadConfig("menu1");
 
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
@@ -270,7 +271,7 @@ void setup() {
   );
 
   // Save config handle
-  server.on("/saveconfig.htm", HTTP_POST, saveconfigtest);
+  server.on("/saveconfig", HTTP_POST, saveconfig);
 
   // Favicon Handle
   server.on("/favicon.ico", HTTP_GET, faviconhandle);
@@ -352,31 +353,34 @@ void loop(void) {
           bleKeyboardAction(menu1.button0.actions.action0, menu1.button0.actions.value0, menu1.button0.actions.symbol0);
           bleKeyboardAction(menu1.button0.actions.action1, menu1.button0.actions.value1, menu1.button0.actions.symbol1);
           bleKeyboardAction(menu1.button0.actions.action2, menu1.button0.actions.value2, menu1.button0.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 2){
           //Page 2 button 0 function
           bleKeyboardAction(menu2.button0.actions.action0, menu2.button0.actions.value0, menu2.button0.actions.symbol0);
           bleKeyboardAction(menu2.button0.actions.action1, menu2.button0.actions.value1, menu2.button0.actions.symbol1);
           bleKeyboardAction(menu2.button0.actions.action2, menu2.button0.actions.value2, menu2.button0.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 3){
           //Page 3 button 0 function
           bleKeyboardAction(menu3.button0.actions.action0, menu3.button0.actions.value0, menu3.button0.actions.symbol0);
           bleKeyboardAction(menu3.button0.actions.action1, menu3.button0.actions.value1, menu3.button0.actions.symbol1);
           bleKeyboardAction(menu3.button0.actions.action2, menu3.button0.actions.value2, menu3.button0.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 4){
           //Page 4 button 0 function
           bleKeyboardAction(menu4.button0.actions.action0, menu4.button0.actions.value0, menu4.button0.actions.symbol0);
           bleKeyboardAction(menu4.button0.actions.action1, menu4.button0.actions.value1, menu4.button0.actions.symbol1);
           bleKeyboardAction(menu4.button0.actions.action2, menu4.button0.actions.value2, menu4.button0.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 5){
           //Page 5 button 0 function
           bleKeyboardAction(menu5.button0.actions.action0, menu5.button0.actions.value0, menu5.button0.actions.symbol0);
           bleKeyboardAction(menu5.button0.actions.action1, menu5.button0.actions.value1, menu5.button0.actions.symbol1);
           bleKeyboardAction(menu5.button0.actions.action2, menu5.button0.actions.value2, menu5.button0.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 6){
-          //Page 6 button 0 function
-          bleKeyboardAction(menu6.button0.actions.action0, menu6.button0.actions.value0, menu6.button0.actions.symbol0);
-          bleKeyboardAction(menu6.button0.actions.action1, menu6.button0.actions.value1, menu6.button0.actions.symbol1);
-          bleKeyboardAction(menu6.button0.actions.action2, menu6.button0.actions.value2, menu6.button0.actions.symbol2);
+         
+          bleKeyboardAction(9, 1, "0");
           
         }
       }
@@ -392,31 +396,37 @@ void loop(void) {
           bleKeyboardAction(menu1.button1.actions.action0, menu1.button1.actions.value0, menu1.button1.actions.symbol0);
           bleKeyboardAction(menu1.button1.actions.action1, menu1.button1.actions.value1, menu1.button1.actions.symbol1);
           bleKeyboardAction(menu1.button1.actions.action2, menu1.button1.actions.value2, menu1.button1.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 2){
           //Page 2 button 1 function
           bleKeyboardAction(menu2.button1.actions.action0, menu2.button1.actions.value0, menu2.button1.actions.symbol0);
           bleKeyboardAction(menu2.button1.actions.action1, menu2.button1.actions.value1, menu2.button1.actions.symbol1);
           bleKeyboardAction(menu2.button1.actions.action2, menu2.button1.actions.value2, menu2.button1.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 3){
           //Page 3 button 1 function
           bleKeyboardAction(menu3.button1.actions.action0, menu3.button1.actions.value0, menu3.button1.actions.symbol0);
           bleKeyboardAction(menu3.button1.actions.action1, menu3.button1.actions.value1, menu3.button1.actions.symbol1);
           bleKeyboardAction(menu3.button1.actions.action2, menu3.button1.actions.value2, menu3.button1.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 4){
           //Page 4 button 1 function
           bleKeyboardAction(menu4.button1.actions.action0, menu4.button1.actions.value0, menu4.button1.actions.symbol0);
           bleKeyboardAction(menu4.button1.actions.action1, menu4.button1.actions.value1, menu4.button1.actions.symbol1);
           bleKeyboardAction(menu4.button1.actions.action2, menu4.button1.actions.value2, menu4.button1.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 5){
           //Page 5 button 1 function
           bleKeyboardAction(menu5.button1.actions.action0, menu5.button1.actions.value0, menu5.button1.actions.symbol0);
           bleKeyboardAction(menu5.button1.actions.action1, menu5.button1.actions.value1, menu5.button1.actions.symbol1);
           bleKeyboardAction(menu5.button1.actions.action2, menu5.button1.actions.value2, menu5.button1.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 6){
           //Page 6 button 1 function
           bleKeyboardAction(menu6.button1.actions.action0, menu6.button1.actions.value0, menu6.button1.actions.symbol0);
           bleKeyboardAction(menu6.button1.actions.action1, menu6.button1.actions.value1, menu6.button1.actions.symbol1);
           bleKeyboardAction(menu6.button1.actions.action2, menu6.button1.actions.value2, menu6.button1.actions.symbol2);
+          bleKeyboard.releaseAll();
         }
       }
 
@@ -431,31 +441,37 @@ void loop(void) {
           bleKeyboardAction(menu1.button2.actions.action0, menu1.button2.actions.value0, menu1.button2.actions.symbol0);
           bleKeyboardAction(menu1.button2.actions.action1, menu1.button2.actions.value1, menu1.button2.actions.symbol1);
           bleKeyboardAction(menu1.button2.actions.action2, menu1.button2.actions.value2, menu1.button2.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 2){
           //Page 2 button 2 function
           bleKeyboardAction(menu2.button2.actions.action0, menu2.button2.actions.value0, menu2.button2.actions.symbol0);
           bleKeyboardAction(menu2.button2.actions.action1, menu2.button2.actions.value1, menu2.button2.actions.symbol1);
           bleKeyboardAction(menu2.button2.actions.action2, menu2.button2.actions.value2, menu2.button2.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 3){
           //Page 3 button 2 function
           bleKeyboardAction(menu3.button2.actions.action0, menu3.button2.actions.value0, menu3.button2.actions.symbol0);
           bleKeyboardAction(menu3.button2.actions.action1, menu3.button2.actions.value1, menu3.button2.actions.symbol1);
           bleKeyboardAction(menu3.button2.actions.action2, menu3.button2.actions.value2, menu3.button2.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 4){
           //Page 4 button 2 function
           bleKeyboardAction(menu4.button2.actions.action0, menu4.button2.actions.value0, menu4.button2.actions.symbol0);
           bleKeyboardAction(menu4.button2.actions.action1, menu4.button2.actions.value1, menu4.button2.actions.symbol1);
           bleKeyboardAction(menu4.button2.actions.action2, menu4.button2.actions.value2, menu4.button2.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 5){
           //Page 5 button 2 function
           bleKeyboardAction(menu5.button2.actions.action0, menu5.button2.actions.value0, menu5.button2.actions.symbol0);
           bleKeyboardAction(menu5.button2.actions.action1, menu5.button2.actions.value1, menu5.button2.actions.symbol1);
           bleKeyboardAction(menu5.button2.actions.action2, menu5.button2.actions.value2, menu5.button2.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 6){
           //Page 6 button 1 function
           bleKeyboardAction(menu6.button2.actions.action0, menu6.button2.actions.value0, menu6.button2.actions.symbol0);
           bleKeyboardAction(menu6.button2.actions.action1, menu6.button2.actions.value1, menu6.button2.actions.symbol1);
           bleKeyboardAction(menu6.button2.actions.action2, menu6.button2.actions.value2, menu6.button2.actions.symbol2);
+          bleKeyboard.releaseAll();
         }
       }
 
@@ -470,31 +486,37 @@ void loop(void) {
           bleKeyboardAction(menu1.button3.actions.action0, menu1.button3.actions.value0, menu1.button3.actions.symbol0);
           bleKeyboardAction(menu1.button3.actions.action1, menu1.button3.actions.value1, menu1.button3.actions.symbol1);
           bleKeyboardAction(menu1.button3.actions.action2, menu1.button3.actions.value2, menu1.button3.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 2){
           //Page 2 button 3 function
           bleKeyboardAction(menu2.button3.actions.action0, menu2.button3.actions.value0, menu2.button3.actions.symbol0);
           bleKeyboardAction(menu2.button3.actions.action1, menu2.button3.actions.value1, menu2.button3.actions.symbol1);
           bleKeyboardAction(menu2.button3.actions.action2, menu2.button3.actions.value2, menu2.button3.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 3){
           //Page 3 button 3 function
           bleKeyboardAction(menu3.button3.actions.action0, menu3.button3.actions.value0, menu3.button3.actions.symbol0);
           bleKeyboardAction(menu3.button3.actions.action1, menu3.button3.actions.value1, menu3.button3.actions.symbol1);
           bleKeyboardAction(menu3.button3.actions.action2, menu3.button3.actions.value2, menu3.button3.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 4){
           //Page 4 button 3 function
           bleKeyboardAction(menu4.button3.actions.action0, menu4.button3.actions.value0, menu4.button3.actions.symbol0);
           bleKeyboardAction(menu4.button3.actions.action1, menu4.button3.actions.value1, menu4.button3.actions.symbol1);
           bleKeyboardAction(menu4.button3.actions.action2, menu4.button3.actions.value2, menu4.button3.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 5){
           //Page 5 button 3 function
           bleKeyboardAction(menu5.button3.actions.action0, menu5.button3.actions.value0, menu5.button3.actions.symbol0);
           bleKeyboardAction(menu5.button3.actions.action1, menu5.button3.actions.value1, menu5.button3.actions.symbol1);
           bleKeyboardAction(menu5.button3.actions.action2, menu5.button3.actions.value2, menu5.button3.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 6){
           //Page 6 button 1 function
           bleKeyboardAction(menu6.button3.actions.action0, menu6.button3.actions.value0, menu6.button3.actions.symbol0);
           bleKeyboardAction(menu6.button3.actions.action1, menu6.button3.actions.value1, menu6.button3.actions.symbol1);
           bleKeyboardAction(menu6.button3.actions.action2, menu6.button3.actions.value2, menu6.button3.actions.symbol2);
+          bleKeyboard.releaseAll();
         }
       }
 
@@ -509,31 +531,37 @@ void loop(void) {
           bleKeyboardAction(menu1.button4.actions.action0, menu1.button4.actions.value0, menu1.button4.actions.symbol0);
           bleKeyboardAction(menu1.button4.actions.action1, menu1.button4.actions.value1, menu1.button4.actions.symbol1);
           bleKeyboardAction(menu1.button4.actions.action2, menu1.button4.actions.value2, menu1.button4.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 2){
           //Page 2 button 4 function
           bleKeyboardAction(menu2.button4.actions.action0, menu2.button4.actions.value0, menu2.button4.actions.symbol0);
           bleKeyboardAction(menu2.button4.actions.action1, menu2.button4.actions.value1, menu2.button4.actions.symbol1);
           bleKeyboardAction(menu2.button4.actions.action2, menu2.button4.actions.value2, menu2.button4.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 3){
           //Page 3 button 4 function
           bleKeyboardAction(menu3.button4.actions.action0, menu3.button4.actions.value0, menu3.button4.actions.symbol0);
           bleKeyboardAction(menu3.button4.actions.action1, menu3.button4.actions.value1, menu3.button4.actions.symbol1);
           bleKeyboardAction(menu3.button4.actions.action2, menu3.button4.actions.value2, menu3.button4.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 4){
           //Page 4 button 4 function
           bleKeyboardAction(menu4.button4.actions.action0, menu4.button4.actions.value0, menu4.button4.actions.symbol0);
           bleKeyboardAction(menu4.button4.actions.action1, menu4.button4.actions.value1, menu4.button4.actions.symbol1);
           bleKeyboardAction(menu4.button4.actions.action2, menu4.button4.actions.value2, menu4.button4.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 5){
           //Page 5 button 5 function
           bleKeyboardAction(menu5.button4.actions.action0, menu5.button4.actions.value0, menu5.button4.actions.symbol0);
           bleKeyboardAction(menu5.button4.actions.action1, menu5.button4.actions.value1, menu5.button4.actions.symbol1);
           bleKeyboardAction(menu5.button4.actions.action2, menu5.button4.actions.value2, menu5.button4.actions.symbol2);
+          bleKeyboard.releaseAll();
         }else if(pageNum == 6){
           //Page 6 button 1 function
           bleKeyboardAction(menu6.button4.actions.action0, menu6.button4.actions.value0, menu6.button4.actions.symbol0);
           bleKeyboardAction(menu6.button4.actions.action1, menu6.button4.actions.value1, menu6.button4.actions.symbol1);
           bleKeyboardAction(menu6.button4.actions.action2, menu6.button4.actions.value2, menu6.button4.actions.symbol2);
+          bleKeyboard.releaseAll();
         }
       }
 
@@ -556,7 +584,7 @@ void loop(void) {
 }
 }
 
-//----------- Drawing Buttons -------------------------------------------------------------------------------
+//------------------------------------ Drawing Buttons --------------------------------------------------------
 
 void drawKeypad()
 {
@@ -617,7 +645,7 @@ void drawKeypad()
   }
 }
 
-//----------- Drawing Logo's -------------------------------------------------------------------------------
+//----------------------------------- Drawing Logo's ----------------------------------------------------------------
 
 void drawlogo(int logonumber, int col, int row, uint16_t fgcolor){
 
@@ -781,9 +809,6 @@ void bleKeyboardAction(int action, int value, char* symbol){
     break;
     case 5: // Key press (0 to release all)
      switch (value){
-      case 0:
-      bleKeyboard.releaseAll();
-      break;
       case 1:
       bleKeyboard.press(KEY_LEFT_CTRL);
       break;
@@ -808,6 +833,9 @@ void bleKeyboardAction(int action, int value, char* symbol){
       case 8:
       bleKeyboard.press(KEY_RIGHT_GUI);
       break;
+      case 9:
+      bleKeyboard.releaseAll();
+      break;
       default:
       //if nothing matches do nothing
       break;
@@ -827,1481 +855,335 @@ void bleKeyboardAction(int action, int value, char* symbol){
       break;
   }
 
+
+
 }
 
-// ------------ Load JSON File --------------------------------------------------
+// ------------------------------------ Load JSON File --------------------------------------------------
 
-// TODO: Move JSON parsing function is in a seperate header file because it is really long ;)
+// TODO: Move JSON parsing function is in a seperate file because it is really long ;)
 
-void loadGeneralConfig(){
+void loadConfig(String value){
 
-  if(SPIFFS.exists("/generalconfig.json")){
-
-  File generalconfigfile = SPIFFS.open("/generalconfig.json", "r");
-
-  const size_t capacity = 72*JSON_ARRAY_SIZE(3) + 36*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(6) + 6*JSON_OBJECT_SIZE(11) + JSON_OBJECT_SIZE(12) + 742;
-  DynamicJsonDocument doc(capacity);
-
-  DeserializationError error = deserializeJson(doc, generalconfigfile);
-
-  // If parsing failed
-  if (error) {
-    Serial.print(F("deserializeJson() failed: "));
-    Serial.println(error.c_str());
-    Serial.println("Using default colours");
-    generalconfig.menuButtonColour = 0xF81F; // Use default colour if failed to parse json
-    generalconfig.functionButtonColour = 0x0000; // Use default colour if failed to parse json
-    generalconfig.logoColour = 0xFFFF; // Use default colour if failed to parse json
-    generalconfig.backgroundColour = 0x7BEF; // Use default colour if failed to parse json
-    return;
-  }
-
-  // Parsing colors 
-  const char* menubuttoncolor = doc["menubuttoncolor"]; // Get the colour for the menu and back home buttons.
-  const char* functionbuttoncolor = doc["functionbuttoncolor"]; //Get the colour for the function buttons.
-  const char* logocolor = doc["logocolor"]; //Get the colour for the function buttons.
-  const char* bgcolor = doc["background"]; //Get the colour for the function buttons.
-
-  char menubuttoncolorchar[64];
-  strcpy (menubuttoncolorchar,menubuttoncolor);
-  unsigned long rgb888menubuttoncolor = convertHTMLtoRGB888(menubuttoncolorchar);
-  //Serial.println(rgb888);
-  generalconfig.menuButtonColour = convertRGB888ToRGB565(rgb888menubuttoncolor);
-
-  char functionbuttoncolorchar[64];
-  strcpy (functionbuttoncolorchar,functionbuttoncolor);
-  unsigned long rgb888functionbuttoncolor = convertHTMLtoRGB888(functionbuttoncolorchar);
-  //Serial.println(rgb888);
-  generalconfig.functionButtonColour = convertRGB888ToRGB565(rgb888functionbuttoncolor);
-
-  char logocolorchar[64];
-  strcpy (menubuttoncolorchar,logocolor);
-  unsigned long rgb888logocolor = convertHTMLtoRGB888(logocolorchar);
-  //Serial.println(rgb888);
-  generalconfig.logoColour = convertRGB888ToRGB565(rgb888logocolor);
-
-  char backgroundcolorchar[64];
-  strcpy (backgroundcolorchar,bgcolor);
-  unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
-  //Serial.println(rgb888);
-  generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
-
-  //Get general logos
-  const char* logohome = doc["homebuttonlogo"];
-  strcpy (templogopath,logopath); // cpy the logo path (char logopath[64] = "/logos/") to templogopath
-  strcat(templogopath,logohome); // append the logo filename (const char*) to templogopath
-  strcpy (generallogo.homebutton,templogopath); // cpy the logo filename + path to generallogo.homebutton
-  strcpy (templogopath,logopath); // empty the templogopath so we can re-use it
-
-  //Get logos for screen 0 buttons
-  JsonObject screen0obj = doc["screen0"];
-  
-  const char* logo00 = screen0obj["logo0"];
-  const char* logo01 = screen0obj["logo1"];
-  const char* logo02 = screen0obj["logo2"];
-  const char* logo03 = screen0obj["logo3"];
-  const char* logo04 = screen0obj["logo4"];
-  const char* logo05 = screen0obj["logo5"]; // Only screen 0 has 6 buttons
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo00);
-  strcpy (screen0.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo01);
-  strcpy (screen0.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo02);
-  strcpy (screen0.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo03);
-  strcpy (screen0.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo04);
-  strcpy (screen0.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo05);
-  strcpy (screen0.logo5,templogopath);
-  strcpy (templogopath,logopath);
-
-  // Get logos for screen 1 buttons
-  JsonObject screen1obj = doc["screen1"];
-  
-  const char* logo10 = screen1obj["logo0"];
-  const char* logo11 = screen1obj["logo1"];
-  const char* logo12 = screen1obj["logo2"];
-  const char* logo13 = screen1obj["logo3"];
-  const char* logo14 = screen1obj["logo4"];
-
-  JsonArray screen1_button0_actionarray = screen1obj["button0"]["actionarray"];
-  
-  int screen1_button0_actionarray_0 = screen1_button0_actionarray[0]; // 3
-  int screen1_button0_actionarray_1 = screen1_button0_actionarray[1]; // 0
-  int screen1_button0_actionarray_2 = screen1_button0_actionarray[2]; // 0
-  
-  JsonArray screen1_button0_valuearray = screen1obj["button0"]["valuearray"];
-  
-  if(screen1_button0_actionarray_0 == 4){
-   const char* screen1_button0_symbolarray_0 = screen1_button0_valuearray[0]; // 1
-    strcpy (menu1.button0.actions.symbol0, screen1_button0_symbolarray_0);
-  
-  } else {
-   int screen1_button0_valuearray_0 = screen1_button0_valuearray[0]; // 1
-   menu1.button0.actions.value0 = screen1_button0_valuearray_0;
-  }
-  
-  if(screen1_button0_actionarray_1 == 4){
-   const char* screen1_button0_symbolarray_1 = screen1_button0_valuearray[1]; // 1
-    strcpy (menu1.button0.actions.symbol1, screen1_button0_symbolarray_1);
-  
-  } else {
-   int screen1_button0_valuearray_1 = screen1_button0_valuearray[1]; // 1
-   menu1.button0.actions.value1 = screen1_button0_valuearray_1;
-  }
-  
-  if(screen1_button0_actionarray_2 == 4){
-   const char* screen1_button0_symbolarray_2 = screen1_button0_valuearray[2]; // 1
-    strcpy (menu1.button0.actions.symbol2, screen1_button0_symbolarray_2);
-  
-  } else {
-   int screen1_button0_valuearray_2 = screen1_button0_valuearray[2]; // 1
-   menu1.button0.actions.value2 = screen1_button0_valuearray_2;
-  }
-  
-    menu1.button0.actions.action0 = screen1_button0_actionarray_0;  
-    menu1.button0.actions.action1 = screen1_button0_actionarray_1;
-    menu1.button0.actions.action2 = screen1_button0_actionarray_2;
-  
-  JsonArray screen1_button1_actionarray = screen1obj["button1"]["actionarray"];
-  int screen1_button1_actionarray_0 = screen1_button1_actionarray[0]; // 3
-  int screen1_button1_actionarray_1 = screen1_button1_actionarray[1]; // 0
-  int screen1_button1_actionarray_2 = screen1_button1_actionarray[2]; // 0
-  
-  JsonArray screen1_button1_valuearray = screen1obj["button1"]["valuearray"];
-  
-  if(screen1_button1_actionarray_0 == 4){
-   const char* screen1_button1_symbolarray_0 = screen1_button1_valuearray[0]; // 1
-    strcpy (menu1.button1.actions.symbol0, screen1_button1_symbolarray_0);
-  
-  } else {
-   int screen1_button1_valuearray_0 = screen1_button1_valuearray[0]; // 1
-   menu1.button1.actions.value0 = screen1_button1_valuearray_0;
-  }
-  
-  if(screen1_button1_actionarray_1 == 4){
-   const char* screen1_button1_symbolarray_1 = screen1_button1_valuearray[1]; // 1
-    strcpy (menu1.button1.actions.symbol1, screen1_button1_symbolarray_1);
-  
-  } else {
-   int screen1_button1_valuearray_1 = screen1_button1_valuearray[1]; // 1
-   menu1.button1.actions.value1 = screen1_button1_valuearray_1;
-  }
-  
-  if(screen1_button1_actionarray_2 == 4){
-   const char* screen1_button1_symbolarray_2 = screen1_button1_valuearray[2]; // 1
-    strcpy (menu1.button1.actions.symbol2, screen1_button1_symbolarray_2);
-  
-  } else {
-   int screen1_button1_valuearray_2 = screen1_button1_valuearray[2]; // 1
-   menu1.button1.actions.value2 = screen1_button1_valuearray_2;
-  }
-  
-    menu1.button1.actions.action0 = screen1_button1_actionarray_0;  
-    menu1.button1.actions.action1 = screen1_button1_actionarray_1;
-    menu1.button1.actions.action2 = screen1_button1_actionarray_2;
-  
-  JsonArray screen1_button2_actionarray = screen1obj["button2"]["actionarray"];
-  int screen1_button2_actionarray_0 = screen1_button2_actionarray[0]; // 3
-  int screen1_button2_actionarray_1 = screen1_button2_actionarray[1]; // 0
-  int screen1_button2_actionarray_2 = screen1_button2_actionarray[2]; // 0
-  
-  JsonArray screen1_button2_valuearray = screen1obj["button2"]["valuearray"];
-  
-  if(screen1_button2_actionarray_0 == 4){
-   const char* screen1_button2_symbolarray_0 = screen1_button2_valuearray[0]; // 1
-    strcpy (menu1.button2.actions.symbol0, screen1_button2_symbolarray_0);
-  
-  } else {
-   int screen1_button2_valuearray_0 = screen1_button2_valuearray[0]; // 1
-   menu1.button2.actions.value0 = screen1_button2_valuearray_0;
-  }
-  
-  if(screen1_button2_actionarray_1 == 4){
-   const char* screen1_button2_symbolarray_1 = screen1_button2_valuearray[1]; // 1
-    strcpy (menu1.button2.actions.symbol1, screen1_button2_symbolarray_1);
-  
-  } else {
-   int screen1_button2_valuearray_1 = screen1_button2_valuearray[1]; // 1
-   menu1.button2.actions.value1 = screen1_button2_valuearray_1;
-  }
-  
-  if(screen1_button2_actionarray_2 == 4){
-   const char* screen1_button2_symbolarray_2 = screen1_button2_valuearray[2]; // 1
-    strcpy (menu1.button2.actions.symbol2, screen1_button2_symbolarray_2);
-  
-  } else {
-   int screen1_button2_valuearray_2 = screen1_button2_valuearray[2]; // 1
-   menu1.button2.actions.value2 = screen1_button2_valuearray_2;
-  }
-  
-    menu1.button2.actions.action0 = screen1_button2_actionarray_0;  
-    menu1.button2.actions.action1 = screen1_button2_actionarray_1;
-    menu1.button2.actions.action2 = screen1_button2_actionarray_2;
+  if(value == "colors"){
+      File configfile = SPIFFS.open("/config/colors.json", "r");
     
-  JsonArray screen1_button3_actionarray = screen1obj["button3"]["actionarray"];
-  int screen1_button3_actionarray_0 = screen1_button3_actionarray[0]; // 3
-  int screen1_button3_actionarray_1 = screen1_button3_actionarray[1]; // 0
-  int screen1_button3_actionarray_2 = screen1_button3_actionarray[2]; // 0
-  
-  JsonArray screen1_button3_valuearray = screen1obj["button3"]["valuearray"];
-  
-  if(screen1_button3_actionarray_0 == 4){
-   const char* screen1_button3_symbolarray_0 = screen1_button3_valuearray[0]; // 1
-    strcpy (menu1.button3.actions.symbol0, screen1_button3_symbolarray_0);
-  
-  } else {
-   int screen1_button3_valuearray_0 = screen1_button3_valuearray[0]; // 1
-   menu1.button3.actions.value0 = screen1_button3_valuearray_0;
-  }
-  
-  if(screen1_button3_actionarray_1 == 4){
-   const char* screen1_button3_symbolarray_1 = screen1_button3_valuearray[1]; // 1
-    strcpy (menu1.button3.actions.symbol1, screen1_button3_symbolarray_1);
-  
-  } else {
-   int screen1_button3_valuearray_1 = screen1_button3_valuearray[1]; // 1
-   menu1.button3.actions.value1 = screen1_button3_valuearray_1;
-  }
-  
-  if(screen1_button3_actionarray_2 == 4){
-   const char* screen1_button3_symbolarray_2 = screen1_button3_valuearray[2]; // 1
-    strcpy (menu1.button3.actions.symbol2, screen1_button3_symbolarray_2);
-  
-  } else {
-   int screen1_button3_valuearray_2 = screen1_button3_valuearray[2]; // 1
-   menu1.button3.actions.value2 = screen1_button3_valuearray_2;
-  }
-  
-    menu1.button3.actions.action0 = screen1_button3_actionarray_0;  
-    menu1.button3.actions.action1 = screen1_button3_actionarray_1;
-    menu1.button3.actions.action2 = screen1_button3_actionarray_2;
-  
-  JsonArray screen1_button4_actionarray = screen1obj["button4"]["actionarray"];
-  int screen1_button4_actionarray_0 = screen1_button4_actionarray[0]; // 3
-  int screen1_button4_actionarray_1 = screen1_button4_actionarray[1]; // 0
-  int screen1_button4_actionarray_2 = screen1_button4_actionarray[2]; // 0
-  
-  JsonArray screen1_button4_valuearray = screen1obj["button4"]["valuearray"];
-  
-  if(screen1_button4_actionarray_0 == 4){
-   const char* screen1_button4_symbolarray_0 = screen1_button4_valuearray[0]; // 1
-    strcpy (menu1.button4.actions.symbol0, screen1_button4_symbolarray_0);
-  
-  } else {
-   int screen1_button4_valuearray_0 = screen1_button4_valuearray[0]; // 1
-   menu1.button4.actions.value0 = screen1_button4_valuearray_0;
-  }
-  
-  if(screen1_button4_actionarray_1 == 4){
-   const char* screen1_button4_symbolarray_1 = screen1_button4_valuearray[1]; // 1
-    strcpy (menu1.button4.actions.symbol1, screen1_button4_symbolarray_1);
-  
-  } else {
-   int screen1_button4_valuearray_1 = screen1_button4_valuearray[1]; // 1
-   menu1.button4.actions.value1 = screen1_button4_valuearray_1;
-  }
-  
-  if(screen1_button4_actionarray_2 == 4){
-   const char* screen1_button4_symbolarray_2 = screen1_button4_valuearray[2]; // 1
-    strcpy (menu1.button4.actions.symbol2, screen1_button4_symbolarray_2);
-  
-  } else {
-   int screen1_button4_valuearray_2 = screen1_button4_valuearray[2]; // 1
-   menu1.button4.actions.value2 = screen1_button4_valuearray_2;
-  }
-    menu1.button4.actions.action0 = screen1_button4_actionarray_0;  
-    menu1.button4.actions.action1 = screen1_button4_actionarray_1;
-    menu1.button4.actions.action2 = screen1_button4_actionarray_2;
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo10);
-  strcpy (screen1.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo11);
-  strcpy (screen1.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo12);
-  strcpy (screen1.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo13);
-  strcpy (screen1.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo14);
-  strcpy (screen1.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-  JsonObject screen2obj = doc["screen2"];
-
-  // Get logos for screen 2 buttons
-  const char* logo20 = screen2obj["logo0"];
-  const char* logo21 = screen2obj["logo1"];
-  const char* logo22 = screen2obj["logo2"];
-  const char* logo23 = screen2obj["logo3"];
-  const char* logo24 = screen2obj["logo4"];
-
-  JsonArray screen2_button0_actionarray = screen2obj["button0"]["actionarray"];
-  
-  int screen2_button0_actionarray_0 = screen2_button0_actionarray[0]; // 3
-  int screen2_button0_actionarray_1 = screen2_button0_actionarray[1]; // 0
-  int screen2_button0_actionarray_2 = screen2_button0_actionarray[2]; // 0
-  
-  JsonArray screen2_button0_valuearray = screen2obj["button0"]["valuearray"];
-  
-  if(screen2_button0_actionarray_0 == 4){
-   const char* screen2_button0_symbolarray_0 = screen2_button0_valuearray[0]; // 1
-    strcpy (menu2.button0.actions.symbol0, screen2_button0_symbolarray_0);
-  
-  } else {
-   int screen2_button0_valuearray_0 = screen2_button0_valuearray[0]; // 1
-   menu2.button0.actions.value0 = screen2_button0_valuearray_0;
-  }
+      DynamicJsonDocument doc(256);
     
-  if(screen2_button0_actionarray_1 == 4){
-   const char* screen2_button0_symbolarray_1 = screen2_button0_valuearray[1]; // 1
-    strcpy (menu2.button0.actions.symbol1, screen2_button0_symbolarray_1);
-  
-  } else {
-   int screen2_button0_valuearray_1 = screen2_button0_valuearray[1]; // 1
-   menu2.button0.actions.value1 = screen2_button0_valuearray_1;
-  }
-  
-  if(screen2_button0_actionarray_2 == 4){
-   const char* screen2_button0_symbolarray_2 = screen2_button0_valuearray[2]; // 1
-    strcpy (menu2.button0.actions.symbol2, screen2_button0_symbolarray_2);
-  
-  } else {
-   int screen2_button0_valuearray_2 = screen2_button0_valuearray[2]; // 1
-   menu2.button0.actions.value2 = screen2_button0_valuearray_2;
-  }
-  
-    menu2.button0.actions.action0 = screen2_button0_actionarray_0;
-    menu2.button0.actions.action1 = screen2_button0_actionarray_1;
-    menu2.button0.actions.action2 = screen2_button0_actionarray_2;
-  
-  JsonArray screen2_button1_actionarray = screen2obj["button1"]["actionarray"];
-  int screen2_button1_actionarray_0 = screen2_button1_actionarray[0]; // 3
-  int screen2_button1_actionarray_1 = screen2_button1_actionarray[1]; // 0
-  int screen2_button1_actionarray_2 = screen2_button1_actionarray[2]; // 0
-  
-  JsonArray screen2_button1_valuearray = screen2obj["button1"]["valuearray"];
-  
-  if(screen2_button1_actionarray_0 == 4){
-   const char* screen2_button1_symbolarray_0 = screen2_button1_valuearray[0]; // 1
-    strcpy (menu2.button1.actions.symbol0, screen2_button1_symbolarray_0);
-  
-  } else {
-   int screen2_button1_valuearray_0 = screen2_button1_valuearray[0]; // 1
-   menu2.button1.actions.value0 = screen2_button1_valuearray_0;
-  }
-  
-  if(screen2_button1_actionarray_1 == 4){
-   const char* screen2_button1_symbolarray_1 = screen2_button1_valuearray[1]; // 1
-    strcpy (menu2.button1.actions.symbol1, screen2_button1_symbolarray_1);
-  
-  } else {
-   int screen2_button1_valuearray_1 = screen2_button1_valuearray[1]; // 1
-   menu2.button1.actions.value1 = screen2_button1_valuearray_1;
-  }
-  
-  if(screen2_button1_actionarray_2 == 4){
-   const char* screen2_button1_symbolarray_2 = screen2_button1_valuearray[2]; // 1
-    strcpy (menu2.button1.actions.symbol2, screen2_button1_symbolarray_2);
-  
-  } else {
-   int screen2_button1_valuearray_2 = screen2_button1_valuearray[2]; // 1
-   menu2.button1.actions.value2 = screen2_button1_valuearray_2;
-  }
-  
-    menu2.button1.actions.action0 = screen2_button1_actionarray_0;  
-    menu2.button1.actions.action1 = screen2_button1_actionarray_1;
-    menu2.button1.actions.action2 = screen2_button1_actionarray_2;
-  
-  JsonArray screen2_button2_actionarray = screen2obj["button2"]["actionarray"];
-  int screen2_button2_actionarray_0 = screen2_button2_actionarray[0]; // 3
-  int screen2_button2_actionarray_1 = screen2_button2_actionarray[1]; // 0
-  int screen2_button2_actionarray_2 = screen2_button2_actionarray[2]; // 0
-  
-  JsonArray screen2_button2_valuearray = screen2obj["button2"]["valuearray"];
-  
-  if(screen2_button2_actionarray_0 == 4){
-   const char* screen2_button2_symbolarray_0 = screen2_button2_valuearray[0]; // 1
-    strcpy (menu2.button2.actions.symbol0, screen2_button2_symbolarray_0);
-  
-  } else {
-   int screen2_button2_valuearray_0 = screen2_button2_valuearray[0]; // 1
-   menu2.button2.actions.value0 = screen2_button2_valuearray_0;
-  }
-  
-  if(screen2_button2_actionarray_1 == 4){
-   const char* screen2_button2_symbolarray_1 = screen2_button2_valuearray[1]; // 1
-    strcpy (menu2.button2.actions.symbol1, screen2_button2_symbolarray_1);
-  
-  } else {
-   int screen2_button2_valuearray_1 = screen2_button2_valuearray[1]; // 1
-   menu2.button2.actions.value1 = screen2_button2_valuearray_1;
-  }
-  
-  if(screen2_button2_actionarray_2 == 4){
-   const char* screen2_button2_symbolarray_2 = screen2_button2_valuearray[2]; // 1
-    strcpy (menu2.button2.actions.symbol2, screen2_button2_symbolarray_2);
-  
-  } else {
-   int screen2_button2_valuearray_2 = screen2_button2_valuearray[2]; // 1
-   menu2.button2.actions.value2 = screen2_button2_valuearray_2;
-  }
-  
-    menu2.button2.actions.action0 = screen2_button2_actionarray_0;  
-    menu2.button2.actions.action1 = screen2_button2_actionarray_1;
-    menu2.button2.actions.action2 = screen2_button2_actionarray_2;
+      DeserializationError error = deserializeJson(doc, configfile);
     
-  JsonArray screen2_button3_actionarray = screen2obj["button3"]["actionarray"];
-  int screen2_button3_actionarray_0 = screen2_button3_actionarray[0]; // 3
-  int screen2_button3_actionarray_1 = screen2_button3_actionarray[1]; // 0
-  int screen2_button3_actionarray_2 = screen2_button3_actionarray[2]; // 0
-  
-  JsonArray screen2_button3_valuearray = screen2obj["button3"]["valuearray"];
-  
-  if(screen2_button3_actionarray_0 == 4){
-   const char* screen2_button3_symbolarray_0 = screen2_button3_valuearray[0]; // 1
-    strcpy (menu2.button3.actions.symbol0, screen2_button3_symbolarray_0);
-  
-  } else {
-   int screen2_button3_valuearray_0 = screen2_button3_valuearray[0]; // 1
-   menu2.button3.actions.value0 = screen2_button3_valuearray_0;
-  }
-  
-  if(screen2_button3_actionarray_1 == 4){
-   const char* screen2_button3_symbolarray_1 = screen2_button3_valuearray[1]; // 1
-    strcpy (menu2.button3.actions.symbol1, screen2_button3_symbolarray_1);
-  
-  } else {
-   int screen2_button3_valuearray_1 = screen2_button3_valuearray[1]; // 1
-   menu2.button3.actions.value1 = screen2_button3_valuearray_1;
-  }
-  
-  if(screen2_button3_actionarray_2 == 4){
-   const char* screen2_button3_symbolarray_2 = screen2_button3_valuearray[2]; // 1
-    strcpy (menu2.button3.actions.symbol2, screen2_button3_symbolarray_2);
-  
-  } else {
-   int screen2_button3_valuearray_2 = screen2_button3_valuearray[2]; // 1
-   menu2.button3.actions.value2 = screen2_button3_valuearray_2;
-  }
-  
-    menu2.button3.actions.action0 = screen2_button3_actionarray_0;  
-    menu2.button3.actions.action1 = screen2_button3_actionarray_1;
-    menu2.button3.actions.action2 = screen2_button3_actionarray_2;
-  
-  JsonArray screen2_button4_actionarray = screen2obj["button4"]["actionarray"];
-  int screen2_button4_actionarray_0 = screen2_button4_actionarray[0]; // 3
-  int screen2_button4_actionarray_1 = screen2_button4_actionarray[1]; // 0
-  int screen2_button4_actionarray_2 = screen2_button4_actionarray[2]; // 0
-  
-  JsonArray screen2_button4_valuearray = screen2obj["button4"]["valuearray"];
-  
-  if(screen2_button4_actionarray_0 == 4){
-   const char* screen2_button4_symbolarray_0 = screen2_button4_valuearray[0]; // 1
-    strcpy (menu2.button4.actions.symbol0, screen2_button4_symbolarray_0);
-  
-  } else {
-   int screen2_button4_valuearray_0 = screen2_button4_valuearray[0]; // 1
-   menu2.button4.actions.value0 = screen2_button4_valuearray_0;
-  }
-  
-  if(screen2_button4_actionarray_1 == 4){
-   const char* screen2_button4_symbolarray_1 = screen2_button4_valuearray[1]; // 1
-    strcpy (menu2.button4.actions.symbol1, screen2_button4_symbolarray_1);
-  
-  } else {
-   int screen2_button4_valuearray_1 = screen2_button4_valuearray[1]; // 1
-   menu2.button4.actions.value1 = screen2_button4_valuearray_1;
-  }
-  
-  if(screen2_button4_actionarray_2 == 4){
-   const char* screen2_button4_symbolarray_2 = screen2_button4_valuearray[2]; // 1
-    strcpy (menu2.button4.actions.symbol2, screen2_button4_symbolarray_2);
-  
-  } else {
-   int screen2_button4_valuearray_2 = screen2_button4_valuearray[2]; // 1
-   menu2.button4.actions.value2 = screen2_button4_valuearray_2;
-  }
-    menu2.button4.actions.action0 = screen2_button4_actionarray_0;  
-    menu2.button4.actions.action1 = screen2_button4_actionarray_1;
-    menu2.button4.actions.action2 = screen2_button4_actionarray_2;
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo20);
-  strcpy (screen2.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo21);
-  strcpy (screen2.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo22);
-  strcpy (screen2.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo23);
-  strcpy (screen2.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo24);
-  strcpy (screen2.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-  JsonObject screen3obj = doc["screen3"];
-
-  // Get logos for screen 3 buttons
-  const char* logo30 = screen3obj["logo0"];
-  const char* logo31 = screen3obj["logo1"];
-  const char* logo32 = screen3obj["logo2"];
-  const char* logo33 = screen3obj["logo3"];
-  const char* logo34 = screen3obj["logo4"];
-
-  JsonArray screen3_button0_actionarray = screen3obj["button0"]["actionarray"];
-  
-  int screen3_button0_actionarray_0 = screen3_button0_actionarray[0]; // 3
-  int screen3_button0_actionarray_1 = screen3_button0_actionarray[1]; // 0
-  int screen3_button0_actionarray_2 = screen3_button0_actionarray[2]; // 0
-  
-  JsonArray screen3_button0_valuearray = screen3obj["button0"]["valuearray"];
-  
-  if(screen3_button0_actionarray_0 == 4){
-   const char* screen3_button0_symbolarray_0 = screen3_button0_valuearray[0]; // 1
-    strcpy (menu3.button0.actions.symbol0, screen3_button0_symbolarray_0);
-  
-  } else {
-   int screen3_button0_valuearray_0 = screen3_button0_valuearray[0]; // 1
-   menu3.button0.actions.value0 = screen3_button0_valuearray_0;
-  }
+      // Parsing colors 
+      const char* menubuttoncolor = doc["menubuttoncolor"]; // Get the colour for the menu and back home buttons.
+      const char* functionbuttoncolor = doc["functionbuttoncolor"]; //Get the colour for the function buttons.
+      const char* logocolor = doc["logocolor"]; //Get the colour for the function buttons.
+      const char* bgcolor = doc["background"]; //Get the colour for the function buttons.
     
-  if(screen3_button0_actionarray_1 == 4){
-   const char* screen3_button0_symbolarray_1 = screen3_button0_valuearray[1]; // 1
-    strcpy (menu3.button0.actions.symbol1, screen3_button0_symbolarray_1);
-  
-  } else {
-   int screen3_button0_valuearray_1 = screen3_button0_valuearray[1]; // 1
-   menu3.button0.actions.value1 = screen3_button0_valuearray_1;
-  }
-  
-  if(screen3_button0_actionarray_2 == 4){
-   const char* screen3_button0_symbolarray_2 = screen3_button0_valuearray[2]; // 1
-    strcpy (menu3.button0.actions.symbol2, screen3_button0_symbolarray_2);
-  
-  } else {
-   int screen3_button0_valuearray_2 = screen3_button0_valuearray[2]; // 1
-   menu3.button0.actions.value2 = screen3_button0_valuearray_2;
-  }
-  
-    menu3.button0.actions.action0 = screen3_button0_actionarray_0;
-    menu3.button0.actions.action1 = screen3_button0_actionarray_1;
-    menu3.button0.actions.action2 = screen3_button0_actionarray_2;
-  
-  JsonArray screen3_button1_actionarray = screen3obj["button1"]["actionarray"];
-  int screen3_button1_actionarray_0 = screen3_button1_actionarray[0]; // 3
-  int screen3_button1_actionarray_1 = screen3_button1_actionarray[1]; // 0
-  int screen3_button1_actionarray_2 = screen3_button1_actionarray[2]; // 0
-  
-  JsonArray screen3_button1_valuearray = screen3obj["button1"]["valuearray"];
-  
-  if(screen3_button1_actionarray_0 == 4){
-   const char* screen3_button1_symbolarray_0 = screen3_button1_valuearray[0]; // 1
-    strcpy (menu3.button1.actions.symbol0, screen3_button1_symbolarray_0);
-  
-  } else {
-   int screen3_button1_valuearray_0 = screen3_button1_valuearray[0]; // 1
-   menu3.button1.actions.value0 = screen3_button1_valuearray_0;
-  }
-  
-  if(screen3_button1_actionarray_1 == 4){
-   const char* screen3_button1_symbolarray_1 = screen3_button1_valuearray[1]; // 1
-    strcpy (menu3.button1.actions.symbol1, screen3_button1_symbolarray_1);
-  
-  } else {
-   int screen3_button1_valuearray_1 = screen3_button1_valuearray[1]; // 1
-   menu3.button1.actions.value1 = screen3_button1_valuearray_1;
-  }
-  
-  if(screen3_button1_actionarray_2 == 4){
-   const char* screen3_button1_symbolarray_2 = screen3_button1_valuearray[2]; // 1
-    strcpy (menu3.button1.actions.symbol2, screen3_button1_symbolarray_2);
-  
-  } else {
-   int screen3_button1_valuearray_2 = screen3_button1_valuearray[2]; // 1
-   menu3.button1.actions.value2 = screen3_button1_valuearray_2;
-  }
-  
-    menu3.button1.actions.action0 = screen3_button1_actionarray_0;  
-    menu3.button1.actions.action1 = screen3_button1_actionarray_1;
-    menu3.button1.actions.action2 = screen3_button1_actionarray_2;
-  
-  JsonArray screen3_button2_actionarray = screen3obj["button2"]["actionarray"];
-  int screen3_button2_actionarray_0 = screen3_button2_actionarray[0]; // 3
-  int screen3_button2_actionarray_1 = screen3_button2_actionarray[1]; // 0
-  int screen3_button2_actionarray_2 = screen3_button2_actionarray[2]; // 0
-  
-  JsonArray screen3_button2_valuearray = screen3obj["button2"]["valuearray"];
-  
-  if(screen3_button2_actionarray_0 == 4){
-   const char* screen3_button2_symbolarray_0 = screen3_button2_valuearray[0]; // 1
-    strcpy (menu3.button2.actions.symbol0, screen3_button2_symbolarray_0);
-  
-  } else {
-   int screen3_button2_valuearray_0 = screen3_button2_valuearray[0]; // 1
-   menu3.button2.actions.value0 = screen3_button2_valuearray_0;
-  }
-  
-  if(screen3_button2_actionarray_1 == 4){
-   const char* screen3_button2_symbolarray_1 = screen3_button2_valuearray[1]; // 1
-    strcpy (menu3.button2.actions.symbol1, screen3_button2_symbolarray_1);
-  
-  } else {
-   int screen3_button2_valuearray_1 = screen3_button2_valuearray[1]; // 1
-   menu3.button2.actions.value1 = screen3_button2_valuearray_1;
-  }
-  
-  if(screen3_button2_actionarray_2 == 4){
-   const char* screen3_button2_symbolarray_2 = screen3_button2_valuearray[2]; // 1
-    strcpy (menu3.button2.actions.symbol2, screen3_button2_symbolarray_2);
-  
-  } else {
-   int screen3_button2_valuearray_2 = screen3_button2_valuearray[2]; // 1
-   menu3.button2.actions.value2 = screen3_button2_valuearray_2;
-  }
-  
-    menu3.button2.actions.action0 = screen3_button2_actionarray_0;  
-    menu3.button2.actions.action1 = screen3_button2_actionarray_1;
-    menu3.button2.actions.action2 = screen3_button2_actionarray_2;
+      char menubuttoncolorchar[64];
+      strcpy (menubuttoncolorchar,menubuttoncolor);
+      unsigned long rgb888menubuttoncolor = convertHTMLtoRGB888(menubuttoncolorchar);
+      //Serial.println(rgb888);
+      generalconfig.menuButtonColour = convertRGB888ToRGB565(rgb888menubuttoncolor);
     
-  JsonArray screen3_button3_actionarray = screen3obj["button3"]["actionarray"];
-  int screen3_button3_actionarray_0 = screen3_button3_actionarray[0]; // 3
-  int screen3_button3_actionarray_1 = screen3_button3_actionarray[1]; // 0
-  int screen3_button3_actionarray_2 = screen3_button3_actionarray[2]; // 0
-  
-  JsonArray screen3_button3_valuearray = screen3obj["button3"]["valuearray"];
-  
-  if(screen3_button3_actionarray_0 == 4){
-   const char* screen3_button3_symbolarray_0 = screen3_button3_valuearray[0]; // 1
-    strcpy (menu3.button3.actions.symbol0, screen3_button3_symbolarray_0);
-  
-  } else {
-   int screen3_button3_valuearray_0 = screen3_button3_valuearray[0]; // 1
-   menu3.button3.actions.value0 = screen3_button3_valuearray_0;
-  }
-  
-  if(screen3_button3_actionarray_1 == 4){
-   const char* screen3_button3_symbolarray_1 = screen3_button3_valuearray[1]; // 1
-    strcpy (menu3.button3.actions.symbol1, screen3_button3_symbolarray_1);
-  
-  } else {
-   int screen3_button3_valuearray_1 = screen3_button3_valuearray[1]; // 1
-   menu3.button3.actions.value1 = screen3_button3_valuearray_1;
-  }
-  
-  if(screen3_button3_actionarray_2 == 4){
-   const char* screen3_button3_symbolarray_2 = screen3_button3_valuearray[2]; // 1
-    strcpy (menu3.button3.actions.symbol2, screen3_button3_symbolarray_2);
-  
-  } else {
-   int screen3_button3_valuearray_2 = screen3_button3_valuearray[2]; // 1
-   menu3.button3.actions.value2 = screen3_button3_valuearray_2;
-  }
-  
-    menu3.button3.actions.action0 = screen3_button3_actionarray_0;  
-    menu3.button3.actions.action1 = screen3_button3_actionarray_1;
-    menu3.button3.actions.action2 = screen3_button3_actionarray_2;
-  
-  JsonArray screen3_button4_actionarray = screen3obj["button4"]["actionarray"];
-  int screen3_button4_actionarray_0 = screen3_button4_actionarray[0]; // 3
-  int screen3_button4_actionarray_1 = screen3_button4_actionarray[1]; // 0
-  int screen3_button4_actionarray_2 = screen3_button4_actionarray[2]; // 0
-  
-  JsonArray screen3_button4_valuearray = screen3obj["button4"]["valuearray"];
-  
-  if(screen3_button4_actionarray_0 == 4){
-   const char* screen3_button4_symbolarray_0 = screen3_button4_valuearray[0]; // 1
-    strcpy (menu3.button4.actions.symbol0, screen3_button4_symbolarray_0);
-  
-  } else {
-   int screen3_button4_valuearray_0 = screen3_button4_valuearray[0]; // 1
-   menu3.button4.actions.value0 = screen3_button4_valuearray_0;
-  }
-  
-  if(screen3_button4_actionarray_1 == 4){
-   const char* screen3_button4_symbolarray_1 = screen3_button4_valuearray[1]; // 1
-    strcpy (menu3.button4.actions.symbol1, screen3_button4_symbolarray_1);
-  
-  } else {
-   int screen3_button4_valuearray_1 = screen3_button4_valuearray[1]; // 1
-   menu3.button4.actions.value1 = screen3_button4_valuearray_1;
-  }
-  
-  if(screen3_button4_actionarray_2 == 4){
-   const char* screen3_button4_symbolarray_2 = screen3_button4_valuearray[2]; // 1
-    strcpy (menu3.button4.actions.symbol2, screen3_button4_symbolarray_2);
-  
-  } else {
-   int screen3_button4_valuearray_2 = screen3_button4_valuearray[2]; // 1
-   menu3.button4.actions.value2 = screen3_button4_valuearray_2;
-  }
-    menu3.button4.actions.action0 = screen3_button4_actionarray_0;  
-    menu3.button4.actions.action1 = screen3_button4_actionarray_1;
-    menu3.button4.actions.action2 = screen3_button4_actionarray_2;
-
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo30);
-  strcpy (screen3.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo31);
-  strcpy (screen3.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo32);
-  strcpy (screen3.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo33);
-  strcpy (screen3.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo34);
-  strcpy (screen3.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-  // Get logos for screen 4 buttons
-
-  JsonObject screen4obj = doc["screen4"];
-  
-  const char* logo40 = screen4obj["logo0"];
-  const char* logo41 = screen4obj["logo1"];
-  const char* logo42 = screen4obj["logo2"];
-  const char* logo43 = screen4obj["logo3"];
-  const char* logo44 = screen4obj["logo4"];
-
-  JsonArray screen4_button0_actionarray = screen4obj["button0"]["actionarray"];
-  
-  int screen4_button0_actionarray_0 = screen4_button0_actionarray[0]; // 3
-  int screen4_button0_actionarray_1 = screen4_button0_actionarray[1]; // 0
-  int screen4_button0_actionarray_2 = screen4_button0_actionarray[2]; // 0
-  
-  JsonArray screen4_button0_valuearray = screen4obj["button0"]["valuearray"];
-  
-  if(screen4_button0_actionarray_0 == 4){
-   const char* screen4_button0_symbolarray_0 = screen4_button0_valuearray[0]; // 1
-    strcpy (menu4.button0.actions.symbol0, screen4_button0_symbolarray_0);
-  
-  } else {
-   int screen4_button0_valuearray_0 = screen4_button0_valuearray[0]; // 1
-   menu4.button0.actions.value0 = screen4_button0_valuearray_0;
-  }
+      char functionbuttoncolorchar[64];
+      strcpy (functionbuttoncolorchar,functionbuttoncolor);
+      unsigned long rgb888functionbuttoncolor = convertHTMLtoRGB888(functionbuttoncolorchar);
+      //Serial.println(rgb888);
+      generalconfig.functionButtonColour = convertRGB888ToRGB565(rgb888functionbuttoncolor);
     
-  if(screen4_button0_actionarray_1 == 4){
-   const char* screen4_button0_symbolarray_1 = screen4_button0_valuearray[1]; // 1
-    strcpy (menu4.button0.actions.symbol1, screen4_button0_symbolarray_1);
-  
-  } else {
-   int screen4_button0_valuearray_1 = screen4_button0_valuearray[1]; // 1
-   menu4.button0.actions.value1 = screen4_button0_valuearray_1;
-  }
-  
-  if(screen4_button0_actionarray_2 == 4){
-   const char* screen4_button0_symbolarray_2 = screen4_button0_valuearray[2]; // 1
-    strcpy (menu4.button0.actions.symbol2, screen4_button0_symbolarray_2);
-  
-  } else {
-   int screen4_button0_valuearray_2 = screen4_button0_valuearray[2]; // 1
-   menu4.button0.actions.value2 = screen4_button0_valuearray_2;
-  }
-  
-    menu4.button0.actions.action0 = screen4_button0_actionarray_0;
-    menu4.button0.actions.action1 = screen4_button0_actionarray_1;
-    menu4.button0.actions.action2 = screen4_button0_actionarray_2;
-  
-  JsonArray screen4_button1_actionarray = screen4obj["button1"]["actionarray"];
-  int screen4_button1_actionarray_0 = screen4_button1_actionarray[0]; // 3
-  int screen4_button1_actionarray_1 = screen4_button1_actionarray[1]; // 0
-  int screen4_button1_actionarray_2 = screen4_button1_actionarray[2]; // 0
-  
-  JsonArray screen4_button1_valuearray = screen4obj["button1"]["valuearray"];
-  
-  if(screen4_button1_actionarray_0 == 4){
-   const char* screen4_button1_symbolarray_0 = screen4_button1_valuearray[0]; // 1
-    strcpy (menu4.button1.actions.symbol0, screen4_button1_symbolarray_0);
-  
-  } else {
-   int screen4_button1_valuearray_0 = screen4_button1_valuearray[0]; // 1
-   menu4.button1.actions.value0 = screen4_button1_valuearray_0;
-  }
-  
-  if(screen4_button1_actionarray_1 == 4){
-   const char* screen4_button1_symbolarray_1 = screen4_button1_valuearray[1]; // 1
-    strcpy (menu4.button1.actions.symbol1, screen4_button1_symbolarray_1);
-  
-  } else {
-   int screen4_button1_valuearray_1 = screen4_button1_valuearray[1]; // 1
-   menu4.button1.actions.value1 = screen4_button1_valuearray_1;
-  }
-  
-  if(screen4_button1_actionarray_2 == 4){
-   const char* screen4_button1_symbolarray_2 = screen4_button1_valuearray[2]; // 1
-    strcpy (menu4.button1.actions.symbol2, screen4_button1_symbolarray_2);
-  
-  } else {
-   int screen4_button1_valuearray_2 = screen4_button1_valuearray[2]; // 1
-   menu4.button1.actions.value2 = screen4_button1_valuearray_2;
-  }
-  
-    menu4.button1.actions.action0 = screen4_button1_actionarray_0;  
-    menu4.button1.actions.action1 = screen4_button1_actionarray_1;
-    menu4.button1.actions.action2 = screen4_button1_actionarray_2;
-  
-  JsonArray screen4_button2_actionarray = screen4obj["button2"]["actionarray"];
-  int screen4_button2_actionarray_0 = screen4_button2_actionarray[0]; // 3
-  int screen4_button2_actionarray_1 = screen4_button2_actionarray[1]; // 0
-  int screen4_button2_actionarray_2 = screen4_button2_actionarray[2]; // 0
-  
-  JsonArray screen4_button2_valuearray = screen4obj["button2"]["valuearray"];
-  
-  if(screen4_button2_actionarray_0 == 4){
-   const char* screen4_button2_symbolarray_0 = screen4_button2_valuearray[0]; // 1
-    strcpy (menu4.button2.actions.symbol0, screen4_button2_symbolarray_0);
-  
-  } else {
-   int screen4_button2_valuearray_0 = screen4_button2_valuearray[0]; // 1
-   menu4.button2.actions.value0 = screen4_button2_valuearray_0;
-  }
-  
-  if(screen4_button2_actionarray_1 == 4){
-   const char* screen4_button2_symbolarray_1 = screen4_button2_valuearray[1]; // 1
-    strcpy (menu4.button2.actions.symbol1, screen4_button2_symbolarray_1);
-  
-  } else {
-   int screen4_button2_valuearray_1 = screen4_button2_valuearray[1]; // 1
-   menu4.button2.actions.value1 = screen4_button2_valuearray_1;
-  }
-  
-  if(screen4_button2_actionarray_2 == 4){
-   const char* screen4_button2_symbolarray_2 = screen4_button2_valuearray[2]; // 1
-    strcpy (menu4.button2.actions.symbol2, screen4_button2_symbolarray_2);
-  
-  } else {
-   int screen4_button2_valuearray_2 = screen4_button2_valuearray[2]; // 1
-   menu4.button2.actions.value2 = screen4_button2_valuearray_2;
-  }
-  
-    menu4.button2.actions.action0 = screen4_button2_actionarray_0;  
-    menu4.button2.actions.action1 = screen4_button2_actionarray_1;
-    menu4.button2.actions.action2 = screen4_button2_actionarray_2;
+      char logocolorchar[64];
+      strcpy (menubuttoncolorchar,logocolor);
+      unsigned long rgb888logocolor = convertHTMLtoRGB888(logocolorchar);
+      //Serial.println(rgb888);
+      generalconfig.logoColour = convertRGB888ToRGB565(rgb888logocolor);
     
-  JsonArray screen4_button3_actionarray = screen4obj["button3"]["actionarray"];
-  int screen4_button3_actionarray_0 = screen4_button3_actionarray[0]; // 3
-  int screen4_button3_actionarray_1 = screen4_button3_actionarray[1]; // 0
-  int screen4_button3_actionarray_2 = screen4_button3_actionarray[2]; // 0
-  
-  JsonArray screen4_button3_valuearray = screen4obj["button3"]["valuearray"];
-  
-  if(screen4_button3_actionarray_0 == 4){
-   const char* screen4_button3_symbolarray_0 = screen4_button3_valuearray[0]; // 1
-    strcpy (menu4.button3.actions.symbol0, screen4_button3_symbolarray_0);
-  
-  } else {
-   int screen4_button3_valuearray_0 = screen4_button3_valuearray[0]; // 1
-   menu4.button3.actions.value0 = screen4_button3_valuearray_0;
-  }
-  
-  if(screen4_button3_actionarray_1 == 4){
-   const char* screen4_button3_symbolarray_1 = screen4_button3_valuearray[1]; // 1
-    strcpy (menu4.button3.actions.symbol1, screen4_button3_symbolarray_1);
-  
-  } else {
-   int screen4_button3_valuearray_1 = screen4_button3_valuearray[1]; // 1
-   menu4.button3.actions.value1 = screen4_button3_valuearray_1;
-  }
-  
-  if(screen4_button3_actionarray_2 == 4){
-   const char* screen4_button3_symbolarray_2 = screen4_button3_valuearray[2]; // 1
-    strcpy (menu4.button3.actions.symbol2, screen4_button3_symbolarray_2);
-  
-  } else {
-   int screen4_button3_valuearray_2 = screen4_button3_valuearray[2]; // 1
-   menu4.button3.actions.value2 = screen4_button3_valuearray_2;
-  }
-  
-    menu4.button3.actions.action0 = screen4_button3_actionarray_0;  
-    menu4.button3.actions.action1 = screen4_button3_actionarray_1;
-    menu4.button3.actions.action2 = screen4_button3_actionarray_2;
-  
-  JsonArray screen4_button4_actionarray = screen4obj["button4"]["actionarray"];
-  int screen4_button4_actionarray_0 = screen4_button4_actionarray[0]; // 3
-  int screen4_button4_actionarray_1 = screen4_button4_actionarray[1]; // 0
-  int screen4_button4_actionarray_2 = screen4_button4_actionarray[2]; // 0
-  
-  JsonArray screen4_button4_valuearray = screen4obj["button4"]["valuearray"];
-  
-  if(screen4_button4_actionarray_0 == 4){
-   const char* screen4_button4_symbolarray_0 = screen4_button4_valuearray[0]; // 1
-    strcpy (menu4.button4.actions.symbol0, screen4_button4_symbolarray_0);
-  
-  } else {
-   int screen4_button4_valuearray_0 = screen4_button4_valuearray[0]; // 1
-   menu4.button4.actions.value0 = screen4_button4_valuearray_0;
-  }
-  
-  if(screen4_button4_actionarray_1 == 4){
-   const char* screen4_button4_symbolarray_1 = screen4_button4_valuearray[1]; // 1
-    strcpy (menu4.button4.actions.symbol1, screen4_button4_symbolarray_1);
-  
-  } else {
-   int screen4_button4_valuearray_1 = screen4_button4_valuearray[1]; // 1
-   menu4.button4.actions.value1 = screen4_button4_valuearray_1;
-  }
-  
-  if(screen4_button4_actionarray_2 == 4){
-   const char* screen4_button4_symbolarray_2 = screen4_button4_valuearray[2]; // 1
-    strcpy (menu4.button4.actions.symbol2, screen4_button4_symbolarray_2);
-  
-  } else {
-   int screen4_button4_valuearray_2 = screen4_button4_valuearray[2]; // 1
-   menu4.button4.actions.value2 = screen4_button4_valuearray_2;
-  }
-    menu4.button4.actions.action0 = screen4_button4_actionarray_0;  
-    menu4.button4.actions.action1 = screen4_button4_actionarray_1;
-    menu4.button4.actions.action2 = screen4_button4_actionarray_2;
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo40);
-  strcpy (screen4.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo41);
-  strcpy (screen4.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo42);
-  strcpy (screen4.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo43);
-  strcpy (screen4.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo44);
-  strcpy (screen4.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-// Get logos for screen 5 buttons
-
-  JsonObject screen5obj = doc["screen5"];
-
-  const char* logo50 = screen5obj ["logo0"];
-  const char* logo51 = screen5obj ["logo1"];
-  const char* logo52 = screen5obj ["logo2"];
-  const char* logo53 = screen5obj ["logo3"];
-  const char* logo54 = screen5obj ["logo4"];
-
-  JsonArray screen5_button0_actionarray = screen5obj["button0"]["actionarray"];
-  
-  int screen5_button0_actionarray_0 = screen5_button0_actionarray[0]; // 3
-  int screen5_button0_actionarray_1 = screen5_button0_actionarray[1]; // 0
-  int screen5_button0_actionarray_2 = screen5_button0_actionarray[2]; // 0
-  
-  JsonArray screen5_button0_valuearray = screen5obj["button0"]["valuearray"];
-  
-  if(screen5_button0_actionarray_0 == 4){
-   const char* screen5_button0_symbolarray_0 = screen5_button0_valuearray[0]; // 1
-    strcpy (menu5.button0.actions.symbol0, screen5_button0_symbolarray_0);
-  
-  } else {
-   int screen5_button0_valuearray_0 = screen5_button0_valuearray[0]; // 1
-   menu5.button0.actions.value0 = screen5_button0_valuearray_0;
-  }
+      char backgroundcolorchar[64];
+      strcpy (backgroundcolorchar,bgcolor);
+      unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
+      //Serial.println(rgb888);
+      generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
     
-  if(screen5_button0_actionarray_1 == 4){
-   const char* screen5_button0_symbolarray_1 = screen5_button0_valuearray[1]; // 1
-    strcpy (menu5.button0.actions.symbol1, screen5_button0_symbolarray_1);
-  
-  } else {
-   int screen5_button0_valuearray_1 = screen5_button0_valuearray[1]; // 1
-   menu5.button0.actions.value1 = screen5_button0_valuearray_1;
-  }
-  
-  if(screen5_button0_actionarray_2 == 4){
-   const char* screen5_button0_symbolarray_2 = screen5_button0_valuearray[2]; // 1
-    strcpy (menu5.button0.actions.symbol2, screen5_button0_symbolarray_2);
-  
-  } else {
-   int screen5_button0_valuearray_2 = screen5_button0_valuearray[2]; // 1
-   menu5.button0.actions.value2 = screen5_button0_valuearray_2;
-  }
-  
-    menu5.button0.actions.action0 = screen5_button0_actionarray_0;
-    menu5.button0.actions.action1 = screen5_button0_actionarray_1;
-    menu5.button0.actions.action2 = screen5_button0_actionarray_2;
-  
-  JsonArray screen5_button1_actionarray = screen5obj["button1"]["actionarray"];
-  int screen5_button1_actionarray_0 = screen5_button1_actionarray[0]; // 3
-  int screen5_button1_actionarray_1 = screen5_button1_actionarray[1]; // 0
-  int screen5_button1_actionarray_2 = screen5_button1_actionarray[2]; // 0
-  
-  JsonArray screen5_button1_valuearray = screen5obj["button1"]["valuearray"];
-  
-  if(screen5_button1_actionarray_0 == 4){
-   const char* screen5_button1_symbolarray_0 = screen5_button1_valuearray[0]; // 1
-    strcpy (menu5.button1.actions.symbol0, screen5_button1_symbolarray_0);
-  
-  } else {
-   int screen5_button1_valuearray_0 = screen5_button1_valuearray[0]; // 1
-   menu5.button1.actions.value0 = screen5_button1_valuearray_0;
-  }
-  
-  if(screen5_button1_actionarray_1 == 4){
-   const char* screen5_button1_symbolarray_1 = screen5_button1_valuearray[1]; // 1
-    strcpy (menu5.button1.actions.symbol1, screen5_button1_symbolarray_1);
-  
-  } else {
-   int screen5_button1_valuearray_1 = screen5_button1_valuearray[1]; // 1
-   menu5.button1.actions.value1 = screen5_button1_valuearray_1;
-  }
-  
-  if(screen5_button1_actionarray_2 == 4){
-   const char* screen5_button1_symbolarray_2 = screen5_button1_valuearray[2]; // 1
-    strcpy (menu5.button1.actions.symbol2, screen5_button1_symbolarray_2);
-  
-  } else {
-   int screen5_button1_valuearray_2 = screen5_button1_valuearray[2]; // 1
-   menu5.button1.actions.value2 = screen5_button1_valuearray_2;
-  }
-  
-    menu5.button1.actions.action0 = screen5_button1_actionarray_0;  
-    menu5.button1.actions.action1 = screen5_button1_actionarray_1;
-    menu5.button1.actions.action2 = screen5_button1_actionarray_2;
-  
-  JsonArray screen5_button2_actionarray = screen5obj["button2"]["actionarray"];
-  int screen5_button2_actionarray_0 = screen5_button2_actionarray[0]; // 3
-  int screen5_button2_actionarray_1 = screen5_button2_actionarray[1]; // 0
-  int screen5_button2_actionarray_2 = screen5_button2_actionarray[2]; // 0
-  
-  JsonArray screen5_button2_valuearray = screen5obj["button2"]["valuearray"];
-  
-  if(screen5_button2_actionarray_0 == 4){
-   const char* screen5_button2_symbolarray_0 = screen5_button2_valuearray[0]; // 1
-    strcpy (menu5.button2.actions.symbol0, screen5_button2_symbolarray_0);
-  
-  } else {
-   int screen5_button2_valuearray_0 = screen5_button2_valuearray[0]; // 1
-   menu5.button2.actions.value0 = screen5_button2_valuearray_0;
-  }
-  
-  if(screen5_button2_actionarray_1 == 4){
-   const char* screen5_button2_symbolarray_1 = screen5_button2_valuearray[1]; // 1
-    strcpy (menu5.button2.actions.symbol1, screen5_button2_symbolarray_1);
-  
-  } else {
-   int screen5_button2_valuearray_1 = screen5_button2_valuearray[1]; // 1
-   menu5.button2.actions.value1 = screen5_button2_valuearray_1;
-  }
-  
-  if(screen5_button2_actionarray_2 == 4){
-   const char* screen5_button2_symbolarray_2 = screen5_button2_valuearray[2]; // 1
-    strcpy (menu5.button2.actions.symbol2, screen5_button2_symbolarray_2);
-  
-  } else {
-   int screen5_button2_valuearray_2 = screen5_button2_valuearray[2]; // 1
-   menu5.button2.actions.value2 = screen5_button2_valuearray_2;
-  }
-  
-    menu5.button2.actions.action0 = screen5_button2_actionarray_0;  
-    menu5.button2.actions.action1 = screen5_button2_actionarray_1;
-    menu5.button2.actions.action2 = screen5_button2_actionarray_2;
+      configfile.close();
+  }else if(value == "homescreen"){
+      File configfile = SPIFFS.open("/config/homescreen.json", "r");
     
-  JsonArray screen5_button3_actionarray = screen5obj["button3"]["actionarray"];
-  int screen5_button3_actionarray_0 = screen5_button3_actionarray[0]; // 3
-  int screen5_button3_actionarray_1 = screen5_button3_actionarray[1]; // 0
-  int screen5_button3_actionarray_2 = screen5_button3_actionarray[2]; // 0
-  
-  JsonArray screen5_button3_valuearray = screen5obj["button3"]["valuearray"];
-  
-  if(screen5_button3_actionarray_0 == 4){
-   const char* screen5_button3_symbolarray_0 = screen5_button3_valuearray[0]; // 1
-    strcpy (menu5.button3.actions.symbol0, screen5_button3_symbolarray_0);
-  
-  } else {
-   int screen5_button3_valuearray_0 = screen5_button3_valuearray[0]; // 1
-   menu5.button3.actions.value0 = screen5_button3_valuearray_0;
-  }
-  
-  if(screen5_button3_actionarray_1 == 4){
-   const char* screen5_button3_symbolarray_1 = screen5_button3_valuearray[1]; // 1
-    strcpy (menu5.button3.actions.symbol1, screen5_button3_symbolarray_1);
-  
-  } else {
-   int screen5_button3_valuearray_1 = screen5_button3_valuearray[1]; // 1
-   menu5.button3.actions.value1 = screen5_button3_valuearray_1;
-  }
-  
-  if(screen5_button3_actionarray_2 == 4){
-   const char* screen5_button3_symbolarray_2 = screen5_button3_valuearray[2]; // 1
-    strcpy (menu5.button3.actions.symbol2, screen5_button3_symbolarray_2);
-  
-  } else {
-   int screen5_button3_valuearray_2 = screen5_button3_valuearray[2]; // 1
-   menu5.button3.actions.value2 = screen5_button3_valuearray_2;
-  }
-  
-    menu5.button3.actions.action0 = screen5_button3_actionarray_0;  
-    menu5.button3.actions.action1 = screen5_button3_actionarray_1;
-    menu5.button3.actions.action2 = screen5_button3_actionarray_2;
-  
-  JsonArray screen5_button4_actionarray = screen5obj["button4"]["actionarray"];
-  int screen5_button4_actionarray_0 = screen5_button4_actionarray[0]; // 3
-  int screen5_button4_actionarray_1 = screen5_button4_actionarray[1]; // 0
-  int screen5_button4_actionarray_2 = screen5_button4_actionarray[2]; // 0
-  
-  JsonArray screen5_button4_valuearray = screen5obj["button4"]["valuearray"];
-  
-  if(screen5_button4_actionarray_0 == 4){
-   const char* screen5_button4_symbolarray_0 = screen5_button4_valuearray[0]; // 1
-    strcpy (menu5.button4.actions.symbol0, screen5_button4_symbolarray_0);
-  
-  } else {
-   int screen5_button4_valuearray_0 = screen5_button4_valuearray[0]; // 1
-   menu5.button4.actions.value0 = screen5_button4_valuearray_0;
-  }
-  
-  if(screen5_button4_actionarray_1 == 4){
-   const char* screen5_button4_symbolarray_1 = screen5_button4_valuearray[1]; // 1
-    strcpy (menu5.button4.actions.symbol1, screen5_button4_symbolarray_1);
-  
-  } else {
-   int screen5_button4_valuearray_1 = screen5_button4_valuearray[1]; // 1
-   menu5.button4.actions.value1 = screen5_button4_valuearray_1;
-  }
-  
-  if(screen5_button4_actionarray_2 == 4){
-   const char* screen5_button4_symbolarray_2 = screen5_button4_valuearray[2]; // 1
-    strcpy (menu5.button4.actions.symbol2, screen5_button4_symbolarray_2);
-  
-  } else {
-   int screen5_button4_valuearray_2 = screen5_button4_valuearray[2]; // 1
-   menu5.button4.actions.value2 = screen5_button4_valuearray_2;
-  }
-    menu5.button4.actions.action0 = screen5_button4_actionarray_0;  
-    menu5.button4.actions.action1 = screen5_button4_actionarray_1;
-    menu5.button4.actions.action2 = screen5_button4_actionarray_2;
-
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo50);
-  strcpy (screen5.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo51);
-  strcpy (screen5.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo52);
-  strcpy (screen5.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo53);
-  strcpy (screen5.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo54);
-  strcpy (screen5.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-// Get logos for screen 6 buttons
-
-  JsonObject screen6obj = doc["screen6"];
-  
-  const char* logo60 = screen6obj["logo0"];
-  const char* logo61 = screen6obj["logo1"];
-  const char* logo62 = screen6obj["logo2"];
-  const char* logo63 = screen6obj["logo3"];
-  const char* logo64 = screen6obj["logo4"];
-
-  JsonArray screen6_button0_actionarray = screen6obj["button0"]["actionarray"];
-  
-  int screen6_button0_actionarray_0 = screen6_button0_actionarray[0]; // 3
-  int screen6_button0_actionarray_1 = screen6_button0_actionarray[1]; // 0
-  int screen6_button0_actionarray_2 = screen6_button0_actionarray[2]; // 0
-  
-  JsonArray screen6_button0_valuearray = screen6obj["button0"]["valuearray"];
-  
-  if(screen6_button0_actionarray_0 == 4){
-   const char* screen6_button0_symbolarray_0 = screen6_button0_valuearray[0]; // 1
-    strcpy (menu6.button0.actions.symbol0, screen6_button0_symbolarray_0);
-  
-  } else {
-   int screen6_button0_valuearray_0 = screen6_button0_valuearray[0]; // 1
-   menu6.button0.actions.value0 = screen6_button0_valuearray_0;
-  }
+      DynamicJsonDocument doc(256);
     
-  if(screen6_button0_actionarray_1 == 4){
-   const char* screen6_button0_symbolarray_1 = screen6_button0_valuearray[1]; // 1
-    strcpy (menu6.button0.actions.symbol1, screen6_button0_symbolarray_1);
-  
-  } else {
-   int screen6_button0_valuearray_1 = screen6_button0_valuearray[1]; // 1
-   menu6.button0.actions.value1 = screen6_button0_valuearray_1;
-  }
-  
-  if(screen6_button0_actionarray_2 == 4){
-   const char* screen6_button0_symbolarray_2 = screen6_button0_valuearray[2]; // 1
-    strcpy (menu6.button0.actions.symbol2, screen6_button0_symbolarray_2);
-  
-  } else {
-   int screen6_button0_valuearray_2 = screen6_button0_valuearray[2]; // 1
-   menu6.button0.actions.value2 = screen6_button0_valuearray_2;
-  }
-  
-    menu6.button0.actions.action0 = screen6_button0_actionarray_0;
-    menu6.button0.actions.action1 = screen6_button0_actionarray_1;
-    menu6.button0.actions.action2 = screen6_button0_actionarray_2;
-  
-  JsonArray screen6_button1_actionarray = screen6obj["button1"]["actionarray"];
-  int screen6_button1_actionarray_0 = screen6_button1_actionarray[0]; // 3
-  int screen6_button1_actionarray_1 = screen6_button1_actionarray[1]; // 0
-  int screen6_button1_actionarray_2 = screen6_button1_actionarray[2]; // 0
-  
-  JsonArray screen6_button1_valuearray = screen6obj["button1"]["valuearray"];
-  
-  if(screen6_button1_actionarray_0 == 4){
-   const char* screen6_button1_symbolarray_0 = screen6_button1_valuearray[0]; // 1
-    strcpy (menu6.button1.actions.symbol0, screen6_button1_symbolarray_0);
-  
-  } else {
-   int screen6_button1_valuearray_0 = screen6_button1_valuearray[0]; // 1
-   menu6.button1.actions.value0 = screen6_button1_valuearray_0;
-  }
-  
-  if(screen6_button1_actionarray_1 == 4){
-   const char* screen6_button1_symbolarray_1 = screen6_button1_valuearray[1]; // 1
-    strcpy (menu6.button1.actions.symbol1, screen6_button1_symbolarray_1);
-  
-  } else {
-   int screen6_button1_valuearray_1 = screen6_button1_valuearray[1]; // 1
-   menu6.button1.actions.value1 = screen6_button1_valuearray_1;
-  }
-  
-  if(screen6_button1_actionarray_2 == 4){
-   const char* screen6_button1_symbolarray_2 = screen6_button1_valuearray[2]; // 1
-    strcpy (menu6.button1.actions.symbol2, screen6_button1_symbolarray_2);
-  
-  } else {
-   int screen6_button1_valuearray_2 = screen6_button1_valuearray[2]; // 1
-   menu6.button1.actions.value2 = screen6_button1_valuearray_2;
-  }
-  
-    menu6.button1.actions.action0 = screen6_button1_actionarray_0;  
-    menu6.button1.actions.action1 = screen6_button1_actionarray_1;
-    menu6.button1.actions.action2 = screen6_button1_actionarray_2;
-  
-  JsonArray screen6_button2_actionarray = screen6obj["button2"]["actionarray"];
-  int screen6_button2_actionarray_0 = screen6_button2_actionarray[0]; // 3
-  int screen6_button2_actionarray_1 = screen6_button2_actionarray[1]; // 0
-  int screen6_button2_actionarray_2 = screen6_button2_actionarray[2]; // 0
-  
-  JsonArray screen6_button2_valuearray = screen6obj["button2"]["valuearray"];
-  
-  if(screen6_button2_actionarray_0 == 4){
-   const char* screen6_button2_symbolarray_0 = screen6_button2_valuearray[0]; // 1
-    strcpy (menu6.button2.actions.symbol0, screen6_button2_symbolarray_0);
-  
-  } else {
-   int screen6_button2_valuearray_0 = screen6_button2_valuearray[0]; // 1
-   menu6.button2.actions.value0 = screen6_button2_valuearray_0;
-  }
-  
-  if(screen6_button2_actionarray_1 == 4){
-   const char* screen6_button2_symbolarray_1 = screen6_button2_valuearray[1]; // 1
-    strcpy (menu6.button2.actions.symbol1, screen6_button2_symbolarray_1);
-  
-  } else {
-   int screen6_button2_valuearray_1 = screen6_button2_valuearray[1]; // 1
-   menu6.button2.actions.value1 = screen6_button2_valuearray_1;
-  }
-  
-  if(screen6_button2_actionarray_2 == 4){
-   const char* screen6_button2_symbolarray_2 = screen6_button2_valuearray[2]; // 1
-    strcpy (menu6.button2.actions.symbol2, screen6_button2_symbolarray_2);
-  
-  } else {
-   int screen6_button2_valuearray_2 = screen6_button2_valuearray[2]; // 1
-   menu6.button2.actions.value2 = screen6_button2_valuearray_2;
-  }
-  
-    menu6.button2.actions.action0 = screen6_button2_actionarray_0;  
-    menu6.button2.actions.action1 = screen6_button2_actionarray_1;
-    menu6.button2.actions.action2 = screen6_button2_actionarray_2;
-    
-  JsonArray screen6_button3_actionarray = screen6obj["button3"]["actionarray"];
-  int screen6_button3_actionarray_0 = screen6_button3_actionarray[0]; // 3
-  int screen6_button3_actionarray_1 = screen6_button3_actionarray[1]; // 0
-  int screen6_button3_actionarray_2 = screen6_button3_actionarray[2]; // 0
-  
-  JsonArray screen6_button3_valuearray = screen6obj["button3"]["valuearray"];
-  
-  if(screen6_button3_actionarray_0 == 4){
-   const char* screen6_button3_symbolarray_0 = screen6_button3_valuearray[0]; // 1
-    strcpy (menu6.button3.actions.symbol0, screen6_button3_symbolarray_0);
-  
-  } else {
-   int screen6_button3_valuearray_0 = screen6_button3_valuearray[0]; // 1
-   menu6.button3.actions.value0 = screen6_button3_valuearray_0;
-  }
-  
-  if(screen6_button3_actionarray_1 == 4){
-   const char* screen6_button3_symbolarray_1 = screen6_button3_valuearray[1]; // 1
-    strcpy (menu6.button3.actions.symbol1, screen6_button3_symbolarray_1);
-  
-  } else {
-   int screen6_button3_valuearray_1 = screen6_button3_valuearray[1]; // 1
-   menu6.button3.actions.value1 = screen6_button3_valuearray_1;
-  }
-  
-  if(screen6_button3_actionarray_2 == 4){
-   const char* screen6_button3_symbolarray_2 = screen6_button3_valuearray[2]; // 1
-    strcpy (menu6.button3.actions.symbol2, screen6_button3_symbolarray_2);
-  
-  } else {
-   int screen6_button3_valuearray_2 = screen6_button3_valuearray[2]; // 1
-   menu6.button3.actions.value2 = screen6_button3_valuearray_2;
-  }
-  
-    menu6.button3.actions.action0 = screen6_button3_actionarray_0;  
-    menu6.button3.actions.action1 = screen6_button3_actionarray_1;
-    menu6.button3.actions.action2 = screen6_button3_actionarray_2;
-  
-  JsonArray screen6_button4_actionarray = screen6obj["button4"]["actionarray"];
-  int screen6_button4_actionarray_0 = screen6_button4_actionarray[0]; // 3
-  int screen6_button4_actionarray_1 = screen6_button4_actionarray[1]; // 0
-  int screen6_button4_actionarray_2 = screen6_button4_actionarray[2]; // 0
-  
-  JsonArray screen6_button4_valuearray = screen6obj["button4"]["valuearray"];
-  
-  if(screen6_button4_actionarray_0 == 4){
-   const char* screen6_button4_symbolarray_0 = screen6_button4_valuearray[0]; // 1
-    strcpy (menu6.button4.actions.symbol0, screen6_button4_symbolarray_0);
-  
-  } else {
-   int screen6_button4_valuearray_0 = screen6_button4_valuearray[0]; // 1
-   menu6.button4.actions.value0 = screen6_button4_valuearray_0;
-  }
-  
-  if(screen6_button4_actionarray_1 == 4){
-   const char* screen6_button4_symbolarray_1 = screen6_button4_valuearray[1]; // 1
-    strcpy (menu6.button4.actions.symbol1, screen6_button4_symbolarray_1);
-  
-  } else {
-   int screen6_button4_valuearray_1 = screen6_button4_valuearray[1]; // 1
-   menu6.button4.actions.value1 = screen6_button4_valuearray_1;
-  }
-  
-  if(screen6_button4_actionarray_2 == 4){
-   const char* screen6_button4_symbolarray_2 = screen6_button4_valuearray[2]; // 1
-    strcpy (menu6.button4.actions.symbol2, screen6_button4_symbolarray_2);
-  
-  } else {
-   int screen6_button4_valuearray_2 = screen6_button4_valuearray[2]; // 1
-   menu6.button4.actions.value2 = screen6_button4_valuearray_2;
-  }
-    menu6.button4.actions.action0 = screen6_button4_actionarray_0;  
-    menu6.button4.actions.action1 = screen6_button4_actionarray_1;
-    menu6.button4.actions.action2 = screen6_button4_actionarray_2;
-
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo60);
-  strcpy (screen6.logo0,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo61);
-  strcpy (screen6.logo1,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo62);
-  strcpy (screen6.logo2,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo63);
-  strcpy (screen6.logo3,templogopath);
-  strcpy (templogopath,logopath);
-
-  strcpy (templogopath,logopath);
-  strcat(templogopath,logo64);
-  strcpy (screen6.logo4,templogopath);
-  strcpy (templogopath,logopath);
-
-  generalconfigfile.close();
-
-  }else{
+      DeserializationError error = deserializeJson(doc, configfile);
       
-    Serial.println("Confing file not found! Using default colours.");
-    drawErrorMessage("Confing file not found! Using default colours...");
-    delay(5000);
-    tft.fillScreen(TFT_BLACK);
-    generalconfig.menuButtonColour = 0xF81F; // Use default colour if failed to parse json
-    generalconfig.functionButtonColour = 0x0000; // Use default colour if failed to parse json
-    generalconfig.logoColour = 0xFFFF; // Use default colour if failed to parse json
-    generalconfig.backgroundColour = 0x7BEF; // Use default colour if failed to parse json
-    return;
+      const char* logo00 = doc["logo0"];
+      const char* logo01 = doc["logo1"];
+      const char* logo02 = doc["logo2"];
+      const char* logo03 = doc["logo3"];
+      const char* logo04 = doc["logo4"];
+      const char* logo05 = doc["logo5"]; // Only screen 0 has 6 buttons
     
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo00);
+      strcpy (screen0.logo0,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo01);
+      strcpy (screen0.logo1,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo02);
+      strcpy (screen0.logo2,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo03);
+      strcpy (screen0.logo3,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo04);
+      strcpy (screen0.logo4,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo05);
+      strcpy (screen0.logo5,templogopath);
+      strcpy (templogopath,logopath);
+
+      configfile.close();
+
+  }else if(value == "menu1"){
+      File configfile = SPIFFS.open("/config/menu1.json", "r");
+    
+      DynamicJsonDocument doc(1200);
+    
+      DeserializationError error = deserializeJson(doc, configfile);
+      
+      const char* logo10 = doc["logo0"];
+      const char* logo11 = doc["logo1"];
+      const char* logo12 = doc["logo2"];
+      const char* logo13 = doc["logo3"];
+      const char* logo14 = doc["logo4"];
+    
+      JsonArray button0_actionarray = doc["button0"]["actionarray"];
+      
+      int button0_actionarray_0 = button0_actionarray[0];
+      int button0_actionarray_1 = button0_actionarray[1];
+      int button0_actionarray_2 = button0_actionarray[2];
+      
+      JsonArray button0_valuearray = doc["button0"]["valuearray"];
+      
+      if(button0_actionarray_0 == 4){
+       const char* button0_symbolarray_0 = button0_valuearray[0];
+        strcpy (menu1.button0.actions.symbol0, button0_symbolarray_0);
+      
+      } else {
+       int button0_valuearray_0 = button0_valuearray[0];
+       menu1.button0.actions.value0 = button0_valuearray_0;
+      }
+      
+      if(button0_actionarray_1 == 4){
+       const char* button0_symbolarray_1 = button0_valuearray[1];
+        strcpy (menu1.button0.actions.symbol1, button0_symbolarray_1);
+      
+      } else {
+       int button0_valuearray_1 = button0_valuearray[1];
+       menu1.button0.actions.value1 = button0_valuearray_1;
+      }
+      
+      if(button0_actionarray_2 == 4){
+       const char* button0_symbolarray_2 = button0_valuearray[2];
+        strcpy (menu1.button0.actions.symbol2, button0_symbolarray_2);
+      
+      } else {
+       int button0_valuearray_2 = button0_valuearray[2];
+       menu1.button0.actions.value2 = button0_valuearray_2;
+      }
+      
+        menu1.button0.actions.action0 = button0_actionarray_0;  
+        menu1.button0.actions.action1 = button0_actionarray_1;
+        menu1.button0.actions.action2 = button0_actionarray_2;
+      
+      JsonArray button1_actionarray = doc["button1"]["actionarray"];
+      int button1_actionarray_0 = button1_actionarray[0];
+      int button1_actionarray_1 = button1_actionarray[1];
+      int button1_actionarray_2 = button1_actionarray[2];
+      
+      JsonArray button1_valuearray = doc["button1"]["valuearray"];
+      
+      if(button1_actionarray_0 == 4){
+       const char* button1_symbolarray_0 = button1_valuearray[0];
+        strcpy (menu1.button1.actions.symbol0, button1_symbolarray_0);
+      
+      } else {
+       int button1_valuearray_0 = button1_valuearray[0];
+       menu1.button1.actions.value0 = button1_valuearray_0;
+      }
+      
+      if(button1_actionarray_1 == 4){
+       const char* button1_symbolarray_1 = button1_valuearray[1];
+        strcpy (menu1.button1.actions.symbol1, button1_symbolarray_1);
+      
+      } else {
+       int button1_valuearray_1 = button1_valuearray[1];
+       menu1.button1.actions.value1 = button1_valuearray_1;
+      }
+      
+      if(button1_actionarray_2 == 4){
+       const char* button1_symbolarray_2 = button1_valuearray[2];
+        strcpy (menu1.button1.actions.symbol2, button1_symbolarray_2);
+      
+      } else {
+       int button1_valuearray_2 = button1_valuearray[2];
+       menu1.button1.actions.value2 = button1_valuearray_2;
+      }
+      
+        menu1.button1.actions.action0 = button1_actionarray_0;  
+        menu1.button1.actions.action1 = button1_actionarray_1;
+        menu1.button1.actions.action2 = button1_actionarray_2;
+      
+      JsonArray button2_actionarray = doc["button2"]["actionarray"];
+      int button2_actionarray_0 = button2_actionarray[0];
+      int button2_actionarray_1 = button2_actionarray[1];
+      int button2_actionarray_2 = button2_actionarray[2];
+      
+      JsonArray button2_valuearray = doc["button2"]["valuearray"];
+      
+      if(button2_actionarray_0 == 4){
+       const char* button2_symbolarray_0 = button2_valuearray[0];
+        strcpy (menu1.button2.actions.symbol0, button2_symbolarray_0);
+      
+      } else {
+       int button2_valuearray_0 = button2_valuearray[0];
+       menu1.button2.actions.value0 = button2_valuearray_0;
+      }
+      
+      if(button2_actionarray_1 == 4){
+       const char* button2_symbolarray_1 = button2_valuearray[1];
+        strcpy (menu1.button2.actions.symbol1, button2_symbolarray_1);
+      
+      } else {
+       int button2_valuearray_1 = button2_valuearray[1];
+       menu1.button2.actions.value1 = button2_valuearray_1;
+      }
+      
+      if(button2_actionarray_2 == 4){
+       const char* button2_symbolarray_2 = button2_valuearray[2];
+        strcpy (menu1.button2.actions.symbol2, button2_symbolarray_2);
+      
+      } else {
+       int button2_valuearray_2 = button2_valuearray[2];
+       menu1.button2.actions.value2 = button2_valuearray_2;
+      }
+      
+        menu1.button2.actions.action0 = button2_actionarray_0;  
+        menu1.button2.actions.action1 = button2_actionarray_1;
+        menu1.button2.actions.action2 = button2_actionarray_2;
+        
+      JsonArray button3_actionarray = doc["button3"]["actionarray"];
+      int button3_actionarray_0 = button3_actionarray[0]; // 3
+      int button3_actionarray_1 = button3_actionarray[1]; // 0
+      int button3_actionarray_2 = button3_actionarray[2]; // 0
+      
+      JsonArray button3_valuearray = doc["button3"]["valuearray"];
+      
+      if(button3_actionarray_0 == 4){
+       const char* button3_symbolarray_0 = button3_valuearray[0];
+        strcpy (menu1.button3.actions.symbol0, button3_symbolarray_0);
+      
+      } else {
+       int button3_valuearray_0 = button3_valuearray[0]; // 1
+       menu1.button3.actions.value0 = button3_valuearray_0;
+      }
+      
+      if(button3_actionarray_1 == 4){
+       const char* button3_symbolarray_1 = button3_valuearray[1]; // 1
+        strcpy (menu1.button3.actions.symbol1, button3_symbolarray_1);
+      
+      } else {
+       int button3_valuearray_1 = button3_valuearray[1]; // 1
+       menu1.button3.actions.value1 = button3_valuearray_1;
+      }
+      
+      if(button3_actionarray_2 == 4){
+       const char* button3_symbolarray_2 = button3_valuearray[2]; // 1
+        strcpy (menu1.button3.actions.symbol2, button3_symbolarray_2);
+      
+      } else {
+       int button3_valuearray_2 = button3_valuearray[2]; // 1
+       menu1.button3.actions.value2 = button3_valuearray_2;
+      }
+      
+        menu1.button3.actions.action0 = button3_actionarray_0;  
+        menu1.button3.actions.action1 = button3_actionarray_1;
+        menu1.button3.actions.action2 = button3_actionarray_2;
+      
+      JsonArray button4_actionarray = doc["button4"]["actionarray"];
+      int button4_actionarray_0 = button4_actionarray[0]; // 3
+      int button4_actionarray_1 = button4_actionarray[1]; // 0
+      int button4_actionarray_2 = button4_actionarray[2]; // 0
+      
+      JsonArray button4_valuearray = doc["button4"]["valuearray"];
+      
+      if(button4_actionarray_0 == 4){
+       const char* button4_symbolarray_0 = button4_valuearray[0]; // 1
+        strcpy (menu1.button4.actions.symbol0, button4_symbolarray_0);
+      
+      } else {
+       int button4_valuearray_0 = button4_valuearray[0]; // 1
+       menu1.button4.actions.value0 = button4_valuearray_0;
+      }
+      
+      if(button4_actionarray_1 == 4){
+       const char* button4_symbolarray_1 = button4_valuearray[1]; // 1
+        strcpy (menu1.button4.actions.symbol1, button4_symbolarray_1);
+      
+      } else {
+       int button4_valuearray_1 = button4_valuearray[1]; // 1
+       menu1.button4.actions.value1 = button4_valuearray_1;
+      }
+      
+      if(button4_actionarray_2 == 4){
+       const char* button4_symbolarray_2 = button4_valuearray[2]; // 1
+        strcpy (menu1.button4.actions.symbol2, button4_symbolarray_2);
+      
+      } else {
+       int button4_valuearray_2 = button4_valuearray[2]; // 1
+       menu1.button4.actions.value2 = button4_valuearray_2;
+      }
+        menu1.button4.actions.action0 = button4_actionarray_0;  
+        menu1.button4.actions.action1 = button4_actionarray_1;
+        menu1.button4.actions.action2 = button4_actionarray_2;
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo10);
+      strcpy (screen1.logo0,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo11);
+      strcpy (screen1.logo1,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo12);
+      strcpy (screen1.logo2,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo13);
+      strcpy (screen1.logo3,templogopath);
+      strcpy (templogopath,logopath);
+    
+      strcpy (templogopath,logopath);
+      strcat(templogopath,logo14);
+      strcpy (screen1.logo4,templogopath);
+      strcpy (templogopath,logopath);
+    
+      configfile.close();
+
   }
   
 }
 
-//----------- Draw Error Message ------------------------------------------------
+//----------------------------- Draw Error Message ------------------------------------------
 
 void drawErrorMessage(String message){
 
@@ -2314,7 +1196,7 @@ void drawErrorMessage(String message){
   
 }
 
-// ------------------ WIFI Stuff ----------------------------------------
+// --------------------------------- WIFI Stuff ----------------------------------------
 
 void configmode() {
 
@@ -2344,146 +1226,150 @@ void handleRestart(){
 
 }
 
+// -------------------------------- SAVE CONFIG TEST ------------------------------------- 
+
 void saveconfig(){
 
-  // Delete existing file, otherwise the configuration is appended to the file
-  SPIFFS.remove("/generalconfig.json");
+    // Printing to Serial all the arguments received. FOR TESTING PURPOSES
 
-  // Open file for writing
-  File file = SPIFFS.open("/generalconfig.json", "w");
-  if (!file) {
-    Serial.println(F("Failed to create file"));
-    return;
+  if(server.arg("save") == "homescreen"){
+
+    Serial.println("Saving homescreen");
+    SPIFFS.remove("/config/homescreen.json");
+    File file = SPIFFS.open("/config/homescreen.json", "w");
+    if (!file) {
+      Serial.println(F("Failed to create file"));
+      return;
+    }
+  
+    DynamicJsonDocument doc(256);
+   
+    JsonObject homescreen  = doc.to<JsonObject>();
+  
+    homescreen["logo0"] = server.arg("homescreenlogo0");
+    homescreen["logo1"] = server.arg("homescreenlogo1");
+    homescreen["logo2"] = server.arg("homescreenlogo2");
+    homescreen["logo3"] = server.arg("homescreenlogo3");
+    homescreen["logo4"] = server.arg("homescreenlogo4");
+    homescreen["logo5"] = server.arg("homescreenlogo5");
+  
+    if (serializeJsonPretty(doc, file) == 0) {
+      Serial.println(F("Failed to write to file"));
+    }
+    file.close();
+    
+  }else if(server.arg("save") == "savecolors"){ 
+
+   Serial.println("Saving colors");
+
+    SPIFFS.remove("/config/colors.json");
+    File file = SPIFFS.open("/config/colors.json", "w");
+    if (!file) {
+      Serial.println(F("Failed to create file"));
+      return;
+    }
+  
+    DynamicJsonDocument doc(256);
+   
+    JsonObject colors  = doc.to<JsonObject>();
+  
+    colors["menubuttoncolor"] = server.arg("menubuttoncolor");
+    colors["functionbuttoncolor"] = server.arg("functionbuttoncolor");
+    colors["logocolor"] = server.arg("logocolor");
+    colors["background"] = server.arg("background");
+  
+    if (serializeJsonPretty(doc, file) == 0) {
+      Serial.println(F("Failed to write to file"));
+    }
+    file.close();
+     
+  }else if(server.arg("save") == "menu1"){
+
+        SPIFFS.remove("/config/menu1.json");
+          File file = SPIFFS.open("/config/menu1.json", "w");
+          if (!file) {
+            Serial.println(F("Failed to create file"));
+            return;
+          }
+  
+        DynamicJsonDocument doc(1200);
+   
+        JsonObject menu  = doc.to<JsonObject>();
+
+        menu["logo0"] = server.arg("screen1logo0");
+        menu["logo1"] = server.arg("screen1logo1");
+        menu["logo2"] = server.arg("screen1logo2");
+        menu["logo3"] = server.arg("screen1logo3");
+        menu["logo4"] = server.arg("screen1logo4");
+        
+        JsonObject button0 = doc.createNestedObject("button0");
+        
+        JsonArray button0_actionarray = button0.createNestedArray("actionarray");
+        button0_actionarray.add(server.arg("screen1button0action0"));
+        button0_actionarray.add(server.arg("screen1button0action1"));
+        button0_actionarray.add(server.arg("screen1button0action2"));
+        
+        JsonArray button0_valuearray = button0.createNestedArray("valuearray");
+        button0_valuearray.add(server.arg("screen1button0value0"));
+        button0_valuearray.add(server.arg("screen1button0value1"));
+        button0_valuearray.add(server.arg("screen1button0value2"));
+        
+        JsonObject button1 = doc.createNestedObject("button1");
+        
+        JsonArray button1_actionarray = button1.createNestedArray("actionarray");
+        button1_actionarray.add(server.arg("screen1button1action0"));
+        button1_actionarray.add(server.arg("screen1button1action1"));
+        button1_actionarray.add(server.arg("screen1button1action2"));
+        
+        JsonArray button1_valuearray = button1.createNestedArray("valuearray");
+        button1_valuearray.add(server.arg("screen1button1value0"));
+        button1_valuearray.add(server.arg("screen1button1value1"));
+        button1_valuearray.add(server.arg("screen1button1value2"));
+
+        JsonObject button2 = doc.createNestedObject("button2");
+        
+        JsonArray button2_actionarray = button2.createNestedArray("actionarray");
+        button2_actionarray.add(server.arg("screen1button2action0"));
+        button2_actionarray.add(server.arg("screen1button2action1"));
+        button2_actionarray.add(server.arg("screen1button2action2"));
+        
+        JsonArray button2_valuearray = button2.createNestedArray("valuearray");
+        button2_valuearray.add(server.arg("screen1button2value0"));
+        button2_valuearray.add(server.arg("screen1button2value1"));
+        button2_valuearray.add(server.arg("screen1button2value2"));
+
+        JsonObject button3 = doc.createNestedObject("button3");
+        
+        JsonArray button3_actionarray = button3.createNestedArray("actionarray");
+        button3_actionarray.add(server.arg("screen1button3action0"));
+        button3_actionarray.add(server.arg("screen1button3action1"));
+        button3_actionarray.add(server.arg("screen1button3action2"));
+        
+        JsonArray button3_valuearray = button3.createNestedArray("valuearray");
+        button3_valuearray.add(server.arg("screen1button3value0"));
+        button3_valuearray.add(server.arg("screen1button3value1"));
+        button3_valuearray.add(server.arg("screen1button3value2"));
+
+        JsonObject button4 = doc.createNestedObject("button4");
+        
+        JsonArray button4_actionarray = button4.createNestedArray("actionarray");
+        button4_actionarray.add(server.arg("screen1button4action0"));
+        button4_actionarray.add(server.arg("screen1button4action1"));
+        button4_actionarray.add(server.arg("screen1button4action2"));
+        
+        JsonArray button4_valuearray = button4.createNestedArray("valuearray");
+        button4_valuearray.add(server.arg("screen1button4value0"));
+        button4_valuearray.add(server.arg("screen1button4value1"));
+        button4_valuearray.add(server.arg("screen1button4value2"));
+
+        if (serializeJsonPretty(doc, file) == 0) {
+      Serial.println(F("Failed to write to file"));
+    }
+        file.close();
+        
   }
-
-  //Create a JSON document and a JSON object
-  StaticJsonDocument<1700> doc;
-
-  JsonObject obj1 = doc.to<JsonObject>();
-  JsonObject screen0  = doc.createNestedObject("screen0");
-  JsonObject screen1  = doc.createNestedObject("screen1");
-  JsonObject screen2  = doc.createNestedObject("screen2");
-  JsonObject screen3  = doc.createNestedObject("screen3");
-  JsonObject screen4  = doc.createNestedObject("screen4");
-  JsonObject screen5  = doc.createNestedObject("screen5");
-  JsonObject screen6  = doc.createNestedObject("screen6");
-
-  // Because the first 4 arguments are the colors, we loop
-  for (int i = 0; i < 4; i++) {
-    obj1[server.argName(i)] = server.arg(i);
-  }
-
-  // Create the homebuttonlogo JSON object
-  obj1["homebuttonlogo"] = "home.bmp";
-
-  // Now we parse the rest of the JSON here
-
-  screen0["logo0"] = server.arg("screen0image0");
-  screen0["logo1"] = server.arg("screen0image1");
-  screen0["logo2"] = server.arg("screen0image2");
-  screen0["logo3"] = server.arg("screen0image3");
-  screen0["logo4"] = server.arg("screen0image4");
-  screen0["logo5"] = server.arg("screen0image5");
-
-  screen1["logo0"] = server.arg("screen1image0");
-  screen1["logo1"] = server.arg("screen1image1");
-  screen1["logo2"] = server.arg("screen1image2");
-  screen1["logo3"] = server.arg("screen1image3");
-  screen1["logo4"] = server.arg("screen1image4");
-
-  screen2["logo0"] = server.arg("screen2image0");
-  screen2["logo1"] = server.arg("screen2image1");
-  screen2["logo2"] = server.arg("screen2image2");
-  screen2["logo3"] = server.arg("screen2image3");
-  screen2["logo4"] = server.arg("screen2image4");
-
-  screen3["logo0"] = server.arg("screen3image0");
-  screen3["logo1"] = server.arg("screen3image1");
-  screen3["logo2"] = server.arg("screen3image2");
-  screen3["logo3"] = server.arg("screen3image3");
-  screen3["logo4"] = server.arg("screen3image4");
-
-  screen4["logo0"] = server.arg("screen4image0");
-  screen4["logo1"] = server.arg("screen4image1");
-  screen4["logo2"] = server.arg("screen4image2");
-  screen4["logo3"] = server.arg("screen4image3");
-  screen4["logo4"] = server.arg("screen4image4");
-
-  screen5["logo0"] = server.arg("screen5image0");
-  screen5["logo1"] = server.arg("screen5image1");
-  screen5["logo2"] = server.arg("screen5image2");
-  screen5["logo3"] = server.arg("screen5image3");
-  screen5["logo4"] = server.arg("screen5image4");
-
-  screen6["logo0"] = server.arg("screen6image0");
-  screen6["logo1"] = server.arg("screen6image1");
-  screen6["logo2"] = server.arg("screen6image2");
-  screen6["logo3"] = server.arg("screen6image3");
-  screen6["logo4"] = server.arg("screen6image4");
-
-  // Serialize JSON to file
-  if (serializeJsonPretty(doc, file) == 0) {
-    Serial.println(F("Failed to write to file"));
-  }
-
-  // Close the file
-  file.close();
-
-  // Display "Configuration saved" page
-  handleFileRead("/saveconfig.htm");
-}
-
-// ------------ SAVE CONFIG TEST ------------------- 
-
-void saveconfigtest(){
-
-  // Delete existing file, otherwise the configuration is appended to the file
-//  SPIFFS.remove("/generalconfig.json");
-//
-//  // Open file for writing
-//  File file = SPIFFS.open("/generalconfig.json", "w");
-//  if (!file) {
-//    Serial.println(F("Failed to create file"));
-//    return;
-//  }
-
-//  //Create a JSON document and JSON objects
-//  const size_t capacity = 72*JSON_ARRAY_SIZE(3) + 36*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(6) + 6*JSON_OBJECT_SIZE(11) + JSON_OBJECT_SIZE(12) + 742;
-//  DynamicJsonDocument doc(capacity);
-//
-//  JsonObject obj1 = doc.to<JsonObject>();
-//  JsonObject screen0  = doc.createNestedObject("screen0");
-//  JsonObject screen1  = doc.createNestedObject("screen1");
-//  JsonObject screen2  = doc.createNestedObject("screen2");
-//  JsonObject screen3  = doc.createNestedObject("screen3");
-//  JsonObject screen4  = doc.createNestedObject("screen4");
-//  JsonObject screen5  = doc.createNestedObject("screen5");
-//  JsonObject screen6  = doc.createNestedObject("screen6");
-
-// Printing to Serial all the arguments received. FOR TESTING PURPOSES
-
-  for (int i = 0; i < server.args(); i++) {
-    Serial.print(server.argName(i));
-    Serial.print(" = ");
-    Serial.println(server.arg(i));
-    Serial.println("--------------");
-  }
-
-  // Create the homebuttonlogo JSON object
-//  obj1["homebuttonlogo"] = "home.bmp";
-
-  // Now we parse the rest of the JSON here
-
-
-//  // Serialize JSON to file
-//  if (serializeJsonPretty(doc, file) == 0) {
-//    Serial.println(F("Failed to write to file"));
-//  }
-
-//  // Close the file
-//  file.close();
-
-  // Display "Configuration saved" page
+  
+  // Redirect page
   handleFileRead("/saveconfig.htm");
   
 }
@@ -2732,8 +1618,9 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y) {
   if (!bmpFS)
   {
     Serial.print("Bitmap not found: ");
-    Serial.print(filename);
-    bmpFS = SPIFFS.open("/logos/question.bmp", "r");
+    Serial.println(filename);
+    filename = "/logos/question.bmp";
+    bmpFS = SPIFFS.open(filename, "r");
   }
 
   uint32_t seekOffset;
