@@ -25,3 +25,7 @@ The hardware I currenlty use is:
 # tft_config.h
 
 This is where the TFT and touchscreen configuration for TFT_eSPI lives. As you can see, the current configuration is set up for my hardware. You'll need to change this to suit your hardware. On my TFT screen the MOSI and CLK where not shared on the PCB. They can however share the same pin on the ESP32.
+
+# Help
+
+You can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
