@@ -14,7 +14,7 @@ to make FreeTouchDeck work across most ESP's and TFT screens. Also there is a la
 The hardware I currenlty use is:
 
 - an ESP32 DEVKIT V1 (WROOM32) (Partion scheme: NO OTA with 2MB app and 2MB SPIFFS)
-- an 3.5" (480x320) TFT + Touchscreen with IL9488 driver and XPT206 touch controller
+- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and XPT2046 touch controller
 
 # !- Library Dependencies -!
 - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
