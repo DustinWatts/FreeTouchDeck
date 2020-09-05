@@ -1,7 +1,7 @@
 # FreeDeckTouch
 For interfacing with Windows/MAC/Linux using an ESP32, a touchscreen and BLE.
 
-### [Installation](Installation.md)
+### [Installation](https://github.com/DustinWatts/FreeTouchDeck/blob/master/installation.md)
 
 # Pre-Alpha Version!
 
