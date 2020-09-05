@@ -1,218 +1,4 @@
-	var items = [{
-		    name: 'Do Nothing',
-		    value: '0',
-		    subitems: [{
-		        name: '--',
-		        value: '0'
-		      }]
-		  },
-		  {
-		    name: 'Delay',
-		    value: '1',
-		    subitems: [{
-		        name: '100ms',
-		        value: '100'
-		      },
-		      {
-		        name: '200ms',
-		        value: '200'
-		      }
-		      ,
-		      {
-		        name: '500ms',
-		        value: '500'
-		      }
-		      ,
-		      {
-		        name: '1000ms',
-		        value: '1000'
-		      }
-		    ]
-		  },
-		  {
-		    name: 'Extra Options',
-		    value: '2',
-		    subitems: [{
-		        name: '--',
-		        value: '0'
-		      }]
-		  },
-		  {
-		    name: 'Mediakey',
-		    value: '3',
-		    subitems: [{
-		        name: 'Mute',
-		        value: '1'
-		      },
-		      {
-		        name: 'Volume Down',
-		        value: '2'
-		      },
-		      {
-		        name: 'Volume Up',
-		        value: '3'
-		      },
-		      {
-		        name: 'Play/Pause',
-		        value: '4'
-		      },
-		      {
-		        name: 'Stop',
-		        value: '5'
-		      }
-		    ]
-		  },
-		  {
-		    name: 'Send Letter',
-		    value: '4',
-		    subitems: [{
-		        name: 'a',
-		        value: 'a'
-		      },
-		      {
-		        name: 'b',
-		        value: 'b'
-		      },
-		      {
-		        name: 'c',
-		        value: 'c'
-		      },
-		      {
-		        name: 'd',
-		        value: 'd'
-		      },
-		      {
-		        name: 'e',
-		        value: 'e'
-		      },
-		      {
-		        name: 'f',
-		        value: 'f'
-		      },
-		      {
-		        name: 'g',
-		        value: 'g'
-		      },
-		      {
-		        name: 'h',
-		        value: 'h'
-		      },
-		      {
-		        name: 'i',
-		        value: 'i'
-		      },
-		      {
-		        name: 'j',
-		        value: 'j'
-		      },
-		      {
-		        name: 'k',
-		        value: 'k'
-		      },
-		      {
-		        name: 'l',
-		        value: 'l'
-		      },
-		      {
-		        name: 'm',
-		        value: 'm'
-		      },
-		      {
-		        name: 'n',
-		        value: 'n'
-		      },
-		      {
-		        name: 'o',
-		        value: 'o'
-		      },
-		      {
-		        name: 'p',
-		        value: 'p'
-		      },
-		      {
-		        name: 'q',
-		        value: 'q'
-		      },
-		      {
-		        name: 'r',
-		        value: 'r'
-		      },
-		      {
-		        name: 's',
-		        value: 's'
-		      },
-		      {
-		        name: 't',
-		        value: 't'
-		      },
-		      {
-		        name: 'u',
-		        value: 'u'
-		      },
-		      {
-		        name: 'v',
-		        value: 'v'
-		      },
-		      {
-		        name: 'w',
-		        value: 'w'
-		      },
-		      {
-		        name: 'x',
-		        value: 'x'
-		      },
-		      {
-		        name: 'y',
-		        value: 'y'
-		      },
-		      {
-		        name: 'z',
-		        value: 'z'
-		      }
-
-		      ]
-		  },
-		  {
-		    name: 'Function Keys',
-		    value: '5',
-		    subitems: [{
-		        name: 'Left CTRL',
-		        value: '1'
-		      },
-		      {
-		        name: 'Left Shift',
-		        value: '2'
-		      },
-		      {
-		        name: 'Left ALT',
-		        value: '3'
-		      },
-		      {
-		        name: 'Left GUI',
-		        value: '4'
-		      },
-		      {
-		        name: 'Right CTRL',
-		        value: '5'
-		      },
-		      {
-		        name: 'Right Shift',
-		        value: '6'
-		      },
-		      {
-		        name: 'Right ALT',
-		        value: '7'
-		      },
-		      {
-		        name: 'Right GUI',
-		        value: '8'
-		      },
-		      {
-		        name: 'Release All',
-		        value: '9'
-		      }]
-		  }
-		];
+	var items = selecteditems.slice(0); // Create a duplicate of the selecteditems array for now
 
 		$(function() {
 		  var temp = {};
@@ -537,7 +323,7 @@
 		  }).change();
 
 		  // Menu1 button5
-$.each(items, function() {
+		$.each(items, function() {
 		    $("<option />")
 		      .attr("value", this.value)
 		      .html(this.name)
@@ -1432,7 +1218,8 @@ $.each(items, function() {
 		    });
 		  }).change();
 
-		  $.each(items, function() {
+		  // menu4Button 1
+			$.each(items, function() {
 		    $("<option />")
 		      .attr("value", this.value)
 		      .html(this.name)
@@ -1485,6 +1272,646 @@ $.each(items, function() {
 		  $("#screen4button1action2").change(function() {
 		    var value = $(this).val();
 		    var menu = $("#screen4button1value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu4 Button2
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button2action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button2action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button2value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button2action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button2action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button2value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button2action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button2action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button2value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu4 button3
+		$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button3action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button3action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button3value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button3action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button3action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button3value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button3action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button3action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button3value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu4 button4
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button4action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button4action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button4value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button4action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button4action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button4value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button4action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button4action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button4value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu4 button5
+		$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button5action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button5action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button5value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button5action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button5action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button5value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen4button5action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen4button5action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen4button5value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu5 Button0
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button0action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button0action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button0value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button0action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button0action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button0value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button0action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button0action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button0value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu5Button 1
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button1action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button1action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button1value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button1action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button1action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button1value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button1action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button1action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button1value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu5 Button2
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button2action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button2action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button2value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button2action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button2action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button2value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button2action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button2action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button2value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu5 button3
+		$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button3action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button3action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button3value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button3action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button3action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button3value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button3action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button3action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button3value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu5 button4
+			$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button4action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button4action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button4value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button4action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button4action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button4value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button4action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button4action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button4value2");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  // menu5 button5
+		$.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button5action0");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button5action0").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button5value0");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button5action1");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button5action1").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button5value1");
+
+		    menu.empty();
+		    $.each(temp[value], function() {
+		      $("<option />")
+		        .attr("value", this.value)
+		        .html(this.name)
+		        .appendTo(menu);
+		    });
+		  }).change();
+
+		  $.each(items, function() {
+		    $("<option />")
+		      .attr("value", this.value)
+		      .html(this.name)
+		      .appendTo("#screen5button5action2");
+		    temp[this.value] = this.subitems;
+		  });
+
+		  $("#screen5button5action2").change(function() {
+		    var value = $(this).val();
+		    var menu = $("#screen5button5value2");
 
 		    menu.empty();
 		    $.each(temp[value], function() {
