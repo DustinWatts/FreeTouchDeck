@@ -13,7 +13,7 @@
 * Make sure you have enough room for the sketch, by setting the correct Partition scheme. (NO OTA (2MB APP/2MB SPIFFS) should be ok.)
 * Upload the sketch.
 
-After that, you can now customize the FreeTouchDeck. In the main menu the bottom right icon ("settings") takes you to the settings page. Then the top left ("Wifi") puts FreeTouchDeck in to configuration mode. Now you can go to http://freetouchdeck.local and change the button functions to your liking. Here you will also find some general configuration settings like colors that are being used and the logos for the home screen.
+After that, you can now customize the FreeTouchDeck. In the main menu the bottom right icon ("settings") takes you to the settings page. Then the top left ("Wifi") puts FreeTouchDeck in to configuration mode. Now you can go to http://freetouchdeck.local and change the button functions to your liking. Here you will also find some general configuration settings like colours that are being used and the logos for the home screen.
 
 # Need help?
 
