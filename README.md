@@ -1,5 +1,5 @@
 # FreeDeckTouch
-For interfacing with PC/MAC using a touchscreen and BLE.
+For interfacing with Windows/MAC/Linux using an ESP32, a touchscreen and BLE.
 
 # !- Library Dependencies -!
 - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
