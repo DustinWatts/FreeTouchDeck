@@ -19,3 +19,7 @@ The hardware I currenlty use is:
 - TFT_eSPI (version 2.2.14), available through Library Manager
 - ESP32-BLE-Keyboard (latest version), download from: https://github.com/T-vK/ESP32-BLE-Keyboard
 - ArduinoJson (version 6.16.1), available through Library Manager
+
+# tft_config.h
+
+This is where the TFT and touchscreen configuration for TFT_eSPI lives. As you can see, the current configuration is set up for my hardware. You'll need to change this to suit your hardware. On my TFT screen the MOSI and CLK where not shared on the PCB. They can however share the same pin on the ESP32.
