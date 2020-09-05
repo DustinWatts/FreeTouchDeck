@@ -15,3 +15,6 @@
 
 After that, you can now customize the FreeTouchDeck. In the main menu the bottom right icon ("settings") takes you to the settings page. Then the top left ("Wifi") puts FreeTouchDeck in to configuration mode. Now you can go to http://freetouchdeck.local and change the button functions to your liking. Here you will also find some general configuration settings like colors that are being used and the logos for the home screen.
 
+# Need help?
+
+You can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
