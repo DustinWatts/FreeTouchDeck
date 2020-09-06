@@ -18,5 +18,8 @@ The next section is `Section 2`. This also depends on what hardware you are usin
 * This is a large sketch, so we need to make room for it. The default partitioning scheme is not big enough. Under "Tools / Partion Scheme" there are, depending on your board, a few options. Select the option that says someting like "Large APP/No OTA" or "Huge APP/No OTA" or "NO OTA (2MB APP/2MB SPIFFS)".
 * Upload the sketch.
 
-After that, you can now customize the FreeTouchDeck. In the main menu the bottom right icon ("settings") takes you to the settings page. Then the top left ("Wifi") puts FreeTouchDeck in to configuration mode. Now you can go to http://freetouchdeck.local and change the button functions to your liking. Here you will also find some general configuration settings like colors that are being used and the logos for the home screen.
+After that, you can now customize the FreeTouchDeck. In the main menu the bottom right icon ("settings") takes you to the settings page. Then the top left ("Wifi") puts FreeTouchDeck in to configuration mode. Now you can go to http://freetouchdeck.local and change the button functions to your liking. Here you will also find some general configuration settings like colours that are being used and the logos for the home screen.
 
+# Need help?
+
+You can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
