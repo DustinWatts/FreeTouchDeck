@@ -5,7 +5,7 @@
   ArduinoJson V6.
 
   FreeTouchDeck uses a few (4) libraries from other sources. These must be installed
-  for FreeTouchDeck to compile and run. These are those libraies:
+  for FreeTouchDeck to compile and run. These are those libraries:
 
       !----------------------------- Library Dependencies --------------------------- !
       - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
@@ -17,21 +17,17 @@
   then necessary. It also lacks good documentation and comments in the code.
 
   The SPIFFS (FLASH filing system) is used to hold touch screen calibration data.
-  It has to be runs at least once. After that you can set REPEAT_CAL to false.
-  If you change the screen rotation, you need to run calibration data again.
+  It has to be runs at least once. After that you can set REPEAT_CAL to false (default).
 
-  tft_config.h holds the configuration for the TFT display and the touch controller. This is where
-  SPI pins are defined. Uncomment the lines needed for your display.
-
-  !* Before uploading this sketch, make sure you have set everything that is needed
-  in tft_config.h. Select the right screendriver and the board (ESP32 is the only one tested) you are
-  using. Also make sure TOUCH_CS is defines correctly.
+  !-- Make sure you have setup your TFT display and ESP setup correctly in TFT_eSPI/user_setup.h --!
+        
+        Select the right screen driver and the board (ESP32 is the only one tested) you are
+        using. Also make sure TOUCH_CS is defined correctly. TFT_BL can also be needed!
   
 */
 
 #include <pgmspace.h>     // PROGMEM support header
 #include "FS.h"           // File System header
-#include "tft_config.h"   // Configuration data for TFT_eSPI
 
 #include <SPI.h>          // SPI Functionalty 
 #include <TFT_eSPI.h>     // The TFT_eSPI library
@@ -50,8 +46,8 @@
 #include <ESPmDNS.h>      // DNS functionality
 
 //TODO Remove hardcoded SSID and PW... use config.json file
-const char* ssid = " ";
-const char* password = " ";
+const char* ssid = " "; //                                  <--- Your WiFi SSID here
+const char* password = " "; //                              <--- Your WiFi Password here
 const char* host = "FreeTouchDeck";
 
 WebServer server(80);
@@ -61,10 +57,6 @@ File fsUploadFile;
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 TFT_eSPI tft = TFT_eSPI();
-
-// We let TFT_eSPI know that we previously included our own
-// tft_config.h.
-#define USER_SETUP_LOADED
 
 // This is the file name used to store the calibration data
 // You can change this to create new calibration files.
@@ -216,8 +208,9 @@ void setup() {
   tft.setTextFont(2);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.print("Loading version 0.8.4"); // Version 0.8.5 Has a working config page for menu 1
-  delay(1000);
+
+  // Version 0.8.7 has Working configurator menus and changed/removed the totally unnecessary tft_config.h
+  tft.print("Loading version 0.8.7");
   
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
