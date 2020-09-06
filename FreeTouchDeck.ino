@@ -98,7 +98,7 @@ uint8_t colArray[6] = {0,1,2,0,1,2};
 //path to the directory the logo are in ! including leading AND trailing / !
 char logopath[64] = "/logos/";
 
-// templogopath is used to hold the complete path of a image. It is empty for now.
+// templogopath is used to hold the complete path of an image. It is empty for now.
 char templogopath[64] = "";
 
 // Struct to hold the logos per screen
@@ -111,7 +111,7 @@ struct Logos {
   char logo5[32];
 };
 
-// Struct 3 actions and 3 value per button
+// Struct 3 actions and 3 values per button
 struct Actions {
   uint8_t action0;
   uint8_t value0;
@@ -124,12 +124,14 @@ struct Actions {
   char symbol2[32];
 };
 
+// Each button has an action struct in it
 struct Button {
 
   struct Actions actions;
     
 };
 
+// Each menu has 6 buttons
 struct Menu {
 
   struct Button button0;
@@ -178,7 +180,7 @@ Menu menu6;
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
 
-//------------------------------------------------------------------------------------------
+//-------------------------------- SETUP --------------------------------------------------------------
 
 void setup() {
   
@@ -209,13 +211,45 @@ void setup() {
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  // Version 0.8.7 has Working configurator menus and changed/removed the totally unnecessary tft_config.h
-  tft.print("Loading version 0.8.7");
+  /* Version 0.8.8 has Working configurator menus and changed/removed the 
+    totally unnecessary tft_config.h and checks if all the config JSON files exist.*/
+    
+  tft.print("Loading version 0.8.8");
   
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
 
-  // Load the General Config
+  // Let's first check if all the files we need exist
+
+  if(!checkfile("/config/colors.json")){
+    while (1) yield(); // Stop!
+  }
+
+  if(!checkfile("/config/homescreen.json")){
+    while (1) yield(); // Stop!
+  }
+
+  if(!checkfile("/config/menu1.json")){
+    while (1) yield(); // Stop!
+  }
+
+  if(!checkfile("/config/menu2.json")){
+    while (1) yield(); // Stop!
+  }
+
+  if(!checkfile("/config/menu3.json")){
+    while (1) yield(); // Stop!
+  }
+
+  if(!checkfile("/config/menu4.json")){
+    while (1) yield(); // Stop!
+  }
+
+  if(!checkfile("/config/menu5.json")){
+    while (1) yield(); // Stop!
+  }
+  
+  // Load the all the configuration
   loadConfig("colors");
   loadConfig("homescreen");
   loadConfig("menu1");
@@ -3114,4 +3148,20 @@ uint32_t read32(fs::File &f) {
   ((uint8_t *)&result)[2] = f.read();
   ((uint8_t *)&result)[3] = f.read(); // MSB
   return result;
+}
+
+/* ------------------------ Check if config file exists function ---------------- 
+Purpose: This function checks if a file exists and returns a boolean accordingly
+Input  : char* filename
+Output : boolean
+Note   : Pass the filename including a leading /
+*/
+
+bool checkfile(char* filename){
+
+  if(!SPIFFS.exists(filename)){
+    Serial.print(filename);
+    Serial.println(" not found! Make sure to upload the data folder using ESP Sketch Data Upload.");
+    return false;
+  }   
 }

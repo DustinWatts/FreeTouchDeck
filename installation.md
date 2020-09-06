@@ -16,9 +16,9 @@
 
    "Section 3" can be left alone.  
 
-5. Upload the contents of the "data" folder to the ESP32 SPIFFS using "ESP Sketch Data Upload" tool that can be found here: https://github.com/me-no-dev/arduino-esp32fs-plugin
+5. This is a large sketch, so we need to make room for it. The default partitioning scheme is not big enough. Under "Tools / Partion Scheme" there are, depending on your board, a few options. Select the option that says someting like "Large APP/No OTA" or "Huge APP/No OTA" or "NO OTA (2MB APP/2MB SPIFFS)".
 
-6. This is a large sketch, so we need to make room for it. The default partitioning scheme is not big enough. Under "Tools / Partion Scheme" there are, depending on your board, a few options. Select the option that says someting like "Large APP/No OTA" or "Huge APP/No OTA" or "NO OTA (2MB APP/2MB SPIFFS)".
+6. Upload the contents of the "data" folder to the ESP32 SPIFFS using "ESP Sketch Data Upload" tool that can be found here: https://github.com/me-no-dev/arduino-esp32fs-plugin
 
 7. Upload the sketch.
 
