@@ -1,35 +1,63 @@
 <!DOCTYPE html>
-<html lang="en"> 
-  <head>
-    <link rel="shortcut icon" href="">
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>
-    <title>FreeTouchDeck Configurator</title>
+<html lang="en">
 
-    <style>
-      div,input{padding:5px;font-size:1em;}
-      input{width:96%; border-radius:0.3rem;}
-      body{text-align: center;font-family:verdana;}
-      button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;}
-    </style>
+<head>
+  <link rel="shortcut icon" href="">
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
+  <title>FreeTouchDeck Configurator</title>
 
-  </head>
-  <body>
-    <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;"><h1>FreeTouchDeck Configurator</h1></div>
-    <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;"><h3>Configuration Saved! Go back to the configurator or click Restart to re-enable Bluetooth.</h3></div>
-    <div style="text-align:left;display:inline-block;min-width:260px;">
-    
+  <style>
+    div,
+    input {
+      padding: 5px;
+      font-size: 1em;
+    }
+
+    input {
+      width: 96%;
+      border-radius: 0.3rem;
+    }
+
+    body {
+      text-align: center;
+      font-family: verdana;
+    }
+
+    button {
+      border: 0;
+      border-radius: 0.3rem;
+      background-color: #1fa3ec;
+      color: #fff;
+      line-height: 2.4rem;
+      font-size: 1.2rem;
+      width: 100%;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+    <h1>FreeTouchDeck Configurator</h1>
+  </div>
+  <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+    <h3>Configuration Saved! Go back to the configurator or click Restart to re-enable Bluetooth.</h3>
+  </div>
+  <div style="text-align:left;display:inline-block;min-width:260px;">
+
     <form method='post' id="backhome" action='/index.htm'>
       <button style='cursor: pointer;' type='save'>Return to config page</button></form>
     </form>
-    
-    </div><br/>
-    <div style="text-align:left;display:inline-block;min-width:260px;">
 
-      <form method='post' action='/restart'>
-      <br/><button style='cursor: pointer;' type='save'>Restart</button></form>
+  </div><br />
+  <div style="text-align:left;display:inline-block;min-width:260px;">
 
-    </div>
-  </body>
+    <form method='post' action='/restart'>
+      <br /><button style='cursor: pointer;' type='save'>Restart</button></form>
+
+  </div>
+</body>
+
 </html>

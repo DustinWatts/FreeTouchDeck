@@ -1,673 +1,714 @@
 <!DOCTYPE html>
-<html lang="en"> 
-  <head>
-    <link rel="shortcut icon" href="">
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
-    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\"/>
-    <title>FreeTouchDeck Configurator</title>
-    <style>
- 		body{text-align: center;font-family:verdana;color:#000088;width:99%;}
- 		.form button{border:0;border-radius:0.3rem;background-color:#1fa3ec;color:#fff;line-height:2.4rem;font-size:1.2rem;width:100%;}
+<html lang="en">
+
+<head>
+	<link rel="shortcut icon" href="">
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
+	<title>FreeTouchDeck Configurator</title>
+	<style>
+		body {
+			text-align: center;
+			font-family: verdana;
+			color: #000088;
+			width: 99%;
+		}
+
+		.form button {
+			border: 0;
+			border-radius: 0.3rem;
+			background-color: #1fa3ec;
+			color: #fff;
+			line-height: 2.4rem;
+			font-size: 1.2rem;
+			width: 100%;
+		}
 
 		.tab {
-		  overflow: hidden;
-		  border: 1px solid #ccc;
-		  background-color: #8cd7ff;
-		  width:100%;
+			overflow: hidden;
+			border: 1px solid #ccc;
+			background-color: #8cd7ff;
+			width: 100%;
 		}
 
 		.tab button {
-		  background-color: inherit;
-		  float: left;
-		  border: none;
-		  outline: none;
-		  cursor: pointer;
-		  padding: 14px 16px;
-		  transition: 0.3s;
-		  font-family:verdana;
-		  color:#000000;
+			background-color: inherit;
+			float: left;
+			border: none;
+			outline: none;
+			cursor: pointer;
+			padding: 14px 16px;
+			transition: 0.3s;
+			font-family: verdana;
+			color: #000000;
 		}
 
 		.tab button:hover {
-		  background-color: #1fa3ec;
+			background-color: #1fa3ec;
 		}
 
 		.tab button.active {
-		  background-color: #1fa3ec;
+			background-color: #1fa3ec;
 		}
 
 		.tabcontent {
-		  display: none;
-		  padding: 6px 12px;
-		  border: 1px solid #1fa3ec;
-		  border-top: none;
+			display: none;
+			padding: 6px 12px;
+			border: 1px solid #1fa3ec;
+			border-top: none;
 		}
 	</style>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> 
-    
-  </head>
-  <body> <h1>FreeTouchDeck Configurator</h1> <form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-  		<!-- Menu -->
-		<div class="tab">
-		  <button class="tablinks" onclick="openMenu(event, 'general')">General</button>
-		  <button class="tablinks" onclick="openMenu(event, 'home')">Home Menu</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu1')">Menu 1</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu2')">Menu 2</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu3')">Menu 3</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu4')">Menu 4</button>
-		  <button class="tablinks" onclick="openMenu(event, 'menu5')">Menu 5</button>
-		  <button class="tablinks" onclick="openMenu(event, 'uploadimage')">Upload</button>
+</head>
 
+<body>
+	<h1>FreeTouchDeck Configurator</h1>
+	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
+
+	<!-- Menu -->
+	<div class="tab">
+		<button class="tablinks" onclick="openMenu(event, 'general')">General</button>
+		<button class="tablinks" onclick="openMenu(event, 'home')">Home Menu</button>
+		<button class="tablinks" onclick="openMenu(event, 'menu1')">Menu 1</button>
+		<button class="tablinks" onclick="openMenu(event, 'menu2')">Menu 2</button>
+		<button class="tablinks" onclick="openMenu(event, 'menu3')">Menu 3</button>
+		<button class="tablinks" onclick="openMenu(event, 'menu4')">Menu 4</button>
+		<button class="tablinks" onclick="openMenu(event, 'menu5')">Menu 5</button>
+		<button class="tablinks" onclick="openMenu(event, 'uploadimage')">Upload</button>
+
+	</div>
+
+	<!-- Tab Intro -->
+	<div id="intro" class="tabcontent">
+		<h3>Welcome</h3>
+		<p>
+			Welcome to the configurator! Select an option/page from the top menu. If you have any questions, join the
+			discord server #html link. Some more text here to explain what to do.
+		</p>
+	</div>
+	<!-- Tab General -->
+	<div id="general" class="tabcontent">
+		<h3>General Settings</h3>
+		<p>
+		<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+			<h2>Colors</h2>
 		</div>
 
-		<!-- Tab Intro -->
-		<div id="intro" class="tabcontent">
-		  <h3>Welcome</h3>
-		  <p>
-		  	Welcome to the configurator! Select an option/page from the top menu. If you have any questions, join the discord server #html link. Some more text here to explain what to do.
-		  </p>
-		</div>
-		<!-- Tab General -->
-		<div id="general" class="tabcontent">
-		  <h3>General Settings</h3>
-		  <p>
-		  	<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
-      <h2>Colors</h2></div>
-      
-      <form method='post' id="savecolors" action='/saveconfig'>
-      <div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
-        &nbsp;&nbsp;Menu Button Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='menubuttoncolor' name='menubuttoncolor' type="color" value=''>
-        &nbsp;&nbsp;Function Button Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='functionbuttoncolor' name='functionbuttoncolor' type="color" value=''>
-        &nbsp;&nbsp;Font Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='logocolor' name='logocolor' type="color" value=''>
-        &nbsp;&nbsp;Background Colour:&nbsp;
-        <input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='background' name='background' type="color" value=''></div>
-		  
-        <div class="form" style="width: 50%; text-align: : center; margin: auto;">
+		<form method='post' id="savecolors" action='/saveconfig'>
+			<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+				&nbsp;&nbsp;Menu Button Colour:&nbsp;
+				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='menubuttoncolor'
+					name='menubuttoncolor' type="color" value=''>
+				&nbsp;&nbsp;Function Button Colour:&nbsp;
+				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='functionbuttoncolor'
+					name='functionbuttoncolor' type="color" value=''>
+				&nbsp;&nbsp;Font Colour:&nbsp;
+				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='logocolor'
+					name='logocolor' type="color" value=''>
+				&nbsp;&nbsp;Background Colour:&nbsp;
+				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='background'
+					name='background' type="color" value=''></div>
+
+			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="savecolors">
-				<br/><button style='cursor: pointer;' form="savecolors" type='save'>Save Colour Config</button></div></form>
-			</div>
-		  </p>
-		</div>
-		<!-- Tab Home Menu -->
-		<div id="home" class="tabcontent">
-		  <h3>Home Menu</h3>
-		  <p>
-		  	<form method='post' id="savehomescreen" action='/saveconfig'>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Menu 1
-				<br/>Image:
-				<select class="images" id='homescreenlogo0' name='homescreenlogo0'></select>
+				<br /><button style='cursor: pointer;' form="savecolors" type='save'>Save Colour Config</button></div>
+		</form>
+	</div>
+	</p>
+	</div>
+	<!-- Tab Home Menu -->
+	<div id="home" class="tabcontent">
+		<h3>Home Menu</h3>
+		<p>
+		<form method='post' id="savehomescreen" action='/saveconfig'>
+			<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
+				<tbody>
+					<tr>
+						<td style="width: 33%;">
+							Menu 1
+							<br />Image:
+							<select class="images" id='homescreenlogo0' name='homescreenlogo0'></select>
 
-			</td>
-			<td style="width: 33%;">
-				Menu 2
-				<br/>Image:
-				<select class="images" id='homescreenlogo1' name='homescreenlogo1'></select>
-			</td>
-			<td style="width: 33%;">
-				Menu 3
-				<br/>Image:
-				<select class="images" id='homescreenlogo2' name='homescreenlogo2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Menu 4
-				<br/>Image:
-				<select class="images" id='homescreenlogo3' name='homescreenlogo3'></select>
-			</td>
-			<td style="width: 33%;">
-				Menu 5
-				<br/>Image:
-				<select class="images" id='homescreenlogo4' name='homescreenlogo4'></select>
-			</td>
-			<td style="width: 33%;">
-				Settings Menu
-				<br/>Image:
-				<select class="images" id='homescreenlogo5' name='homescreenlogo5'></select>
-			</td>
-			</tr>
-			</tbody>
+						</td>
+						<td style="width: 33%;">
+							Menu 2
+							<br />Image:
+							<select class="images" id='homescreenlogo1' name='homescreenlogo1'></select>
+						</td>
+						<td style="width: 33%;">
+							Menu 3
+							<br />Image:
+							<select class="images" id='homescreenlogo2' name='homescreenlogo2'></select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 33%;">
+							Menu 4
+							<br />Image:
+							<select class="images" id='homescreenlogo3' name='homescreenlogo3'></select>
+						</td>
+						<td style="width: 33%;">
+							Menu 5
+							<br />Image:
+							<select class="images" id='homescreenlogo4' name='homescreenlogo4'></select>
+						</td>
+						<td style="width: 33%;">
+							Settings Menu
+							<br />Image:
+							<select class="images" id='homescreenlogo5' name='homescreenlogo5'></select>
+						</td>
+					</tr>
+				</tbody>
 			</table>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="homescreen">
-				<br/><button style='cursor: pointer;' form="savehomescreen" type='save'>Save Home Screen Config</button></form></div></form></p>
-			</div>
-		  </p>
-		</div>
-		<!-- Tab Menu 1 -->
-		<div id="menu1" class="tabcontent">
-		  <h3>Menu 1</h3>
-		  <p><form method='post' id="savemenu1" action='/saveconfig'>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0 
-				<br/>Image:
-				<select class="images" id='screen1logo0' name='screen1logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button0action0' name='screen1button0action0'></select>
-				<select class="actions" id='screen1button0value0' name='screen1button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button0action1' name='screen1button0action1'></select> 
-				<select class="actions" id='screen1button0value1' name='screen1button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button0action2' name='screen1button0action2'></select>
-				<select class="actions" id='screen1button0value2' name='screen1button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen1logo1' name='screen1logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button1action0' name='screen1button1action0'></select>
-				<select class="actions" id='screen1button1value0' name='screen1button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button1action1' name='screen1button1action1'></select> 
-				<select class="actions" id='screen1button1value1' name='screen1button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button1action2' name='screen1button1action2'></select>
-				<select class="actions" id='screen1button1value2' name='screen1button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen1logo2' name='screen1logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button2action0' name='screen1button2action0'></select>
-				<select class="actions" id='screen1button2value0' name='screen1button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button2action1' name='screen1button2action1'></select> 
-				<select class="actions" id='screen1button2value1' name='screen1button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button2action2' name='screen1button2action2'></select>
-				<select class="actions" id='screen1button2value2' name='screen1button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen1logo3' name='screen1logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button3action0' name='screen1button3action0'></select>
-				<select class="actions" id='screen1button3value0' name='screen1button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button3action1' name='screen1button3action1'></select> 
-				<select class="actions" id='screen1button3value1' name='screen1button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button3action2' name='screen1button3action2'></select>
-				<select class="actions" id='screen1button3value2' name='screen1button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen1logo4' name='screen1logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen1button4action0' name='screen1button4action0'></select>
-				<select class="actions" id='screen1button4value0' name='screen1button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen1button4action1' name='screen1button4action1'></select> 
-				<select class="actions" id='screen1button4value1' name='screen1button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen1button4action2' name='screen1button4action2'></select>
-				<select class="actions" id='screen1button4value2' name='screen1button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen1logo5' name='screen1logo5'>
-				<option value='home.bmp'>home.bmp</option>
-				</select>
-			</td>
-			
-			</tr>
-			</tbody>
+				<br /><button style='cursor: pointer;' form="savehomescreen" type='save'>Save Home Screen
+					Config</button>
+		</form>
+	</div>
+	</form>
+	</p>
+	</div>
+	</p>
+	</div>
+	<!-- Tab Menu 1 -->
+	<div id="menu1" class="tabcontent">
+		<h3>Menu 1</h3>
+		<p>
+		<form method='post' id="savemenu1" action='/saveconfig'>
+			<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
+				<tbody>
+					<tr>
+						<td style="width: 33%;">
+							Button 1
+							<br />Image:
+							<select class="images" id='screen1logo0' name='screen1logo0'></select>
+							<br />Action 1:
+							<select class="actions" id='screen1button0action0' name='screen1button0action0'></select>
+							<select class="actions" id='screen1button0value0' name='screen1button0value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen1button0action1' name='screen1button0action1'></select>
+							<select class="actions" id='screen1button0value1' name='screen1button0value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen1button0action2' name='screen1button0action2'></select>
+							<select class="actions" id='screen1button0value2' name='screen1button0value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 2
+							<br />Image:
+							<select class="images" id='screen1logo1' name='screen1logo1'></select>
+							<br />Action 1:
+							<select class="actions" id='screen1button1action0' name='screen1button1action0'></select>
+							<select class="actions" id='screen1button1value0' name='screen1button1value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen1button1action1' name='screen1button1action1'></select>
+							<select class="actions" id='screen1button1value1' name='screen1button1value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen1button1action2' name='screen1button1action2'></select>
+							<select class="actions" id='screen1button1value2' name='screen1button1value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 3
+							<br />Image:
+							<select class="images" id='screen1logo2' name='screen1logo2'></select>
+							<br />Action 1:
+							<select class="actions" id='screen1button2action0' name='screen1button2action0'></select>
+							<select class="actions" id='screen1button2value0' name='screen1button2value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen1button2action1' name='screen1button2action1'></select>
+							<select class="actions" id='screen1button2value1' name='screen1button2value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen1button2action2' name='screen1button2action2'></select>
+							<select class="actions" id='screen1button2value2' name='screen1button2value2'></select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 33%;">
+							Button 4
+							<br />Image:
+							<select class="images" id='screen1logo3' name='screen1logo3'></select>
+							<br />Action 1:
+							<select class="actions" id='screen1button3action0' name='screen1button3action0'></select>
+							<select class="actions" id='screen1button3value0' name='screen1button3value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen1button3action1' name='screen1button3action1'></select>
+							<select class="actions" id='screen1button3value1' name='screen1button3value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen1button3action2' name='screen1button3action2'></select>
+							<select class="actions" id='screen1button3value2' name='screen1button3value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 5
+							<br />Image:
+							<select class="images" id='screen1logo4' name='screen1logo4'></select>
+							<br />Action 1:
+							<select class="actions" id='screen1button4action0' name='screen1button4action0'></select>
+							<select class="actions" id='screen1button4value0' name='screen1button4value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen1button4action1' name='screen1button4action1'></select>
+							<select class="actions" id='screen1button4value1' name='screen1button4value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen1button4action2' name='screen1button4action2'></select>
+							<select class="actions" id='screen1button4value2' name='screen1button4value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 6
+							<br />Image:
+							<select class="images" id='screen1logo5' name='screen1logo5'>
+								<option value='home.bmp'>home.bmp</option>
+							</select>
+						</td>
+
+					</tr>
+				</tbody>
 			</table>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu1">
-				<br/><button style='cursor: pointer;' form="savemenu1" type='save'>Save Menu 1 Config</button></form>
-			</div>
-		  </p>
-		</div>
-		<!-- Tab Menu 2 -->
-		<div id="menu2" class="tabcontent">
-		  <h3>Menu 2</h3>
-		  <p><form method='post' id="savemenu2" action='/saveconfig'>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0 
-				<br/>Image:
-				<select class="images" id='screen2logo0' name='screen2logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button0action0' name='screen2button0action0'></select>
-				<select class="actions" id='screen2button0value0' name='screen2button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button0action1' name='screen2button0action1'></select> 
-				<select class="actions" id='screen2button0value1' name='screen2button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button0action2' name='screen2button0action2'></select>
-				<select class="actions" id='screen2button0value2' name='screen2button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen2logo1' name='screen2logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button1action0' name='screen2button1action0'></select>
-				<select class="actions" id='screen2button1value0' name='screen2button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button1action1' name='screen2button1action1'></select> 
-				<select class="actions" id='screen2button1value1' name='screen2button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button1action2' name='screen2button1action2'></select>
-				<select class="actions" id='screen2button1value2' name='screen2button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen2logo2' name='screen2logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button2action0' name='screen2button2action0'></select>
-				<select class="actions" id='screen2button2value0' name='screen2button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button2action1' name='screen2button2action1'></select> 
-				<select class="actions" id='screen2button2value1' name='screen2button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button2action2' name='screen2button2action2'></select>
-				<select class="actions" id='screen2button2value2' name='screen2button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen2logo3' name='screen2logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button3action0' name='screen2button3action0'></select>
-				<select class="actions" id='screen2button3value0' name='screen2button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button3action1' name='screen2button3action1'></select> 
-				<select class="actions" id='screen2button3value1' name='screen2button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button3action2' name='screen2button3action2'></select>
-				<select class="actions" id='screen2button3value2' name='screen2button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen2logo4' name='screen2logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen2button4action0' name='screen2button4action0'></select>
-				<select class="actions" id='screen2button4value0' name='screen2button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen2button4action1' name='screen2button4action1'></select> 
-				<select class="actions" id='screen2button4value1' name='screen2button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen2button4action2' name='screen2button4action2'></select>
-				<select class="actions" id='screen2button4value2' name='screen2button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen2logo5' name='screen2logo5'>
-				<option value='home.bmp'>home.bmp</option>
-				</select>
-			</td>
-			
-			</tr>
-			</tbody>
+				<br /><button style='cursor: pointer;' form="savemenu1" type='save'>Save Menu 1 Config</button>
+		</form>
+	</div>
+	</p>
+	</div>
+	<!-- Tab Menu 2 -->
+	<div id="menu2" class="tabcontent">
+		<h3>Menu 2</h3>
+		<p>
+		<form method='post' id="savemenu2" action='/saveconfig'>
+			<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
+				<tbody>
+					<tr>
+						<td style="width: 33%;">
+							Button 1
+							<br />Image:
+							<select class="images" id='screen2logo0' name='screen2logo0'></select>
+							<br />Action 1:
+							<select class="actions" id='screen2button0action0' name='screen2button0action0'></select>
+							<select class="actions" id='screen2button0value0' name='screen2button0value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen2button0action1' name='screen2button0action1'></select>
+							<select class="actions" id='screen2button0value1' name='screen2button0value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen2button0action2' name='screen2button0action2'></select>
+							<select class="actions" id='screen2button0value2' name='screen2button0value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 2
+							<br />Image:
+							<select class="images" id='screen2logo1' name='screen2logo1'></select>
+							<br />Action 1:
+							<select class="actions" id='screen2button1action0' name='screen2button1action0'></select>
+							<select class="actions" id='screen2button1value0' name='screen2button1value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen2button1action1' name='screen2button1action1'></select>
+							<select class="actions" id='screen2button1value1' name='screen2button1value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen2button1action2' name='screen2button1action2'></select>
+							<select class="actions" id='screen2button1value2' name='screen2button1value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 3
+							<br />Image:
+							<select class="images" id='screen2logo2' name='screen2logo2'></select>
+							<br />Action 1:
+							<select class="actions" id='screen2button2action0' name='screen2button2action0'></select>
+							<select class="actions" id='screen2button2value0' name='screen2button2value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen2button2action1' name='screen2button2action1'></select>
+							<select class="actions" id='screen2button2value1' name='screen2button2value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen2button2action2' name='screen2button2action2'></select>
+							<select class="actions" id='screen2button2value2' name='screen2button2value2'></select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 33%;">
+							Button 4
+							<br />Image:
+							<select class="images" id='screen2logo3' name='screen2logo3'></select>
+							<br />Action 1:
+							<select class="actions" id='screen2button3action0' name='screen2button3action0'></select>
+							<select class="actions" id='screen2button3value0' name='screen2button3value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen2button3action1' name='screen2button3action1'></select>
+							<select class="actions" id='screen2button3value1' name='screen2button3value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen2button3action2' name='screen2button3action2'></select>
+							<select class="actions" id='screen2button3value2' name='screen2button3value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 5
+							<br />Image:
+							<select class="images" id='screen2logo4' name='screen2logo4'></select>
+							<br />Action 1:
+							<select class="actions" id='screen2button4action0' name='screen2button4action0'></select>
+							<select class="actions" id='screen2button4value0' name='screen2button4value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen2button4action1' name='screen2button4action1'></select>
+							<select class="actions" id='screen2button4value1' name='screen2button4value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen2button4action2' name='screen2button4action2'></select>
+							<select class="actions" id='screen2button4value2' name='screen2button4value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 6
+							<br />Image:
+							<select class="images" id='screen2logo5' name='screen2logo5'>
+								<option value='home.bmp'>home.bmp</option>
+							</select>
+						</td>
+
+					</tr>
+				</tbody>
 			</table>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu2">
-				<br/><button style='cursor: pointer;' form="savemenu2" type='save'>Save Menu 2 Config</button></form>
-			</div>
-		  </p>
-		</div> 
-		<!-- Tab Menu 3 -->
-		<div id="menu3" class="tabcontent">
-		  <h3>Menu 3</h3>
-		  <p><form method='post' id="savemenu3" action='/saveconfig'>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0 
-				<br/>Image:
-				<select class="images" id='screen3logo0' name='screen3logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen3button0action0' name='screen3button0action0'></select>
-				<select class="actions" id='screen3button0value0' name='screen3button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen3button0action1' name='screen3button0action1'></select> 
-				<select class="actions" id='screen3button0value1' name='screen3button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen3button0action2' name='screen3button0action2'></select>
-				<select class="actions" id='screen3button0value2' name='screen3button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen3logo1' name='screen3logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen3button1action0' name='screen3button1action0'></select>
-				<select class="actions" id='screen3button1value0' name='screen3button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen3button1action1' name='screen3button1action1'></select> 
-				<select class="actions" id='screen3button1value1' name='screen3button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen3button1action2' name='screen3button1action2'></select>
-				<select class="actions" id='screen3button1value2' name='screen3button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen3logo2' name='screen3logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen3button2action0' name='screen3button2action0'></select>
-				<select class="actions" id='screen3button2value0' name='screen3button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen3button2action1' name='screen3button2action1'></select> 
-				<select class="actions" id='screen3button2value1' name='screen3button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen3button2action2' name='screen3button2action2'></select>
-				<select class="actions" id='screen3button2value2' name='screen3button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen3logo3' name='screen3logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen3button3action0' name='screen3button3action0'></select>
-				<select class="actions" id='screen3button3value0' name='screen3button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen3button3action1' name='screen3button3action1'></select> 
-				<select class="actions" id='screen3button3value1' name='screen3button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen3button3action2' name='screen3button3action2'></select>
-				<select class="actions" id='screen3button3value2' name='screen3button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen3logo4' name='screen3logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen3button4action0' name='screen3button4action0'></select>
-				<select class="actions" id='screen3button4value0' name='screen3button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen3button4action1' name='screen3button4action1'></select> 
-				<select class="actions" id='screen3button4value1' name='screen3button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen3button4action2' name='screen3button4action2'></select>
-				<select class="actions" id='screen3button4value2' name='screen3button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen3logo5' name='screen3logo5'>
-				<option value='home.bmp'>home.bmp</option>
-				</select>
-			</td>
-			
-			</tr>
-			</tbody>
+				<br /><button style='cursor: pointer;' form="savemenu2" type='save'>Save Menu 2 Config</button>
+		</form>
+	</div>
+	</p>
+	</div>
+	<!-- Tab Menu 3 -->
+	<div id="menu3" class="tabcontent">
+		<h3>Menu 3</h3>
+		<p>
+		<form method='post' id="savemenu3" action='/saveconfig'>
+			<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
+				<tbody>
+					<tr>
+						<td style="width: 33%;">
+							Button 1
+							<br />Image:
+							<select class="images" id='screen3logo0' name='screen3logo0'></select>
+							<br />Action 1:
+							<select class="actions" id='screen3button0action0' name='screen3button0action0'></select>
+							<select class="actions" id='screen3button0value0' name='screen3button0value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen3button0action1' name='screen3button0action1'></select>
+							<select class="actions" id='screen3button0value1' name='screen3button0value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen3button0action2' name='screen3button0action2'></select>
+							<select class="actions" id='screen3button0value2' name='screen3button0value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 2
+							<br />Image:
+							<select class="images" id='screen3logo1' name='screen3logo1'></select>
+							<br />Action 1:
+							<select class="actions" id='screen3button1action0' name='screen3button1action0'></select>
+							<select class="actions" id='screen3button1value0' name='screen3button1value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen3button1action1' name='screen3button1action1'></select>
+							<select class="actions" id='screen3button1value1' name='screen3button1value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen3button1action2' name='screen3button1action2'></select>
+							<select class="actions" id='screen3button1value2' name='screen3button1value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 3
+							<br />Image:
+							<select class="images" id='screen3logo2' name='screen3logo2'></select>
+							<br />Action 1:
+							<select class="actions" id='screen3button2action0' name='screen3button2action0'></select>
+							<select class="actions" id='screen3button2value0' name='screen3button2value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen3button2action1' name='screen3button2action1'></select>
+							<select class="actions" id='screen3button2value1' name='screen3button2value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen3button2action2' name='screen3button2action2'></select>
+							<select class="actions" id='screen3button2value2' name='screen3button2value2'></select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 33%;">
+							Button 4
+							<br />Image:
+							<select class="images" id='screen3logo3' name='screen3logo3'></select>
+							<br />Action 1:
+							<select class="actions" id='screen3button3action0' name='screen3button3action0'></select>
+							<select class="actions" id='screen3button3value0' name='screen3button3value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen3button3action1' name='screen3button3action1'></select>
+							<select class="actions" id='screen3button3value1' name='screen3button3value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen3button3action2' name='screen3button3action2'></select>
+							<select class="actions" id='screen3button3value2' name='screen3button3value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 5
+							<br />Image:
+							<select class="images" id='screen3logo4' name='screen3logo4'></select>
+							<br />Action 1:
+							<select class="actions" id='screen3button4action0' name='screen3button4action0'></select>
+							<select class="actions" id='screen3button4value0' name='screen3button4value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen3button4action1' name='screen3button4action1'></select>
+							<select class="actions" id='screen3button4value1' name='screen3button4value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen3button4action2' name='screen3button4action2'></select>
+							<select class="actions" id='screen3button4value2' name='screen3button4value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 6
+							<br />Image:
+							<select class="images" id='screen3logo5' name='screen3logo5'>
+								<option value='home.bmp'>home.bmp</option>
+							</select>
+						</td>
+
+					</tr>
+				</tbody>
 			</table>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu3">
-				<br/><button style='cursor: pointer;' form="savemenu3" type='save'>Save Menu 3 Config</button></form>
-			</div>
-		  </p>
-		</div> 
-		<!-- Tab Menu 4 -->
-		<div id="menu4" class="tabcontent">
-		  <h3>Menu 4</h3>
-		  <p><form method='post' id="savemenu4" action='/saveconfig'>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0 
-				<br/>Image:
-				<select class="images" id='screen4logo0' name='screen4logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen4button0action0' name='screen4button0action0'></select>
-				<select class="actions" id='screen4button0value0' name='screen4button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen4button0action1' name='screen4button0action1'></select> 
-				<select class="actions" id='screen4button0value1' name='screen4button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen4button0action2' name='screen4button0action2'></select>
-				<select class="actions" id='screen4button0value2' name='screen4button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen4logo1' name='screen4logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen4button1action0' name='screen4button1action0'></select>
-				<select class="actions" id='screen4button1value0' name='screen4button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen4button1action1' name='screen4button1action1'></select> 
-				<select class="actions" id='screen4button1value1' name='screen4button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen4button1action2' name='screen4button1action2'></select>
-				<select class="actions" id='screen4button1value2' name='screen4button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen4logo2' name='screen4logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen4button2action0' name='screen4button2action0'></select>
-				<select class="actions" id='screen4button2value0' name='screen4button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen4button2action1' name='screen4button2action1'></select> 
-				<select class="actions" id='screen4button2value1' name='screen4button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen4button2action2' name='screen4button2action2'></select>
-				<select class="actions" id='screen4button2value2' name='screen4button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen4logo3' name='screen4logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen4button3action0' name='screen4button3action0'></select>
-				<select class="actions" id='screen4button3value0' name='screen4button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen4button3action1' name='screen4button3action1'></select> 
-				<select class="actions" id='screen4button3value1' name='screen4button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen4button3action2' name='screen4button3action2'></select>
-				<select class="actions" id='screen4button3value2' name='screen4button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen4logo4' name='screen4logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen4button4action0' name='screen4button4action0'></select>
-				<select class="actions" id='screen4button4value0' name='screen4button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen4button4action1' name='screen4button4action1'></select> 
-				<select class="actions" id='screen4button4value1' name='screen4button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen4button4action2' name='screen4button4action2'></select>
-				<select class="actions" id='screen4button4value2' name='screen4button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen4logo5' name='screen4logo5'>
-				<option value='home.bmp'>home.bmp</option>
-				</select>
-			</td>
-			
-			</tr>
-			</tbody>
+				<br /><button style='cursor: pointer;' form="savemenu3" type='save'>Save Menu 3 Config</button>
+		</form>
+	</div>
+	</p>
+	</div>
+	<!-- Tab Menu 4 -->
+	<div id="menu4" class="tabcontent">
+		<h3>Menu 4</h3>
+		<p>
+		<form method='post' id="savemenu4" action='/saveconfig'>
+			<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
+				<tbody>
+					<tr>
+						<td style="width: 33%;">
+							Button 1
+							<br />Image:
+							<select class="images" id='screen4logo0' name='screen4logo0'></select>
+							<br />Action 1:
+							<select class="actions" id='screen4button0action0' name='screen4button0action0'></select>
+							<select class="actions" id='screen4button0value0' name='screen4button0value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen4button0action1' name='screen4button0action1'></select>
+							<select class="actions" id='screen4button0value1' name='screen4button0value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen4button0action2' name='screen4button0action2'></select>
+							<select class="actions" id='screen4button0value2' name='screen4button0value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 2
+							<br />Image:
+							<select class="images" id='screen4logo1' name='screen4logo1'></select>
+							<br />Action 1:
+							<select class="actions" id='screen4button1action0' name='screen4button1action0'></select>
+							<select class="actions" id='screen4button1value0' name='screen4button1value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen4button1action1' name='screen4button1action1'></select>
+							<select class="actions" id='screen4button1value1' name='screen4button1value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen4button1action2' name='screen4button1action2'></select>
+							<select class="actions" id='screen4button1value2' name='screen4button1value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 3
+							<br />Image:
+							<select class="images" id='screen4logo2' name='screen4logo2'></select>
+							<br />Action 1:
+							<select class="actions" id='screen4button2action0' name='screen4button2action0'></select>
+							<select class="actions" id='screen4button2value0' name='screen4button2value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen4button2action1' name='screen4button2action1'></select>
+							<select class="actions" id='screen4button2value1' name='screen4button2value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen4button2action2' name='screen4button2action2'></select>
+							<select class="actions" id='screen4button2value2' name='screen4button2value2'></select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 33%;">
+							Button 4
+							<br />Image:
+							<select class="images" id='screen4logo3' name='screen4logo3'></select>
+							<br />Action 1:
+							<select class="actions" id='screen4button3action0' name='screen4button3action0'></select>
+							<select class="actions" id='screen4button3value0' name='screen4button3value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen4button3action1' name='screen4button3action1'></select>
+							<select class="actions" id='screen4button3value1' name='screen4button3value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen4button3action2' name='screen4button3action2'></select>
+							<select class="actions" id='screen4button3value2' name='screen4button3value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 5
+							<br />Image:
+							<select class="images" id='screen4logo4' name='screen4logo4'></select>
+							<br />Action 1:
+							<select class="actions" id='screen4button4action0' name='screen4button4action0'></select>
+							<select class="actions" id='screen4button4value0' name='screen4button4value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen4button4action1' name='screen4button4action1'></select>
+							<select class="actions" id='screen4button4value1' name='screen4button4value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen4button4action2' name='screen4button4action2'></select>
+							<select class="actions" id='screen4button4value2' name='screen4button4value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 6
+							<br />Image:
+							<select class="images" id='screen4logo5' name='screen4logo5'>
+								<option value='home.bmp'>home.bmp</option>
+							</select>
+						</td>
+
+					</tr>
+				</tbody>
 			</table>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu4">
-				<br/><button style='cursor: pointer;' form="savemenu4" type='save'>Save Menu 4 Config</button></form>
-			</div>
-		  </p>
-		</div>
-		<!-- Tab Menu 5 -->
-		<div id="menu5" class="tabcontent">
-		  <h3>Menu 5</h3>
-		  <p><form method='post' id="savemenu5" action='/saveconfig'>
-		  	<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
-			<tbody>
-			<tr>
-			<td style="width: 33%;">
-				Button 0 
-				<br/>Image:
-				<select class="images" id='screen5logo0' name='screen5logo0'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen5button0action0' name='screen5button0action0'></select>
-				<select class="actions" id='screen5button0value0' name='screen5button0value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen5button0action1' name='screen5button0action1'></select> 
-				<select class="actions" id='screen5button0value1' name='screen5button0value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen5button0action2' name='screen5button0action2'></select>
-				<select class="actions" id='screen5button0value2' name='screen5button0value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 1
-				<br/>Image:
-				<select class="images" id='screen5logo1' name='screen5logo1'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen5button1action0' name='screen5button1action0'></select>
-				<select class="actions" id='screen5button1value0' name='screen5button1value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen5button1action1' name='screen5button1action1'></select> 
-				<select class="actions" id='screen5button1value1' name='screen5button1value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen5button1action2' name='screen5button1action2'></select>
-				<select class="actions" id='screen5button1value2' name='screen5button1value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 2
-				<br/>Image:
-				<select class="images" id='screen5logo2' name='screen5logo2'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen5button2action0' name='screen5button2action0'></select>
-				<select class="actions" id='screen5button2value0' name='screen5button2value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen5button2action1' name='screen5button2action1'></select> 
-				<select class="actions" id='screen5button2value1' name='screen5button2value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen5button2action2' name='screen5button2action2'></select>
-				<select class="actions" id='screen5button2value2' name='screen5button2value2'></select>
-			</td>
-			</tr>
-			<tr>
-			<td style="width: 33%;">
-				Button 3
-				<br/>Image:
-				<select class="images" id='screen5logo3' name='screen5logo3'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen5button3action0' name='screen5button3action0'></select>
-				<select class="actions" id='screen5button3value0' name='screen5button3value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen5button3action1' name='screen5button3action1'></select> 
-				<select class="actions" id='screen5button3value1' name='screen5button3value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen5button3action2' name='screen5button3action2'></select>
-				<select class="actions" id='screen5button3value2' name='screen5button3value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 4
-				<br/>Image:
-				<select class="images" id='screen5logo4' name='screen5logo4'></select>
-				<br/>Action 1:
-				<select class="actions" id='screen5button4action0' name='screen5button4action0'></select>
-				<select class="actions" id='screen5button4value0' name='screen5button4value0'></select>
-				<br/>Action 2:
-				<select class="actions" id='screen5button4action1' name='screen5button4action1'></select> 
-				<select class="actions" id='screen5button4value1' name='screen5button4value1'></select>
-				<br/>Action 3:
-				<select class="actions" id='screen5button4action2' name='screen5button4action2'></select>
-				<select class="actions" id='screen5button4value2' name='screen5button4value2'></select>
-			</td>
-			<td style="width: 33%;">
-				Button 5
-				<br/>Image:
-				<select class="images" id='screen5logo5' name='screen5logo5'>
-				<option value='home.bmp'>home.bmp</option>
-				</select>
-			</td>
-			
-			</tr>
-			</tbody>
+				<br /><button style='cursor: pointer;' form="savemenu4" type='save'>Save Menu 4 Config</button>
+		</form>
+	</div>
+	</p>
+	</div>
+	<!-- Tab Menu 5 -->
+	<div id="menu5" class="tabcontent">
+		<h3>Menu 5</h3>
+		<p>
+		<form method='post' id="savemenu5" action='/saveconfig'>
+			<table style="height: 170px; width: 100%; border: 1px solid #000088; text-align: left;">
+				<tbody>
+					<tr>
+						<td style="width: 33%;">
+							Button 1
+							<br />Image:
+							<select class="images" id='screen5logo0' name='screen5logo0'></select>
+							<br />Action 1:
+							<select class="actions" id='screen5button0action0' name='screen5button0action0'></select>
+							<select class="actions" id='screen5button0value0' name='screen5button0value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen5button0action1' name='screen5button0action1'></select>
+							<select class="actions" id='screen5button0value1' name='screen5button0value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen5button0action2' name='screen5button0action2'></select>
+							<select class="actions" id='screen5button0value2' name='screen5button0value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 2
+							<br />Image:
+							<select class="images" id='screen5logo1' name='screen5logo1'></select>
+							<br />Action 1:
+							<select class="actions" id='screen5button1action0' name='screen5button1action0'></select>
+							<select class="actions" id='screen5button1value0' name='screen5button1value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen5button1action1' name='screen5button1action1'></select>
+							<select class="actions" id='screen5button1value1' name='screen5button1value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen5button1action2' name='screen5button1action2'></select>
+							<select class="actions" id='screen5button1value2' name='screen5button1value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 3
+							<br />Image:
+							<select class="images" id='screen5logo2' name='screen5logo2'></select>
+							<br />Action 1:
+							<select class="actions" id='screen5button2action0' name='screen5button2action0'></select>
+							<select class="actions" id='screen5button2value0' name='screen5button2value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen5button2action1' name='screen5button2action1'></select>
+							<select class="actions" id='screen5button2value1' name='screen5button2value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen5button2action2' name='screen5button2action2'></select>
+							<select class="actions" id='screen5button2value2' name='screen5button2value2'></select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 33%;">
+							Button 4
+							<br />Image:
+							<select class="images" id='screen5logo3' name='screen5logo3'></select>
+							<br />Action 1:
+							<select class="actions" id='screen5button3action0' name='screen5button3action0'></select>
+							<select class="actions" id='screen5button3value0' name='screen5button3value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen5button3action1' name='screen5button3action1'></select>
+							<select class="actions" id='screen5button3value1' name='screen5button3value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen5button3action2' name='screen5button3action2'></select>
+							<select class="actions" id='screen5button3value2' name='screen5button3value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 5
+							<br />Image:
+							<select class="images" id='screen5logo4' name='screen5logo4'></select>
+							<br />Action 1:
+							<select class="actions" id='screen5button4action0' name='screen5button4action0'></select>
+							<select class="actions" id='screen5button4value0' name='screen5button4value0'></select>
+							<br />Action 2:
+							<select class="actions" id='screen5button4action1' name='screen5button4action1'></select>
+							<select class="actions" id='screen5button4value1' name='screen5button4value1'></select>
+							<br />Action 3:
+							<select class="actions" id='screen5button4action2' name='screen5button4action2'></select>
+							<select class="actions" id='screen5button4value2' name='screen5button4value2'></select>
+						</td>
+						<td style="width: 33%;">
+							Button 6
+							<br />Image:
+							<select class="images" id='screen5logo5' name='screen5logo5'>
+								<option value='home.bmp'>home.bmp</option>
+							</select>
+						</td>
+
+					</tr>
+				</tbody>
 			</table>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu5">
-				<br/><button style='cursor: pointer;' form="savemenu5" type='save'>Save Menu 5 Config</button></form>
-			</div>
-		  </p>
-		</div> 
-		<!-- Upload Logo -->
-		<div id="uploadimage" class="tabcontent">
-		  <h3>Upload a new logo</h3>
-		  <br/> Some test here....<br/>
-		  <p><div class="form" style="width: 10%; text-align: : center; margin: auto;">
-		  	<input form="uploadfile" type="file" name="name" accept=".bmp"><br/><br/>
-    		<button form="uploadfile" type="save">Upload</button>
-    	</div>
-		  </p>
-		</div> 
-		
+				<br /><button style='cursor: pointer;' form="savemenu5" type='save'>Save Menu 5 Config</button>
+		</form>
+	</div>
+	</p>
+	</div>
+	<!-- Upload Logo -->
+	<div id="uploadimage" class="tabcontent">
+		<h3>Upload a new logo</h3>
+		<br /> Some test here....<br />
+		<p>
+		<div class="form" style="width: 10%; text-align: : center; margin: auto;">
+			<input form="uploadfile" type="file" name="name" accept=".bmp"><br /><br />
+			<button form="uploadfile" type="save">Upload</button>
+		</div>
+		</p>
+	</div>
+
 
 	</div>
 
 	<!-- Menu Handler -->
-    <script>
+	<script>
 
 		function openMenu(evt, menuitem) {
-		  // Declare all variables
-		  var i, tabcontent, tablinks;
+			// Declare all variables
+			var i, tabcontent, tablinks;
 
-		  // Get all elements with class="tabcontent" and hide them
-		  tabcontent = document.getElementsByClassName("tabcontent");
-		  for (i = 0; i < tabcontent.length; i++) {
-		    tabcontent[i].style.display = "none";
-		  }
+			// Get all elements with class="tabcontent" and hide them
+			tabcontent = document.getElementsByClassName("tabcontent");
+			for (i = 0; i < tabcontent.length; i++) {
+				tabcontent[i].style.display = "none";
+			}
 
-		  // Get all elements with class="tablinks" and remove the class "active"
-		  tablinks = document.getElementsByClassName("tablinks");
-		  for (i = 0; i < tablinks.length; i++) {
-		    tablinks[i].className = tablinks[i].className.replace(" active", "");
-		  }
+			// Get all elements with class="tablinks" and remove the class "active"
+			tablinks = document.getElementsByClassName("tablinks");
+			for (i = 0; i < tablinks.length; i++) {
+				tablinks[i].className = tablinks[i].className.replace(" active", "");
+			}
 
-		  // Show the current tab, and add an "active" class to the button that opened the tab
-		  document.getElementById(menuitem).style.display = "block";
-		  evt.currentTarget.className += " active";
+			// Show the current tab, and add an "active" class to the button that opened the tab
+			document.getElementById(menuitem).style.display = "block";
+			evt.currentTarget.className += " active";
 		}
 
-		document.addEventListener('DOMContentLoaded',openMenu(event, 'intro'), false);
+		document.addEventListener('DOMContentLoaded', openMenu(event, 'intro'), false);
 
-    </script>
+	</script>
 
 	<script src="bigarrays.js"></script>
-    <script src="buttonfunctions.js"></script>
+	<script src="buttonfunctions.js"></script>
 
 
 	<!-- Load Config data from JSON -->
@@ -676,421 +717,422 @@
 
 		function fillvaluelist(targetNode, srcArray) {
 
-			targetNode.innerHTML = srcArray.reduce((options, {value,name}) => 
-			  options+=`<option value="${value}">${name}</option>`, 
-			  '');
-  			
+			targetNode.innerHTML = srcArray.reduce((options, { value, name }) =>
+				options += `<option value="${value}">${name}</option>`,
+				'');
+
 		}
 		// Load Colors 
-        fetch('config/colors.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+		fetch('config/colors.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-	        document.getElementById("menubuttoncolor").value = data.menubuttoncolor;
-        	document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
-        	document.getElementById("logocolor").value = data.logocolor;
-        	document.getElementById("background").value = data.background;
+				document.getElementById("menubuttoncolor").value = data.menubuttoncolor;
+				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
+				document.getElementById("logocolor").value = data.logocolor;
+				document.getElementById("background").value = data.background;
 
-        		        })
-        	.catch((err) => {
-        	// No error handling for now
-        	})
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
 
-        // Load Menu 1
-        fetch('config/menu1.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+		// Load Menu 1
+		fetch('config/menu1.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-			document.getElementById("screen1logo0").add(new Option(data.logo0));
-			document.getElementById('screen1button0action0').value = data.button0.actionarray[0];
-			document.getElementById('screen1button0action1').value = data.button0.actionarray[1];
-			document.getElementById('screen1button0action2').value = data.button0.actionarray[2];
-			fillvaluelist(screen1button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-			document.getElementById('screen1button0value0').value = data.button0.valuearray[0];
-			fillvaluelist(screen1button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-			document.getElementById('screen1button0value1').value = data.button0.valuearray[1];
-			fillvaluelist(screen1button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-			document.getElementById('screen1button0value2').value = data.button0.valuearray[2];
+				document.getElementById("screen1logo0").add(new Option(data.logo0));
+				document.getElementById('screen1button0action0').value = data.button0.actionarray[0];
+				document.getElementById('screen1button0action1').value = data.button0.actionarray[1];
+				document.getElementById('screen1button0action2').value = data.button0.actionarray[2];
+				fillvaluelist(screen1button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+				document.getElementById('screen1button0value0').value = data.button0.valuearray[0];
+				fillvaluelist(screen1button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+				document.getElementById('screen1button0value1').value = data.button0.valuearray[1];
+				fillvaluelist(screen1button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+				document.getElementById('screen1button0value2').value = data.button0.valuearray[2];
 
-	        document.getElementById("screen1logo1").add(new Option(data.logo1));
-			document.getElementById('screen1button1action0').value = data.button1.actionarray[0];
-			document.getElementById('screen1button1action1').value = data.button1.actionarray[1];
-			document.getElementById('screen1button1action2').value = data.button1.actionarray[2];
-			fillvaluelist(screen1button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-			document.getElementById('screen1button1value0').value = data.button1.valuearray[0];
-			fillvaluelist(screen1button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-			document.getElementById('screen1button1value1').value = data.button1.valuearray[1];
-			fillvaluelist(screen1button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-			document.getElementById('screen1button1value2').value = data.button1.valuearray[2];
+				document.getElementById("screen1logo1").add(new Option(data.logo1));
+				document.getElementById('screen1button1action0').value = data.button1.actionarray[0];
+				document.getElementById('screen1button1action1').value = data.button1.actionarray[1];
+				document.getElementById('screen1button1action2').value = data.button1.actionarray[2];
+				fillvaluelist(screen1button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+				document.getElementById('screen1button1value0').value = data.button1.valuearray[0];
+				fillvaluelist(screen1button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+				document.getElementById('screen1button1value1').value = data.button1.valuearray[1];
+				fillvaluelist(screen1button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+				document.getElementById('screen1button1value2').value = data.button1.valuearray[2];
 
-	        document.getElementById("screen1logo2").add(new Option(data.logo2));
-			document.getElementById('screen1button2action0').value = data.button2.actionarray[0];
-			document.getElementById('screen1button2action1').value = data.button2.actionarray[1];
-			document.getElementById('screen1button2action2').value = data.button2.actionarray[2];
-			fillvaluelist(screen1button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-			document.getElementById('screen1button2value0').value = data.button2.valuearray[0];
-			fillvaluelist(screen1button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-			document.getElementById('screen1button2value1').value = data.button2.valuearray[1];
-			fillvaluelist(screen1button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-			document.getElementById('screen1button2value2').value = data.button2.valuearray[2];
+				document.getElementById("screen1logo2").add(new Option(data.logo2));
+				document.getElementById('screen1button2action0').value = data.button2.actionarray[0];
+				document.getElementById('screen1button2action1').value = data.button2.actionarray[1];
+				document.getElementById('screen1button2action2').value = data.button2.actionarray[2];
+				fillvaluelist(screen1button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+				document.getElementById('screen1button2value0').value = data.button2.valuearray[0];
+				fillvaluelist(screen1button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+				document.getElementById('screen1button2value1').value = data.button2.valuearray[1];
+				fillvaluelist(screen1button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+				document.getElementById('screen1button2value2').value = data.button2.valuearray[2];
 
-			document.getElementById("screen1logo3").add(new Option(data.logo3));
-	        document.getElementById('screen1button3action0').value = data.button3.actionarray[0];
-	        document.getElementById('screen1button3action1').value = data.button3.actionarray[1];
-	        document.getElementById('screen1button3action2').value = data.button3.actionarray[2];
-      		fillvaluelist(screen1button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-      		document.getElementById('screen1button3value0').value = data.button3.valuearray[0];
-      		fillvaluelist(screen1button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-      		document.getElementById('screen1button3value1').value = data.button3.valuearray[1];
-      		fillvaluelist(screen1button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-      		document.getElementById('screen1button3value2').value = data.button3.valuearray[2];
-	        
-	        document.getElementById("screen1logo4").add(new Option(data.logo4));
-			document.getElementById('screen1button4action0').value = data.button4.actionarray[0];
-			document.getElementById('screen1button4action1').value = data.button4.actionarray[1];
-			document.getElementById('screen1button4action2').value = data.button4.actionarray[2];
-      		fillvaluelist(screen1button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-      		document.getElementById('screen1button4value0').value = data.button4.valuearray[0];
-      		fillvaluelist(screen1button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-      		document.getElementById('screen1button4value1').value = data.button4.valuearray[1];
-      		fillvaluelist(screen1button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-      		document.getElementById('screen1button4value2').value = data.button4.valuearray[2];
+				document.getElementById("screen1logo3").add(new Option(data.logo3));
+				document.getElementById('screen1button3action0').value = data.button3.actionarray[0];
+				document.getElementById('screen1button3action1').value = data.button3.actionarray[1];
+				document.getElementById('screen1button3action2').value = data.button3.actionarray[2];
+				fillvaluelist(screen1button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+				document.getElementById('screen1button3value0').value = data.button3.valuearray[0];
+				fillvaluelist(screen1button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+				document.getElementById('screen1button3value1').value = data.button3.valuearray[1];
+				fillvaluelist(screen1button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+				document.getElementById('screen1button3value2').value = data.button3.valuearray[2];
 
-	        document.getElementById("screen1logo5").add(new Option("home.bmp"));
+				document.getElementById("screen1logo4").add(new Option(data.logo4));
+				document.getElementById('screen1button4action0').value = data.button4.actionarray[0];
+				document.getElementById('screen1button4action1').value = data.button4.actionarray[1];
+				document.getElementById('screen1button4action2').value = data.button4.actionarray[2];
+				fillvaluelist(screen1button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+				document.getElementById('screen1button4value0').value = data.button4.valuearray[0];
+				fillvaluelist(screen1button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+				document.getElementById('screen1button4value1').value = data.button4.valuearray[1];
+				fillvaluelist(screen1button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+				document.getElementById('screen1button4value2').value = data.button4.valuearray[2];
 
-        		        })
-        	.catch((err) => {
-        	// No error handling for now
-        })
+				document.getElementById("screen1logo5").add(new Option("home.bmp"));
 
-        // Load Menu 2
-        fetch('config/menu2.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
 
-			document.getElementById("screen2logo0").add(new Option(data.logo0));
-			document.getElementById('screen2button0action0').value = data.button0.actionarray[0];
-			document.getElementById('screen2button0action1').value = data.button0.actionarray[1];
-			document.getElementById('screen2button0action2').value = data.button0.actionarray[2];
-			fillvaluelist(screen2button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-			document.getElementById('screen2button0value0').value = data.button0.valuearray[0];
-			fillvaluelist(screen2button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-			document.getElementById('screen2button0value1').value = data.button0.valuearray[1];
-			fillvaluelist(screen2button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-			document.getElementById('screen2button0value2').value = data.button0.valuearray[2];
+		// Load Menu 2
+		fetch('config/menu2.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-	        document.getElementById("screen2logo1").add(new Option(data.logo1));
-			document.getElementById('screen2button1action0').value = data.button1.actionarray[0];
-			document.getElementById('screen2button1action1').value = data.button1.actionarray[1];
-			document.getElementById('screen2button1action2').value = data.button1.actionarray[2];
-			fillvaluelist(screen2button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-			document.getElementById('screen2button1value0').value = data.button1.valuearray[0];
-			fillvaluelist(screen2button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-			document.getElementById('screen2button1value1').value = data.button1.valuearray[1];
-			fillvaluelist(screen2button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-			document.getElementById('screen2button1value2').value = data.button1.valuearray[2];
+				document.getElementById("screen2logo0").add(new Option(data.logo0));
+				document.getElementById('screen2button0action0').value = data.button0.actionarray[0];
+				document.getElementById('screen2button0action1').value = data.button0.actionarray[1];
+				document.getElementById('screen2button0action2').value = data.button0.actionarray[2];
+				fillvaluelist(screen2button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+				document.getElementById('screen2button0value0').value = data.button0.valuearray[0];
+				fillvaluelist(screen2button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+				document.getElementById('screen2button0value1').value = data.button0.valuearray[1];
+				fillvaluelist(screen2button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+				document.getElementById('screen2button0value2').value = data.button0.valuearray[2];
 
-	        document.getElementById("screen2logo2").add(new Option(data.logo2));
-			document.getElementById('screen2button2action0').value = data.button2.actionarray[0];
-			document.getElementById('screen2button2action1').value = data.button2.actionarray[1];
-			document.getElementById('screen2button2action2').value = data.button2.actionarray[2];
-			fillvaluelist(screen2button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-			document.getElementById('screen2button2value0').value = data.button2.valuearray[0];
-			fillvaluelist(screen2button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-			document.getElementById('screen2button2value1').value = data.button2.valuearray[1];
-			fillvaluelist(screen2button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-			document.getElementById('screen2button2value2').value = data.button2.valuearray[2];
+				document.getElementById("screen2logo1").add(new Option(data.logo1));
+				document.getElementById('screen2button1action0').value = data.button1.actionarray[0];
+				document.getElementById('screen2button1action1').value = data.button1.actionarray[1];
+				document.getElementById('screen2button1action2').value = data.button1.actionarray[2];
+				fillvaluelist(screen2button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+				document.getElementById('screen2button1value0').value = data.button1.valuearray[0];
+				fillvaluelist(screen2button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+				document.getElementById('screen2button1value1').value = data.button1.valuearray[1];
+				fillvaluelist(screen2button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+				document.getElementById('screen2button1value2').value = data.button1.valuearray[2];
 
-			document.getElementById("screen2logo3").add(new Option(data.logo3));
-	        document.getElementById('screen2button3action0').value = data.button3.actionarray[0];
-	        document.getElementById('screen2button3action1').value = data.button3.actionarray[1];
-	        document.getElementById('screen2button3action2').value = data.button3.actionarray[2];
-      		fillvaluelist(screen2button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-      		document.getElementById('screen2button3value0').value = data.button3.valuearray[0];
-      		fillvaluelist(screen2button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-      		document.getElementById('screen2button3value1').value = data.button3.valuearray[1];
-      		fillvaluelist(screen2button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-      		document.getElementById('screen2button3value2').value = data.button3.valuearray[2];
-	        
-	        document.getElementById("screen2logo4").add(new Option(data.logo4));
-			document.getElementById('screen2button4action0').value = data.button4.actionarray[0];
-			document.getElementById('screen2button4action1').value = data.button4.actionarray[1];
-			document.getElementById('screen2button4action2').value = data.button4.actionarray[2];
-      		fillvaluelist(screen2button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-      		document.getElementById('screen2button4value0').value = data.button4.valuearray[0];
-      		fillvaluelist(screen2button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-      		document.getElementById('screen2button4value1').value = data.button4.valuearray[1];
-      		fillvaluelist(screen2button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-      		document.getElementById('screen2button4value2').value = data.button4.valuearray[2];
+				document.getElementById("screen2logo2").add(new Option(data.logo2));
+				document.getElementById('screen2button2action0').value = data.button2.actionarray[0];
+				document.getElementById('screen2button2action1').value = data.button2.actionarray[1];
+				document.getElementById('screen2button2action2').value = data.button2.actionarray[2];
+				fillvaluelist(screen2button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+				document.getElementById('screen2button2value0').value = data.button2.valuearray[0];
+				fillvaluelist(screen2button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+				document.getElementById('screen2button2value1').value = data.button2.valuearray[1];
+				fillvaluelist(screen2button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+				document.getElementById('screen2button2value2').value = data.button2.valuearray[2];
 
-	        document.getElementById("screen2logo5").add(new Option("home.bmp"));
+				document.getElementById("screen2logo3").add(new Option(data.logo3));
+				document.getElementById('screen2button3action0').value = data.button3.actionarray[0];
+				document.getElementById('screen2button3action1').value = data.button3.actionarray[1];
+				document.getElementById('screen2button3action2').value = data.button3.actionarray[2];
+				fillvaluelist(screen2button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+				document.getElementById('screen2button3value0').value = data.button3.valuearray[0];
+				fillvaluelist(screen2button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+				document.getElementById('screen2button3value1').value = data.button3.valuearray[1];
+				fillvaluelist(screen2button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+				document.getElementById('screen2button3value2').value = data.button3.valuearray[2];
 
-        		        })
-        	.catch((err) => {
-        	// No error handling for now
-        })
+				document.getElementById("screen2logo4").add(new Option(data.logo4));
+				document.getElementById('screen2button4action0').value = data.button4.actionarray[0];
+				document.getElementById('screen2button4action1').value = data.button4.actionarray[1];
+				document.getElementById('screen2button4action2').value = data.button4.actionarray[2];
+				fillvaluelist(screen2button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+				document.getElementById('screen2button4value0').value = data.button4.valuearray[0];
+				fillvaluelist(screen2button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+				document.getElementById('screen2button4value1').value = data.button4.valuearray[1];
+				fillvaluelist(screen2button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+				document.getElementById('screen2button4value2').value = data.button4.valuearray[2];
 
-        // Load Menu 3
-        fetch('config/menu3.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+				document.getElementById("screen2logo5").add(new Option("home.bmp"));
 
-			document.getElementById("screen3logo0").add(new Option(data.logo0));
-			document.getElementById('screen3button0action0').value = data.button0.actionarray[0];
-			document.getElementById('screen3button0action1').value = data.button0.actionarray[1];
-			document.getElementById('screen3button0action2').value = data.button0.actionarray[2];
-			fillvaluelist(screen3button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-			document.getElementById('screen3button0value0').value = data.button0.valuearray[0];
-			fillvaluelist(screen3button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-			document.getElementById('screen3button0value1').value = data.button0.valuearray[1];
-			fillvaluelist(screen3button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-			document.getElementById('screen3button0value2').value = data.button0.valuearray[2];
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
 
-	        document.getElementById("screen3logo1").add(new Option(data.logo1));
-			document.getElementById('screen3button1action0').value = data.button1.actionarray[0];
-			document.getElementById('screen3button1action1').value = data.button1.actionarray[1];
-			document.getElementById('screen3button1action2').value = data.button1.actionarray[2];
-			fillvaluelist(screen3button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-			document.getElementById('screen3button1value0').value = data.button1.valuearray[0];
-			fillvaluelist(screen3button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-			document.getElementById('screen3button1value1').value = data.button1.valuearray[1];
-			fillvaluelist(screen3button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-			document.getElementById('screen3button1value2').value = data.button1.valuearray[2];
+		// Load Menu 3
+		fetch('config/menu3.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-	        document.getElementById("screen3logo2").add(new Option(data.logo2));
-			document.getElementById('screen3button2action0').value = data.button2.actionarray[0];
-			document.getElementById('screen3button2action1').value = data.button2.actionarray[1];
-			document.getElementById('screen3button2action2').value = data.button2.actionarray[2];
-			fillvaluelist(screen3button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-			document.getElementById('screen3button2value0').value = data.button2.valuearray[0];
-			fillvaluelist(screen3button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-			document.getElementById('screen3button2value1').value = data.button2.valuearray[1];
-			fillvaluelist(screen3button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-			document.getElementById('screen3button2value2').value = data.button2.valuearray[2];
+				document.getElementById("screen3logo0").add(new Option(data.logo0));
+				document.getElementById('screen3button0action0').value = data.button0.actionarray[0];
+				document.getElementById('screen3button0action1').value = data.button0.actionarray[1];
+				document.getElementById('screen3button0action2').value = data.button0.actionarray[2];
+				fillvaluelist(screen3button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+				document.getElementById('screen3button0value0').value = data.button0.valuearray[0];
+				fillvaluelist(screen3button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+				document.getElementById('screen3button0value1').value = data.button0.valuearray[1];
+				fillvaluelist(screen3button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+				document.getElementById('screen3button0value2').value = data.button0.valuearray[2];
 
-			document.getElementById("screen3logo3").add(new Option(data.logo3));
-	        document.getElementById('screen3button3action0').value = data.button3.actionarray[0];
-	        document.getElementById('screen3button3action1').value = data.button3.actionarray[1];
-	        document.getElementById('screen3button3action2').value = data.button3.actionarray[2];
-      		fillvaluelist(screen3button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-      		document.getElementById('screen3button3value0').value = data.button3.valuearray[0];
-      		fillvaluelist(screen3button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-      		document.getElementById('screen3button3value1').value = data.button3.valuearray[1];
-      		fillvaluelist(screen3button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-      		document.getElementById('screen3button3value2').value = data.button3.valuearray[2];
-	        
-	        document.getElementById("screen3logo4").add(new Option(data.logo4));
-			document.getElementById('screen3button4action0').value = data.button4.actionarray[0];
-			document.getElementById('screen3button4action1').value = data.button4.actionarray[1];
-			document.getElementById('screen3button4action2').value = data.button4.actionarray[2];
-      		fillvaluelist(screen3button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-      		document.getElementById('screen3button4value0').value = data.button4.valuearray[0];
-      		fillvaluelist(screen3button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-      		document.getElementById('screen3button4value1').value = data.button4.valuearray[1];
-      		fillvaluelist(screen3button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-      		document.getElementById('screen3button4value2').value = data.button4.valuearray[2];
+				document.getElementById("screen3logo1").add(new Option(data.logo1));
+				document.getElementById('screen3button1action0').value = data.button1.actionarray[0];
+				document.getElementById('screen3button1action1').value = data.button1.actionarray[1];
+				document.getElementById('screen3button1action2').value = data.button1.actionarray[2];
+				fillvaluelist(screen3button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+				document.getElementById('screen3button1value0').value = data.button1.valuearray[0];
+				fillvaluelist(screen3button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+				document.getElementById('screen3button1value1').value = data.button1.valuearray[1];
+				fillvaluelist(screen3button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+				document.getElementById('screen3button1value2').value = data.button1.valuearray[2];
 
-	        document.getElementById("screen3logo5").add(new Option("home.bmp"));
+				document.getElementById("screen3logo2").add(new Option(data.logo2));
+				document.getElementById('screen3button2action0').value = data.button2.actionarray[0];
+				document.getElementById('screen3button2action1').value = data.button2.actionarray[1];
+				document.getElementById('screen3button2action2').value = data.button2.actionarray[2];
+				fillvaluelist(screen3button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+				document.getElementById('screen3button2value0').value = data.button2.valuearray[0];
+				fillvaluelist(screen3button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+				document.getElementById('screen3button2value1').value = data.button2.valuearray[1];
+				fillvaluelist(screen3button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+				document.getElementById('screen3button2value2').value = data.button2.valuearray[2];
 
-        		        })
-        	.catch((err) => {
-        	// No error handling for now
-        })
+				document.getElementById("screen3logo3").add(new Option(data.logo3));
+				document.getElementById('screen3button3action0').value = data.button3.actionarray[0];
+				document.getElementById('screen3button3action1').value = data.button3.actionarray[1];
+				document.getElementById('screen3button3action2').value = data.button3.actionarray[2];
+				fillvaluelist(screen3button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+				document.getElementById('screen3button3value0').value = data.button3.valuearray[0];
+				fillvaluelist(screen3button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+				document.getElementById('screen3button3value1').value = data.button3.valuearray[1];
+				fillvaluelist(screen3button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+				document.getElementById('screen3button3value2').value = data.button3.valuearray[2];
 
-        // Load Menu 4
-        fetch('config/menu4.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+				document.getElementById("screen3logo4").add(new Option(data.logo4));
+				document.getElementById('screen3button4action0').value = data.button4.actionarray[0];
+				document.getElementById('screen3button4action1').value = data.button4.actionarray[1];
+				document.getElementById('screen3button4action2').value = data.button4.actionarray[2];
+				fillvaluelist(screen3button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+				document.getElementById('screen3button4value0').value = data.button4.valuearray[0];
+				fillvaluelist(screen3button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+				document.getElementById('screen3button4value1').value = data.button4.valuearray[1];
+				fillvaluelist(screen3button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+				document.getElementById('screen3button4value2').value = data.button4.valuearray[2];
 
-			document.getElementById("screen4logo0").add(new Option(data.logo0));
-			document.getElementById('screen4button0action0').value = data.button0.actionarray[0];
-			document.getElementById('screen4button0action1').value = data.button0.actionarray[1];
-			document.getElementById('screen4button0action2').value = data.button0.actionarray[2];
-			fillvaluelist(screen4button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-			document.getElementById('screen4button0value0').value = data.button0.valuearray[0];
-			fillvaluelist(screen4button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-			document.getElementById('screen4button0value1').value = data.button0.valuearray[1];
-			fillvaluelist(screen4button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-			document.getElementById('screen4button0value2').value = data.button0.valuearray[2];
+				document.getElementById("screen3logo5").add(new Option("home.bmp"));
 
-	        document.getElementById("screen4logo1").add(new Option(data.logo1));
-			document.getElementById('screen4button1action0').value = data.button1.actionarray[0];
-			document.getElementById('screen4button1action1').value = data.button1.actionarray[1];
-			document.getElementById('screen4button1action2').value = data.button1.actionarray[2];
-			fillvaluelist(screen4button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-			document.getElementById('screen4button1value0').value = data.button1.valuearray[0];
-			fillvaluelist(screen4button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-			document.getElementById('screen4button1value1').value = data.button1.valuearray[1];
-			fillvaluelist(screen4button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-			document.getElementById('screen4button1value2').value = data.button1.valuearray[2];
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
 
-	        document.getElementById("screen4logo2").add(new Option(data.logo2));
-			document.getElementById('screen4button2action0').value = data.button2.actionarray[0];
-			document.getElementById('screen4button2action1').value = data.button2.actionarray[1];
-			document.getElementById('screen4button2action2').value = data.button2.actionarray[2];
-			fillvaluelist(screen4button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-			document.getElementById('screen4button2value0').value = data.button2.valuearray[0];
-			fillvaluelist(screen4button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-			document.getElementById('screen4button2value1').value = data.button2.valuearray[1];
-			fillvaluelist(screen4button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-			document.getElementById('screen4button2value2').value = data.button2.valuearray[2];
+		// Load Menu 4
+		fetch('config/menu4.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-			document.getElementById("screen4logo3").add(new Option(data.logo3));
-	        document.getElementById('screen4button3action0').value = data.button3.actionarray[0];
-	        document.getElementById('screen4button3action1').value = data.button3.actionarray[1];
-	        document.getElementById('screen4button3action2').value = data.button3.actionarray[2];
-      		fillvaluelist(screen4button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-      		document.getElementById('screen4button3value0').value = data.button3.valuearray[0];
-      		fillvaluelist(screen4button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-      		document.getElementById('screen4button3value1').value = data.button3.valuearray[1];
-      		fillvaluelist(screen4button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-      		document.getElementById('screen4button3value2').value = data.button3.valuearray[2];
-	        
-	        document.getElementById("screen4logo4").add(new Option(data.logo4));
-			document.getElementById('screen4button4action0').value = data.button4.actionarray[0];
-			document.getElementById('screen4button4action1').value = data.button4.actionarray[1];
-			document.getElementById('screen4button4action2').value = data.button4.actionarray[2];
-      		fillvaluelist(screen4button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-      		document.getElementById('screen4button4value0').value = data.button4.valuearray[0];
-      		fillvaluelist(screen4button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-      		document.getElementById('screen4button4value1').value = data.button4.valuearray[1];
-      		fillvaluelist(screen4button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-      		document.getElementById('screen4button4value2').value = data.button4.valuearray[2];
+				document.getElementById("screen4logo0").add(new Option(data.logo0));
+				document.getElementById('screen4button0action0').value = data.button0.actionarray[0];
+				document.getElementById('screen4button0action1').value = data.button0.actionarray[1];
+				document.getElementById('screen4button0action2').value = data.button0.actionarray[2];
+				fillvaluelist(screen4button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+				document.getElementById('screen4button0value0').value = data.button0.valuearray[0];
+				fillvaluelist(screen4button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+				document.getElementById('screen4button0value1').value = data.button0.valuearray[1];
+				fillvaluelist(screen4button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+				document.getElementById('screen4button0value2').value = data.button0.valuearray[2];
 
-	        document.getElementById("screen4logo5").add(new Option("home.bmp"));
+				document.getElementById("screen4logo1").add(new Option(data.logo1));
+				document.getElementById('screen4button1action0').value = data.button1.actionarray[0];
+				document.getElementById('screen4button1action1').value = data.button1.actionarray[1];
+				document.getElementById('screen4button1action2').value = data.button1.actionarray[2];
+				fillvaluelist(screen4button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+				document.getElementById('screen4button1value0').value = data.button1.valuearray[0];
+				fillvaluelist(screen4button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+				document.getElementById('screen4button1value1').value = data.button1.valuearray[1];
+				fillvaluelist(screen4button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+				document.getElementById('screen4button1value2').value = data.button1.valuearray[2];
 
-        		        })
-        	.catch((err) => {
-        	// No error handling for now
-        })
+				document.getElementById("screen4logo2").add(new Option(data.logo2));
+				document.getElementById('screen4button2action0').value = data.button2.actionarray[0];
+				document.getElementById('screen4button2action1').value = data.button2.actionarray[1];
+				document.getElementById('screen4button2action2').value = data.button2.actionarray[2];
+				fillvaluelist(screen4button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+				document.getElementById('screen4button2value0').value = data.button2.valuearray[0];
+				fillvaluelist(screen4button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+				document.getElementById('screen4button2value1').value = data.button2.valuearray[1];
+				fillvaluelist(screen4button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+				document.getElementById('screen4button2value2').value = data.button2.valuearray[2];
 
-        // Load Menu 5
-        fetch('config/menu5.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+				document.getElementById("screen4logo3").add(new Option(data.logo3));
+				document.getElementById('screen4button3action0').value = data.button3.actionarray[0];
+				document.getElementById('screen4button3action1').value = data.button3.actionarray[1];
+				document.getElementById('screen4button3action2').value = data.button3.actionarray[2];
+				fillvaluelist(screen4button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+				document.getElementById('screen4button3value0').value = data.button3.valuearray[0];
+				fillvaluelist(screen4button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+				document.getElementById('screen4button3value1').value = data.button3.valuearray[1];
+				fillvaluelist(screen4button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+				document.getElementById('screen4button3value2').value = data.button3.valuearray[2];
 
-			document.getElementById("screen5logo0").add(new Option(data.logo0));
-			document.getElementById('screen5button0action0').value = data.button0.actionarray[0];
-			document.getElementById('screen5button0action1').value = data.button0.actionarray[1];
-			document.getElementById('screen5button0action2').value = data.button0.actionarray[2];
-			fillvaluelist(screen5button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-			document.getElementById('screen5button0value0').value = data.button0.valuearray[0];
-			fillvaluelist(screen5button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-			document.getElementById('screen5button0value1').value = data.button0.valuearray[1];
-			fillvaluelist(screen5button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-			document.getElementById('screen5button0value2').value = data.button0.valuearray[2];
+				document.getElementById("screen4logo4").add(new Option(data.logo4));
+				document.getElementById('screen4button4action0').value = data.button4.actionarray[0];
+				document.getElementById('screen4button4action1').value = data.button4.actionarray[1];
+				document.getElementById('screen4button4action2').value = data.button4.actionarray[2];
+				fillvaluelist(screen4button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+				document.getElementById('screen4button4value0').value = data.button4.valuearray[0];
+				fillvaluelist(screen4button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+				document.getElementById('screen4button4value1').value = data.button4.valuearray[1];
+				fillvaluelist(screen4button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+				document.getElementById('screen4button4value2').value = data.button4.valuearray[2];
 
-	        document.getElementById("screen5logo1").add(new Option(data.logo1));
-			document.getElementById('screen5button1action0').value = data.button1.actionarray[0];
-			document.getElementById('screen5button1action1').value = data.button1.actionarray[1];
-			document.getElementById('screen5button1action2').value = data.button1.actionarray[2];
-			fillvaluelist(screen5button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-			document.getElementById('screen5button1value0').value = data.button1.valuearray[0];
-			fillvaluelist(screen5button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-			document.getElementById('screen5button1value1').value = data.button1.valuearray[1];
-			fillvaluelist(screen5button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-			document.getElementById('screen5button1value2').value = data.button1.valuearray[2];
+				document.getElementById("screen4logo5").add(new Option("home.bmp"));
 
-	        document.getElementById("screen5logo2").add(new Option(data.logo2));
-			document.getElementById('screen5button2action0').value = data.button2.actionarray[0];
-			document.getElementById('screen5button2action1').value = data.button2.actionarray[1];
-			document.getElementById('screen5button2action2').value = data.button2.actionarray[2];
-			fillvaluelist(screen5button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-			document.getElementById('screen5button2value0').value = data.button2.valuearray[0];
-			fillvaluelist(screen5button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-			document.getElementById('screen5button2value1').value = data.button2.valuearray[1];
-			fillvaluelist(screen5button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-			document.getElementById('screen5button2value2').value = data.button2.valuearray[2];
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
 
-			document.getElementById("screen5logo3").add(new Option(data.logo3));
-	        document.getElementById('screen5button3action0').value = data.button3.actionarray[0];
-	        document.getElementById('screen5button3action1').value = data.button3.actionarray[1];
-	        document.getElementById('screen5button3action2').value = data.button3.actionarray[2];
-      		fillvaluelist(screen5button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-      		document.getElementById('screen5button3value0').value = data.button3.valuearray[0];
-      		fillvaluelist(screen5button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-      		document.getElementById('screen5button3value1').value = data.button3.valuearray[1];
-      		fillvaluelist(screen5button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-      		document.getElementById('screen5button3value2').value = data.button3.valuearray[2];
-	        
-	        document.getElementById("screen5logo4").add(new Option(data.logo4));
-			document.getElementById('screen5button4action0').value = data.button4.actionarray[0];
-			document.getElementById('screen5button4action1').value = data.button4.actionarray[1];
-			document.getElementById('screen5button4action2').value = data.button4.actionarray[2];
-      		fillvaluelist(screen5button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-      		document.getElementById('screen5button4value0').value = data.button4.valuearray[0];
-      		fillvaluelist(screen5button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-      		document.getElementById('screen5button4value1').value = data.button4.valuearray[1];
-      		fillvaluelist(screen5button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-      		document.getElementById('screen5button4value2').value = data.button4.valuearray[2];
+		// Load Menu 5
+		fetch('config/menu5.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-	        document.getElementById("screen5logo5").add(new Option("home.bmp"));
+				document.getElementById("screen5logo0").add(new Option(data.logo0));
+				document.getElementById('screen5button0action0').value = data.button0.actionarray[0];
+				document.getElementById('screen5button0action1').value = data.button0.actionarray[1];
+				document.getElementById('screen5button0action2').value = data.button0.actionarray[2];
+				fillvaluelist(screen5button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+				document.getElementById('screen5button0value0').value = data.button0.valuearray[0];
+				fillvaluelist(screen5button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+				document.getElementById('screen5button0value1').value = data.button0.valuearray[1];
+				fillvaluelist(screen5button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+				document.getElementById('screen5button0value2').value = data.button0.valuearray[2];
 
-        		        })
-        	.catch((err) => {
-        	// No error handling for now
-        })
+				document.getElementById("screen5logo1").add(new Option(data.logo1));
+				document.getElementById('screen5button1action0').value = data.button1.actionarray[0];
+				document.getElementById('screen5button1action1').value = data.button1.actionarray[1];
+				document.getElementById('screen5button1action2').value = data.button1.actionarray[2];
+				fillvaluelist(screen5button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+				document.getElementById('screen5button1value0').value = data.button1.valuearray[0];
+				fillvaluelist(screen5button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+				document.getElementById('screen5button1value1').value = data.button1.valuearray[1];
+				fillvaluelist(screen5button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+				document.getElementById('screen5button1value2').value = data.button1.valuearray[2];
 
-    	var logolist = []; // Array holding the logos (empty to start)
+				document.getElementById("screen5logo2").add(new Option(data.logo2));
+				document.getElementById('screen5button2action0').value = data.button2.actionarray[0];
+				document.getElementById('screen5button2action1').value = data.button2.actionarray[1];
+				document.getElementById('screen5button2action2').value = data.button2.actionarray[2];
+				fillvaluelist(screen5button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+				document.getElementById('screen5button2value0').value = data.button2.valuearray[0];
+				fillvaluelist(screen5button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+				document.getElementById('screen5button2value1').value = data.button2.valuearray[1];
+				fillvaluelist(screen5button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+				document.getElementById('screen5button2value2').value = data.button2.valuearray[2];
 
-        var selects = document.getElementsByClassName('images');
+				document.getElementById("screen5logo3").add(new Option(data.logo3));
+				document.getElementById('screen5button3action0').value = data.button3.actionarray[0];
+				document.getElementById('screen5button3action1').value = data.button3.actionarray[1];
+				document.getElementById('screen5button3action2').value = data.button3.actionarray[2];
+				fillvaluelist(screen5button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+				document.getElementById('screen5button3value0').value = data.button3.valuearray[0];
+				fillvaluelist(screen5button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+				document.getElementById('screen5button3value1').value = data.button3.valuearray[1];
+				fillvaluelist(screen5button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+				document.getElementById('screen5button3value2').value = data.button3.valuearray[2];
 
-        // Loading all the logo's
+				document.getElementById("screen5logo4").add(new Option(data.logo4));
+				document.getElementById('screen5button4action0').value = data.button4.actionarray[0];
+				document.getElementById('screen5button4action1').value = data.button4.actionarray[1];
+				document.getElementById('screen5button4action2').value = data.button4.actionarray[2];
+				fillvaluelist(screen5button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+				document.getElementById('screen5button4value0').value = data.button4.valuearray[0];
+				fillvaluelist(screen5button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+				document.getElementById('screen5button4value1').value = data.button4.valuearray[1];
+				fillvaluelist(screen5button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+				document.getElementById('screen5button4value2').value = data.button4.valuearray[2];
 
-        fetch('config/homescreen.json')
-	        .then((response) => {
-	          return response.json()
-	        })
-	        .then((data) => {
+				document.getElementById("screen5logo5").add(new Option("home.bmp"));
 
-	        document.getElementById("homescreenlogo0").add(new Option(data.logo0));
-	        document.getElementById("homescreenlogo1").add(new Option(data.logo1));
-	        document.getElementById("homescreenlogo2").add(new Option(data.logo2));
-	        document.getElementById("homescreenlogo3").add(new Option(data.logo3));
-	        document.getElementById("homescreenlogo4").add(new Option(data.logo4));
-	        document.getElementById("homescreenlogo5").add(new Option(data.logo5));
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
 
-	        })
-	        .then((data) => {
-	           fetch('http://freetouchdeck.local/list?dir=/logos')
-	          .then((response2) => {
-	            return response2.json()
-	          })
-	          .then((data2) => {
-	          data2.forEach(obj => {
-	          Object.entries(obj).forEach(([key, value]) => {
-	              logolist.push(`${value}`);
-	              var i = selects.length;
-	              while (i--) {
-	                var select = selects[i];
-	                  select.add(new Option(`${value}`, `${value}`));
-	              }
+		var logolist = []; // Array holding the logos (empty to start)
 
-				});
-				});
+		var selects = document.getElementsByClassName('images');
 
-				})
-				.catch((err) => {
-	          	// No error handling for now
-				})
+		// Loading all the logo's
 
-	        })
-        	.catch((err) => {
-        	// No error handling for now
-        	})
+		fetch('config/homescreen.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
 
-    </script>
-  </body>
+				document.getElementById("homescreenlogo0").add(new Option(data.logo0));
+				document.getElementById("homescreenlogo1").add(new Option(data.logo1));
+				document.getElementById("homescreenlogo2").add(new Option(data.logo2));
+				document.getElementById("homescreenlogo3").add(new Option(data.logo3));
+				document.getElementById("homescreenlogo4").add(new Option(data.logo4));
+				document.getElementById("homescreenlogo5").add(new Option(data.logo5));
+
+			})
+			.then((data) => {
+				fetch('http://freetouchdeck.local/list?dir=/logos')
+					.then((response2) => {
+						return response2.json()
+					})
+					.then((data2) => {
+						data2.forEach(obj => {
+							Object.entries(obj).forEach(([key, value]) => {
+								logolist.push(`${value}`);
+								var i = selects.length;
+								while (i--) {
+									var select = selects[i];
+									select.add(new Option(`${value}`, `${value}`));
+								}
+
+							});
+						});
+
+					})
+					.catch((err) => {
+						// No error handling for now
+					})
+
+			})
+			.catch((err) => {
+				// No error handling for now
+			})
+
+	</script>
+</body>
+
 </html>
