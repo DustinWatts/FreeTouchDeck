@@ -68,18 +68,22 @@ TFT_eSPI tft = TFT_eSPI();
 // Repeat calibration if you change the screen rotation.
 #define REPEAT_CAL false
 
+// Set the width and height of your screen here:
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT 320
+
 // Keypad start position, key sizes and spacing
 // Centre of the first button
-#define KEY_X 80
-#define KEY_Y 80
-
-// Width and height of a button
-#define KEY_W 140
-#define KEY_H 140
+#define KEY_X SCREEN_WIDTH / 6
+#define KEY_Y SCREEN_HEIGHT / 4
 
 // Gaps between buttons
-#define KEY_SPACING_X 20
-#define KEY_SPACING_Y 20
+#define KEY_SPACING_X SCREEN_WIDTH / 24
+#define KEY_SPACING_Y SCREEN_HEIGHT / 16
+
+// Width and height of a button
+#define KEY_W (SCREEN_WIDTH / 3) - KEY_SPACING_X
+#define KEY_H (SCREEN_WIDTH / 3) - KEY_SPACING_Y
 
 // Font size multiplier
 #define KEY_TEXTSIZE 1
@@ -217,12 +221,11 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.9 prints a more clear error message to serial when the config files are not found. It 
-     also prints that error message to the TFT. I also spend some time formatting the code in the sketch 
-     as well as the .js and HTML files. Also removed some duplicate strcpy lines.
+  /* Version 0.8.10 Is the first attempt at scaling the buttons to fit the screen specified in SCREEN_WIDTH
+     and SCREEN_HEIGHT. Default is 480 by 320, so adjust according to your screen.
   */
 
-  tft.print("Loading version 0.8.9");
+  tft.print("Loading version 0.8.10");
 
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
@@ -745,17 +748,16 @@ void drawKeypad()
   {
     // Config mode...
     tft.fillScreen(TFT_BLACK);
-    tft.setCursor(20, 20);
+    tft.setCursor(0, 0);
     tft.setTextFont(2);
     tft.setTextSize(2);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println("Now in config mode. Go to:");
-    tft.println("  http://freetouchdeck.local");
-    tft.println("  to configure.");
+    tft.println("Now in config mode.\nTo configure:");
+    tft.println("http://freetouchdeck.local");
   }
   else
   {
-    // Draw the function button outlines and fill them with colours
+    // Draw the button outlines and fill them with colours
     for (uint8_t row = 0; row < 2; row++)
     {
       for (uint8_t col = 0; col < 3; col++)
