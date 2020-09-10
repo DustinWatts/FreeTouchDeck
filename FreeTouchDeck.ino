@@ -228,13 +228,13 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.11 adds the Debug class for easier debugging. It also has ome updated HTmL and JS. There are some more 
-   * default images in /logos/. And the first menu "Music" has some default functionality. 
-   *  
+  /* Version 0.8.12 Changed the button press handeling to first check the page, then check the button. 
+   * It is easier to understand the code this way. Also moved the connecting to WiFi to only connect when 
+   * entering config-mode. User guide changed to reflect this. 
   */
 
-  tft.print("Loading version 0.8.11");
-  debug.Info("Loading version 0.8.11");
+  tft.print("Loading version 0.8.12");
+  debug.Info("Loading version 0.8.12");
 
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
@@ -307,24 +307,8 @@ void setup()
   tft.setFreeFont(LABEL_FONT);
 
   //------------------WIFI Initialization ------------------------------------------------------------------------
+
   
-  Serial.printf("Connecting to %s\n", ssid);
-  if (String(WiFi.SSID()) != String(ssid))
-  {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
-  }
-
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print("Connected! IP address: ");
-  Serial.println(WiFi.localIP());
-
-  MDNS.begin(host);
 
   //------------------Webserver Initialization ------------------------------------------------------------------------
 
@@ -426,317 +410,290 @@ void loop(void)
       {
         key[b].drawButton(true); // Draw inverted button space (white)
         
-        //----------- Button press handeling -------------------------------------------------------------------------------
+//---------------------------------------- Button press handeling --------------------------------------------------
 
-        // TODO Maybe rewrite so that we first check the page and then the button?
-
-        if (b == 0)
-        {
-          //Button 0 functions
-          if (pageNum == 0)
+      if (pageNum == 0) //Home menu
+      {
+          if (b == 0) // Button 0
           {
-            //Page 0 button 0 function
-            pageNum = 1;  // By setting pageNum to 1
-            drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 1
+              pageNum = 1;
+              drawKeypad();
           }
-          else if (pageNum == 1)
+          else if (b == 1) // Button 1
           {
-            //Page 1 button 0 function
-            bleKeyboardAction(menu1.button0.actions.action0, menu1.button0.actions.value0, menu1.button0.actions.symbol0);
-            bleKeyboardAction(menu1.button0.actions.action1, menu1.button0.actions.value1, menu1.button0.actions.symbol1);
-            bleKeyboardAction(menu1.button0.actions.action2, menu1.button0.actions.value2, menu1.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 2;
+              drawKeypad();
           }
-          else if (pageNum == 2)
+          else if (b == 2) // Button 2
           {
-            //Page 2 button 0 function
-            bleKeyboardAction(menu2.button0.actions.action0, menu2.button0.actions.value0, menu2.button0.actions.symbol0);
-            bleKeyboardAction(menu2.button0.actions.action1, menu2.button0.actions.value1, menu2.button0.actions.symbol1);
-            bleKeyboardAction(menu2.button0.actions.action2, menu2.button0.actions.value2, menu2.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 3;
+              drawKeypad();
           }
-          else if (pageNum == 3)
+          else if (b == 3) // Button 3
           {
-            //Page 3 button 0 function
-            bleKeyboardAction(menu3.button0.actions.action0, menu3.button0.actions.value0, menu3.button0.actions.symbol0);
-            bleKeyboardAction(menu3.button0.actions.action1, menu3.button0.actions.value1, menu3.button0.actions.symbol1);
-            bleKeyboardAction(menu3.button0.actions.action2, menu3.button0.actions.value2, menu3.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 4;
+              drawKeypad();
           }
-          else if (pageNum == 4)
+          else if (b == 4) // Button 4
           {
-            //Page 4 button 0 function
-            bleKeyboardAction(menu4.button0.actions.action0, menu4.button0.actions.value0, menu4.button0.actions.symbol0);
-            bleKeyboardAction(menu4.button0.actions.action1, menu4.button0.actions.value1, menu4.button0.actions.symbol1);
-            bleKeyboardAction(menu4.button0.actions.action2, menu4.button0.actions.value2, menu4.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 5;
+              drawKeypad();
           }
-          else if (pageNum == 5)
+          else if (b == 5) // Button 5
           {
-            //Page 5 button 0 function
-            bleKeyboardAction(menu5.button0.actions.action0, menu5.button0.actions.value0, menu5.button0.actions.symbol0);
-            bleKeyboardAction(menu5.button0.actions.action1, menu5.button0.actions.value1, menu5.button0.actions.symbol1);
-            bleKeyboardAction(menu5.button0.actions.action2, menu5.button0.actions.value2, menu5.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 6;
+              drawKeypad();
           }
-          else if (pageNum == 6)
+      }
+      
+      else if(pageNum == 1) // Menu 1
+      {
+          if (b == 0)  // Button 0
           {
-
-            bleKeyboardAction(9, 1, "0");
+              bleKeyboardAction(menu1.button0.actions.action0, menu1.button0.actions.value0, menu1.button0.actions.symbol0);
+              bleKeyboardAction(menu1.button0.actions.action1, menu1.button0.actions.value1, menu1.button0.actions.symbol1);
+              bleKeyboardAction(menu1.button0.actions.action2, menu1.button0.actions.value2, menu1.button0.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-        }
-
-        if (b == 1)
-        {
-          //Button 1 functions
-          if (pageNum == 0)
+          else if (b == 1) // Button 1
           {
-            //Page 0 button 1 function
-            pageNum = 2;  // By setting pageNum to 2
-            drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 2
+              bleKeyboardAction(menu1.button1.actions.action0, menu1.button1.actions.value0, menu1.button1.actions.symbol0);
+              bleKeyboardAction(menu1.button1.actions.action1, menu1.button1.actions.value1, menu1.button1.actions.symbol1);
+              bleKeyboardAction(menu1.button1.actions.action2, menu1.button1.actions.value2, menu1.button1.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 1)
+          else if (b == 2) // Button 2
           {
-            //Page 1 button 1 function
-            bleKeyboardAction(menu1.button1.actions.action0, menu1.button1.actions.value0, menu1.button1.actions.symbol0);
-            bleKeyboardAction(menu1.button1.actions.action1, menu1.button1.actions.value1, menu1.button1.actions.symbol1);
-            bleKeyboardAction(menu1.button1.actions.action2, menu1.button1.actions.value2, menu1.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu1.button2.actions.action0, menu1.button2.actions.value0, menu1.button2.actions.symbol0);
+              bleKeyboardAction(menu1.button2.actions.action1, menu1.button2.actions.value1, menu1.button2.actions.symbol1);
+              bleKeyboardAction(menu1.button2.actions.action2, menu1.button2.actions.value2, menu1.button2.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 2)
+          else if (b == 3) // Button 3
           {
-            //Page 2 button 1 function
-            bleKeyboardAction(menu2.button1.actions.action0, menu2.button1.actions.value0, menu2.button1.actions.symbol0);
-            bleKeyboardAction(menu2.button1.actions.action1, menu2.button1.actions.value1, menu2.button1.actions.symbol1);
-            bleKeyboardAction(menu2.button1.actions.action2, menu2.button1.actions.value2, menu2.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu1.button3.actions.action0, menu1.button3.actions.value0, menu1.button3.actions.symbol0);
+              bleKeyboardAction(menu1.button3.actions.action1, menu1.button3.actions.value1, menu1.button3.actions.symbol1);
+              bleKeyboardAction(menu1.button3.actions.action2, menu1.button3.actions.value2, menu1.button3.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 3)
+          else if (b == 4) // Button 4
           {
-            //Page 3 button 1 function
-            bleKeyboardAction(menu3.button1.actions.action0, menu3.button1.actions.value0, menu3.button1.actions.symbol0);
-            bleKeyboardAction(menu3.button1.actions.action1, menu3.button1.actions.value1, menu3.button1.actions.symbol1);
-            bleKeyboardAction(menu3.button1.actions.action2, menu3.button1.actions.value2, menu3.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu1.button4.actions.action0, menu1.button4.actions.value0, menu1.button4.actions.symbol0);
+              bleKeyboardAction(menu1.button4.actions.action1, menu1.button4.actions.value1, menu1.button4.actions.symbol1);
+              bleKeyboardAction(menu1.button4.actions.action2, menu1.button4.actions.value2, menu1.button4.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 4)
+          else if (b == 5) // Button 5 / Back home
           {
-            //Page 4 button 1 function
-            bleKeyboardAction(menu4.button1.actions.action0, menu4.button1.actions.value0, menu4.button1.actions.symbol0);
-            bleKeyboardAction(menu4.button1.actions.action1, menu4.button1.actions.value1, menu4.button1.actions.symbol1);
-            bleKeyboardAction(menu4.button1.actions.action2, menu4.button1.actions.value2, menu4.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 0;
+              drawKeypad();
           }
-          else if (pageNum == 5)
+      }
+      
+      else if(pageNum == 2) // Menu 2
+      {
+          if (b == 0)  // Button 0
           {
-            //Page 5 button 1 function
-            bleKeyboardAction(menu5.button1.actions.action0, menu5.button1.actions.value0, menu5.button1.actions.symbol0);
-            bleKeyboardAction(menu5.button1.actions.action1, menu5.button1.actions.value1, menu5.button1.actions.symbol1);
-            bleKeyboardAction(menu5.button1.actions.action2, menu5.button1.actions.value2, menu5.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu2.button0.actions.action0, menu2.button0.actions.value0, menu2.button0.actions.symbol0);
+              bleKeyboardAction(menu2.button0.actions.action1, menu2.button0.actions.value1, menu2.button0.actions.symbol1);
+              bleKeyboardAction(menu2.button0.actions.action2, menu2.button0.actions.value2, menu2.button0.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 6)
+          else if (b == 1) // Button 1
           {
-            //Page 6 button 1 function
-            bleKeyboardAction(menu6.button1.actions.action0, menu6.button1.actions.value0, menu6.button1.actions.symbol0);
-            bleKeyboardAction(menu6.button1.actions.action1, menu6.button1.actions.value1, menu6.button1.actions.symbol1);
-            bleKeyboardAction(menu6.button1.actions.action2, menu6.button1.actions.value2, menu6.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu2.button1.actions.action0, menu2.button1.actions.value0, menu2.button1.actions.symbol0);
+              bleKeyboardAction(menu2.button1.actions.action1, menu2.button1.actions.value1, menu2.button1.actions.symbol1);
+              bleKeyboardAction(menu2.button1.actions.action2, menu2.button1.actions.value2, menu2.button1.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-        }
-
-        if (b == 2)
-        {
-          //Button 2 functions
-          if (pageNum == 0)
+          else if (b == 2) // Button 2
           {
-            //Page 0 button 2 function
-            pageNum = 3;  // By setting pageNum to 3
-            drawKeypad(); // and calling drawKeypad(), a new keypad is drawn with pageNum 3
+              bleKeyboardAction(menu2.button2.actions.action0, menu2.button2.actions.value0, menu2.button2.actions.symbol0);
+              bleKeyboardAction(menu2.button2.actions.action1, menu2.button2.actions.value1, menu2.button2.actions.symbol1);
+              bleKeyboardAction(menu2.button2.actions.action2, menu2.button2.actions.value2, menu2.button2.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 1)
+          else if (b == 3) // Button 3
           {
-            //Page 1 button 2 function
-            bleKeyboardAction(menu1.button2.actions.action0, menu1.button2.actions.value0, menu1.button2.actions.symbol0);
-            bleKeyboardAction(menu1.button2.actions.action1, menu1.button2.actions.value1, menu1.button2.actions.symbol1);
-            bleKeyboardAction(menu1.button2.actions.action2, menu1.button2.actions.value2, menu1.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu2.button3.actions.action0, menu2.button3.actions.value0, menu2.button3.actions.symbol0);
+              bleKeyboardAction(menu2.button3.actions.action1, menu2.button3.actions.value1, menu2.button3.actions.symbol1);
+              bleKeyboardAction(menu2.button3.actions.action2, menu2.button3.actions.value2, menu2.button3.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 2)
+          else if (b == 4) // Button 4
           {
-            //Page 2 button 2 function
-            bleKeyboardAction(menu2.button2.actions.action0, menu2.button2.actions.value0, menu2.button2.actions.symbol0);
-            bleKeyboardAction(menu2.button2.actions.action1, menu2.button2.actions.value1, menu2.button2.actions.symbol1);
-            bleKeyboardAction(menu2.button2.actions.action2, menu2.button2.actions.value2, menu2.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu2.button4.actions.action0, menu2.button4.actions.value0, menu2.button4.actions.symbol0);
+              bleKeyboardAction(menu2.button4.actions.action1, menu2.button4.actions.value1, menu2.button4.actions.symbol1);
+              bleKeyboardAction(menu2.button4.actions.action2, menu2.button4.actions.value2, menu2.button4.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 3)
+          else if (b == 5) // Button 5 / Back home
           {
-            //Page 3 button 2 function
-            bleKeyboardAction(menu3.button2.actions.action0, menu3.button2.actions.value0, menu3.button2.actions.symbol0);
-            bleKeyboardAction(menu3.button2.actions.action1, menu3.button2.actions.value1, menu3.button2.actions.symbol1);
-            bleKeyboardAction(menu3.button2.actions.action2, menu3.button2.actions.value2, menu3.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 0;
+              drawKeypad();
           }
-          else if (pageNum == 4)
+      }
+      
+      else if(pageNum == 3) // Menu 3
+      {
+          if (b == 0)  // Button 0
           {
-            //Page 4 button 2 function
-            bleKeyboardAction(menu4.button2.actions.action0, menu4.button2.actions.value0, menu4.button2.actions.symbol0);
-            bleKeyboardAction(menu4.button2.actions.action1, menu4.button2.actions.value1, menu4.button2.actions.symbol1);
-            bleKeyboardAction(menu4.button2.actions.action2, menu4.button2.actions.value2, menu4.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu3.button0.actions.action0, menu3.button0.actions.value0, menu3.button0.actions.symbol0);
+              bleKeyboardAction(menu3.button0.actions.action1, menu3.button0.actions.value1, menu3.button0.actions.symbol1);
+              bleKeyboardAction(menu3.button0.actions.action2, menu3.button0.actions.value2, menu3.button0.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 5)
+          else if (b == 1) // Button 1
           {
-            //Page 5 button 2 function
-            bleKeyboardAction(menu5.button2.actions.action0, menu5.button2.actions.value0, menu5.button2.actions.symbol0);
-            bleKeyboardAction(menu5.button2.actions.action1, menu5.button2.actions.value1, menu5.button2.actions.symbol1);
-            bleKeyboardAction(menu5.button2.actions.action2, menu5.button2.actions.value2, menu5.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu3.button1.actions.action0, menu3.button1.actions.value0, menu3.button1.actions.symbol0);
+              bleKeyboardAction(menu3.button1.actions.action1, menu3.button1.actions.value1, menu3.button1.actions.symbol1);
+              bleKeyboardAction(menu3.button1.actions.action2, menu3.button1.actions.value2, menu3.button1.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 6)
+          else if (b == 2) // Button 2
           {
-            //Page 6 button 1 function
-            bleKeyboardAction(menu6.button2.actions.action0, menu6.button2.actions.value0, menu6.button2.actions.symbol0);
-            bleKeyboardAction(menu6.button2.actions.action1, menu6.button2.actions.value1, menu6.button2.actions.symbol1);
-            bleKeyboardAction(menu6.button2.actions.action2, menu6.button2.actions.value2, menu6.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu3.button2.actions.action0, menu3.button2.actions.value0, menu3.button2.actions.symbol0);
+              bleKeyboardAction(menu3.button2.actions.action1, menu3.button2.actions.value1, menu3.button2.actions.symbol1);
+              bleKeyboardAction(menu3.button2.actions.action2, menu3.button2.actions.value2, menu3.button2.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-        }
-
-        if (b == 3)
-        {
-          //Button 3 functions
-          if (pageNum == 0)
+          else if (b == 3) // Button 3
           {
-            //Page 0 button function
-            pageNum = 4;  // By setting pageNum to 4
-            drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 4
+              bleKeyboardAction(menu3.button3.actions.action0, menu3.button3.actions.value0, menu3.button3.actions.symbol0);
+              bleKeyboardAction(menu3.button3.actions.action1, menu3.button3.actions.value1, menu3.button3.actions.symbol1);
+              bleKeyboardAction(menu3.button3.actions.action2, menu3.button3.actions.value2, menu3.button3.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 1)
+          else if (b == 4) // Button 4
           {
-            //Page 1 button 3 function
-            bleKeyboardAction(menu1.button3.actions.action0, menu1.button3.actions.value0, menu1.button3.actions.symbol0);
-            bleKeyboardAction(menu1.button3.actions.action1, menu1.button3.actions.value1, menu1.button3.actions.symbol1);
-            bleKeyboardAction(menu1.button3.actions.action2, menu1.button3.actions.value2, menu1.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu3.button4.actions.action0, menu3.button4.actions.value0, menu3.button4.actions.symbol0);
+              bleKeyboardAction(menu3.button4.actions.action1, menu3.button4.actions.value1, menu3.button4.actions.symbol1);
+              bleKeyboardAction(menu3.button4.actions.action2, menu3.button4.actions.value2, menu3.button4.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 2)
+          else if (b == 5) // Button 5 / Back home
           {
-            //Page 2 button 3 function
-            bleKeyboardAction(menu2.button3.actions.action0, menu2.button3.actions.value0, menu2.button3.actions.symbol0);
-            bleKeyboardAction(menu2.button3.actions.action1, menu2.button3.actions.value1, menu2.button3.actions.symbol1);
-            bleKeyboardAction(menu2.button3.actions.action2, menu2.button3.actions.value2, menu2.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 0;
+              drawKeypad();
           }
-          else if (pageNum == 3)
+      }
+      
+      else if(pageNum == 4) // Menu 4
+      {
+          if (b == 0)  // Button 0
           {
-            //Page 3 button 3 function
-            bleKeyboardAction(menu3.button3.actions.action0, menu3.button3.actions.value0, menu3.button3.actions.symbol0);
-            bleKeyboardAction(menu3.button3.actions.action1, menu3.button3.actions.value1, menu3.button3.actions.symbol1);
-            bleKeyboardAction(menu3.button3.actions.action2, menu3.button3.actions.value2, menu3.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu4.button0.actions.action0, menu4.button0.actions.value0, menu4.button0.actions.symbol0);
+              bleKeyboardAction(menu4.button0.actions.action1, menu4.button0.actions.value1, menu4.button0.actions.symbol1);
+              bleKeyboardAction(menu4.button0.actions.action2, menu4.button0.actions.value2, menu4.button0.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 4)
+          else if (b == 1) // Button 1
           {
-            //Page 4 button 3 function
-            bleKeyboardAction(menu4.button3.actions.action0, menu4.button3.actions.value0, menu4.button3.actions.symbol0);
-            bleKeyboardAction(menu4.button3.actions.action1, menu4.button3.actions.value1, menu4.button3.actions.symbol1);
-            bleKeyboardAction(menu4.button3.actions.action2, menu4.button3.actions.value2, menu4.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu4.button1.actions.action0, menu4.button1.actions.value0, menu4.button1.actions.symbol0);
+              bleKeyboardAction(menu4.button1.actions.action1, menu4.button1.actions.value1, menu4.button1.actions.symbol1);
+              bleKeyboardAction(menu4.button1.actions.action2, menu4.button1.actions.value2, menu4.button1.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 5)
+          else if (b == 2) // Button 2
           {
-            //Page 5 button 3 function
-            bleKeyboardAction(menu5.button3.actions.action0, menu5.button3.actions.value0, menu5.button3.actions.symbol0);
-            bleKeyboardAction(menu5.button3.actions.action1, menu5.button3.actions.value1, menu5.button3.actions.symbol1);
-            bleKeyboardAction(menu5.button3.actions.action2, menu5.button3.actions.value2, menu5.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu4.button2.actions.action0, menu4.button2.actions.value0, menu4.button2.actions.symbol0);
+              bleKeyboardAction(menu4.button2.actions.action1, menu4.button2.actions.value1, menu4.button2.actions.symbol1);
+              bleKeyboardAction(menu4.button2.actions.action2, menu4.button2.actions.value2, menu4.button2.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 6)
+          else if (b == 3) // Button 3
           {
-            //Page 6 button 1 function
-            bleKeyboardAction(menu6.button3.actions.action0, menu6.button3.actions.value0, menu6.button3.actions.symbol0);
-            bleKeyboardAction(menu6.button3.actions.action1, menu6.button3.actions.value1, menu6.button3.actions.symbol1);
-            bleKeyboardAction(menu6.button3.actions.action2, menu6.button3.actions.value2, menu6.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu4.button3.actions.action0, menu4.button3.actions.value0, menu4.button3.actions.symbol0);
+              bleKeyboardAction(menu4.button3.actions.action1, menu4.button3.actions.value1, menu4.button3.actions.symbol1);
+              bleKeyboardAction(menu4.button3.actions.action2, menu4.button3.actions.value2, menu4.button3.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-        }
-
-        if (b == 4)
-        {
-          //Button 4 functions
-          if (pageNum == 0)
+          else if (b == 4) // Button 4
           {
-            //Page 0 button 4 function
-            pageNum = 5;  // By setting pageNum to 5
-            drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 5
+              bleKeyboardAction(menu4.button4.actions.action0, menu4.button4.actions.value0, menu4.button4.actions.symbol0);
+              bleKeyboardAction(menu4.button4.actions.action1, menu4.button4.actions.value1, menu4.button4.actions.symbol1);
+              bleKeyboardAction(menu4.button4.actions.action2, menu4.button4.actions.value2, menu4.button4.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 1)
+          else if (b == 5) // Button 5 / Back home
           {
-            //Page 1 button 4 function
-            bleKeyboardAction(menu1.button4.actions.action0, menu1.button4.actions.value0, menu1.button4.actions.symbol0);
-            bleKeyboardAction(menu1.button4.actions.action1, menu1.button4.actions.value1, menu1.button4.actions.symbol1);
-            bleKeyboardAction(menu1.button4.actions.action2, menu1.button4.actions.value2, menu1.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
+              pageNum = 0;
+              drawKeypad();
           }
-          else if (pageNum == 2)
+      }
+      
+      else if(pageNum == 5) // Menu 5
+      {
+          if (b == 0)  // Button 0
           {
-            //Page 2 button 4 function
-            bleKeyboardAction(menu2.button4.actions.action0, menu2.button4.actions.value0, menu2.button4.actions.symbol0);
-            bleKeyboardAction(menu2.button4.actions.action1, menu2.button4.actions.value1, menu2.button4.actions.symbol1);
-            bleKeyboardAction(menu2.button4.actions.action2, menu2.button4.actions.value2, menu2.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu5.button0.actions.action0, menu5.button0.actions.value0, menu5.button0.actions.symbol0);
+              bleKeyboardAction(menu5.button0.actions.action1, menu5.button0.actions.value1, menu5.button0.actions.symbol1);
+              bleKeyboardAction(menu5.button0.actions.action2, menu5.button0.actions.value2, menu5.button0.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 3)
+          else if (b == 1) // Button 1
           {
-            //Page 3 button 4 function
-            bleKeyboardAction(menu3.button4.actions.action0, menu3.button4.actions.value0, menu3.button4.actions.symbol0);
-            bleKeyboardAction(menu3.button4.actions.action1, menu3.button4.actions.value1, menu3.button4.actions.symbol1);
-            bleKeyboardAction(menu3.button4.actions.action2, menu3.button4.actions.value2, menu3.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu5.button1.actions.action0, menu5.button1.actions.value0, menu5.button1.actions.symbol0);
+              bleKeyboardAction(menu5.button1.actions.action1, menu5.button1.actions.value1, menu5.button1.actions.symbol1);
+              bleKeyboardAction(menu5.button1.actions.action2, menu5.button1.actions.value2, menu5.button1.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 4)
+          else if (b == 2) // Button 2
           {
-            //Page 4 button 4 function
-            bleKeyboardAction(menu4.button4.actions.action0, menu4.button4.actions.value0, menu4.button4.actions.symbol0);
-            bleKeyboardAction(menu4.button4.actions.action1, menu4.button4.actions.value1, menu4.button4.actions.symbol1);
-            bleKeyboardAction(menu4.button4.actions.action2, menu4.button4.actions.value2, menu4.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu5.button2.actions.action0, menu5.button2.actions.value0, menu5.button2.actions.symbol0);
+              bleKeyboardAction(menu5.button2.actions.action1, menu5.button2.actions.value1, menu5.button2.actions.symbol1);
+              bleKeyboardAction(menu5.button2.actions.action2, menu5.button2.actions.value2, menu5.button2.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 5)
+          else if (b == 3) // Button 3
           {
-            //Page 5 button 5 function
-            bleKeyboardAction(menu5.button4.actions.action0, menu5.button4.actions.value0, menu5.button4.actions.symbol0);
-            bleKeyboardAction(menu5.button4.actions.action1, menu5.button4.actions.value1, menu5.button4.actions.symbol1);
-            bleKeyboardAction(menu5.button4.actions.action2, menu5.button4.actions.value2, menu5.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu5.button3.actions.action0, menu5.button3.actions.value0, menu5.button3.actions.symbol0);
+              bleKeyboardAction(menu5.button3.actions.action1, menu5.button3.actions.value1, menu5.button3.actions.symbol1);
+              bleKeyboardAction(menu5.button3.actions.action2, menu5.button3.actions.value2, menu5.button3.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-          else if (pageNum == 6)
+          else if (b == 4) // Button 4
           {
-            //Page 6 button 1 function
-            bleKeyboardAction(menu6.button4.actions.action0, menu6.button4.actions.value0, menu6.button4.actions.symbol0);
-            bleKeyboardAction(menu6.button4.actions.action1, menu6.button4.actions.value1, menu6.button4.actions.symbol1);
-            bleKeyboardAction(menu6.button4.actions.action2, menu6.button4.actions.value2, menu6.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
+              bleKeyboardAction(menu5.button4.actions.action0, menu5.button4.actions.value0, menu5.button4.actions.symbol0);
+              bleKeyboardAction(menu5.button4.actions.action1, menu5.button4.actions.value1, menu5.button4.actions.symbol1);
+              bleKeyboardAction(menu5.button4.actions.action2, menu5.button4.actions.value2, menu5.button4.actions.symbol2);
+              bleKeyboard.releaseAll();
           }
-        }
-
-        if (b == 5)
-        {
-          //Button 5 functions
-          if (pageNum == 0)
+          else if (b == 5) // Button 5 / Back home
           {
-            //Page 0 button 5 function
-            pageNum = 6;  // On the Home page, button 5 takes you to settings. By setting pageNum to 6
-            drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 6
+              pageNum = 0;
+              drawKeypad();
           }
-          else
+      }
+      
+      else if(pageNum == 6) // Settings page
+      {
+          if (b == 0)  // Button 0
           {
-            pageNum = 0; // On any other page button 5 is always the "back home button"
-            drawKeypad();
+              bleKeyboardAction(9, 1, "0");
           }
-        }
+          else if (b == 1) // Button 1
+          {
+              // No function yet
+          }
+          else if (b == 2) // Button 2
+          {
+              // No function yet
+          }
+          else if (b == 3) // Button 3
+          {
+              // No function yet
+          }
+          else if (b == 4) // Button 4
+          {
+              // No function yet
+          }
+          else if (b == 5)
+          {
+              pageNum = 0;
+              drawKeypad();
+          }
+      }
 
         delay(10); // UI debouncing
       }
@@ -1304,7 +1261,7 @@ void loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 | button0_actionarray_0 == 8)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu1.button0.actions.symbol0, button0_symbolarray_0);
@@ -1315,7 +1272,7 @@ void loadConfig(String value)
       menu1.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 | button0_actionarray_1 == 8)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu1.button0.actions.symbol1, button0_symbolarray_1);
@@ -1326,7 +1283,7 @@ void loadConfig(String value)
       menu1.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 | button0_actionarray_2 == 8)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu1.button0.actions.symbol2, button0_symbolarray_2);
@@ -1348,7 +1305,7 @@ void loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 | button1_actionarray_0 == 8)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu1.button1.actions.symbol0, button1_symbolarray_0);
@@ -1359,7 +1316,7 @@ void loadConfig(String value)
       menu1.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 | button1_actionarray_1 == 8)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu1.button1.actions.symbol1, button1_symbolarray_1);
@@ -1370,7 +1327,7 @@ void loadConfig(String value)
       menu1.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 | button1_actionarray_2 == 8)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu1.button1.actions.symbol2, button1_symbolarray_2);
@@ -1392,7 +1349,7 @@ void loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 | button2_actionarray_0 == 8)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu1.button2.actions.symbol0, button2_symbolarray_0);
@@ -1403,7 +1360,7 @@ void loadConfig(String value)
       menu1.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 | button2_actionarray_1 == 8)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu1.button2.actions.symbol1, button2_symbolarray_1);
@@ -1414,7 +1371,7 @@ void loadConfig(String value)
       menu1.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 | button2_actionarray_2 == 8)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu1.button2.actions.symbol2, button2_symbolarray_2);
@@ -1436,7 +1393,7 @@ void loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 | button3_actionarray_0 == 8)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu1.button3.actions.symbol0, button3_symbolarray_0);
@@ -1447,7 +1404,7 @@ void loadConfig(String value)
       menu1.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 | button3_actionarray_1 == 8)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu1.button3.actions.symbol1, button3_symbolarray_1);
@@ -1458,7 +1415,7 @@ void loadConfig(String value)
       menu1.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 | button3_actionarray_2 == 8)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu1.button3.actions.symbol2, button3_symbolarray_2);
@@ -1480,7 +1437,7 @@ void loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 | button4_actionarray_0 == 8)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu1.button4.actions.symbol0, button4_symbolarray_0);
@@ -1491,7 +1448,7 @@ void loadConfig(String value)
       menu1.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 | button4_actionarray_1 == 8)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu1.button4.actions.symbol1, button4_symbolarray_1);
@@ -1502,7 +1459,7 @@ void loadConfig(String value)
       menu1.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 | button4_actionarray_2 == 8)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu1.button4.actions.symbol2, button4_symbolarray_2);
@@ -1562,7 +1519,7 @@ void loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 | button0_actionarray_0 == 8)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu2.button0.actions.symbol0, button0_symbolarray_0);
@@ -1573,7 +1530,7 @@ void loadConfig(String value)
       menu2.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 | button0_actionarray_1 == 8)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu2.button0.actions.symbol1, button0_symbolarray_1);
@@ -1584,7 +1541,7 @@ void loadConfig(String value)
       menu2.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 | button0_actionarray_2 == 8)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu2.button0.actions.symbol2, button0_symbolarray_2);
@@ -1606,7 +1563,7 @@ void loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 | button1_actionarray_0 == 8)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu2.button1.actions.symbol0, button1_symbolarray_0);
@@ -1617,7 +1574,7 @@ void loadConfig(String value)
       menu2.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 | button1_actionarray_1 == 8)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu2.button1.actions.symbol1, button1_symbolarray_1);
@@ -1628,7 +1585,7 @@ void loadConfig(String value)
       menu2.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 | button1_actionarray_2 == 8)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu2.button1.actions.symbol2, button1_symbolarray_2);
@@ -1650,7 +1607,7 @@ void loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 | button2_actionarray_0 == 8)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu2.button2.actions.symbol0, button2_symbolarray_0);
@@ -1661,7 +1618,7 @@ void loadConfig(String value)
       menu2.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 | button2_actionarray_1 == 8)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu2.button2.actions.symbol1, button2_symbolarray_1);
@@ -1672,7 +1629,7 @@ void loadConfig(String value)
       menu2.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 | button2_actionarray_2 == 8)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu2.button2.actions.symbol2, button2_symbolarray_2);
@@ -1694,7 +1651,7 @@ void loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 | button3_actionarray_0 == 8)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu2.button3.actions.symbol0, button3_symbolarray_0);
@@ -1705,7 +1662,7 @@ void loadConfig(String value)
       menu2.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 | button3_actionarray_1 == 8)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu2.button3.actions.symbol1, button3_symbolarray_1);
@@ -1716,7 +1673,7 @@ void loadConfig(String value)
       menu2.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 | button3_actionarray_2 == 8)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu2.button3.actions.symbol2, button3_symbolarray_2);
@@ -1738,7 +1695,7 @@ void loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 | button4_actionarray_0 == 8)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu2.button4.actions.symbol0, button4_symbolarray_0);
@@ -1749,7 +1706,7 @@ void loadConfig(String value)
       menu2.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 | button4_actionarray_1 == 8)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu2.button4.actions.symbol1, button4_symbolarray_1);
@@ -1760,7 +1717,7 @@ void loadConfig(String value)
       menu2.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 | button4_actionarray_2 == 8)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu2.button4.actions.symbol2, button4_symbolarray_2);
@@ -1820,7 +1777,7 @@ void loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 | button0_actionarray_0 == 8)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu3.button0.actions.symbol0, button0_symbolarray_0);
@@ -1831,7 +1788,7 @@ void loadConfig(String value)
       menu3.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 | button0_actionarray_1 == 8)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu3.button0.actions.symbol1, button0_symbolarray_1);
@@ -1842,7 +1799,7 @@ void loadConfig(String value)
       menu3.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 | button0_actionarray_2 == 8)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu3.button0.actions.symbol2, button0_symbolarray_2);
@@ -1864,7 +1821,7 @@ void loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 | button1_actionarray_0 == 8)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu3.button1.actions.symbol0, button1_symbolarray_0);
@@ -1875,7 +1832,7 @@ void loadConfig(String value)
       menu3.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 | button1_actionarray_1 == 8)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu3.button1.actions.symbol1, button1_symbolarray_1);
@@ -1886,7 +1843,7 @@ void loadConfig(String value)
       menu3.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 | button1_actionarray_2 == 8)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu3.button1.actions.symbol2, button1_symbolarray_2);
@@ -1908,7 +1865,7 @@ void loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 | button2_actionarray_0 == 8)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu3.button2.actions.symbol0, button2_symbolarray_0);
@@ -1919,7 +1876,7 @@ void loadConfig(String value)
       menu3.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 | button2_actionarray_1 == 8)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu3.button2.actions.symbol1, button2_symbolarray_1);
@@ -1930,7 +1887,7 @@ void loadConfig(String value)
       menu3.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 | button2_actionarray_2 == 8)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu3.button2.actions.symbol2, button2_symbolarray_2);
@@ -1952,7 +1909,7 @@ void loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 | button3_actionarray_0 == 8)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu3.button3.actions.symbol0, button3_symbolarray_0);
@@ -1963,7 +1920,7 @@ void loadConfig(String value)
       menu3.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 | button3_actionarray_1 == 8)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu3.button3.actions.symbol1, button3_symbolarray_1);
@@ -1974,7 +1931,7 @@ void loadConfig(String value)
       menu3.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 | button3_actionarray_2 == 8)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu3.button3.actions.symbol2, button3_symbolarray_2);
@@ -1996,7 +1953,7 @@ void loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 | button4_actionarray_0 == 8)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu3.button4.actions.symbol0, button4_symbolarray_0);
@@ -2007,7 +1964,7 @@ void loadConfig(String value)
       menu3.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 | button4_actionarray_1 == 8)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu3.button4.actions.symbol1, button4_symbolarray_1);
@@ -2018,7 +1975,7 @@ void loadConfig(String value)
       menu3.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 | button4_actionarray_2 == 8)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu3.button4.actions.symbol2, button4_symbolarray_2);
@@ -2078,7 +2035,7 @@ void loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 | button0_actionarray_0 == 8)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu4.button0.actions.symbol0, button0_symbolarray_0);
@@ -2089,7 +2046,7 @@ void loadConfig(String value)
       menu4.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 | button0_actionarray_1 == 8)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu4.button0.actions.symbol1, button0_symbolarray_1);
@@ -2100,7 +2057,7 @@ void loadConfig(String value)
       menu4.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 | button0_actionarray_2 == 8)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu4.button0.actions.symbol2, button0_symbolarray_2);
@@ -2122,7 +2079,7 @@ void loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 | button1_actionarray_0 == 8)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu4.button1.actions.symbol0, button1_symbolarray_0);
@@ -2133,7 +2090,7 @@ void loadConfig(String value)
       menu4.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 | button1_actionarray_1 == 8)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu4.button1.actions.symbol1, button1_symbolarray_1);
@@ -2144,7 +2101,7 @@ void loadConfig(String value)
       menu4.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 | button1_actionarray_2 == 8)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu4.button1.actions.symbol2, button1_symbolarray_2);
@@ -2166,7 +2123,7 @@ void loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 | button2_actionarray_0 == 8)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu4.button2.actions.symbol0, button2_symbolarray_0);
@@ -2177,7 +2134,7 @@ void loadConfig(String value)
       menu4.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 | button2_actionarray_1 == 8)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu4.button2.actions.symbol1, button2_symbolarray_1);
@@ -2188,7 +2145,7 @@ void loadConfig(String value)
       menu4.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 | button2_actionarray_2 == 8)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu4.button2.actions.symbol2, button2_symbolarray_2);
@@ -2210,7 +2167,7 @@ void loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 | button3_actionarray_0 == 8)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu4.button3.actions.symbol0, button3_symbolarray_0);
@@ -2221,7 +2178,7 @@ void loadConfig(String value)
       menu4.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 | button3_actionarray_1 == 8)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu4.button3.actions.symbol1, button3_symbolarray_1);
@@ -2232,7 +2189,7 @@ void loadConfig(String value)
       menu4.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 | button3_actionarray_2 == 8)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu4.button3.actions.symbol2, button3_symbolarray_2);
@@ -2254,7 +2211,7 @@ void loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 | button4_actionarray_0 == 8)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu4.button4.actions.symbol0, button4_symbolarray_0);
@@ -2265,7 +2222,7 @@ void loadConfig(String value)
       menu4.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 | button4_actionarray_1 == 8)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu4.button4.actions.symbol1, button4_symbolarray_1);
@@ -2276,7 +2233,7 @@ void loadConfig(String value)
       menu4.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 | button4_actionarray_2 == 8)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu4.button4.actions.symbol2, button4_symbolarray_2);
@@ -2336,7 +2293,7 @@ void loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 | button0_actionarray_0 == 8)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu5.button0.actions.symbol0, button0_symbolarray_0);
@@ -2347,7 +2304,7 @@ void loadConfig(String value)
       menu5.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 | button0_actionarray_1 == 8)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu5.button0.actions.symbol1, button0_symbolarray_1);
@@ -2358,7 +2315,7 @@ void loadConfig(String value)
       menu5.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 | button0_actionarray_2 == 8)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu5.button0.actions.symbol2, button0_symbolarray_2);
@@ -2380,7 +2337,7 @@ void loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 | button1_actionarray_0 == 8)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu5.button1.actions.symbol0, button1_symbolarray_0);
@@ -2391,7 +2348,7 @@ void loadConfig(String value)
       menu5.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 | button1_actionarray_1 == 8)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu5.button1.actions.symbol1, button1_symbolarray_1);
@@ -2402,7 +2359,7 @@ void loadConfig(String value)
       menu5.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 | button1_actionarray_2 == 8)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu5.button1.actions.symbol2, button1_symbolarray_2);
@@ -2424,7 +2381,7 @@ void loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 | button2_actionarray_0 == 8)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu5.button2.actions.symbol0, button2_symbolarray_0);
@@ -2435,7 +2392,7 @@ void loadConfig(String value)
       menu5.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 | button2_actionarray_1 == 8)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu5.button2.actions.symbol1, button2_symbolarray_1);
@@ -2446,7 +2403,7 @@ void loadConfig(String value)
       menu5.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 | button2_actionarray_2 == 8)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu5.button2.actions.symbol2, button2_symbolarray_2);
@@ -2468,7 +2425,7 @@ void loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 | button3_actionarray_0 == 8)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu5.button3.actions.symbol0, button3_symbolarray_0);
@@ -2479,7 +2436,7 @@ void loadConfig(String value)
       menu5.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 | button3_actionarray_1 == 8)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu5.button3.actions.symbol1, button3_symbolarray_1);
@@ -2490,7 +2447,7 @@ void loadConfig(String value)
       menu5.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 | button3_actionarray_2 == 8)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu5.button3.actions.symbol2, button3_symbolarray_2);
@@ -2512,7 +2469,7 @@ void loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 | button4_actionarray_0 == 8)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu5.button4.actions.symbol0, button4_symbolarray_0);
@@ -2523,7 +2480,7 @@ void loadConfig(String value)
       menu5.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 | button4_actionarray_1 == 8)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu5.button4.actions.symbol1, button4_symbolarray_1);
@@ -2534,7 +2491,7 @@ void loadConfig(String value)
       menu5.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 | button4_actionarray_2 == 8)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu5.button4.actions.symbol2, button4_symbolarray_2);
@@ -3108,6 +3065,8 @@ void drawErrorMessage(String message)
 void configmode()
 {
 
+  debug.Info("Entering Config Mode");
+  
   // Stop BLE from interfering with our WIFI signal
   btStop();
   esp_bt_controller_disable();
@@ -3115,9 +3074,36 @@ void configmode()
   esp_bt_controller_mem_release(ESP_BT_MODE_IDLE);
   debug.Info("BLE Stopped");
 
+  if(ssid == " " || password == " ") // The SSID and Password are still empty
+  { 
+    drawErrorMessage("The SSID/password is not set correctly!");
+    debug.Error("The SSID/password is not set correctly!");
+    while (1)
+      yield(); // Stop!
+  }
+
+  drawErrorMessage("Connecting to Wifi...");
+  
+  Serial.printf("[INFO]: Connecting to %s\n", ssid);
+  if (String(WiFi.SSID()) != String(ssid))
+  {
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid, password);
+  }
+
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("[INFO]: Connected! IP address: ");
+  Serial.println(WiFi.localIP());
+
+  MDNS.begin(host);
+
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
-  debug.Info("Entering Config Mode");
 
   // Start the webserver
   server.begin();
