@@ -15,6 +15,14 @@
 			width: 99%;
 		}
 
+		a {
+			color: #000088;
+		}
+
+		a:hover {
+  			color: #1fa3ec;
+		}
+
 		.form button {
 			border: 0;
 			border-radius: 0.3rem;
@@ -85,8 +93,9 @@
 	<div id="intro" class="tabcontent">
 		<h3>Welcome</h3>
 		<p>
-			Welcome to the configurator! Select an option/page from the top menu. If you have any questions, join the
-			discord server #html link. Some more text here to explain what to do.
+			Welcome to the configurator! Select an option/page from the top menu. If you have any questions, join my 
+			Discord server: <a href="https://discord.gg/RE3XevS" target="_blank">https://discord.gg/RE3XevS</a><br/>
+			A guide on how to use the configurator can be found here: <a href="https://github.com/DustinWatts/FreeTouchDeck/wiki/The-Configurator" target="_blank"> FreeTouchDeck Wiki</a>
 		</p>
 	</div>
 	<!-- Tab General -->
@@ -667,11 +676,13 @@
 	<!-- Upload Logo -->
 	<div id="uploadimage" class="tabcontent">
 		<h3>Upload a new logo</h3>
-		<br /> Some test here....<br />
+		<div style="width: 70%; text-align: left; margin: auto;"> You can cumstomize the logo's that are used. If you upload a file
+		with a name that already exists, the file is <u>overwritten</u>. You can only upload .bmp images. There images should be 75x75 pixels
+		and be in a 24-bit RGB format. A perfectly black (#000000) pixel will be rendered as transparent.<br/><br/></div>
 		<p>
 		<div class="form" style="width: 10%; text-align: : center; margin: auto;">
 			<input form="uploadfile" type="file" name="name" accept=".bmp"><br /><br />
-			<button form="uploadfile" type="save">Upload</button>
+			<button style='cursor: pointer;' form="uploadfile" type="save">Upload</button>
 		</div>
 		</p>
 	</div>

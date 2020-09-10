@@ -45,6 +45,8 @@
 #include <WebServer.h>  // Webserver functionality
 #include <ESPmDNS.h>    // DNS functionality
 
+#include "debug.h" // For debugging
+
 //TODO Remove hardcoded SSID and PW... use config.json file
 const char *ssid = " ";     //                                  <--- Your WiFi SSID here
 const char *password = " "; //                              <--- Your WiFi Password here
@@ -184,6 +186,8 @@ Menu menu4;
 Menu menu5;
 Menu menu6;
 
+Debug debug;
+
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
 
@@ -194,14 +198,17 @@ void setup()
 
   // Use serial port
   Serial.begin(9600);
+  
+  debug.SetLevel(debug.LevelInfo); // Options: debug.LevelError, debug.LevelWarn, debug.LevelInfo
 
   if (!SPIFFS.begin())
   {
-    Serial.println("SPIFFS initialisation failed!");
+    debug.Error("SPIFFS initialisation failed!");
     while (1)
       yield(); // We stop here
   }
-  Serial.println("\r\nSPIFFS initialised.");
+  debug.Info("SPIFFS initialised.");
+  
 
   //------------------TFT/Touch Initialization ------------------------------------------------------------------------
 
@@ -221,11 +228,13 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.10 Is the first attempt at scaling the buttons to fit the screen specified in SCREEN_WIDTH
-     and SCREEN_HEIGHT. Default is 480 by 320, so adjust according to your screen.
+  /* Version 0.8.11 adds the Debug class for easier debugging. It also has ome updated HTmL and JS. There are some more 
+   * default images in /logos/. And the first menu "Music" has some default functionality. 
+   *  
   */
 
-  tft.print("Loading version 0.8.10");
+  tft.print("Loading version 0.8.11");
+  debug.Info("Loading version 0.8.11");
 
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
@@ -234,41 +243,48 @@ void setup()
 
   if (!checkfile("/config/colors.json"))
   {
+    debug.Error("/config/colors.json not found!");
     while (1) yield(); // Stop!
   }
 
   if (!checkfile("/config/homescreen.json"))
   {
+    debug.Error("/config/homescreen.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu1.json"))
   {
+    debug.Error("/config/menu1.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu2.json"))
   {
+    debug.Error("/config/menu2.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu3.json"))
   {
+    debug.Error("/config/menu3.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu4.json"))
   {
+    debug.Error("/config/menu4.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu5.json"))
   {
+    debug.Error("/config/menu5.json not found!");
     while (1)
       yield(); // Stop!
   }
@@ -281,15 +297,17 @@ void setup()
   loadConfig("menu3");
   loadConfig("menu4");
   loadConfig("menu5");
+  debug.Info("All configs loaded");
 
   strcpy(generallogo.homebutton, "/logos/home.bmp");
   strcpy(generallogo.configurator, "/logos/wifi.bmp");
+  debug.Info("General logo's loaded.");
 
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
 
   //------------------WIFI Initialization ------------------------------------------------------------------------
-
+  
   Serial.printf("Connecting to %s\n", ssid);
   if (String(WiFi.SSID()) != String(ssid))
   {
@@ -341,15 +359,20 @@ void setup()
 
   server.on("/list", HTTP_GET, handleFileList);
 
+  debug.Info("Server handles loaded.");
+
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
 
   // Draw keypad
+  debug.Info("Drawing keypad");
   drawKeypad();
 
   //------------------BLE Initialization ------------------------------------------------------------------------
 
+  debug.Info("Starting BLE");
   bleKeyboard.begin();
+  
 }
 
 //--------------------- LOOP ---------------------------------------------------------------------
@@ -998,6 +1021,7 @@ void drawlogo(int logonumber, int col, int row, uint16_t fgcolor)
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 
+  debug.Info("BLE Keybaord action received");
   switch (action)
   {
   case 0:
@@ -2558,12 +2582,12 @@ void saveconfig()
   if (server.arg("save") == "homescreen")
   {
 
-    Serial.println("Saving homescreen");
+    debug.Info("Saving Homescreen");
     SPIFFS.remove("/config/homescreen.json");
     File file = SPIFFS.open("/config/homescreen.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create homescreen.json");
       return;
     }
 
@@ -2580,20 +2604,19 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
   }
   else if (server.arg("save") == "savecolors")
   {
-
-    Serial.println("Saving colors");
+    debug.Info("Saving Colors");
 
     SPIFFS.remove("/config/colors.json");
     File file = SPIFFS.open("/config/colors.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create file");
       return;
     }
 
@@ -2608,7 +2631,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
 
@@ -2616,12 +2639,13 @@ void saveconfig()
   }
   else if (server.arg("save") == "menu1")
   {
-
+    
+    debug.Info("Saving Menu 1");
     SPIFFS.remove("/config/menu1.json");
     File file = SPIFFS.open("/config/menu1.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create menu1.json");
       return;
     }
 
@@ -2697,7 +2721,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
 
@@ -2706,11 +2730,12 @@ void saveconfig()
   else if (server.arg("save") == "menu2")
   {
 
+    debug.Info("Saving Menu 2");
     SPIFFS.remove("/config/menu2.json");
     File file = SPIFFS.open("/config/menu2.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create menu2.json");
       return;
     }
 
@@ -2786,7 +2811,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
 
@@ -2795,11 +2820,12 @@ void saveconfig()
   else if (server.arg("save") == "menu3")
   {
 
+    debug.Info("Saving Menu 3");
     SPIFFS.remove("/config/menu3.json");
     File file = SPIFFS.open("/config/menu3.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create menu3.json");
       return;
     }
 
@@ -2875,7 +2901,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
 
@@ -2884,11 +2910,12 @@ void saveconfig()
   else if (server.arg("save") == "menu4")
   {
 
+    debug.Info("Saving Menu 4");
     SPIFFS.remove("/config/menu4.json");
     File file = SPIFFS.open("/config/menu4.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create menu4.json");
       return;
     }
 
@@ -2964,7 +2991,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
 
@@ -2973,11 +3000,12 @@ void saveconfig()
   else if (server.arg("save") == "menu5")
   {
 
+    debug.Info("Saving Menu 5");
     SPIFFS.remove("/config/menu5.json");
     File file = SPIFFS.open("/config/menu5.json", "w");
     if (!file)
     {
-      Serial.println(F("Failed to create file"));
+      debug.Error("Failed to create menu5.json");
       return;
     }
 
@@ -3053,7 +3081,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      Serial.println(F("Failed to write to file"));
+      debug.Error("Failed to write to file");
     }
     file.close();
   }
@@ -3085,14 +3113,15 @@ void configmode()
   esp_bt_controller_disable();
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_IDLE);
+  debug.Info("BLE Stopped");
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
-  Serial.println("Entering Config Mode");
+  debug.Info("Entering Config Mode");
 
   // Start the webserver
   server.begin();
-  Serial.println("HTTP Server Started");
+  debug.Info("Webserver started");
 }
 
 void handleRestart()
@@ -3101,7 +3130,7 @@ void handleRestart()
   // First send some text to the browser otherwise an ugly browser error shows up
   server.send(200, "text/plain", "FreeTouchDeck is restarting...");
   // Then restart the ESP
-  Serial.println("ESP Restarting...");
+  debug.Warn("Restarting");
   ESP.restart();
 }
 
@@ -3115,7 +3144,7 @@ void touch_calibrate()
   // check file system exists
   if (!SPIFFS.begin())
   {
-    Serial.println("Formating file system");
+    debug.Warn("Formatting file system");
     SPIFFS.format();
     SPIFFS.begin();
   }
@@ -3261,6 +3290,7 @@ bool exists(String path)
 
 bool handleFileRead(String path)
 {
+  debug.Info("Handeling file read");
   Serial.println("handleFileRead: " + path);
   if (path.endsWith("/"))
   {
@@ -3292,6 +3322,7 @@ void faviconhandle()
 
 void handleFileList()
 {
+  debug.Info("Handeling file list");
   if (!server.hasArg("dir"))
   {
     server.send(500, "text/plain", "BAD ARGS");
@@ -3337,6 +3368,7 @@ void handleFileList()
 
 void handleFileUpload()
 {
+  debug.Info("Handeling file upload");
   if (server.uri() != "/upload")
   {
     return;
@@ -3349,14 +3381,12 @@ void handleFileUpload()
     {
       filename = "/logos/" + filename; // TODO: This should not be hard-coded!
     }
-    Serial.print("handleFileUpload Name: ");
-    Serial.println(filename);
+    debug.Info("File uploading");
     fsUploadFile = SPIFFS.open(filename, "w");
     filename = String();
   }
   else if (upload.status == UPLOAD_FILE_WRITE)
   {
-    //DBG_OUTPUT_PORT.print("handleFileUpload Data: "); DBG_OUTPUT_PORT.println(upload.currentSize);
     if (fsUploadFile)
     {
       fsUploadFile.write(upload.buf, upload.currentSize);
@@ -3367,10 +3397,9 @@ void handleFileUpload()
     if (fsUploadFile)
     {
       fsUploadFile.close();
-      handleFileRead("/upload.htm");
+      //handleFileRead("/upload.htm");
     }
-    Serial.print("handleFileUpload Size: ");
-    Serial.println(upload.totalSize);
+    debug.Info("File Uploaded");
     handleFileRead("/upload.htm");
   }
 }
@@ -3404,7 +3433,7 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 
   fs::File bmpFS;
 
-  // Open requested file on SD card
+  // Open requested file
   bmpFS = SPIFFS.open(filename, "r");
 
   //Serial.print("Opening file: ");
@@ -3412,8 +3441,8 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 
   if (!bmpFS)
   {
-    Serial.print("Bitmap not found: ");
-    Serial.println(filename);
+    debug.Warn("Bitmap not found: ");
+    debug.Warn(filename);
     filename = "/logos/question.bmp";
     bmpFS = SPIFFS.open(filename, "r");
   }
@@ -3464,8 +3493,6 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
         tft.pushImage(x, y--, w, 1, (uint16_t *)lineBuffer, TFT_BLACK);
       }
       tft.setSwapBytes(oldSwapBytes);
-      //Serial.print("Loaded in "); Serial.print(millis() - startTime);
-      //Serial.println(" ms");
     }
     else
       Serial.println("BMP format not recognized.");
@@ -3481,7 +3508,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
 
   fs::File bmpFS;
 
-  // Open requested file on SD card
+  // Open requested file
   bmpFS = SPIFFS.open(filename, "r");
 
   if (!bmpFS)
@@ -3536,16 +3563,14 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
         tft.pushImage(x, y--, w, 1, (uint16_t *)lineBuffer);
       }
       tft.setSwapBytes(oldSwapBytes);
-      //Serial.print("Loaded in "); Serial.print(millis() - startTime);
-      //Serial.println(" ms");
     }
     else
-      Serial.println("BMP format not recognized.");
+      debug.Warn("BMP format not recognized.");
   }
   bmpFS.close();
 }
 
-// These read 16- and 32-bit types from the SD card file.
+// These read 16- and 32-bit types from the file system card file.
 // BMP data is stored little-endian, Arduino is little-endian too.
 // May need to reverse subscript order if porting elsewhere.
 
@@ -3580,7 +3605,6 @@ bool checkfile(char *filename)
 
   if (!SPIFFS.exists(filename))
   {
-    Serial.printf("%s not found!\nExecution halted.", filename);
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(1, 3);
     tft.setTextFont(2);
