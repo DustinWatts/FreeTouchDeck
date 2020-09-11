@@ -1,6 +1,6 @@
 {
-	"ssid": "YOUR_WIFI_SSID",
-	"password": "YOUR_WIFI_PASSWORD",
+	"ssid": "YOUR_WIFI_SSID2",
+	"password": "YOUR_WIFI_PASSWORD2",
 	"wifihostname": "freetouchdeck",
 	"debuglevel": 2
 }
