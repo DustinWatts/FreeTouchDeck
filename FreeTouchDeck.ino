@@ -47,16 +47,11 @@
 
 #include "debug.h" // For debugging
 
-//TODO Remove hardcoded SSID and PW... use config.json file
-const char *ssid = " ";     //                                  <--- Your WiFi SSID here
-const char *password = " "; //                              <--- Your WiFi Password here
-const char *host = "FreeTouchDeck";
+BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 WebServer server(80);
 
 File fsUploadFile;
-
-BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 TFT_eSPI tft = TFT_eSPI();
 
@@ -165,7 +160,17 @@ struct Config
   uint16_t backgroundColour;
 };
 
+struct Wificonfig
+{
+  char ssid[64];
+  char password[64];
+  char hostname[64];
+  int debuglevel; 
+};
+
 //Create instances of the structs
+
+Wificonfig wificonfig;
 
 Config generalconfig;
 
@@ -199,7 +204,7 @@ void setup()
   // Use serial port
   Serial.begin(9600);
   
-  debug.SetLevel(debug.LevelInfo); // Options: debug.LevelError, debug.LevelWarn, debug.LevelInfo
+  //debug.SetLevel(debug.LevelInfo); // Options: debug.LevelError, debug.LevelWarn, debug.LevelInfo
 
   if (!SPIFFS.begin())
   {
@@ -208,6 +213,16 @@ void setup()
       yield(); // We stop here
   }
   debug.Info("SPIFFS initialised.");
+
+  //------------------ Load Wifi Config Etc. ----------------------------------------------
+
+  debug.Info("Loading Wifi Config");
+  if(!loadMainConfig())
+  {
+    debug.Warn("Failed to load WiFi Credentials!");
+  }else{
+    debug.Info("WiFi Credentials Loaded");
+  }
   
 
   //------------------TFT/Touch Initialization ------------------------------------------------------------------------
@@ -228,13 +243,12 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.12 Changed the button press handeling to first check the page, then check the button. 
-   * It is easier to understand the code this way. Also moved the connecting to WiFi to only connect when 
-   * entering config-mode. User guide changed to reflect this. 
+  /* Version 0.8.13 Introduces wificonfig.json for WiFi credentials. Also debuglevel can be set here.
+   * User guide updated to reflect this.
   */
 
-  tft.print("Loading version 0.8.12");
-  debug.Info("Loading version 0.8.12");
+  tft.print("Loading version 0.8.13");
+  debug.Info("Loading version 0.8.13");
 
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
@@ -304,11 +318,7 @@ void setup()
   debug.Info("General logo's loaded.");
 
   // Setup the Font used for plain text
-  tft.setFreeFont(LABEL_FONT);
-
-  //------------------WIFI Initialization ------------------------------------------------------------------------
-
-  
+  tft.setFreeFont(LABEL_FONT);  
 
   //------------------Webserver Initialization ------------------------------------------------------------------------
 
@@ -978,7 +988,7 @@ void drawlogo(int logonumber, int col, int row, uint16_t fgcolor)
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 
-  debug.Info("BLE Keybaord action received");
+  debug.Info("BLE Keyboard action received");
   switch (action)
   {
   case 0:
@@ -1151,7 +1161,32 @@ void bleKeyboardAction(int action, int value, char *symbol)
 
 // ------------------------------------ Load JSON File --------------------------------------------------
 
-// TODO: Move JSON parsing function is in a seperate file because it is really long ;)
+// TODO: Move JSON parsing function in a seperate file because it is really long ;)
+
+bool loadMainConfig()
+{
+  if (!SPIFFS.exists("/config/wificonfig.json"))
+  {
+    debug.Warn("Config file not found!");
+    return false;
+  }
+  File configfile = SPIFFS.open("/config/wificonfig.json");
+
+  DynamicJsonDocument doc(256);
+
+  DeserializationError error = deserializeJson(doc, configfile);
+
+  strlcpy(wificonfig.ssid, doc["ssid"] | "FAILED", sizeof(wificonfig.ssid));
+  strlcpy(wificonfig.password, doc["password"] | "FAILED", sizeof(wificonfig.password));
+  strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));  
+  wificonfig.debuglevel = doc["debuglevel"] | 2;
+
+  debug.SetLevel(wificonfig.debuglevel);
+
+  configfile.close();
+
+  return true;
+}
 
 void loadConfig(String value)
 {
@@ -3074,21 +3109,29 @@ void configmode()
   esp_bt_controller_mem_release(ESP_BT_MODE_IDLE);
   debug.Info("BLE Stopped");
 
-  if(ssid == " " || password == " ") // The SSID and Password are still empty
+  if(String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
   { 
-    drawErrorMessage("The SSID/password is not set correctly!");
-    debug.Error("The SSID/password is not set correctly!");
+    drawErrorMessage("WiFi Config still set to default!");
+    debug.Error("WiFi Config still set to default!");
+    while (1)
+      yield(); // Stop!
+  }
+
+  if(String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED") // The wificonfig.json failed to load
+  { 
+    drawErrorMessage("WiFi Config Failed to load!");
+    debug.Error("WiFi Config Failed to load!");
     while (1)
       yield(); // Stop!
   }
 
   drawErrorMessage("Connecting to Wifi...");
   
-  Serial.printf("[INFO]: Connecting to %s\n", ssid);
-  if (String(WiFi.SSID()) != String(ssid))
+  Serial.printf("[INFO]: Connecting to %s", wificonfig.ssid);
+  if (String(WiFi.SSID()) != String(wificonfig.ssid))
   {
     WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid, password);
+    WiFi.begin(wificonfig.ssid, wificonfig.password);
   }
 
   while (WiFi.status() != WL_CONNECTED)
@@ -3100,7 +3143,7 @@ void configmode()
   Serial.print("[INFO]: Connected! IP address: ");
   Serial.println(WiFi.localIP());
 
-  MDNS.begin(host);
+  MDNS.begin(wificonfig.hostname);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
