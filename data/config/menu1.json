@@ -5,22 +5,27 @@
   "logo3": "play.bmp",
   "logo4": "stop.bmp",
   "button0":{
+    "latch": true,
     "actionarray": [ "3", "0", "0" ],
     "valuearray": [ "1", "0", "0" ] 
   },
   "button1":{
+    "latch": false,
     "actionarray": [ "3", "0", "0" ],
     "valuearray": [ "2", "0", "0" ] 
   },
   "button2":{
+    "latch": false,
     "actionarray": [ "3", "0", "0" ],
     "valuearray": [ "3", "0", "0" ] 
   },
   "button3":{
+    "latch": false,
     "actionarray": [ "3", "0", "0"],
     "valuearray": [ "4", "0", "0" ] 
   },
   "button4":{
+    "latch": false,
     "actionarray": [ "3", "0", "0" ],
     "valuearray": [ "5", "0", "0" ] 
   }

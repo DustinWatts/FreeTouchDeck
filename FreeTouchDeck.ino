@@ -131,6 +131,7 @@ struct Actions
 struct Button
 {
   struct Actions actions;
+  bool latch;
 };
 
 // Each menu has 6 buttons
@@ -156,8 +157,8 @@ struct Config
 {
   uint16_t menuButtonColour;
   uint16_t functionButtonColour;
-  uint16_t logoColour;
   uint16_t backgroundColour;
+  uint16_t latchedColour;
 };
 
 struct Wificonfig
@@ -167,6 +168,8 @@ struct Wificonfig
   char hostname[64];
   int debuglevel; 
 };
+
+bool islatched[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 //Create instances of the structs
 
@@ -203,6 +206,16 @@ void setup()
 
   // Use serial port
   Serial.begin(9600);
+
+//  for(int i=0; i < 25 ; i++)
+//  {
+//    if(islatched[i]){
+//      islatched[i] = 0;
+//    }else{
+//      islatched[i] = 1;
+//    }
+//    Serial.print(islatched[i]);
+//  }
   
   //debug.SetLevel(debug.LevelInfo); // Options: debug.LevelError, debug.LevelWarn, debug.LevelInfo
 
@@ -243,8 +256,7 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.13 Introduces wificonfig.json for WiFi credentials. Also debuglevel can be set here.
-   * User guide updated to reflect this.
+  /* Version 0.8.13 Introduces Latching buttons!
   */
 
   tft.print("Loading version 0.8.13");
@@ -383,7 +395,7 @@ void loop(void)
   }
   else
   {
-
+     
     // Touch coordinates are stored here
     uint16_t t_x = 0, t_y = 0;
 
@@ -406,14 +418,13 @@ void loop(void)
     // Check if any key has changed state
     for (uint8_t b = 0; b < 6; b++)
     {
-
       if (key[b].justReleased())
       {
 
         // Draw normal button space (non inverted)
         key[b].drawButton();
-        // Call the drawLogo function with generalconfig.logoColour foreground (normal state)
-        drawlogo(b, colArray[b], rowArray[b], generalconfig.logoColour);
+        // Call the drawLogo function
+        drawlogo(b, colArray[b], rowArray[b]);
       }
 
       if (key[b].justPressed())
@@ -464,6 +475,15 @@ void loop(void)
               bleKeyboardAction(menu1.button0.actions.action1, menu1.button0.actions.value1, menu1.button0.actions.symbol1);
               bleKeyboardAction(menu1.button0.actions.action2, menu1.button0.actions.value2, menu1.button0.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu1.button0.latch){
+                if(islatched[0]){
+                  islatched[0] = 0;
+                  drawlatched(b, 0, 0, false);
+                }else{
+                  islatched[0] = 1;
+                  drawlatched(b, 0, 0, true);
+                }
+              }
           }
           else if (b == 1) // Button 1
           {
@@ -471,6 +491,15 @@ void loop(void)
               bleKeyboardAction(menu1.button1.actions.action1, menu1.button1.actions.value1, menu1.button1.actions.symbol1);
               bleKeyboardAction(menu1.button1.actions.action2, menu1.button1.actions.value2, menu1.button1.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu1.button1.latch){
+                if(islatched[1]){
+                  islatched[1] = 0;
+                  drawlatched(b, 1, 0, false);
+                }else{
+                  islatched[1] = 1;
+                  drawlatched(b, 1, 0, true);
+                }
+              }
           }
           else if (b == 2) // Button 2
           {
@@ -478,6 +507,15 @@ void loop(void)
               bleKeyboardAction(menu1.button2.actions.action1, menu1.button2.actions.value1, menu1.button2.actions.symbol1);
               bleKeyboardAction(menu1.button2.actions.action2, menu1.button2.actions.value2, menu1.button2.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu1.button2.latch){
+                if(islatched[2]){
+                  islatched[2] = 0;
+                  drawlatched(b, 2, 0, false);
+                }else{
+                  islatched[2] = 1;
+                  drawlatched(b, 2, 0, true);
+                }
+              }
           }
           else if (b == 3) // Button 3
           {
@@ -485,6 +523,15 @@ void loop(void)
               bleKeyboardAction(menu1.button3.actions.action1, menu1.button3.actions.value1, menu1.button3.actions.symbol1);
               bleKeyboardAction(menu1.button3.actions.action2, menu1.button3.actions.value2, menu1.button3.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu1.button3.latch){
+                if(islatched[3]){
+                  islatched[3] = 0;
+                  drawlatched(b, 0, 1, false);
+                }else{
+                  islatched[3] = 1;
+                  drawlatched(b, 0, 1, true);
+                }
+              }
           }
           else if (b == 4) // Button 4
           {
@@ -492,6 +539,15 @@ void loop(void)
               bleKeyboardAction(menu1.button4.actions.action1, menu1.button4.actions.value1, menu1.button4.actions.symbol1);
               bleKeyboardAction(menu1.button4.actions.action2, menu1.button4.actions.value2, menu1.button4.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu1.button4.latch){
+                if(islatched[4]){
+                  islatched[4] = 0;
+                  drawlatched(b, 1, 1, false);
+                }else{
+                  islatched[4] = 1;
+                  drawlatched(b, 1, 1, true);
+                }
+              }
           }
           else if (b == 5) // Button 5 / Back home
           {
@@ -508,6 +564,15 @@ void loop(void)
               bleKeyboardAction(menu2.button0.actions.action1, menu2.button0.actions.value1, menu2.button0.actions.symbol1);
               bleKeyboardAction(menu2.button0.actions.action2, menu2.button0.actions.value2, menu2.button0.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu2.button0.latch){
+                if(islatched[5]){
+                  islatched[5] = 0;
+                  drawlatched(b, 0, 0, false);
+                }else{
+                  islatched[5] = 1;
+                  drawlatched(b, 0, 0, true);
+                }
+              }
           }
           else if (b == 1) // Button 1
           {
@@ -515,6 +580,15 @@ void loop(void)
               bleKeyboardAction(menu2.button1.actions.action1, menu2.button1.actions.value1, menu2.button1.actions.symbol1);
               bleKeyboardAction(menu2.button1.actions.action2, menu2.button1.actions.value2, menu2.button1.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu2.button1.latch){
+                if(islatched[6]){
+                  islatched[6] = 0;
+                  drawlatched(b, 1, 0, false);
+                }else{
+                  islatched[6] = 1;
+                  drawlatched(b, 1, 0, true);
+                }
+              }
           }
           else if (b == 2) // Button 2
           {
@@ -522,13 +596,31 @@ void loop(void)
               bleKeyboardAction(menu2.button2.actions.action1, menu2.button2.actions.value1, menu2.button2.actions.symbol1);
               bleKeyboardAction(menu2.button2.actions.action2, menu2.button2.actions.value2, menu2.button2.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu2.button2.latch){
+                if(islatched[7]){
+                  islatched[7] = 0;
+                  drawlatched(b, 2, 0, false);
+                }else{
+                  islatched[7] = 1;
+                  drawlatched(b, 2, 0, true);
+                }
+              }
           }
           else if (b == 3) // Button 3
-          {
+          {   
               bleKeyboardAction(menu2.button3.actions.action0, menu2.button3.actions.value0, menu2.button3.actions.symbol0);
               bleKeyboardAction(menu2.button3.actions.action1, menu2.button3.actions.value1, menu2.button3.actions.symbol1);
               bleKeyboardAction(menu2.button3.actions.action2, menu2.button3.actions.value2, menu2.button3.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu2.button3.latch){
+                if(islatched[8]){
+                  islatched[8] = 0;
+                  drawlatched(b, 0, 1, false);
+                }else{
+                  islatched[8] = 1;
+                  drawlatched(b, 0, 1, true);
+                }
+              }
           }
           else if (b == 4) // Button 4
           {
@@ -536,6 +628,15 @@ void loop(void)
               bleKeyboardAction(menu2.button4.actions.action1, menu2.button4.actions.value1, menu2.button4.actions.symbol1);
               bleKeyboardAction(menu2.button4.actions.action2, menu2.button4.actions.value2, menu2.button4.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu2.button4.latch){
+                if(islatched[9]){
+                  islatched[9] = 0;
+                  drawlatched(b, 1, 1, false);
+                }else{
+                  islatched[9] = 1;
+                  drawlatched(b, 1, 1, true);
+                }
+              }
           }
           else if (b == 5) // Button 5 / Back home
           {
@@ -552,6 +653,15 @@ void loop(void)
               bleKeyboardAction(menu3.button0.actions.action1, menu3.button0.actions.value1, menu3.button0.actions.symbol1);
               bleKeyboardAction(menu3.button0.actions.action2, menu3.button0.actions.value2, menu3.button0.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu3.button0.latch){
+                if(islatched[10]){
+                  islatched[10] = 0;
+                  drawlatched(b, 0, 0, false);
+                }else{
+                  islatched[10] = 1;
+                  drawlatched(b, 0, 0, true);
+                }
+              }
           }
           else if (b == 1) // Button 1
           {
@@ -559,6 +669,15 @@ void loop(void)
               bleKeyboardAction(menu3.button1.actions.action1, menu3.button1.actions.value1, menu3.button1.actions.symbol1);
               bleKeyboardAction(menu3.button1.actions.action2, menu3.button1.actions.value2, menu3.button1.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu3.button1.latch){
+                if(islatched[11]){
+                  islatched[11] = 0;
+                  drawlatched(b, 1, 0, false);
+                }else{
+                  islatched[11] = 1;
+                  drawlatched(b, 1, 0, true);
+                }
+              }
           }
           else if (b == 2) // Button 2
           {
@@ -566,6 +685,15 @@ void loop(void)
               bleKeyboardAction(menu3.button2.actions.action1, menu3.button2.actions.value1, menu3.button2.actions.symbol1);
               bleKeyboardAction(menu3.button2.actions.action2, menu3.button2.actions.value2, menu3.button2.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu3.button2.latch){
+                if(islatched[12]){
+                  islatched[12] = 0;
+                  drawlatched(b, 2, 0, false);
+                }else{
+                  islatched[12] = 1;
+                  drawlatched(b, 2, 0, true);
+                }
+              }
           }
           else if (b == 3) // Button 3
           {
@@ -573,6 +701,15 @@ void loop(void)
               bleKeyboardAction(menu3.button3.actions.action1, menu3.button3.actions.value1, menu3.button3.actions.symbol1);
               bleKeyboardAction(menu3.button3.actions.action2, menu3.button3.actions.value2, menu3.button3.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu3.button3.latch){
+                if(islatched[13]){
+                  islatched[13] = 0;
+                  drawlatched(b, 0, 1, false);
+                }else{
+                  islatched[13] = 1;
+                  drawlatched(b, 0, 1, true);
+                }
+              }
           }
           else if (b == 4) // Button 4
           {
@@ -580,6 +717,15 @@ void loop(void)
               bleKeyboardAction(menu3.button4.actions.action1, menu3.button4.actions.value1, menu3.button4.actions.symbol1);
               bleKeyboardAction(menu3.button4.actions.action2, menu3.button4.actions.value2, menu3.button4.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu3.button4.latch){
+                if(islatched[14]){
+                  islatched[14] = 0;
+                  drawlatched(b, 1, 1, false);
+                }else{
+                  islatched[14] = 1;
+                  drawlatched(b, 1, 1, true);
+                }
+              }
           }
           else if (b == 5) // Button 5 / Back home
           {
@@ -596,6 +742,15 @@ void loop(void)
               bleKeyboardAction(menu4.button0.actions.action1, menu4.button0.actions.value1, menu4.button0.actions.symbol1);
               bleKeyboardAction(menu4.button0.actions.action2, menu4.button0.actions.value2, menu4.button0.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu4.button0.latch){
+                if(islatched[15]){
+                  islatched[15] = 0;
+                  drawlatched(b, 0, 0, false);
+                }else{
+                  islatched[15] = 1;
+                  drawlatched(b, 0, 0, true);
+                }
+              }
           }
           else if (b == 1) // Button 1
           {
@@ -603,6 +758,15 @@ void loop(void)
               bleKeyboardAction(menu4.button1.actions.action1, menu4.button1.actions.value1, menu4.button1.actions.symbol1);
               bleKeyboardAction(menu4.button1.actions.action2, menu4.button1.actions.value2, menu4.button1.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu4.button1.latch){
+                if(islatched[16]){
+                  islatched[16] = 0;
+                  drawlatched(b, 1, 0, false);
+                }else{
+                  islatched[16] = 1;
+                  drawlatched(b, 1, 0, true);
+                }
+              }
           }
           else if (b == 2) // Button 2
           {
@@ -610,6 +774,15 @@ void loop(void)
               bleKeyboardAction(menu4.button2.actions.action1, menu4.button2.actions.value1, menu4.button2.actions.symbol1);
               bleKeyboardAction(menu4.button2.actions.action2, menu4.button2.actions.value2, menu4.button2.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu4.button2.latch){
+                if(islatched[17]){
+                  islatched[17] = 0;
+                  drawlatched(b, 2, 0, false);
+                }else{
+                  islatched[17] = 1;
+                  drawlatched(b, 2, 0, true);
+                }
+              }
           }
           else if (b == 3) // Button 3
           {
@@ -617,6 +790,15 @@ void loop(void)
               bleKeyboardAction(menu4.button3.actions.action1, menu4.button3.actions.value1, menu4.button3.actions.symbol1);
               bleKeyboardAction(menu4.button3.actions.action2, menu4.button3.actions.value2, menu4.button3.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu4.button3.latch){
+                if(islatched[18]){
+                  islatched[18] = 0;
+                  drawlatched(b, 0, 1, false);
+                }else{
+                  islatched[18] = 1;
+                  drawlatched(b, 0, 1, true);
+                }
+              }
           }
           else if (b == 4) // Button 4
           {
@@ -624,6 +806,15 @@ void loop(void)
               bleKeyboardAction(menu4.button4.actions.action1, menu4.button4.actions.value1, menu4.button4.actions.symbol1);
               bleKeyboardAction(menu4.button4.actions.action2, menu4.button4.actions.value2, menu4.button4.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu4.button4.latch){
+                if(islatched[19]){
+                  islatched[19] = 0;
+                  drawlatched(b, 1, 1, false);
+                }else{
+                  islatched[19] = 1;
+                  drawlatched(b, 1, 1, true);
+                }
+              }
           }
           else if (b == 5) // Button 5 / Back home
           {
@@ -640,6 +831,15 @@ void loop(void)
               bleKeyboardAction(menu5.button0.actions.action1, menu5.button0.actions.value1, menu5.button0.actions.symbol1);
               bleKeyboardAction(menu5.button0.actions.action2, menu5.button0.actions.value2, menu5.button0.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu5.button0.latch){
+                if(islatched[20]){
+                  islatched[20] = 0;
+                  drawlatched(b, 0, 0, false);
+                }else{
+                  islatched[20] = 1;
+                  drawlatched(b, 0, 0, true);
+                }
+              }
           }
           else if (b == 1) // Button 1
           {
@@ -647,6 +847,15 @@ void loop(void)
               bleKeyboardAction(menu5.button1.actions.action1, menu5.button1.actions.value1, menu5.button1.actions.symbol1);
               bleKeyboardAction(menu5.button1.actions.action2, menu5.button1.actions.value2, menu5.button1.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu5.button1.latch){
+                if(islatched[21]){
+                  islatched[21] = 0;
+                  drawlatched(b, 1, 0, false);
+                }else{
+                  islatched[21] = 1;
+                  drawlatched(b, 1, 0, true);
+                }
+              }
           }
           else if (b == 2) // Button 2
           {
@@ -654,6 +863,15 @@ void loop(void)
               bleKeyboardAction(menu5.button2.actions.action1, menu5.button2.actions.value1, menu5.button2.actions.symbol1);
               bleKeyboardAction(menu5.button2.actions.action2, menu5.button2.actions.value2, menu5.button2.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu5.button2.latch){
+                if(islatched[22]){
+                  islatched[22] = 0;
+                  drawlatched(b, 2, 0, false);
+                }else{
+                  islatched[22] = 1;
+                  drawlatched(b, 2, 0, true);
+                }
+              }
           }
           else if (b == 3) // Button 3
           {
@@ -661,6 +879,15 @@ void loop(void)
               bleKeyboardAction(menu5.button3.actions.action1, menu5.button3.actions.value1, menu5.button3.actions.symbol1);
               bleKeyboardAction(menu5.button3.actions.action2, menu5.button3.actions.value2, menu5.button3.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu5.button3.latch){
+                if(islatched[23]){
+                  islatched[23] = 0;
+                  drawlatched(b, 0, 1, false);
+                }else{
+                  islatched[23] = 1;
+                  drawlatched(b, 0, 1, true);
+                }
+              }
           }
           else if (b == 4) // Button 4
           {
@@ -668,6 +895,15 @@ void loop(void)
               bleKeyboardAction(menu5.button4.actions.action1, menu5.button4.actions.value1, menu5.button4.actions.symbol1);
               bleKeyboardAction(menu5.button4.actions.action2, menu5.button4.actions.value2, menu5.button4.actions.symbol2);
               bleKeyboard.releaseAll();
+              if(menu5.button4.latch){
+                if(islatched[24]){
+                  islatched[24] = 0;
+                  drawlatched(b, 1, 1, false);
+                }else{
+                  islatched[24] = 1;
+                  drawlatched(b, 1, 1, true);
+                }
+              }
           }
           else if (b == 5) // Button 5 / Back home
           {
@@ -730,7 +966,7 @@ void drawKeypad()
                           KEY_W, KEY_H, TFT_WHITE, generalconfig.menuButtonColour, 0xFFFF,
                           "", KEY_TEXTSIZE);
         key[b].drawButton();
-        drawlogo(b, col, row, generalconfig.logoColour); // After drawing the button outline we call this to draw a logo.
+        drawlogo(b, col, row); // After drawing the button outline we call this to draw a logo.
       }
     }
   }
@@ -764,27 +1000,70 @@ void drawKeypad()
                             KEY_W, KEY_H, TFT_WHITE, generalconfig.menuButtonColour, TFT_WHITE,
                             "", KEY_TEXTSIZE);
           key[b].drawButton();
-          drawlogo(b, col, row, generalconfig.logoColour);
+          drawlogo(b, col, row);
         }
         else
         {
           // Otherwise use functionButtonColour
+
+          int index;
+          
+          if(pageNum == 2){
+            index = b + 5;
+          }else if (pageNum == 3){
+            index = b + 10;
+          }else if (pageNum == 4){
+            index = b + 15; 
+          }else if (pageNum == 5){
+            index = b + 20;
+          }else if (pageNum == 6){
+            index = b + 20;        
+          }else{
+            index = b;
+          }
+          
+          if(islatched[index]){
+            drawlatched(b, col, row, true);
+          }else{
           tft.setFreeFont(LABEL_FONT);
           key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
                             KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
                             KEY_W, KEY_H, TFT_WHITE, generalconfig.functionButtonColour, TFT_WHITE,
                             "", KEY_TEXTSIZE);
           key[b].drawButton();
-          drawlogo(b, col, row, generalconfig.logoColour);
+  
+          }
+          drawlogo(b, col, row);
         }
       }
     }
   }
 }
 
+// -------------------- Draw Latched Button ------------------------
+
+void drawlatched(int b, int col, int row, bool latched)
+{
+  if(latched){
+    tft.setFreeFont(LABEL_FONT);
+    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                      KEY_W, KEY_H, TFT_WHITE, generalconfig.latchedColour, TFT_WHITE,
+                      "", KEY_TEXTSIZE);
+    key[b].drawButton();
+  }else{
+    tft.setFreeFont(LABEL_FONT);
+    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                      KEY_W, KEY_H, TFT_WHITE, generalconfig.functionButtonColour, TFT_WHITE,
+                      "", KEY_TEXTSIZE);
+    key[b].drawButton();
+  }
+}
+
 //----------------------------------- Drawing Logo's ----------------------------------------------------------------
 
-void drawlogo(int logonumber, int col, int row, uint16_t fgcolor)
+void drawlogo(int logonumber, int col, int row)
 {
 
   if (pageNum == 0)
@@ -1202,7 +1481,7 @@ void loadConfig(String value)
     // Parsing colors
     const char *menubuttoncolor = doc["menubuttoncolor"];         // Get the colour for the menu and back home buttons.
     const char *functionbuttoncolor = doc["functionbuttoncolor"]; // Get the colour for the function buttons.
-    const char *logocolor = doc["logocolor"];                     // Get the colour for the logo.
+    const char *latchcolor = doc["latchcolor"];                     // Get the colour for the logo.
     const char *bgcolor = doc["background"];                      // Get the colour for the background.
 
     char menubuttoncolorchar[64];
@@ -1217,11 +1496,11 @@ void loadConfig(String value)
     //Serial.println(rgb888);
     generalconfig.functionButtonColour = convertRGB888ToRGB565(rgb888functionbuttoncolor);
 
-    char logocolorchar[64];
-    strcpy(menubuttoncolorchar, logocolor);
-    unsigned long rgb888logocolor = convertHTMLtoRGB888(logocolorchar);
+    char latchcolorchar[64];
+    strcpy(latchcolorchar, latchcolor);
+    unsigned long rgb888latchcolor = convertHTMLtoRGB888(latchcolorchar);
     //Serial.println(rgb888);
-    generalconfig.logoColour = convertRGB888ToRGB565(rgb888logocolor);
+    generalconfig.latchedColour = convertRGB888ToRGB565(rgb888latchcolor);
 
     char backgroundcolorchar[64];
     strcpy(backgroundcolorchar, bgcolor);
@@ -1288,6 +1567,8 @@ void loadConfig(String value)
     const char *logo13 = doc["logo3"];
     const char *logo14 = doc["logo4"];
 
+    menu1.button0.latch = doc["button0"]["latch"];
+
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
     int button0_actionarray_0 = button0_actionarray[0];
@@ -1333,6 +1614,8 @@ void loadConfig(String value)
     menu1.button0.actions.action1 = button0_actionarray_1;
     menu1.button0.actions.action2 = button0_actionarray_2;
 
+    menu1.button1.latch = doc["button1"]["latch"];
+    
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
     int button1_actionarray_1 = button1_actionarray[1];
@@ -1376,6 +1659,8 @@ void loadConfig(String value)
     menu1.button1.actions.action0 = button1_actionarray_0;
     menu1.button1.actions.action1 = button1_actionarray_1;
     menu1.button1.actions.action2 = button1_actionarray_2;
+
+    menu1.button2.latch = doc["button2"]["latch"];
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -1421,6 +1706,8 @@ void loadConfig(String value)
     menu1.button2.actions.action1 = button2_actionarray_1;
     menu1.button2.actions.action2 = button2_actionarray_2;
 
+    menu1.button3.latch = doc["button3"]["latch"];
+
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
     int button3_actionarray_1 = button3_actionarray[1]; // 0
@@ -1464,6 +1751,8 @@ void loadConfig(String value)
     menu1.button3.actions.action0 = button3_actionarray_0;
     menu1.button3.actions.action1 = button3_actionarray_1;
     menu1.button3.actions.action2 = button3_actionarray_2;
+
+    menu1.button4.latch = doc["button4"]["latch"];
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -1546,6 +1835,8 @@ void loadConfig(String value)
     const char *logo23 = doc["logo3"];
     const char *logo24 = doc["logo4"];
 
+    menu2.button0.latch = doc["button0"]["latch"];
+    
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
     int button0_actionarray_0 = button0_actionarray[0];
@@ -1591,6 +1882,8 @@ void loadConfig(String value)
     menu2.button0.actions.action1 = button0_actionarray_1;
     menu2.button0.actions.action2 = button0_actionarray_2;
 
+    menu2.button1.latch = doc["button1"]["latch"];
+
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
     int button1_actionarray_1 = button1_actionarray[1];
@@ -1634,6 +1927,8 @@ void loadConfig(String value)
     menu2.button1.actions.action0 = button1_actionarray_0;
     menu2.button1.actions.action1 = button1_actionarray_1;
     menu2.button1.actions.action2 = button1_actionarray_2;
+
+    menu2.button2.latch = doc["button2"]["latch"];
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -1679,6 +1974,8 @@ void loadConfig(String value)
     menu2.button2.actions.action1 = button2_actionarray_1;
     menu2.button2.actions.action2 = button2_actionarray_2;
 
+    menu2.button3.latch = doc["button3"]["latch"];
+
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
     int button3_actionarray_1 = button3_actionarray[1]; // 0
@@ -1722,6 +2019,8 @@ void loadConfig(String value)
     menu2.button3.actions.action0 = button3_actionarray_0;
     menu2.button3.actions.action1 = button3_actionarray_1;
     menu2.button3.actions.action2 = button3_actionarray_2;
+
+    menu2.button4.latch = doc["button4"]["latch"];
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -1804,6 +2103,8 @@ void loadConfig(String value)
     const char *logo33 = doc["logo3"];
     const char *logo34 = doc["logo4"];
 
+    menu3.button0.latch = doc["button0"]["latch"];
+
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
     int button0_actionarray_0 = button0_actionarray[0];
@@ -1848,6 +2149,8 @@ void loadConfig(String value)
     menu3.button0.actions.action0 = button0_actionarray_0;
     menu3.button0.actions.action1 = button0_actionarray_1;
     menu3.button0.actions.action2 = button0_actionarray_2;
+    
+    menu3.button1.latch = doc["button1"]["latch"];
 
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
@@ -1892,6 +2195,8 @@ void loadConfig(String value)
     menu3.button1.actions.action0 = button1_actionarray_0;
     menu3.button1.actions.action1 = button1_actionarray_1;
     menu3.button1.actions.action2 = button1_actionarray_2;
+
+    menu3.button2.latch = doc["button2"]["latch"];
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -1981,6 +2286,8 @@ void loadConfig(String value)
     menu3.button3.actions.action1 = button3_actionarray_1;
     menu3.button3.actions.action2 = button3_actionarray_2;
 
+    menu3.button4.latch = doc["button4"]["latch"];
+
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
     int button4_actionarray_1 = button4_actionarray[1]; // 0
@@ -2062,6 +2369,8 @@ void loadConfig(String value)
     const char *logo43 = doc["logo3"];
     const char *logo44 = doc["logo4"];
 
+    menu4.button0.latch = doc["button0"]["latch"];
+
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
     int button0_actionarray_0 = button0_actionarray[0];
@@ -2107,6 +2416,8 @@ void loadConfig(String value)
     menu4.button0.actions.action1 = button0_actionarray_1;
     menu4.button0.actions.action2 = button0_actionarray_2;
 
+    menu4.button1.latch = doc["button1"]["latch"];
+
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
     int button1_actionarray_1 = button1_actionarray[1];
@@ -2150,6 +2461,8 @@ void loadConfig(String value)
     menu4.button1.actions.action0 = button1_actionarray_0;
     menu4.button1.actions.action1 = button1_actionarray_1;
     menu4.button1.actions.action2 = button1_actionarray_2;
+
+    menu4.button2.latch = doc["button2"]["latch"];
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -2195,6 +2508,8 @@ void loadConfig(String value)
     menu4.button2.actions.action1 = button2_actionarray_1;
     menu4.button2.actions.action2 = button2_actionarray_2;
 
+    menu4.button3.latch = doc["button3"]["latch"];
+
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
     int button3_actionarray_1 = button3_actionarray[1]; // 0
@@ -2238,6 +2553,8 @@ void loadConfig(String value)
     menu4.button3.actions.action0 = button3_actionarray_0;
     menu4.button3.actions.action1 = button3_actionarray_1;
     menu4.button3.actions.action2 = button3_actionarray_2;
+
+    menu4.button4.latch = doc["button4"]["latch"];
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -2320,6 +2637,8 @@ void loadConfig(String value)
     const char *logo53 = doc["logo3"];
     const char *logo54 = doc["logo4"];
 
+    menu5.button0.latch = doc["button0"]["latch"];
+
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
     int button0_actionarray_0 = button0_actionarray[0];
@@ -2365,6 +2684,8 @@ void loadConfig(String value)
     menu5.button0.actions.action1 = button0_actionarray_1;
     menu5.button0.actions.action2 = button0_actionarray_2;
 
+    menu5.button1.latch = doc["button1"]["latch"];
+
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
     int button1_actionarray_1 = button1_actionarray[1];
@@ -2408,6 +2729,8 @@ void loadConfig(String value)
     menu5.button1.actions.action0 = button1_actionarray_0;
     menu5.button1.actions.action1 = button1_actionarray_1;
     menu5.button1.actions.action2 = button1_actionarray_2;
+
+    menu5.button2.latch = doc["button2"]["latch"];
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -2453,6 +2776,8 @@ void loadConfig(String value)
     menu5.button2.actions.action1 = button2_actionarray_1;
     menu5.button2.actions.action2 = button2_actionarray_2;
 
+    menu5.button3.latch = doc["button3"]["latch"];
+
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
     int button3_actionarray_1 = button3_actionarray[1]; // 0
@@ -2496,6 +2821,8 @@ void loadConfig(String value)
     menu5.button3.actions.action0 = button3_actionarray_0;
     menu5.button3.actions.action1 = button3_actionarray_1;
     menu5.button3.actions.action2 = button3_actionarray_2;
+
+    menu5.button4.latch = doc["button4"]["latch"];
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -2618,7 +2945,7 @@ void saveconfig()
 
     colors["menubuttoncolor"] = server.arg("menubuttoncolor");
     colors["functionbuttoncolor"] = server.arg("functionbuttoncolor");
-    colors["logocolor"] = server.arg("logocolor");
+    colors["latchcolor"] = server.arg("latchcolor");
     colors["background"] = server.arg("background");
 
     if (serializeJsonPretty(doc, file) == 0)
@@ -2652,6 +2979,12 @@ void saveconfig()
     menu["logo4"] = server.arg("screen1logo4");
 
     JsonObject button0 = doc.createNestedObject("button0");
+    
+    if(server.arg("screen1button0latch") == "on"){
+      button0["latch"] = true;
+    }else{
+      button0["latch"] = false;
+    }
 
     JsonArray button0_actionarray = button0.createNestedArray("actionarray");
     button0_actionarray.add(server.arg("screen1button0action0"));
@@ -2665,6 +2998,12 @@ void saveconfig()
 
     JsonObject button1 = doc.createNestedObject("button1");
 
+    if(server.arg("screen1button1latch") == "on"){
+      button1["latch"] = true;
+    }else{
+      button1["latch"] = false;
+    }
+
     JsonArray button1_actionarray = button1.createNestedArray("actionarray");
     button1_actionarray.add(server.arg("screen1button1action0"));
     button1_actionarray.add(server.arg("screen1button1action1"));
@@ -2676,6 +3015,12 @@ void saveconfig()
     button1_valuearray.add(server.arg("screen1button1value2"));
 
     JsonObject button2 = doc.createNestedObject("button2");
+
+    if(server.arg("screen1button2latch") == "on"){
+      button2["latch"] = true;
+    }else{
+      button2["latch"] = false;
+    }
 
     JsonArray button2_actionarray = button2.createNestedArray("actionarray");
     button2_actionarray.add(server.arg("screen1button2action0"));
@@ -2689,6 +3034,12 @@ void saveconfig()
 
     JsonObject button3 = doc.createNestedObject("button3");
 
+    if(server.arg("screen1button3latch") == "on"){
+      button3["latch"] = true;
+    }else{
+      button3["latch"] = false;
+    }
+
     JsonArray button3_actionarray = button3.createNestedArray("actionarray");
     button3_actionarray.add(server.arg("screen1button3action0"));
     button3_actionarray.add(server.arg("screen1button3action1"));
@@ -2700,6 +3051,12 @@ void saveconfig()
     button3_valuearray.add(server.arg("screen1button3value2"));
 
     JsonObject button4 = doc.createNestedObject("button4");
+
+    if(server.arg("screen1button4latch") == "on"){
+      button4["latch"] = true;
+    }else{
+      button4["latch"] = false;
+    }
 
     JsonArray button4_actionarray = button4.createNestedArray("actionarray");
     button4_actionarray.add(server.arg("screen1button4action0"));
@@ -2743,6 +3100,12 @@ void saveconfig()
 
     JsonObject button0 = doc.createNestedObject("button0");
 
+    if(server.arg("screen2button0latch") == "on"){
+      button0["latch"] = true;
+    }else{
+      button0["latch"] = false;
+    }
+
     JsonArray button0_actionarray = button0.createNestedArray("actionarray");
     button0_actionarray.add(server.arg("screen2button0action0"));
     button0_actionarray.add(server.arg("screen2button0action1"));
@@ -2754,6 +3117,12 @@ void saveconfig()
     button0_valuearray.add(server.arg("screen2button0value2"));
 
     JsonObject button1 = doc.createNestedObject("button1");
+
+    if(server.arg("screen2button1latch") == "on"){
+      button1["latch"] = true;
+    }else{
+      button1["latch"] = false;
+    }
 
     JsonArray button1_actionarray = button1.createNestedArray("actionarray");
     button1_actionarray.add(server.arg("screen2button1action0"));
@@ -2767,6 +3136,12 @@ void saveconfig()
 
     JsonObject button2 = doc.createNestedObject("button2");
 
+    if(server.arg("screen2button2latch") == "on"){
+      button2["latch"] = true;
+    }else{
+      button2["latch"] = false;
+    }
+
     JsonArray button2_actionarray = button2.createNestedArray("actionarray");
     button2_actionarray.add(server.arg("screen2button2action0"));
     button2_actionarray.add(server.arg("screen2button2action1"));
@@ -2779,6 +3154,12 @@ void saveconfig()
 
     JsonObject button3 = doc.createNestedObject("button3");
 
+    if(server.arg("screen2button3latch") == "on"){
+      button3["latch"] = true;
+    }else{
+      button3["latch"] = false;
+    }
+
     JsonArray button3_actionarray = button3.createNestedArray("actionarray");
     button3_actionarray.add(server.arg("screen2button3action0"));
     button3_actionarray.add(server.arg("screen2button3action1"));
@@ -2790,6 +3171,12 @@ void saveconfig()
     button3_valuearray.add(server.arg("screen2button3value2"));
 
     JsonObject button4 = doc.createNestedObject("button4");
+
+    if(server.arg("screen2button4latch") == "on"){
+      button4["latch"] = true;
+    }else{
+      button4["latch"] = false;
+    }
 
     JsonArray button4_actionarray = button4.createNestedArray("actionarray");
     button4_actionarray.add(server.arg("screen2button4action0"));
@@ -2833,6 +3220,12 @@ void saveconfig()
 
     JsonObject button0 = doc.createNestedObject("button0");
 
+    if(server.arg("screen3button0latch") == "on"){
+      button0["latch"] = true;
+    }else{
+      button0["latch"] = false;
+    }
+
     JsonArray button0_actionarray = button0.createNestedArray("actionarray");
     button0_actionarray.add(server.arg("screen3button0action0"));
     button0_actionarray.add(server.arg("screen3button0action1"));
@@ -2845,6 +3238,12 @@ void saveconfig()
 
     JsonObject button1 = doc.createNestedObject("button1");
 
+    if(server.arg("screen3button1latch") == "on"){
+      button1["latch"] = true;
+    }else{
+      button1["latch"] = false;
+    }
+
     JsonArray button1_actionarray = button1.createNestedArray("actionarray");
     button1_actionarray.add(server.arg("screen3button1action0"));
     button1_actionarray.add(server.arg("screen3button1action1"));
@@ -2856,6 +3255,12 @@ void saveconfig()
     button1_valuearray.add(server.arg("screen3button1value2"));
 
     JsonObject button2 = doc.createNestedObject("button2");
+    
+    if(server.arg("screen3button2latch") == "on"){
+      button2["latch"] = true;
+    }else{
+      button2["latch"] = false;
+    }
 
     JsonArray button2_actionarray = button2.createNestedArray("actionarray");
     button2_actionarray.add(server.arg("screen3button2action0"));
@@ -2869,6 +3274,12 @@ void saveconfig()
 
     JsonObject button3 = doc.createNestedObject("button3");
 
+    if(server.arg("screen3button3latch") == "on"){
+      button3["latch"] = true;
+    }else{
+      button0["latch"] = false;
+    }
+
     JsonArray button3_actionarray = button3.createNestedArray("actionarray");
     button3_actionarray.add(server.arg("screen3button3action0"));
     button3_actionarray.add(server.arg("screen3button3action1"));
@@ -2880,6 +3291,12 @@ void saveconfig()
     button3_valuearray.add(server.arg("screen3button3value2"));
 
     JsonObject button4 = doc.createNestedObject("button4");
+
+    if(server.arg("screen3button4latch") == "on"){
+      button4["latch"] = true;
+    }else{
+      button4["latch"] = false;
+    }
 
     JsonArray button4_actionarray = button4.createNestedArray("actionarray");
     button4_actionarray.add(server.arg("screen3button4action0"));
@@ -2923,6 +3340,12 @@ void saveconfig()
 
     JsonObject button0 = doc.createNestedObject("button0");
 
+    if(server.arg("screen4button0latch") == "on"){
+      button0["latch"] = true;
+    }else{
+      button0["latch"] = false;
+    }
+
     JsonArray button0_actionarray = button0.createNestedArray("actionarray");
     button0_actionarray.add(server.arg("screen4button0action0"));
     button0_actionarray.add(server.arg("screen4button0action1"));
@@ -2934,6 +3357,12 @@ void saveconfig()
     button0_valuearray.add(server.arg("screen4button0value2"));
 
     JsonObject button1 = doc.createNestedObject("button1");
+
+    if(server.arg("screen4button1latch") == "on"){
+      button1["latch"] = true;
+    }else{
+      button1["latch"] = false;
+    }
 
     JsonArray button1_actionarray = button1.createNestedArray("actionarray");
     button1_actionarray.add(server.arg("screen4button1action0"));
@@ -2947,6 +3376,12 @@ void saveconfig()
 
     JsonObject button2 = doc.createNestedObject("button2");
 
+    if(server.arg("screen4button2latch") == "on"){
+      button2["latch"] = true;
+    }else{
+      button2["latch"] = false;
+    }
+
     JsonArray button2_actionarray = button2.createNestedArray("actionarray");
     button2_actionarray.add(server.arg("screen4button2action0"));
     button2_actionarray.add(server.arg("screen4button2action1"));
@@ -2959,6 +3394,12 @@ void saveconfig()
 
     JsonObject button3 = doc.createNestedObject("button3");
 
+    if(server.arg("screen4button3latch") == "on"){
+      button3["latch"] = true;
+    }else{
+      button3["latch"] = false;
+    }
+
     JsonArray button3_actionarray = button3.createNestedArray("actionarray");
     button3_actionarray.add(server.arg("screen4button3action0"));
     button3_actionarray.add(server.arg("screen4button3action1"));
@@ -2970,6 +3411,12 @@ void saveconfig()
     button3_valuearray.add(server.arg("screen4button3value2"));
 
     JsonObject button4 = doc.createNestedObject("button4");
+
+    if(server.arg("screen4button4latch") == "on"){
+      button4["latch"] = true;
+    }else{
+      button4["latch"] = false;
+    }
 
     JsonArray button4_actionarray = button4.createNestedArray("actionarray");
     button4_actionarray.add(server.arg("screen4button4action0"));
@@ -3013,6 +3460,12 @@ void saveconfig()
 
     JsonObject button0 = doc.createNestedObject("button0");
 
+    if(server.arg("screen5button0latch") == "on"){
+      button0["latch"] = true;
+    }else{
+      button0["latch"] = false;
+    }
+
     JsonArray button0_actionarray = button0.createNestedArray("actionarray");
     button0_actionarray.add(server.arg("screen5button0action0"));
     button0_actionarray.add(server.arg("screen5button0action1"));
@@ -3024,6 +3477,12 @@ void saveconfig()
     button0_valuearray.add(server.arg("screen5button0value2"));
 
     JsonObject button1 = doc.createNestedObject("button1");
+
+    if(server.arg("screen5button1latch") == "on"){
+      button1["latch"] = true;
+    }else{
+      button1["latch"] = false;
+    }
 
     JsonArray button1_actionarray = button1.createNestedArray("actionarray");
     button1_actionarray.add(server.arg("screen5button1action0"));
@@ -3037,6 +3496,12 @@ void saveconfig()
 
     JsonObject button2 = doc.createNestedObject("button2");
 
+    if(server.arg("screen5button2latch") == "on"){
+      button2["latch"] = true;
+    }else{
+      button2["latch"] = false;
+    }
+
     JsonArray button2_actionarray = button2.createNestedArray("actionarray");
     button2_actionarray.add(server.arg("screen5button2action0"));
     button2_actionarray.add(server.arg("screen5button2action1"));
@@ -3049,6 +3514,12 @@ void saveconfig()
 
     JsonObject button3 = doc.createNestedObject("button3");
 
+    if(server.arg("screen5button3latch") == "on"){
+      button3["latch"] = true;
+    }else{
+      button3["latch"] = false;
+    }
+
     JsonArray button3_actionarray = button3.createNestedArray("actionarray");
     button3_actionarray.add(server.arg("screen5button3action0"));
     button3_actionarray.add(server.arg("screen5button3action1"));
@@ -3060,6 +3531,12 @@ void saveconfig()
     button3_valuearray.add(server.arg("screen5button3value2"));
 
     JsonObject button4 = doc.createNestedObject("button4");
+    
+    if(server.arg("screen5button4latch") == "on"){
+      button4["latch"] = true;
+    }else{
+      button4["latch"] = false;
+    }
 
     JsonArray button4_actionarray = button4.createNestedArray("actionarray");
     button4_actionarray.add(server.arg("screen5button4action0"));
