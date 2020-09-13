@@ -11,7 +11,7 @@ to make FreeTouchDeck work across most ESP's and TFT screens. Also there is a la
 
 # Delete the old clone and use the new
 
-### ** Mixing files of different versions may cause some unexpected behavior! **
+### Mixing files of different versions may cause some unexpected behavior!
 
 Important to realise is that since this is an (pre-)aplha version, changes to te code happen frequently (almost daily). The FreeTouchDeck.ino and other files (for example in the data folder) rely on each other, they come as one. So when you download the new version, make sure that you only use the files that come with the current download, and not files from other versions. Best practise is to completely delete the old version and then download/clone the new version to make sure you do not accidently mix files from different versions. 
 
