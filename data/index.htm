@@ -5,6 +5,7 @@
 	<link rel="shortcut icon" href="">
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
+	<meta content="content-length" content="100000">
 	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
 	<title>FreeTouchDeck Configurator</title>
 	<style>
@@ -13,6 +14,16 @@
 			font-family: verdana;
 			color: #000088;
 			width: 99%;
+		}
+
+		.pageloading{
+			border: 0;
+			border-radius: 0.3rem;
+			background-color: #ffc835;
+			color: #fff;
+			line-height: 2.4rem;
+			font-size: 1.2rem;
+			width: 100%;
 		}
 
 		a {
@@ -73,6 +84,8 @@
 </head>
 
 <body>
+	<div id="contentloading" class="pageloading"> Please wait while the configurator loads.</div>
+	<div id="maincontent" style="display: none;">
 	<h1>FreeTouchDeck Configurator</h1>
 	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
 
@@ -718,6 +731,8 @@
 
 	</div>
 
+</div>
+
 	<!-- Menu Handler -->
 	<script>
 
@@ -747,7 +762,2116 @@
 	</script>
 
 	<script src="bigarrays.js"></script>
-	<script src="buttonfunctions.js"></script>
+	<!-- Loading button function --->
+
+<script>
+	var items = selecteditems.slice(0); // Create a duplicate of the selecteditems array for now
+
+$(function () {
+  var temp = {};
+  // Menu1 Button0
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button0action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button0action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button0value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button0action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button0action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button0value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button0action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button0action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button0value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1Button 1
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button1action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button1action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button1value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button1action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button1action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button1value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button1action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button1action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button1value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 Button2
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button2action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button2action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button2value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button2action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button2action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button2value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button2action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button2action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button2value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 button3
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button3action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button3action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button3value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button3action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button3action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button3value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button3action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button3action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button3value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 button4
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button4action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button4action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button4value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button4action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button4action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button4value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button4action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button4action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button4value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 button5
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button5action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button5action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button5value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button5action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button5action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button5value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen1button5action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen1button5action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen1button5value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 Button0
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button0action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button0action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button0value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button0action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button0action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button0value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button0action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button0action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button0value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1Button 1
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button1action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button1action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button1value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button1action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button1action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button1value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button1action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button1action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button1value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 Button2
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button2action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button2action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button2value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button2action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button2action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button2value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button2action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button2action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button2value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 button3
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button3action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button3action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button3value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button3action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button3action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button3value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button3action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button3action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button3value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 button4
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button4action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button4action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button4value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button4action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button4action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button4value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button4action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button4action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button4value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // Menu1 button5
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button5action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button5action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button5value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button5action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button5action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button5value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen2button5action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen2button5action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen2button5value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu3 Button0
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button0action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button0action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button0value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button0action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button0action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button0value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button0action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button0action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button0value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu3Button 1
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button1action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button1action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button1value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button1action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button1action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button1value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button1action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button1action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button1value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu3 Button2
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button2action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button2action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button2value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button2action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button2action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button2value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button2action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button2action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button2value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu3 button3
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button3action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button3action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button3value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button3action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button3action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button3value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button3action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button3action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button3value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu3 button4
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button4action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button4action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button4value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button4action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button4action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button4value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button4action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button4action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button4value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu3 button5
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button5action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button5action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button5value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button5action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button5action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button5value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen3button5action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen3button5action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen3button5value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu4 Button0
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button0action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button0action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button0value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button0action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button0action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button0value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button0action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button0action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button0value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu4Button 1
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button1action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button1action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button1value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button1action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button1action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button1value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button1action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button1action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button1value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu4 Button2
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button2action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button2action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button2value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button2action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button2action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button2value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button2action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button2action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button2value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu4 button3
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button3action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button3action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button3value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button3action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button3action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button3value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button3action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button3action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button3value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu4 button4
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button4action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button4action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button4value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button4action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button4action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button4value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button4action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button4action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button4value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu4 button5
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button5action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button5action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button5value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button5action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button5action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button5value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen4button5action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen4button5action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen4button5value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu5 Button0
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button0action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button0action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button0value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button0action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button0action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button0value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button0action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button0action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button0value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu5Button 1
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button1action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button1action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button1value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button1action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button1action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button1value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button1action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button1action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button1value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu5 Button2
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button2action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button2action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button2value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button2action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button2action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button2value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button2action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button2action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button2value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu5 button3
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button3action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button3action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button3value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button3action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button3action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button3value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button3action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button3action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button3value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu5 button4
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button4action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button4action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button4value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button4action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button4action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button4value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button4action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button4action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button4value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  // menu5 button5
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button5action0');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button5action0')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button5value0');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button5action1');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button5action1')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button5value1');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+
+  $.each(items, function () {
+    $('<option />')
+      .attr('value', this.value)
+      .html(this.name)
+      .appendTo('#screen5button5action2');
+    temp[this.value] = this.subitems;
+  });
+
+  $('#screen5button5action2')
+    .change(function () {
+      var value = $(this).val();
+      var menu = $('#screen5button5value2');
+
+      menu.empty();
+      $.each(temp[value], function () {
+        $('<option />')
+          .attr('value', this.value)
+          .html(this.name)
+          .appendTo(menu);
+      });
+    })
+    .change();
+});
+
+</script>
+
 
 
 	<!-- Load Config data from JSON -->
@@ -761,197 +2885,193 @@
 				'');
 
 		}
-		// Load Colors 
-		fetch('config/colors.json')
-			.then((response) => {
-				return response.json()
-			})
-			.then((data) => {
 
-				document.getElementById("menubuttoncolor").value = data.menubuttoncolor;
-				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
-				document.getElementById("latchcolor").value = data.latchcolor;
-				document.getElementById("background").value = data.background;
+		function getconfig1(){
 
-			})
-			.catch((err) => {
-				// No error handling for now
-			})
 
-		// Load Menu 1
-		fetch('config/menu1.json')
-			.then((response) => {
-				return response.json()
-			})
-			.then((data) => {
+			// Load Menu 1
+				fetch('config/menu1.json')
+					.then((response) => {
+					return response.json()
+				})
+				.then((data) => {
 
-				document.getElementById("screen1logo0").add(new Option(data.logo0));
-				if(data.button0.latch){
-					document.getElementById("screen1button0latch").checked = true;
-				}
-				document.getElementById('screen1button0action0').value = data.button0.actionarray[0];
-				document.getElementById('screen1button0action1').value = data.button0.actionarray[1];
-				document.getElementById('screen1button0action2').value = data.button0.actionarray[2];
-				fillvaluelist(screen1button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-				document.getElementById('screen1button0value0').value = data.button0.valuearray[0];
-				fillvaluelist(screen1button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-				document.getElementById('screen1button0value1').value = data.button0.valuearray[1];
-				fillvaluelist(screen1button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-				document.getElementById('screen1button0value2').value = data.button0.valuearray[2];
+					document.getElementById("screen1logo0").add(new Option(data.logo0));
+					if(data.button0.latch){
+						document.getElementById("screen1button0latch").checked = true;
+					}
+					document.getElementById('screen1button0action0').value = data.button0.actionarray[0];
+					document.getElementById('screen1button0action1').value = data.button0.actionarray[1];
+					document.getElementById('screen1button0action2').value = data.button0.actionarray[2];
+					fillvaluelist(screen1button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+					document.getElementById('screen1button0value0').value = data.button0.valuearray[0];
+					fillvaluelist(screen1button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+					document.getElementById('screen1button0value1').value = data.button0.valuearray[1];
+					fillvaluelist(screen1button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+					document.getElementById('screen1button0value2').value = data.button0.valuearray[2];
 
-				document.getElementById("screen1logo1").add(new Option(data.logo1));
-				if(data.button1.latch){
-					document.getElementById("screen1button1latch").checked = true;
-				}
-				document.getElementById('screen1button1action0').value = data.button1.actionarray[0];
-				document.getElementById('screen1button1action1').value = data.button1.actionarray[1];
-				document.getElementById('screen1button1action2').value = data.button1.actionarray[2];
-				fillvaluelist(screen1button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-				document.getElementById('screen1button1value0').value = data.button1.valuearray[0];
-				fillvaluelist(screen1button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-				document.getElementById('screen1button1value1').value = data.button1.valuearray[1];
-				fillvaluelist(screen1button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-				document.getElementById('screen1button1value2').value = data.button1.valuearray[2];
+					document.getElementById("screen1logo1").add(new Option(data.logo1));
+					if(data.button1.latch){
+						document.getElementById("screen1button1latch").checked = true;
+					}
+					document.getElementById('screen1button1action0').value = data.button1.actionarray[0];
+					document.getElementById('screen1button1action1').value = data.button1.actionarray[1];
+					document.getElementById('screen1button1action2').value = data.button1.actionarray[2];
+					fillvaluelist(screen1button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+					document.getElementById('screen1button1value0').value = data.button1.valuearray[0];
+					fillvaluelist(screen1button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+					document.getElementById('screen1button1value1').value = data.button1.valuearray[1];
+					fillvaluelist(screen1button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+					document.getElementById('screen1button1value2').value = data.button1.valuearray[2];
 
-				document.getElementById("screen1logo2").add(new Option(data.logo2));
-				if(data.button2.latch){
-					document.getElementById("screen1button2latch").checked = true;
-				}
-				document.getElementById('screen1button2action0').value = data.button2.actionarray[0];
-				document.getElementById('screen1button2action1').value = data.button2.actionarray[1];
-				document.getElementById('screen1button2action2').value = data.button2.actionarray[2];
-				fillvaluelist(screen1button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-				document.getElementById('screen1button2value0').value = data.button2.valuearray[0];
-				fillvaluelist(screen1button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-				document.getElementById('screen1button2value1').value = data.button2.valuearray[1];
-				fillvaluelist(screen1button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-				document.getElementById('screen1button2value2').value = data.button2.valuearray[2];
+					document.getElementById("screen1logo2").add(new Option(data.logo2));
+					if(data.button2.latch){
+						document.getElementById("screen1button2latch").checked = true;
+					}
+					document.getElementById('screen1button2action0').value = data.button2.actionarray[0];
+					document.getElementById('screen1button2action1').value = data.button2.actionarray[1];
+					document.getElementById('screen1button2action2').value = data.button2.actionarray[2];
+					fillvaluelist(screen1button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+					document.getElementById('screen1button2value0').value = data.button2.valuearray[0];
+					fillvaluelist(screen1button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+					document.getElementById('screen1button2value1').value = data.button2.valuearray[1];
+					fillvaluelist(screen1button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+					document.getElementById('screen1button2value2').value = data.button2.valuearray[2];
 
-				document.getElementById("screen1logo3").add(new Option(data.logo3));
-				if(data.button3.latch){
-					document.getElementById("screen1button3latch").checked = true;
-				}
-				document.getElementById('screen1button3action0').value = data.button3.actionarray[0];
-				document.getElementById('screen1button3action1').value = data.button3.actionarray[1];
-				document.getElementById('screen1button3action2').value = data.button3.actionarray[2];
-				fillvaluelist(screen1button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-				document.getElementById('screen1button3value0').value = data.button3.valuearray[0];
-				fillvaluelist(screen1button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-				document.getElementById('screen1button3value1').value = data.button3.valuearray[1];
-				fillvaluelist(screen1button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-				document.getElementById('screen1button3value2').value = data.button3.valuearray[2];
+					document.getElementById("screen1logo3").add(new Option(data.logo3));
+					if(data.button3.latch){
+						document.getElementById("screen1button3latch").checked = true;
+					}
+					document.getElementById('screen1button3action0').value = data.button3.actionarray[0];
+					document.getElementById('screen1button3action1').value = data.button3.actionarray[1];
+					document.getElementById('screen1button3action2').value = data.button3.actionarray[2];
+					fillvaluelist(screen1button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+					document.getElementById('screen1button3value0').value = data.button3.valuearray[0];
+					fillvaluelist(screen1button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+					document.getElementById('screen1button3value1').value = data.button3.valuearray[1];
+					fillvaluelist(screen1button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+					document.getElementById('screen1button3value2').value = data.button3.valuearray[2];
 
-				document.getElementById("screen1logo4").add(new Option(data.logo4));
-				if(data.button4.latch){
-					document.getElementById("screen1button4latch").checked = true;
-				}
-				document.getElementById('screen1button4action0').value = data.button4.actionarray[0];
-				document.getElementById('screen1button4action1').value = data.button4.actionarray[1];
-				document.getElementById('screen1button4action2').value = data.button4.actionarray[2];
-				fillvaluelist(screen1button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-				document.getElementById('screen1button4value0').value = data.button4.valuearray[0];
-				fillvaluelist(screen1button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-				document.getElementById('screen1button4value1').value = data.button4.valuearray[1];
-				fillvaluelist(screen1button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-				document.getElementById('screen1button4value2').value = data.button4.valuearray[2];
+					document.getElementById("screen1logo4").add(new Option(data.logo4));
+					if(data.button4.latch){
+						document.getElementById("screen1button4latch").checked = true;
+					}
+					document.getElementById('screen1button4action0').value = data.button4.actionarray[0];
+					document.getElementById('screen1button4action1').value = data.button4.actionarray[1];
+					document.getElementById('screen1button4action2').value = data.button4.actionarray[2];
+					fillvaluelist(screen1button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+					document.getElementById('screen1button4value0').value = data.button4.valuearray[0];
+					fillvaluelist(screen1button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+					document.getElementById('screen1button4value1').value = data.button4.valuearray[1];
+					fillvaluelist(screen1button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+					document.getElementById('screen1button4value2').value = data.button4.valuearray[2];
 
-				document.getElementById("screen1logo5").add(new Option("home.bmp"));
+					document.getElementById("screen1logo5").add(new Option("home.bmp"));
 
-			})
-			.catch((err) => {
-				// No error handling for now
-			})
+				})
+				.catch((err) => {
+				console.log(err)
+				})
+		}
 
-		// Load Menu 2
-		fetch('config/menu2.json')
-			.then((response) => {
-				return response.json()
-			})
-			.then((data) => {
+		function getconfig2(){
 
-				document.getElementById("screen2logo0").add(new Option(data.logo0));
-				if(data.button0.latch){
-					document.getElementById("screen2button0latch").checked = true;
-				}
-				document.getElementById('screen2button0action0').value = data.button0.actionarray[0];
-				document.getElementById('screen2button0action1').value = data.button0.actionarray[1];
-				document.getElementById('screen2button0action2').value = data.button0.actionarray[2];
-				fillvaluelist(screen2button0value0, selecteditems[data.button0.actionarray[0]].subitems);
-				document.getElementById('screen2button0value0').value = data.button0.valuearray[0];
-				fillvaluelist(screen2button0value1, selecteditems[data.button0.actionarray[1]].subitems);
-				document.getElementById('screen2button0value1').value = data.button0.valuearray[1];
-				fillvaluelist(screen2button0value2, selecteditems[data.button0.actionarray[2]].subitems);
-				document.getElementById('screen2button0value2').value = data.button0.valuearray[2];
+			// Load Menu 2
 
-				document.getElementById("screen2logo1").add(new Option(data.logo1));
-				if(data.button1.latch){
-					document.getElementById("screen2button1latch").checked = true;
-				}
-				document.getElementById('screen2button1action0').value = data.button1.actionarray[0];
-				document.getElementById('screen2button1action1').value = data.button1.actionarray[1];
-				document.getElementById('screen2button1action2').value = data.button1.actionarray[2];
-				fillvaluelist(screen2button1value0, selecteditems[data.button1.actionarray[0]].subitems);
-				document.getElementById('screen2button1value0').value = data.button1.valuearray[0];
-				fillvaluelist(screen2button1value1, selecteditems[data.button1.actionarray[1]].subitems);
-				document.getElementById('screen2button1value1').value = data.button1.valuearray[1];
-				fillvaluelist(screen2button1value2, selecteditems[data.button1.actionarray[2]].subitems);
-				document.getElementById('screen2button1value2').value = data.button1.valuearray[2];
+				fetch('config/menu2.json')
+					.then((response) => {
+						return response.json()
+					})
+					.then((data) => {
 
-				document.getElementById("screen2logo2").add(new Option(data.logo2));
-				if(data.button2.latch){
-					document.getElementById("screen2button2latch").checked = true;
-				}
-				document.getElementById('screen2button2action0').value = data.button2.actionarray[0];
-				document.getElementById('screen2button2action1').value = data.button2.actionarray[1];
-				document.getElementById('screen2button2action2').value = data.button2.actionarray[2];
-				fillvaluelist(screen2button2value0, selecteditems[data.button2.actionarray[0]].subitems);
-				document.getElementById('screen2button2value0').value = data.button2.valuearray[0];
-				fillvaluelist(screen2button2value1, selecteditems[data.button2.actionarray[1]].subitems);
-				document.getElementById('screen2button2value1').value = data.button2.valuearray[1];
-				fillvaluelist(screen2button2value2, selecteditems[data.button2.actionarray[2]].subitems);
-				document.getElementById('screen2button2value2').value = data.button2.valuearray[2];
+					document.getElementById("screen2logo0").add(new Option(data.logo0));
+					if(data.button0.latch){
+						document.getElementById("screen2button0latch").checked = true;
+					}
+					document.getElementById('screen2button0action0').value = data.button0.actionarray[0];
+					document.getElementById('screen2button0action1').value = data.button0.actionarray[1];
+					document.getElementById('screen2button0action2').value = data.button0.actionarray[2];
+					fillvaluelist(screen2button0value0, selecteditems[data.button0.actionarray[0]].subitems);
+					document.getElementById('screen2button0value0').value = data.button0.valuearray[0];
+					fillvaluelist(screen2button0value1, selecteditems[data.button0.actionarray[1]].subitems);
+					document.getElementById('screen2button0value1').value = data.button0.valuearray[1];
+					fillvaluelist(screen2button0value2, selecteditems[data.button0.actionarray[2]].subitems);
+					document.getElementById('screen2button0value2').value = data.button0.valuearray[2];
 
-				document.getElementById("screen2logo3").add(new Option(data.logo3));
-				if(data.button3.latch){
-					document.getElementById("screen2button3latch").checked = true;
-				}
-				document.getElementById('screen2button3action0').value = data.button3.actionarray[0];
-				document.getElementById('screen2button3action1').value = data.button3.actionarray[1];
-				document.getElementById('screen2button3action2').value = data.button3.actionarray[2];
-				fillvaluelist(screen2button3value0, selecteditems[data.button3.actionarray[0]].subitems);
-				document.getElementById('screen2button3value0').value = data.button3.valuearray[0];
-				fillvaluelist(screen2button3value1, selecteditems[data.button3.actionarray[1]].subitems);
-				document.getElementById('screen2button3value1').value = data.button3.valuearray[1];
-				fillvaluelist(screen2button3value2, selecteditems[data.button3.actionarray[2]].subitems);
-				document.getElementById('screen2button3value2').value = data.button3.valuearray[2];
+					document.getElementById("screen2logo1").add(new Option(data.logo1));
+					if(data.button1.latch){
+						document.getElementById("screen2button1latch").checked = true;
+					}
+					document.getElementById('screen2button1action0').value = data.button1.actionarray[0];
+					document.getElementById('screen2button1action1').value = data.button1.actionarray[1];
+					document.getElementById('screen2button1action2').value = data.button1.actionarray[2];
+					fillvaluelist(screen2button1value0, selecteditems[data.button1.actionarray[0]].subitems);
+					document.getElementById('screen2button1value0').value = data.button1.valuearray[0];
+					fillvaluelist(screen2button1value1, selecteditems[data.button1.actionarray[1]].subitems);
+					document.getElementById('screen2button1value1').value = data.button1.valuearray[1];
+					fillvaluelist(screen2button1value2, selecteditems[data.button1.actionarray[2]].subitems);
+					document.getElementById('screen2button1value2').value = data.button1.valuearray[2];
 
-				document.getElementById("screen2logo4").add(new Option(data.logo4));
-				if(data.button4.latch){
-					document.getElementById("screen2button4latch").checked = true;
-				}
-				document.getElementById('screen2button4action0').value = data.button4.actionarray[0];
-				document.getElementById('screen2button4action1').value = data.button4.actionarray[1];
-				document.getElementById('screen2button4action2').value = data.button4.actionarray[2];
-				fillvaluelist(screen2button4value0, selecteditems[data.button4.actionarray[0]].subitems);
-				document.getElementById('screen2button4value0').value = data.button4.valuearray[0];
-				fillvaluelist(screen2button4value1, selecteditems[data.button4.actionarray[1]].subitems);
-				document.getElementById('screen2button4value1').value = data.button4.valuearray[1];
-				fillvaluelist(screen2button4value2, selecteditems[data.button4.actionarray[2]].subitems);
-				document.getElementById('screen2button4value2').value = data.button4.valuearray[2];
+					document.getElementById("screen2logo2").add(new Option(data.logo2));
+					if(data.button2.latch){
+						document.getElementById("screen2button2latch").checked = true;
+					}
+					document.getElementById('screen2button2action0').value = data.button2.actionarray[0];
+					document.getElementById('screen2button2action1').value = data.button2.actionarray[1];
+					document.getElementById('screen2button2action2').value = data.button2.actionarray[2];
+					fillvaluelist(screen2button2value0, selecteditems[data.button2.actionarray[0]].subitems);
+					document.getElementById('screen2button2value0').value = data.button2.valuearray[0];
+					fillvaluelist(screen2button2value1, selecteditems[data.button2.actionarray[1]].subitems);
+					document.getElementById('screen2button2value1').value = data.button2.valuearray[1];
+					fillvaluelist(screen2button2value2, selecteditems[data.button2.actionarray[2]].subitems);
+					document.getElementById('screen2button2value2').value = data.button2.valuearray[2];
 
-				document.getElementById("screen2logo5").add(new Option("home.bmp"));
+					document.getElementById("screen2logo3").add(new Option(data.logo3));
+					if(data.button3.latch){
+						document.getElementById("screen2button3latch").checked = true;
+					}
+					document.getElementById('screen2button3action0').value = data.button3.actionarray[0];
+					document.getElementById('screen2button3action1').value = data.button3.actionarray[1];
+					document.getElementById('screen2button3action2').value = data.button3.actionarray[2];
+					fillvaluelist(screen2button3value0, selecteditems[data.button3.actionarray[0]].subitems);
+					document.getElementById('screen2button3value0').value = data.button3.valuearray[0];
+					fillvaluelist(screen2button3value1, selecteditems[data.button3.actionarray[1]].subitems);
+					document.getElementById('screen2button3value1').value = data.button3.valuearray[1];
+					fillvaluelist(screen2button3value2, selecteditems[data.button3.actionarray[2]].subitems);
+					document.getElementById('screen2button3value2').value = data.button3.valuearray[2];
 
-			})
-			.catch((err) => {
-				// No error handling for now
-			})
+					document.getElementById("screen2logo4").add(new Option(data.logo4));
+					if(data.button4.latch){
+						document.getElementById("screen2button4latch").checked = true;
+					}
+					document.getElementById('screen2button4action0').value = data.button4.actionarray[0];
+					document.getElementById('screen2button4action1').value = data.button4.actionarray[1];
+					document.getElementById('screen2button4action2').value = data.button4.actionarray[2];
+					fillvaluelist(screen2button4value0, selecteditems[data.button4.actionarray[0]].subitems);
+					document.getElementById('screen2button4value0').value = data.button4.valuearray[0];
+					fillvaluelist(screen2button4value1, selecteditems[data.button4.actionarray[1]].subitems);
+					document.getElementById('screen2button4value1').value = data.button4.valuearray[1];
+					fillvaluelist(screen2button4value2, selecteditems[data.button4.actionarray[2]].subitems);
+					document.getElementById('screen2button4value2').value = data.button4.valuearray[2];
 
-		// Load Menu 3
-		fetch('config/menu3.json')
-			.then((response) => {
-				return response.json()
-			})
-			.then((data) => {
+					document.getElementById("screen2logo5").add(new Option("home.bmp"));
+
+					})
+						.catch((err) => {
+							console.log(err)
+					})
+
+
+
+		}
+
+		function getconfig3(){
+				// Load Menu 3
+			fetch('config/menu3.json')
+				.then((response) => {
+					return response.json()
+				})
+				.then((data) => {
 
 				document.getElementById("screen3logo0").add(new Option(data.logo0));
 				if(data.button0.latch){
@@ -1025,17 +3145,22 @@
 
 				document.getElementById("screen3logo5").add(new Option("home.bmp"));
 
-			})
-			.catch((err) => {
-				// No error handling for now
-			})
+				})
+					.catch((err) => {
+					console.log(err)
+				})
 
-		// Load Menu 4
-		fetch('config/menu4.json')
-			.then((response) => {
-				return response.json()
-			})
-			.then((data) => {
+
+		}
+
+		function getconfig4(){
+
+				// Load Menu 4
+			fetch('config/menu4.json')
+				.then((response) => {
+					return response.json()
+				})
+				.then((data) => {
 
 				document.getElementById("screen4logo0").add(new Option(data.logo0));
 				if(data.button0.latch){
@@ -1109,12 +3234,16 @@
 
 				document.getElementById("screen4logo5").add(new Option("home.bmp"));
 
-			})
-			.catch((err) => {
-				// No error handling for now
-			})
+				})
+				.catch((err) => {
+					console.log(err)
+				})
 
-		// Load Menu 5
+		}
+
+		function getconfig5(){
+
+				// Load Menu 5
 		fetch('config/menu5.json')
 			.then((response) => {
 				return response.json()
@@ -1195,17 +3324,20 @@
 
 			})
 			.catch((err) => {
-				// No error handling for now
+				console.log(err)
 			})
 
-		var logolist = []; // Array holding the logos (empty to start)
+		}
 
-		var selects = document.getElementsByClassName('images');
+		function getlogoconfig(){
 
-		// Loading all the logo's
+			var logolist = []; // Array holding the logos (empty to start)
 
-		fetch('config/homescreen.json')
-			.then((response) => {
+			var selects = document.getElementsByClassName('images');
+
+			// Loading all the logo's
+			fetch('config/homescreen.json')
+				.then((response) => {
 				return response.json()
 			})
 			.then((data) => {
@@ -1219,7 +3351,7 @@
 
 			})
 			.then((data) => {
-				fetch('http://freetouchdeck.local/list?dir=/logos')
+				fetch('/list?dir=/logos')
 					.then((response2) => {
 						return response2.json()
 					})
@@ -1237,13 +3369,55 @@
 						});
 
 					})
+					.then(() => {
+						document.getElementById("contentloading").style.display = "none";
+						document.getElementById("maincontent").style.display = "block";
+					})
 					.catch((err) => {
-						// No error handling for now
+						console.log(err)
 					})
 
 			})
 			.catch((err) => {
-				// No error handling for now
+				console.log(err)
+			})
+
+
+		}
+
+		// Load Colors and then other configs
+		fetch('config/colors.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
+
+				document.getElementById("menubuttoncolor").value = data.menubuttoncolor;
+				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
+				document.getElementById("latchcolor").value = data.latchcolor;
+				document.getElementById("background").value = data.background;
+
+			})
+			.then(() => {
+				getconfig1();
+			})
+			.then(() => {
+				getconfig2();
+			})
+			.then(() => {
+				getconfig3();
+			})
+			.then(() => {
+				getconfig4();
+			})
+			.then(() => {
+				getconfig5();
+			})
+			.then(() => {
+				getlogoconfig();
+			})
+			.catch((err) => {
+				console.log(err)
 			})
 
 	</script>

@@ -256,11 +256,11 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.13 Introduces Latching buttons!
+  /* Version 0.8.15 Hides all content in index.htm untill everything is loaded. Also all config.json fetches in to their own function
   */
 
-  tft.print("Loading version 0.8.13");
-  debug.Info("Loading version 0.8.13");
+  tft.print("Loading version 0.8.15");
+  debug.Info("Loading version 0.8.15");
 
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
@@ -3620,7 +3620,7 @@ void configmode()
   Serial.print("[INFO]: Connected! IP address: ");
   Serial.println(WiFi.localIP());
 
-  MDNS.begin(wificonfig.hostname);
+  MDNS.begin(wificonfig.hostname); 
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
