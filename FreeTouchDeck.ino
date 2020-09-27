@@ -16,7 +16,7 @@
   As this is an early Pre-alpha version, the code is ugly and sometimes way more complicated
   then necessary. It also lacks good documentation and comments in the code.
 
-  The SPIFFS (FLASH filing system) is used to hold touch screen calibration data.
+  The FILESYSTEM (FLASH filing system) is used to hold touch screen calibration data.
   It has to be runs at least once. After that you can set REPEAT_CAL to false (default).
 
   !-- Make sure you have setup your TFT display and ESP setup correctly in TFT_eSPI/user_setup.h --!
@@ -55,9 +55,13 @@ File fsUploadFile;
 
 TFT_eSPI tft = TFT_eSPI();
 
+// Define the storage to be used. For now just SPIFFS. 
+
+#define FILESYSTEM SPIFFS
+
 // This is the file name used to store the calibration data
 // You can change this to create new calibration files.
-// The SPIFFS file name must start with "/".
+// The FILESYSTEM file name must start with "/".
 #define CALIBRATION_FILE "/TouchCalData"
 
 // Set REPEAT_CAL to true instead of false to run calibration
@@ -90,6 +94,9 @@ TFT_eSPI tft = TFT_eSPI();
 
 // placeholder for the pagenumber we are on (0 indicates home)
 int pageNum = 0;
+
+// Initial LED brightness
+int ledBrightness = 255;
 
 // Every button has a row associated with it
 uint8_t rowArray[6] = {0, 0, 0, 1, 1, 1};
@@ -169,6 +176,7 @@ struct Wificonfig
   int debuglevel; 
 };
 
+
 bool islatched[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 //Create instances of the structs
@@ -207,27 +215,20 @@ void setup()
   // Use serial port
   Serial.begin(9600);
 
-//  for(int i=0; i < 25 ; i++)
-//  {
-//    if(islatched[i]){
-//      islatched[i] = 0;
-//    }else{
-//      islatched[i] = 1;
-//    }
-//    Serial.print(islatched[i]);
-//  }
-  
-  //debug.SetLevel(debug.LevelInfo); // Options: debug.LevelError, debug.LevelWarn, debug.LevelInfo
+  // Setup PWM channel and attach pin 32
+  ledcSetup(0, 5000, 8);
+  ledcAttachPin(32, 0);
+  ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
-  if (!SPIFFS.begin())
-  {
-    debug.Error("SPIFFS initialisation failed!");
-    while (1)
-      yield(); // We stop here
-  }
-  debug.Info("SPIFFS initialised.");
+    if (!FILESYSTEM.begin())
+    {
+      debug.Error("SPIFFS initialisation failed!");
+      while (1)
+        yield(); // We stop here
+    }
+    debug.Info("SPIFFS initialised.");
 
-  //------------------ Load Wifi Config Etc. ----------------------------------------------
+  //------------------ Load Wifi Config ----------------------------------------------
 
   debug.Info("Loading Wifi Config");
   if(!loadMainConfig())
@@ -256,11 +257,11 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.15 Hides all content in index.htm untill everything is loaded. Also all config.json fetches in to their own function
+  /* Version 0.8.16 Added backlight dimming. This can be found in the settings menu.
   */
 
-  tft.print("Loading version 0.8.15");
-  debug.Info("Loading version 0.8.15");
+  tft.print("Loading version 0.8.16");
+  debug.Info("Loading version 0.8.16");
 
   // Calibrate the touch screen and retrieve the scaling factors
   touch_calibrate();
@@ -337,8 +338,6 @@ void setup()
   // Restart handle
   server.on("/restart", HTTP_POST, handleRestart);
 
-  //called when the url is not defined here
-  //use it to load content from SPIFFS
   server.onNotFound([]() {
     if (!handleFileRead(server.uri()))
     {
@@ -920,11 +919,11 @@ void loop(void)
           }
           else if (b == 1) // Button 1
           {
-              // No function yet
+              bleKeyboardAction(9, 2, "0");
           }
           else if (b == 2) // Button 2
           {
-              // No function yet
+              bleKeyboardAction(9, 3, "0");
           }
           else if (b == 3) // Button 3
           {
@@ -976,10 +975,16 @@ void drawKeypad()
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0, 0);
     tft.setTextFont(2);
-    tft.setTextSize(2);
+    if(SCREEN_WIDTH == 480){
+      tft.setTextSize(2);
+    }else{
+      tft.setTextSize(1);
+    }
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println("Now in config mode.\nTo configure:");
+    tft.println("Now in config mode. To configure:");
     tft.println("http://freetouchdeck.local");
+    tft.print("Your IP is: ");
+    tft.println(WiFi.localIP());
   }
   else
   {
@@ -1243,11 +1248,11 @@ void drawlogo(int logonumber, int col, int row)
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen6.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/brightnessdown.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen6.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/brightnessup.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 3)
     {
@@ -1299,6 +1304,12 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     case 7:
       bleKeyboard.write(KEY_RETURN);
+      break;
+    case 8:
+      bleKeyboard.write(KEY_PAGE_UP);
+      break;
+    case 9:
+      bleKeyboard.write(KEY_PAGE_DOWN);
       break;
     default:
       //if nothing matches do nothing
@@ -1430,6 +1441,17 @@ void bleKeyboardAction(int action, int value, char *symbol)
       configmode();
       drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 7
       break;
+    case 2:        // Display Brightness Down
+      if(ledBrightness > 25){
+      ledBrightness = ledBrightness - 25;
+      ledcWrite(0, ledBrightness);
+      }
+      break;
+    case 3:        // Display Brightness Up
+      if(ledBrightness < 230){
+      ledBrightness = ledBrightness + 25;
+      ledcWrite(0, ledBrightness);
+      }
     }
     break;
   default:
@@ -1440,16 +1462,14 @@ void bleKeyboardAction(int action, int value, char *symbol)
 
 // ------------------------------------ Load JSON File --------------------------------------------------
 
-// TODO: Move JSON parsing function in a seperate file because it is really long ;)
-
 bool loadMainConfig()
 {
-  if (!SPIFFS.exists("/config/wificonfig.json"))
+  if (!FILESYSTEM.exists("/config/wificonfig.json"))
   {
     debug.Warn("Config file not found!");
     return false;
   }
-  File configfile = SPIFFS.open("/config/wificonfig.json");
+  File configfile = FILESYSTEM.open("/config/wificonfig.json");
 
   DynamicJsonDocument doc(256);
 
@@ -1472,7 +1492,7 @@ void loadConfig(String value)
 
   if (value == "colors")
   {
-    File configfile = SPIFFS.open("/config/colors.json", "r");
+    File configfile = FILESYSTEM.open("/config/colors.json", "r");
 
     DynamicJsonDocument doc(256);
 
@@ -1481,38 +1501,34 @@ void loadConfig(String value)
     // Parsing colors
     const char *menubuttoncolor = doc["menubuttoncolor"];         // Get the colour for the menu and back home buttons.
     const char *functionbuttoncolor = doc["functionbuttoncolor"]; // Get the colour for the function buttons.
-    const char *latchcolor = doc["latchcolor"];                     // Get the colour for the logo.
+    const char *latchcolor = doc["latchcolor"];                     // Get the colour to use when latching.
     const char *bgcolor = doc["background"];                      // Get the colour for the background.
 
     char menubuttoncolorchar[64];
     strcpy(menubuttoncolorchar, menubuttoncolor);
     unsigned long rgb888menubuttoncolor = convertHTMLtoRGB888(menubuttoncolorchar);
-    //Serial.println(rgb888);
     generalconfig.menuButtonColour = convertRGB888ToRGB565(rgb888menubuttoncolor);
 
     char functionbuttoncolorchar[64];
     strcpy(functionbuttoncolorchar, functionbuttoncolor);
     unsigned long rgb888functionbuttoncolor = convertHTMLtoRGB888(functionbuttoncolorchar);
-    //Serial.println(rgb888);
     generalconfig.functionButtonColour = convertRGB888ToRGB565(rgb888functionbuttoncolor);
 
     char latchcolorchar[64];
     strcpy(latchcolorchar, latchcolor);
     unsigned long rgb888latchcolor = convertHTMLtoRGB888(latchcolorchar);
-    //Serial.println(rgb888);
     generalconfig.latchedColour = convertRGB888ToRGB565(rgb888latchcolor);
 
     char backgroundcolorchar[64];
     strcpy(backgroundcolorchar, bgcolor);
     unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
-    //Serial.println(rgb888);
     generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
 
     configfile.close();
   }
   else if (value == "homescreen")
   {
-    File configfile = SPIFFS.open("/config/homescreen.json", "r");
+    File configfile = FILESYSTEM.open("/config/homescreen.json", "r");
 
     DynamicJsonDocument doc(256);
 
@@ -1555,7 +1571,7 @@ void loadConfig(String value)
   }
   else if (value == "menu1")
   {
-    File configfile = SPIFFS.open("/config/menu1.json", "r");
+    File configfile = FILESYSTEM.open("/config/menu1.json", "r");
 
     DynamicJsonDocument doc(1200);
 
@@ -1823,7 +1839,7 @@ void loadConfig(String value)
   }
   else if (value == "menu2")
   {
-    File configfile = SPIFFS.open("/config/menu2.json", "r");
+    File configfile = FILESYSTEM.open("/config/menu2.json", "r");
 
     DynamicJsonDocument doc(1200);
 
@@ -2091,7 +2107,7 @@ void loadConfig(String value)
   }
   else if (value == "menu3")
   {
-    File configfile = SPIFFS.open("/config/menu3.json", "r");
+    File configfile = FILESYSTEM.open("/config/menu3.json", "r");
 
     DynamicJsonDocument doc(1200);
 
@@ -2357,7 +2373,7 @@ void loadConfig(String value)
   }
   else if (value == "menu4")
   {
-    File configfile = SPIFFS.open("/config/menu4.json", "r");
+    File configfile = FILESYSTEM.open("/config/menu4.json", "r");
 
     DynamicJsonDocument doc(1200);
 
@@ -2625,7 +2641,7 @@ void loadConfig(String value)
   }
   else if (value == "menu5")
   {
-    File configfile = SPIFFS.open("/config/menu5.json", "r");
+    File configfile = FILESYSTEM.open("/config/menu5.json", "r");
 
     DynamicJsonDocument doc(1200);
 
@@ -2895,15 +2911,12 @@ void loadConfig(String value)
 
 void saveconfig()
 {
-
-  // Printing to Serial all the arguments received. FOR TESTING PURPOSES
-
   if (server.arg("save") == "homescreen")
   {
 
     debug.Info("Saving Homescreen");
-    SPIFFS.remove("/config/homescreen.json");
-    File file = SPIFFS.open("/config/homescreen.json", "w");
+    FILESYSTEM.remove("/config/homescreen.json");
+    File file = FILESYSTEM.open("/config/homescreen.json", "w");
     if (!file)
     {
       debug.Error("Failed to create homescreen.json");
@@ -2931,8 +2944,8 @@ void saveconfig()
   {
     debug.Info("Saving Colors");
 
-    SPIFFS.remove("/config/colors.json");
-    File file = SPIFFS.open("/config/colors.json", "w");
+    FILESYSTEM.remove("/config/colors.json");
+    File file = FILESYSTEM.open("/config/colors.json", "w");
     if (!file)
     {
       debug.Error("Failed to create file");
@@ -2960,8 +2973,8 @@ void saveconfig()
   {
     
     debug.Info("Saving Menu 1");
-    SPIFFS.remove("/config/menu1.json");
-    File file = SPIFFS.open("/config/menu1.json", "w");
+    FILESYSTEM.remove("/config/menu1.json");
+    File file = FILESYSTEM.open("/config/menu1.json", "w");
     if (!file)
     {
       debug.Error("Failed to create menu1.json");
@@ -3080,8 +3093,8 @@ void saveconfig()
   {
 
     debug.Info("Saving Menu 2");
-    SPIFFS.remove("/config/menu2.json");
-    File file = SPIFFS.open("/config/menu2.json", "w");
+    FILESYSTEM.remove("/config/menu2.json");
+    File file = FILESYSTEM.open("/config/menu2.json", "w");
     if (!file)
     {
       debug.Error("Failed to create menu2.json");
@@ -3200,8 +3213,8 @@ void saveconfig()
   {
 
     debug.Info("Saving Menu 3");
-    SPIFFS.remove("/config/menu3.json");
-    File file = SPIFFS.open("/config/menu3.json", "w");
+    FILESYSTEM.remove("/config/menu3.json");
+    File file = FILESYSTEM.open("/config/menu3.json", "w");
     if (!file)
     {
       debug.Error("Failed to create menu3.json");
@@ -3320,8 +3333,8 @@ void saveconfig()
   {
 
     debug.Info("Saving Menu 4");
-    SPIFFS.remove("/config/menu4.json");
-    File file = SPIFFS.open("/config/menu4.json", "w");
+    FILESYSTEM.remove("/config/menu4.json");
+    File file = FILESYSTEM.open("/config/menu4.json", "w");
     if (!file)
     {
       debug.Error("Failed to create menu4.json");
@@ -3440,8 +3453,8 @@ void saveconfig()
   {
 
     debug.Info("Saving Menu 5");
-    SPIFFS.remove("/config/menu5.json");
-    File file = SPIFFS.open("/config/menu5.json", "w");
+    FILESYSTEM.remove("/config/menu5.json");
+    File file = FILESYSTEM.open("/config/menu5.json", "w");
     if (!file)
     {
       debug.Error("Failed to create menu5.json");
@@ -3620,7 +3633,7 @@ void configmode()
   Serial.print("[INFO]: Connected! IP address: ");
   Serial.println(WiFi.localIP());
 
-  MDNS.begin(wificonfig.hostname); 
+  MDNS.begin(wificonfig.hostname);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
@@ -3647,25 +3660,25 @@ void touch_calibrate()
   uint16_t calData[5];
   uint8_t calDataOK = 0;
 
-  // check file system exists
-  if (!SPIFFS.begin())
-  {
-    debug.Warn("Formatting file system");
-    SPIFFS.format();
-    SPIFFS.begin();
-  }
+//  // check file system exists
+//  if (!FILESYSTEM.begin())
+//  {
+//    debug.Warn("Formatting file system");
+//    FILESYSTEM.format();
+//    FILESYSTEM.begin();
+//  }
 
   // check if calibration file exists and size is correct
-  if (SPIFFS.exists(CALIBRATION_FILE))
+  if (FILESYSTEM.exists(CALIBRATION_FILE))
   {
     if (REPEAT_CAL)
     {
       // Delete if we want to re-calibrate
-      SPIFFS.remove(CALIBRATION_FILE);
+      FILESYSTEM.remove(CALIBRATION_FILE);
     }
     else
     {
-      File f = SPIFFS.open(CALIBRATION_FILE, "r");
+      File f = FILESYSTEM.open(CALIBRATION_FILE, "r");
       if (f)
       {
         if (f.readBytes((char *)calData, 14) == 14)
@@ -3706,7 +3719,7 @@ void touch_calibrate()
     tft.println("Calibration complete!");
 
     // store data
-    File f = SPIFFS.open(CALIBRATION_FILE, "w");
+    File f = FILESYSTEM.open(CALIBRATION_FILE, "w");
     if (f)
     {
       f.write((const unsigned char *)calData, 14);
@@ -3785,7 +3798,7 @@ String getContentType(String filename)
 bool exists(String path)
 {
   bool yes = false;
-  File file = SPIFFS.open(path, "r");
+  File file = FILESYSTEM.open(path, "r");
   if (!file.isDirectory())
   {
     yes = true;
@@ -3810,7 +3823,7 @@ bool handleFileRead(String path)
     {
       path += ".gz";
     }
-    File file = SPIFFS.open(path, "r");
+    File file = FILESYSTEM.open(path, "r");
     server.streamFile(file, contentType);
     file.close();
     return true;
@@ -3821,7 +3834,7 @@ bool handleFileRead(String path)
 void faviconhandle()
 {
 
-  File file = SPIFFS.open("/favicon.ico", "r");
+  File file = FILESYSTEM.open("/favicon.ico", "r");
   server.streamFile(file, "image/x-icon");
   file.close();
 }
@@ -3838,7 +3851,7 @@ void handleFileList()
   String path = server.arg("dir");
   Serial.println("handleFileList: " + path);
 
-  File root = SPIFFS.open(path);
+  File root = FILESYSTEM.open(path);
   path = String();
   int filecount = 0;
 
@@ -3888,7 +3901,7 @@ void handleFileUpload()
       filename = "/logos/" + filename; // TODO: This should not be hard-coded!
     }
     debug.Info("File uploading");
-    fsUploadFile = SPIFFS.open(filename, "w");
+    fsUploadFile = FILESYSTEM.open(filename, "w");
     filename = String();
   }
   else if (upload.status == UPLOAD_FILE_WRITE)
@@ -3913,9 +3926,7 @@ void handleFileUpload()
 //-------------------- HTML color to RGB888 conversion ------------------------
 
 unsigned long convertHTMLtoRGB888(char *html)
-{ // convert HTML (#xxxxxx to RGB888)
-
-  //char* input="#61dfff";
+{
   char *hex = html + 1; // remove the #
   unsigned long rgb = strtoul(hex, NULL, 16);
   return rgb;
@@ -3924,8 +3935,7 @@ unsigned long convertHTMLtoRGB888(char *html)
 //-------------------- RGB888 to RGB565 conversion ------------------------
 
 unsigned int convertRGB888ToRGB565(unsigned long rgb)
-{ //convert 24 bit RGB888 to 16bit 5:6:5 RGB565
-
+{
   return (((rgb & 0xf80000) >> 8) | ((rgb & 0xfc00) >> 5) | ((rgb & 0xf8) >> 3));
 }
 
@@ -3939,18 +3949,14 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 
   fs::File bmpFS;
 
-  // Open requested file
-  bmpFS = SPIFFS.open(filename, "r");
-
-  //Serial.print("Opening file: ");
-  //Serial.print(filename);
+  bmpFS = FILESYSTEM.open(filename, "r");
 
   if (!bmpFS)
   {
     debug.Warn("Bitmap not found: ");
     debug.Warn(filename);
     filename = "/logos/question.bmp";
-    bmpFS = SPIFFS.open(filename, "r");
+    bmpFS = FILESYSTEM.open(filename, "r");
   }
 
   uint32_t seekOffset;
@@ -4014,8 +4020,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
 
   fs::File bmpFS;
 
-  // Open requested file
-  bmpFS = SPIFFS.open(filename, "r");
+  bmpFS = FILESYSTEM.open(filename, "r");
 
   if (!bmpFS)
   {
@@ -4076,10 +4081,6 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
   bmpFS.close();
 }
 
-// These read 16- and 32-bit types from the file system card file.
-// BMP data is stored little-endian, Arduino is little-endian too.
-// May need to reverse subscript order if porting elsewhere.
-
 uint16_t read16(fs::File &f)
 {
   uint16_t result;
@@ -4109,7 +4110,7 @@ Note   : Pass the filename including a leading /
 bool checkfile(char *filename)
 {
 
-  if (!SPIFFS.exists(filename))
+  if (!FILESYSTEM.exists(filename))
   {
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(1, 3);

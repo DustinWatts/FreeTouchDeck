@@ -63,6 +63,14 @@ var selecteditems = [{
 		      {
 		        name: 'Return',
 		        value: '7'
+		      },
+		      {
+		        name: 'Page Up',
+		        value: '8'
+		      },
+		      {
+		        name: 'Page Down',
+		        value: '9'
 		      }
 		      ]
 		  },
