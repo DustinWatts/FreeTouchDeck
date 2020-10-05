@@ -4,8 +4,10 @@
   the ESP32-BLE-Keyboard library by T-vK. For loading configuration it uses 
   ArduinoJson V6.
 
-  FreeTouchDeck uses a few (4) libraries from other sources. These must be installed
-  for FreeTouchDeck to compile and run. These are those libraries:
+  FreeTouchDeck uses a few (4 or 5 depending wether you use resistive or capacitive touch) 
+  libraries from other sources. These must be installed for FreeTouchDeck to compile and run. 
+  
+  These are those libraries:
 
       !----------------------------- Library Dependencies --------------------------- !
       - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
@@ -13,10 +15,14 @@
       - ESP32-BLE-Keyboard (latest version) download from: https://github.com/T-vK/ESP32-BLE-Keyboard
       - ArduinoJson (version 6.16.1), available through Library Manager
 
+      --- If you use Capacitive touch ---
+      - Adafruit FT6206 Library (version 1.0.6), available through Library Manager
+      
+
   As this is an early Pre-alpha version, the code is ugly and sometimes way more complicated
   then necessary. It also lacks good documentation and comments in the code.
 
-  The FILESYSTEM (FLASH filing system) is used to hold touch screen calibration data.
+  The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
   It has to be runs at least once. After that you can set REPEAT_CAL to false (default).
 
   !-- Make sure you have setup your TFT display and ESP setup correctly in TFT_eSPI/user_setup.h --!
@@ -25,6 +31,9 @@
         using. Also make sure TOUCH_CS is defined correctly. TFT_BL can also be needed!
   
 */
+
+// ------- Uncomment the next line if you use capacative touch -------
+//#define USECAPTOUCH
 
 #include <pgmspace.h> // PROGMEM support header
 #include "FS.h"       // File System header
@@ -46,6 +55,12 @@
 #include <ESPmDNS.h>    // DNS functionality
 
 #include "debug.h" // For debugging
+
+#ifdef USECAPTOUCH
+#include <Wire.h>
+#include <Adafruit_FT6206.h>
+Adafruit_FT6206 ts = Adafruit_FT6206();
+#endif
 
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
@@ -214,6 +229,16 @@ void setup()
 
   // Use serial port
   Serial.begin(9600);
+  Serial.println("");
+
+  #ifdef USECAPTOUCH
+    if (!ts.begin(40)) { 
+      Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
+    } 
+    else { 
+      Serial.println("[INFO]: Capacitive touch started!");
+    }
+  #endif
 
   // Setup PWM channel and attach pin 32
   ledcSetup(0, 5000, 8);
@@ -257,21 +282,26 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.16 Added backlight dimming. This can be found in the settings menu.
+  /* Version 0.8.17 Added support for the capacitve touch screen. Using #define USECAPTOUCH to switch between capacitive
+   *  or resistive touch.
   */
 
-  tft.print("Loading version 0.8.16");
-  debug.Info("Loading version 0.8.16");
+  tft.print("Loading version 0.8.17");
+  debug.Info("Loading version 0.8.17");
 
   // Calibrate the touch screen and retrieve the scaling factors
+
+  #ifndef USECAPTOUCH
   touch_calibrate();
+  #endif
 
   // Let's first check if all the files we need exist
 
   if (!checkfile("/config/colors.json"))
   {
     debug.Error("/config/colors.json not found!");
-    while (1) yield(); // Stop!
+    while (1)
+      yield(); // Stop!
   }
 
   if (!checkfile("/config/homescreen.json"))
@@ -395,11 +425,32 @@ void loop(void)
   else
   {
      
-    // Touch coordinates are stored here
-    uint16_t t_x = 0, t_y = 0;
+  // Touch coordinates are stored here
+  uint16_t t_x = 0, t_y = 0;
 
-    // Pressed will be set true if there is a valid touch on the screen
-    boolean pressed = tft.getTouch(&t_x, &t_y);
+  //At the beginning of a new loop, make sure we do not use last loop's touch
+  boolean pressed = false;
+
+  #ifdef USECAPTOUCH
+    if (ts.touched())
+    {   
+      // Retrieve a point  
+      TS_Point p = ts.getPoint(); 
+
+      //Flip things around so it matches our screen rotation
+      p.x = map(p.x, 0, 320, 320, 0); 
+      t_y = p.x;
+      t_x = p.y;
+  
+      pressed = true;
+    }
+
+  #else
+
+  pressed = tft.getTouch(&t_x, &t_y); 
+  
+  #endif
+        
 
     // Check if the X and Y coordinates of the touch are within one of our buttons
     for (uint8_t b = 0; b < 6; b++)
