@@ -32,8 +32,12 @@
   
 */
 
-// ------- Uncomment the next line if you use capacative touch -------
-//#define USECAPTOUCH
+// ------- Uncomment the next line if you use capacitive touch -------
+#define USECAPTOUCH
+
+// PAY ATTENTION! Even though resistive touch is not used, the TOUCH pin has to be defined!
+// It can be a random unused pin.
+// TODO: Find a way around this! 
 
 #include <pgmspace.h> // PROGMEM support header
 #include "FS.h"       // File System header
@@ -283,7 +287,7 @@ void setup()
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
   /* Version 0.8.17 Added support for the capacitve touch screen. Using #define USECAPTOUCH to switch between capacitive
-   *  or resistive touch.
+     or resistive touch.
   */
 
   tft.print("Loading version 0.8.17");
@@ -431,27 +435,28 @@ void loop(void)
   //At the beginning of a new loop, make sure we do not use last loop's touch
   boolean pressed = false;
 
-  #ifdef USECAPTOUCH
+    #ifdef USECAPTOUCH
     if (ts.touched())
     {   
+      
       // Retrieve a point  
       TS_Point p = ts.getPoint(); 
-
+      
       //Flip things around so it matches our screen rotation
       p.x = map(p.x, 0, 320, 320, 0); 
       t_y = p.x;
       t_x = p.y;
   
       pressed = true;
+      
     }
 
-  #else
+    #else
 
-  pressed = tft.getTouch(&t_x, &t_y); 
-  
-  #endif
-        
+    pressed = tft.getTouch(&t_x, &t_y); 
 
+    #endif
+     
     // Check if the X and Y coordinates of the touch are within one of our buttons
     for (uint8_t b = 0; b < 6; b++)
     {
@@ -3706,6 +3711,9 @@ void handleRestart()
 
 //----------- TOUCH Calibration -------------------------------------------------------------------------------
 
+
+// If USECAPTOUCH is defined we do not need to calibrate touch
+
 void touch_calibrate()
 {
   uint16_t calData[5];
@@ -3778,6 +3786,7 @@ void touch_calibrate()
     }
   }
 }
+
 
 //----------- Functions used by Webserver -------------------------------------------------------------------------------
 
