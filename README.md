@@ -1,4 +1,4 @@
-# FreeDeckTouch
+# FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
