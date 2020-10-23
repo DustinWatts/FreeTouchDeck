@@ -33,7 +33,7 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
-#define USECAPTOUCH
+//#define USECAPTOUCH
 
 // PAY ATTENTION! Even though resistive touch is not used, the TOUCH pin has to be defined!
 // It can be a random unused pin.
