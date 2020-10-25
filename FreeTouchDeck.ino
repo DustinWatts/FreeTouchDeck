@@ -33,7 +33,7 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
-//#define USECAPTOUCH
+#define USECAPTOUCH
 
 // PAY ATTENTION! Even though resistive touch is not used, the TOUCH pin has to be defined!
 // It can be a random unused pin.
@@ -62,8 +62,8 @@
 
 #ifdef USECAPTOUCH
 #include <Wire.h>
-#include <Adafruit_FT6206.h>
-Adafruit_FT6206 ts = Adafruit_FT6206();
+#include <FT6236.h>
+FT6236 ts = FT6236();
 #endif
 
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
@@ -236,7 +236,7 @@ void setup()
   Serial.println("");
 
   #ifdef USECAPTOUCH
-    if (!ts.begin(40)) { 
+    if (!ts.begin(40, 26, 27)) { 
       Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
     } 
     else { 
