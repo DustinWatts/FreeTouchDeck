@@ -1,4 +1,4 @@
-# FreeTouchDeck
+# FreeDeckTouch
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
@@ -19,14 +19,22 @@ to make FreeTouchDeck work across most ESP's and TFT screens. Also there is a la
 
 The hardware I currenlty use is:
 
+For Resistive touch:
 - an ESP32 DEVKIT V1 (WROOM32) (Partition scheme: NO OTA with 2MB app and 2MB SPIFFS)
-- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and XPT2046 touch controller
+- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and XPT2046 resitive touch controller
+
+For Capacitive touch:
+- an ESP32 DEVKIT V1 (WROOM32) (Partition scheme: NO OTA with 2MB app and 2MB SPIFFS)
+- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and FT6236 capacitive touch controller
 
 # !- Library Dependencies -!
 - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
 - TFT_eSPI (version 2.2.14), available through Library Manager
 - ESP32-BLE-Keyboard (latest version), download from: https://github.com/T-vK/ESP32-BLE-Keyboard
 - ArduinoJson (version 6.16.1), available through Library Manager
+
+If you use capacitive touch:
+- FT6236 (latest version), download from: https://github.com/DustinWatts/FT6236
 
 # TFT_eSPI configuration
 
