@@ -331,8 +331,8 @@ void setup()
    * enabled and to set the sleep timer.
   */
 
-  tft.print("Loading version 0.8.19");
-  Serial.println("[INFO]: Loading version 0.8.19");
+  tft.print("Loading version 0.8.18");
+  Serial.println("[INFO]: Loading version 0.8.18");
     
   }
 
