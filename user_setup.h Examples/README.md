@@ -4,6 +4,8 @@ Before compiling and uploading the FreeTouchDeck.ino sketch, you will have to ed
 
 You can use the files in this directory as an example for different boards and screens. Simple rename the file that matches your combination of board and screen to `User_Setup.h` and replace the file that is in the library folder. You can also copy the contents of a file and replace the contenst in the existing `User_Setup.h`
 
+If there is a wiring diagram available, it is a .png image with the same name.
+
 # Help
 
 You can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
