@@ -16,7 +16,7 @@
       - ArduinoJson (version 6.16.1), available through Library Manager
 
       --- If you use Capacitive touch ---
-      - Adafruit FT6206 Library (version 1.0.6), available through Library Manager
+      - Dustin Watts FT6236 Library (version 1.0.1), https://github.com/DustinWatts/FT6236
       
 
   As this is an early Pre-alpha version, the code is ugly and sometimes way more complicated
@@ -33,16 +33,22 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
-#define USECAPTOUCH
+//#define USECAPTOUCH
 
-// PAY ATTENTION! Even though resistive touch is not used, the TOUCH pin has to be defined!
+// PAY ATTENTION! Even if resistive touch is not used, the TOUCH pin has to be defined!
 // It can be a random unused pin.
 // TODO: Find a way around this! 
+
+// ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
+// The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
+//#define touchInterruptPin GPIO_NUM_27
+
+// ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
+//#define speakerPin 26
 
 #include <pgmspace.h> // PROGMEM support header
 #include "FS.h"       // File System header
 
-#include <SPI.h>      // SPI Functionalty
 #include <TFT_eSPI.h> // The TFT_eSPI library
 
 #include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
@@ -58,15 +64,12 @@
 #include <WebServer.h>  // Webserver functionality
 #include <ESPmDNS.h>    // DNS functionality
 
-#include "debug.h" // For debugging
-
 #ifdef USECAPTOUCH
-#include <Wire.h>
-#include <Adafruit_FT6206.h>
-Adafruit_FT6206 ts = Adafruit_FT6206();
+#include <FT6236.h>
+FT6236 ts = FT6236();
 #endif
 
-BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
+BleKeyboard bleKeyboard("NewFreeTouchDeck", "Made by me");
 
 WebServer server(80);
 
@@ -75,7 +78,6 @@ File fsUploadFile;
 TFT_eSPI tft = TFT_eSPI();
 
 // Define the storage to be used. For now just SPIFFS. 
-
 #define FILESYSTEM SPIFFS
 
 // This is the file name used to store the calibration data
@@ -92,8 +94,7 @@ TFT_eSPI tft = TFT_eSPI();
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 320
 
-// Keypad start position, key sizes and spacing
-// Centre of the first button
+// Keypad start position, centre of the first button
 #define KEY_X SCREEN_WIDTH / 6
 #define KEY_Y SCREEN_HEIGHT / 4
 
@@ -144,13 +145,13 @@ struct Actions
 {
   uint8_t action0;
   uint8_t value0;
-  char symbol0[32];
+  char symbol0[64];
   uint8_t action1;
   uint8_t value1;
-  char symbol1[32];
+  char symbol1[64];
   uint8_t action2;
   uint8_t value2;
-  char symbol2[32];
+  char symbol2[64];
 };
 
 // Each button has an action struct in it
@@ -192,14 +193,14 @@ struct Wificonfig
   char ssid[64];
   char password[64];
   char hostname[64];
-  int debuglevel; 
+  bool sleepenable;
+  uint16_t sleeptimer;
 };
 
-
+// Array to hold all the latching statuses
 bool islatched[30] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-//Create instances of the structs
-
+// Create instances of the structs
 Wificonfig wificonfig;
 
 Config generalconfig;
@@ -221,7 +222,8 @@ Menu menu4;
 Menu menu5;
 Menu menu6;
 
-Debug debug;
+unsigned long previousMillis = 0;
+unsigned long Interval = 0;
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
@@ -249,22 +251,47 @@ void setup()
   ledcAttachPin(32, 0);
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
+  // Setup PWM channel for Piezo speaker
+
+  #ifdef speakerPin
+  ledcSetup(1, 500, 8);
+  
+  ledcAttachPin(speakerPin, 0);
+  ledcWriteTone(1, 600);
+  delay(150);
+  ledcDetachPin(speakerPin);
+  ledcWrite(1, 0);
+
+  ledcAttachPin(speakerPin, 0);
+  ledcWriteTone(1, 800);
+  delay(150);
+  ledcDetachPin(speakerPin);
+  ledcWrite(1, 0);
+
+  ledcAttachPin(speakerPin, 0);
+  ledcWriteTone(1, 1200);
+  delay(150);
+  ledcDetachPin(speakerPin);
+  ledcWrite(1, 0);
+
+  #endif
+
     if (!FILESYSTEM.begin())
     {
-      debug.Error("SPIFFS initialisation failed!");
+      Serial.println("[WARNING]: SPIFFS initialisation failed!");
       while (1)
         yield(); // We stop here
     }
-    debug.Info("SPIFFS initialised.");
+    Serial.println("[INFO]: SPIFFS initialised.");
 
   //------------------ Load Wifi Config ----------------------------------------------
 
-  debug.Info("Loading Wifi Config");
+  Serial.println("[INFO]: Loading Wifi Config");
   if(!loadMainConfig())
   {
-    debug.Warn("Failed to load WiFi Credentials!");
+    Serial.println("[WARNING]: Failed to load WiFi Credentials!");
   }else{
-    debug.Info("WiFi Credentials Loaded");
+    Serial.println("[INFO]: WiFi Credentials Loaded");
   }
   
 
@@ -279,19 +306,35 @@ void setup()
   // Clear the screen
   tft.fillScreen(TFT_BLACK);
 
-  // Draw a spalsh screen
+  esp_sleep_wakeup_cause_t wakeup_reason;
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  // If we are woken up we do not need the splash screen
+  if(wakeup_reason > 0){
+
+      // Don't draw splash screen
+
+  } else {
+
+  // Draw a splash screen
   drawBmp("/freetouchdeck_logo.bmp", 0, 0);
   tft.setCursor(1, 3);
   tft.setTextFont(2);
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.17 Added support for the capacitve touch screen. Using #define USECAPTOUCH to switch between capacitive
-     or resistive touch.
+  /* Version 0.8.18 Added support for Deep Sleep. Use #define touchInterruptPin and "sleepenable": true + "sleeptimer": 10 in wificonfig.json
+   * to enable Deep Sleep and set the sleeptimer in minutes. 
+   * Also added support for a buzzer (piezo speaker) use #define speakerPin to select the pin where the speaker is connected.
+   * For both: when the #defines are commented out, they are not used.
+   * Some other changes: debug.h is removed. And wificonfig.json is modified to add the option to change wether sleep is
+   * enabled and to set the sleep timer.
   */
 
-  tft.print("Loading version 0.8.17");
-  debug.Info("Loading version 0.8.17");
+  tft.print("Loading version 0.8.19");
+  Serial.println("[INFO]: Loading version 0.8.19");
+    
+  }
 
   // Calibrate the touch screen and retrieve the scaling factors
 
@@ -303,49 +346,49 @@ void setup()
 
   if (!checkfile("/config/colors.json"))
   {
-    debug.Error("/config/colors.json not found!");
+    Serial.println("[ERROR]: /config/colors.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/homescreen.json"))
   {
-    debug.Error("/config/homescreen.json not found!");
+    Serial.println("[ERROR]: /config/homescreen.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu1.json"))
   {
-    debug.Error("/config/menu1.json not found!");
+    Serial.println("[ERROR]: /config/menu1.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu2.json"))
   {
-    debug.Error("/config/menu2.json not found!");
+    Serial.println("[ERROR]: /config/menu2.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu3.json"))
   {
-    debug.Error("/config/menu3.json not found!");
+    Serial.println("[ERROR]: /config/menu3.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu4.json"))
   {
-    debug.Error("/config/menu4.json not found!");
+    Serial.println("[ERROR]: /config/menu4.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   if (!checkfile("/config/menu5.json"))
   {
-    debug.Error("/config/menu5.json not found!");
+    Serial.println("[ERROR]: /config/menu5.json not found!");
     while (1)
       yield(); // Stop!
   }
@@ -358,11 +401,11 @@ void setup()
   loadConfig("menu3");
   loadConfig("menu4");
   loadConfig("menu5");
-  debug.Info("All configs loaded");
+  Serial.println("[INFO]: All configs loaded");
 
   strcpy(generallogo.homebutton, "/logos/home.bmp");
   strcpy(generallogo.configurator, "/logos/wifi.bmp");
-  debug.Info("General logo's loaded.");
+  Serial.println("[INFO]: General logo's loaded.");
 
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);  
@@ -398,20 +441,32 @@ void setup()
 
   server.on("/list", HTTP_GET, handleFileList);
 
-  debug.Info("Server handles loaded.");
+  Serial.println("[INFO]: Server handles loaded.");
 
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
 
   // Draw keypad
-  debug.Info("Drawing keypad");
+  Serial.println("[INFO]: Drawing keypad");
   drawKeypad();
 
   //------------------BLE Initialization ------------------------------------------------------------------------
 
-  debug.Info("Starting BLE");
+  Serial.println("[INFO]: Starting BLE");
   bleKeyboard.begin();
-  
+
+#ifdef touchInterruptPin 
+  if(wificonfig.sleepenable){
+    pinMode(touchInterruptPin,INPUT_PULLUP);
+    Interval = wificonfig.sleeptimer * 60000;
+    Serial.println("[INFO]: Sleep enabled.");
+    Serial.print("[INFO]: Sleep timer = ");
+    Serial.print(wificonfig.sleeptimer);
+    Serial.println(" minutes");
+    islatched[28] = 1;
+  }
+#endif
+
 }
 
 //--------------------- LOOP ---------------------------------------------------------------------
@@ -419,25 +474,58 @@ void setup()
 void loop(void)
 {
 
-  if (pageNum == 7)
-  {
+  if (pageNum == 7){
 
     // If the pageNum is set to 7, do no draw anything on screen or check for touch
     // and start handeling incomming web requests.
     server.handleClient();
+    
+  }else{
+
+  // Check if sleep is enabled and if our timer has ended.
+
+  #ifdef touchInterruptPin 
+  if(wificonfig.sleepenable){
+    if(millis() > previousMillis + Interval){
+      
+      // The timer has ended and we are going to sleep  .
+      tft.fillScreen(TFT_BLACK);
+      Serial.println("[INFO]: Going to sleep.");
+      #ifdef speakerPin
+      ledcAttachPin(speakerPin, 0);
+      ledcWriteTone(1, 1200);
+      delay(150);
+      ledcDetachPin(speakerPin);
+      ledcWrite(1, 0);
+    
+      ledcAttachPin(speakerPin, 0);
+      ledcWriteTone(1, 800);
+      delay(150);
+      ledcDetachPin(speakerPin);
+      ledcWrite(1, 0);
+    
+      ledcAttachPin(speakerPin, 0);
+      ledcWriteTone(1, 600);
+      delay(150);
+      ledcDetachPin(speakerPin);
+      ledcWrite(1, 0);
+      #endif
+  
+      esp_sleep_enable_ext0_wakeup(touchInterruptPin,0);
+      esp_deep_sleep_start();     
+    }
   }
-  else
-  {
+  #endif
+
      
   // Touch coordinates are stored here
   uint16_t t_x = 0, t_y = 0;
 
-  //At the beginning of a new loop, make sure we do not use last loop's touch
+  //At the beginning of a new loop, make sure we do not use last loop's touch.
   boolean pressed = false;
 
     #ifdef USECAPTOUCH
-    if (ts.touched())
-    {   
+    if (ts.touched()){   
       
       // Retrieve a point  
       TS_Point p = ts.getPoint(); 
@@ -463,6 +551,9 @@ void loop(void)
       if (pressed && key[b].contains(t_x, t_y))
       {
         key[b].press(true); // tell the button it is pressed
+        
+        // After receiving a valid touch reset the sleep timer
+        previousMillis = millis();
       }
       else
       {
@@ -983,7 +1074,14 @@ void loop(void)
           }
           else if (b == 3) // Button 3
           {
-              // No function yet
+              bleKeyboardAction(9, 4, "0");
+              if(islatched[28]){
+                  islatched[28] = 0;
+                  drawlatched(b, 0, 1, false);
+                }else{
+                  islatched[28] = 1;
+                  drawlatched(b, 0, 1, true);
+                }
           }
           else if (b == 4) // Button 4
           {
@@ -1078,7 +1176,7 @@ void drawKeypad()
           }else if (pageNum == 5){
             index = b + 20;
           }else if (pageNum == 6){
-            index = b + 20;        
+            index = b + 25;        
           }else{
             index = b;
           }
@@ -1312,7 +1410,7 @@ void drawlogo(int logonumber, int col, int row)
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen6.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/sleep.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 4)
     {
@@ -1328,7 +1426,7 @@ void drawlogo(int logonumber, int col, int row)
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 
-  debug.Info("BLE Keyboard action received");
+  Serial.println("[INFO]: BLE Keyboard action received");
   switch (action)
   {
   case 0:
@@ -1508,6 +1606,17 @@ void bleKeyboardAction(int action, int value, char *symbol)
       ledBrightness = ledBrightness + 25;
       ledcWrite(0, ledBrightness);
       }
+      break;
+    case 4:        // Display Brightness Up
+      if(wificonfig.sleepenable){
+        wificonfig.sleepenable = false;
+        Serial.println("[INFO]: Sleep disabled.");
+      }else{
+        wificonfig.sleepenable = true;
+        Serial.println("[INFO]: Sleep enabled.");
+      }
+      break;
+      
     }
     break;
   default:
@@ -1522,7 +1631,7 @@ bool loadMainConfig()
 {
   if (!FILESYSTEM.exists("/config/wificonfig.json"))
   {
-    debug.Warn("Config file not found!");
+    Serial.println("[WARNING]: Config file not found!");
     return false;
   }
   File configfile = FILESYSTEM.open("/config/wificonfig.json");
@@ -1534,9 +1643,8 @@ bool loadMainConfig()
   strlcpy(wificonfig.ssid, doc["ssid"] | "FAILED", sizeof(wificonfig.ssid));
   strlcpy(wificonfig.password, doc["password"] | "FAILED", sizeof(wificonfig.password));
   strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));  
-  wificonfig.debuglevel = doc["debuglevel"] | 2;
-
-  debug.SetLevel(wificonfig.debuglevel);
+  wificonfig.sleepenable = doc["sleepenable"] | false;
+  wificonfig.sleeptimer = doc["sleeptimer"] | 15;
 
   configfile.close();
 
@@ -2970,12 +3078,12 @@ void saveconfig()
   if (server.arg("save") == "homescreen")
   {
 
-    debug.Info("Saving Homescreen");
+    Serial.println("[INFO]: Saving Homescreen");
     FILESYSTEM.remove("/config/homescreen.json");
     File file = FILESYSTEM.open("/config/homescreen.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create homescreen.json");
+      Serial.println("[WARNING]: Failed to create homescreen.json");
       return;
     }
 
@@ -2992,19 +3100,19 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
   }
   else if (server.arg("save") == "savecolors")
   {
-    debug.Info("Saving Colors");
+    Serial.println("[INFO]: Saving Colors");
 
     FILESYSTEM.remove("/config/colors.json");
     File file = FILESYSTEM.open("/config/colors.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create file");
+      Serial.println("[WARNING]: Failed to create file");
       return;
     }
 
@@ -3019,7 +3127,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
 
@@ -3028,12 +3136,12 @@ void saveconfig()
   else if (server.arg("save") == "menu1")
   {
     
-    debug.Info("Saving Menu 1");
+    Serial.println("[INFO]: Saving Menu 1");
     FILESYSTEM.remove("/config/menu1.json");
     File file = FILESYSTEM.open("/config/menu1.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create menu1.json");
+      Serial.println("[WARNING]: Failed to create menu1.json");
       return;
     }
 
@@ -3139,7 +3247,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
 
@@ -3148,12 +3256,12 @@ void saveconfig()
   else if (server.arg("save") == "menu2")
   {
 
-    debug.Info("Saving Menu 2");
+    Serial.println("[INFO]: Saving Menu 2");
     FILESYSTEM.remove("/config/menu2.json");
     File file = FILESYSTEM.open("/config/menu2.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create menu2.json");
+      Serial.println("[WARNING]: Failed to create menu2.json");
       return;
     }
 
@@ -3259,7 +3367,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
 
@@ -3268,12 +3376,12 @@ void saveconfig()
   else if (server.arg("save") == "menu3")
   {
 
-    debug.Info("Saving Menu 3");
+    Serial.println("[INFO]: Saving Menu 3");
     FILESYSTEM.remove("/config/menu3.json");
     File file = FILESYSTEM.open("/config/menu3.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create menu3.json");
+      Serial.println("[WARNING]: Failed to create menu3.json");
       return;
     }
 
@@ -3379,7 +3487,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
 
@@ -3388,12 +3496,12 @@ void saveconfig()
   else if (server.arg("save") == "menu4")
   {
 
-    debug.Info("Saving Menu 4");
+    Serial.println("[INFO]: Saving Menu 4");
     FILESYSTEM.remove("/config/menu4.json");
     File file = FILESYSTEM.open("/config/menu4.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create menu4.json");
+      Serial.println("[WARNING]: Failed to create menu4.json");
       return;
     }
 
@@ -3499,7 +3607,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
 
@@ -3508,12 +3616,12 @@ void saveconfig()
   else if (server.arg("save") == "menu5")
   {
 
-    debug.Info("Saving Menu 5");
+    Serial.println("[INFO]: Saving Menu 5");
     FILESYSTEM.remove("/config/menu5.json");
     File file = FILESYSTEM.open("/config/menu5.json", "w");
     if (!file)
     {
-      debug.Error("Failed to create menu5.json");
+      Serial.println("[WARNING]: Failed to create menu5.json");
       return;
     }
 
@@ -3619,7 +3727,7 @@ void saveconfig()
 
     if (serializeJsonPretty(doc, file) == 0)
     {
-      debug.Error("Failed to write to file");
+      Serial.println("[WARNING]: Failed to write to file");
     }
     file.close();
   }
@@ -3646,19 +3754,19 @@ void drawErrorMessage(String message)
 void configmode()
 {
 
-  debug.Info("Entering Config Mode");
+  Serial.println("[INFO]: Entering Config Mode");
   
   // Stop BLE from interfering with our WIFI signal
   btStop();
   esp_bt_controller_disable();
   esp_bt_controller_deinit();
   esp_bt_controller_mem_release(ESP_BT_MODE_IDLE);
-  debug.Info("BLE Stopped");
+  Serial.println("[INFO]: BLE Stopped");
 
   if(String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
   { 
     drawErrorMessage("WiFi Config still set to default!");
-    debug.Error("WiFi Config still set to default!");
+    Serial.println("[ERROR]: WiFi Config still set to default!");
     while (1)
       yield(); // Stop!
   }
@@ -3666,7 +3774,7 @@ void configmode()
   if(String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED") // The wificonfig.json failed to load
   { 
     drawErrorMessage("WiFi Config Failed to load!");
-    debug.Error("WiFi Config Failed to load!");
+    Serial.println("[ERROR]: WiFi Config Failed to load!");
     while (1)
       yield(); // Stop!
   }
@@ -3696,7 +3804,7 @@ void configmode()
 
   // Start the webserver
   server.begin();
-  debug.Info("Webserver started");
+  Serial.println("[INFO]: Webserver started");
 }
 
 void handleRestart()
@@ -3705,7 +3813,7 @@ void handleRestart()
   // First send some text to the browser otherwise an ugly browser error shows up
   server.send(200, "text/plain", "FreeTouchDeck is restarting...");
   // Then restart the ESP
-  debug.Warn("Restarting");
+  Serial.println("[WARNING]: Restarting");
   ESP.restart();
 }
 
@@ -3722,7 +3830,7 @@ void touch_calibrate()
 //  // check file system exists
 //  if (!FILESYSTEM.begin())
 //  {
-//    debug.Warn("Formatting file system");
+//    Serial.println("[WARNING]: Formatting file system");
 //    FILESYSTEM.format();
 //    FILESYSTEM.begin();
 //  }
@@ -3869,7 +3977,7 @@ bool exists(String path)
 
 bool handleFileRead(String path)
 {
-  debug.Info("Handeling file read");
+  Serial.println("[INFO]: Handeling file read");
   Serial.println("handleFileRead: " + path);
   if (path.endsWith("/"))
   {
@@ -3901,7 +4009,7 @@ void faviconhandle()
 
 void handleFileList()
 {
-  debug.Info("Handeling file list");
+  Serial.println("[INFO]: Handeling file list");
   if (!server.hasArg("dir"))
   {
     server.send(500, "text/plain", "BAD ARGS");
@@ -3947,7 +4055,7 @@ void handleFileList()
 
 void handleFileUpload()
 {
-  debug.Info("Handeling file upload");
+  Serial.println("[INFO]: Handeling file upload");
   if (server.uri() != "/upload")
   {
     return;
@@ -3960,7 +4068,7 @@ void handleFileUpload()
     {
       filename = "/logos/" + filename; // TODO: This should not be hard-coded!
     }
-    debug.Info("File uploading");
+    Serial.println("[INFO]: File uploading");
     fsUploadFile = FILESYSTEM.open(filename, "w");
     filename = String();
   }
@@ -3978,7 +4086,7 @@ void handleFileUpload()
       fsUploadFile.close();
       //handleFileRead("/upload.htm");
     }
-    debug.Info("File Uploaded");
+    Serial.println("[INFO]: File Uploaded");
     handleFileRead("/upload.htm");
   }
 }
@@ -4013,8 +4121,8 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 
   if (!bmpFS)
   {
-    debug.Warn("Bitmap not found: ");
-    debug.Warn(filename);
+    Serial.println("[WARNING]: Bitmap not found: ");
+    Serial.println(filename);
     filename = "/logos/question.bmp";
     bmpFS = FILESYSTEM.open(filename, "r");
   }
@@ -4136,7 +4244,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
       tft.setSwapBytes(oldSwapBytes);
     }
     else
-      debug.Warn("BMP format not recognized.");
+      Serial.println("[WARNING]: BMP format not recognized.");
   }
   bmpFS.close();
 }
