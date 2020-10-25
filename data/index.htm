@@ -135,11 +135,28 @@
 					name='latchcolor' type="color" value=''>
 				&nbsp;&nbsp;Background Colour:&nbsp;
 				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='background'
-					name='background' type="color" value=''></div>
+					name='background' type="color" value=''></div><br>
+
+				<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+					<h2>Deep Sleep</h2>
+				</div>
+
+				&nbsp;&nbsp;Deep Sleep:&nbsp;
+				<select class="sleepenable" id='sleepenable' name='sleepenable'>
+					<option value="true">Enabled</option>
+  					<option value="false">Disabled</option>
+				</select>
+				&nbsp;&nbsp;Deep Sleep Timer:&nbsp;
+				<select class="sleeptimer" id='sleeptimer' name='sleeptimer'>
+					<option value="10">10 Minutes</option>
+  					<option value="20">20 Minutes</option>
+  					<option value="30">30 Minutes</option>
+  					<option value="60">60 Minutes</option>
+				</select>
 
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="savecolors">
-				<br /><button style='cursor: pointer;' form="savecolors" type='save'>Save Colour Config</button></div>
+				<br /><button style='cursor: pointer;' form="savecolors" type='save'>Save General Config</button></div>
 		</form>
 	</div>
 	</p>
@@ -1281,6 +1298,25 @@
 
 		}
 
+		// Function to get Sleep settings:
+		function getsleepconfig(){
+
+				// Load Menu 5
+		fetch('config/wificonfig.json')
+			.then((response) => {
+				return response.json()
+			})
+			.then((data) => {
+
+				document.getElementById("sleepenable").value = data.sleepenable;
+				document.getElementById("sleeptimer").value = data.sleeptimer;
+
+			})
+			.catch((err) => {
+				console.log(err)
+			})
+		}
+
 		// Load Colors and then other configs
 		fetch('config/colors.json')
 			.then((response) => {
@@ -1292,7 +1328,8 @@
 				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
 				document.getElementById("latchcolor").value = data.latchcolor;
 				document.getElementById("background").value = data.background;
-
+			}).then(() => {
+				getsleepconfig();
 			})
 			.then(() => {
 				getconfig1();

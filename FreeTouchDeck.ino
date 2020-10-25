@@ -337,13 +337,11 @@ void setup()
   }
 
   // Calibrate the touch screen and retrieve the scaling factors
-
   #ifndef USECAPTOUCH
   touch_calibrate();
   #endif
 
   // Let's first check if all the files we need exist
-
   if (!checkfile("/config/colors.json"))
   {
     Serial.println("[ERROR]: /config/colors.json not found!");
@@ -1607,7 +1605,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
       ledcWrite(0, ledBrightness);
       }
       break;
-    case 4:        // Display Brightness Up
+    case 4:        // Sleep Enabled
       if(wificonfig.sleepenable){
         wificonfig.sleepenable = false;
         Serial.println("[INFO]: Sleep disabled.");
@@ -1642,9 +1640,21 @@ bool loadMainConfig()
 
   strlcpy(wificonfig.ssid, doc["ssid"] | "FAILED", sizeof(wificonfig.ssid));
   strlcpy(wificonfig.password, doc["password"] | "FAILED", sizeof(wificonfig.password));
-  strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));  
-  wificonfig.sleepenable = doc["sleepenable"] | false;
-  wificonfig.sleeptimer = doc["sleeptimer"] | 15;
+  strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));
+
+  bool sleepenable = doc["sleepenable"] | false;
+  if (sleepenable)
+  {
+    wificonfig.sleepenable = true;
+    islatched[28] = 1;
+  }
+  else
+  {
+    wificonfig.sleepenable = false;
+  }
+
+  uint16_t sleeptimer = doc["sleeptimer"];
+  wificonfig.sleeptimer = sleeptimer;
 
   configfile.close();
 
@@ -1666,7 +1676,7 @@ void loadConfig(String value)
     const char *menubuttoncolor = doc["menubuttoncolor"];         // Get the colour for the menu and back home buttons.
     const char *functionbuttoncolor = doc["functionbuttoncolor"]; // Get the colour for the function buttons.
     const char *latchcolor = doc["latchcolor"];                     // Get the colour to use when latching.
-    const char *bgcolor = doc["background"];                      // Get the colour for the background.
+    const char *bgcolor = doc["background"];                     // Get the colour for the background.
 
     char menubuttoncolorchar[64];
     strcpy(menubuttoncolorchar, menubuttoncolor);
@@ -3124,8 +3134,45 @@ void saveconfig()
     colors["functionbuttoncolor"] = server.arg("functionbuttoncolor");
     colors["latchcolor"] = server.arg("latchcolor");
     colors["background"] = server.arg("background");
-
+    
     if (serializeJsonPretty(doc, file) == 0)
+    {
+      Serial.println("[WARNING]: Failed to write to file");
+    }
+    file.close();
+
+    // Save sleep settings
+    Serial.println("[INFO]: Saving Sleep Settings");
+
+    FILESYSTEM.remove("/config/wificonfig.json");
+    File sleep = FILESYSTEM.open("/config/wificonfig.json", "w");
+    if (!sleep)
+    {
+      Serial.println("[WARNING]: Failed to create file");
+      return;
+    }
+
+    DynamicJsonDocument doc2(256);
+
+    JsonObject wificonfigobject = doc2.to<JsonObject>();
+
+    wificonfigobject["ssid"] = wificonfig.ssid;
+    wificonfigobject["password"] = wificonfig.password;
+    wificonfigobject["wifihostname"] = wificonfig.hostname;
+
+    if(server.arg("sleepenable") == "true")
+    {
+      wificonfigobject["sleepenable"] = true;
+    }
+    else
+    {
+      wificonfigobject["sleepenable"] = false;
+    }
+
+    
+    wificonfigobject["sleeptimer"] = server.arg("sleeptimer");
+    
+    if (serializeJsonPretty(doc2, sleep) == 0)
     {
       Serial.println("[WARNING]: Failed to write to file");
     }
