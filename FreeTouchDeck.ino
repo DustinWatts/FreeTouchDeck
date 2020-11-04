@@ -1,10 +1,9 @@
 /*
-  FreeTouchDeck (secret codename) based on the FreeDeck idea by Koriwi.
-  It uses the TFT_eSPI library by Bodmer for the display and touch functionality and
-  the ESP32-BLE-Keyboard library by T-vK. For loading configuration it uses 
-  ArduinoJson V6.
+  FreeTouchDeck is based on the FreeDeck idea by Koriwi. It uses the TFT_eSPI library 
+  by Bodmer for the display and touch functionality and the ESP32-BLE-Keyboard library by T-vK. 
+  For saving and loading configuration it uses ArduinoJson V6.
 
-  FreeTouchDeck uses a few (4 or 5 depending wether you use resistive or capacitive touch) 
+  FreeTouchDeck uses a few (4 or 5 depending on whether you use resistive or capacitive touch) 
   libraries from other sources. These must be installed for FreeTouchDeck to compile and run. 
   
   These are those libraries:
@@ -18,17 +17,19 @@
       --- If you use Capacitive touch ---
       - Dustin Watts FT6236 Library (version 1.0.1), https://github.com/DustinWatts/FT6236
       
-
-  As this is an early Pre-alpha version, the code is ugly and sometimes way more complicated
+  As this is an early beta version, the code is ugly and sometimes way more complicated
   then necessary. It also lacks good documentation and comments in the code.
 
   The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
-  It has to be runs at least once. After that you can set REPEAT_CAL to false (default).
+  It has to be runs at least once when using resistive touch. After that you can set 
+  REPEAT_CAL to false (default).
 
   !-- Make sure you have setup your TFT display and ESP setup correctly in TFT_eSPI/user_setup.h --!
         
         Select the right screen driver and the board (ESP32 is the only one tested) you are
-        using. Also make sure TOUCH_CS is defined correctly. TFT_BL can also be needed!
+        using. Also make sure TOUCH_CS is defined correctly. TFT_BL is also be needed!
+
+        You can find examples of User_Setup.h in the "user_setup.h Examples" folder.
   
 */
 
@@ -46,6 +47,8 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
+String versionnumber = "0.8.19";
+
 #include <pgmspace.h> // PROGMEM support header
 #include "FS.h"       // File System header
 
@@ -56,6 +59,9 @@
 #include "BLEUtils.h"    // Additional BLE functionaity
 #include "BLEBeacon.h"   // Additional BLE functionaity
 #include "esp_sleep.h"   // Additional BLE functionaity
+
+#include "esp_bt_main.h"   // Additional BLE functionaity
+#include "esp_bt_device.h" // Additional BLE functionaity
 
 #include <ArduinoJson.h> // Using ArduinoJson to read and write config files
 
@@ -69,7 +75,7 @@
 FT6236 ts = FT6236();
 #endif
 
-BleKeyboard bleKeyboard("NewFreeTouchDeck", "Made by me");
+BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 WebServer server(80);
 
@@ -224,6 +230,7 @@ Menu menu6;
 
 unsigned long previousMillis = 0;
 unsigned long Interval = 0;
+bool displayinginfo;
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
@@ -323,16 +330,14 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.18 Added support for Deep Sleep. Use #define touchInterruptPin and "sleepenable": true + "sleeptimer": 10 in wificonfig.json
-   * to enable Deep Sleep and set the sleeptimer in minutes. 
-   * Also added support for a buzzer (piezo speaker) use #define speakerPin to select the pin where the speaker is connected.
-   * For both: when the #defines are commented out, they are not used.
-   * Some other changes: debug.h is removed. And wificonfig.json is modified to add the option to change wether sleep is
-   * enabled and to set the sleep timer.
+  /* Version 0.8.19 Added "info" screen to the settings menu. Changed to including Javascript for
+   *  the configurator in the index.html file itself. This makes the code less clear but reduces the number
+   *  of requests to the ESP32. From my experience this results in less "hanging" and a bit faster loading
+   *  of the configurator. Also added the spacebar as an option in the configurator.
   */
 
-  tft.print("Loading version 0.8.18");
-  Serial.println("[INFO]: Loading version 0.8.18");
+  tft.printf("Loading version %s\n", versionnumber);
+  Serial.printf("[INFO]: Loading version %s\n", versionnumber);
     
   }
 
@@ -477,6 +482,49 @@ void loop(void)
     // If the pageNum is set to 7, do no draw anything on screen or check for touch
     // and start handeling incomming web requests.
     server.handleClient();
+
+  }else if (pageNum == 8){
+
+  if(!displayinginfo)
+  {
+    printinfo();
+  }
+    // TODO Listen for touch anywhere
+    
+  uint16_t t_x = 0, t_y = 0;
+
+  //At the beginning of a new loop, make sure we do not use last loop's touch.
+  boolean pressed = false;
+
+    #ifdef USECAPTOUCH
+    if (ts.touched()){   
+      
+      // Retrieve a point  
+      TS_Point p = ts.getPoint(); 
+      
+      //Flip things around so it matches our screen rotation
+      p.x = map(p.x, 0, 320, 320, 0); 
+      t_y = p.x;
+      t_x = p.y;
+  
+      pressed = true;
+      
+    }
+
+    #else
+
+    pressed = tft.getTouch(&t_x, &t_y); 
+
+    #endif
+
+    if(pressed){
+
+      displayinginfo = false;
+      pageNum = 6;
+      tft.fillScreen(generalconfig.backgroundColour);
+      drawKeypad();
+      
+    }
     
   }else{
 
@@ -1083,7 +1131,8 @@ void loop(void)
           }
           else if (b == 4) // Button 4
           {
-              // No function yet
+              pageNum = 8;
+              drawKeypad();
           }
           else if (b == 5)
           {
@@ -1412,7 +1461,7 @@ void drawlogo(int logonumber, int col, int row)
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen6.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/info.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 5)
     {
@@ -4337,4 +4386,59 @@ bool checkfile(char *filename)
     tft.printf("If this has happend after confguration, the data on the ESP may \nbe corrupted.");
   return false;
   }
+}
+
+void printDeviceAddress() {
+ 
+  const uint8_t* point = esp_bt_dev_get_address();
+ 
+  for (int i = 0; i < 6; i++) {
+ 
+    char str[3];
+ 
+    sprintf(str, "%02X", (int)point[i]);
+    Serial.print(str);
+    tft.print(str);
+ 
+    if (i < 5){
+      Serial.print(":");
+      tft.print(":");
+    }
+ 
+  }
+}
+
+void printinfo()
+{
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(1, 3);
+    tft.setTextFont(2);
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.printf("Version: %s\n", versionnumber);
+    
+    #ifdef touchInterruptPin 
+      if(wificonfig.sleepenable)
+      {
+        tft.println("Sleep: Enabled");
+        tft.printf("Sleep timer: %u minutes\n", wificonfig.sleeptimer);
+      }else
+      {
+        tft.println("Sleep: Disabled");
+      }
+    #else
+
+      tft.println("Sleep: Disabled");
+    
+    #endif
+    tft.print("BLE MAC: ");
+    printDeviceAddress();
+    tft.println("");
+    tft.print("WiFi MAC: ");
+    tft.println(WiFi.macAddress());
+    tft.println("SDK Version: ");
+    tft.println(esp_get_idf_version());
+
+    displayinginfo = true;
+      
 }

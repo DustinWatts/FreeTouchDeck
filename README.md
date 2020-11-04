@@ -9,7 +9,7 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 Important to realise is that since this is a (pre-)aplha version, changes to te code happen frequently (almost daily). The FreeTouchDeck.ino and other files (for example in the data folder) rely on each other, they come as one. So when you download the new version, make sure that you only use the files that come with the current download, and not files from other versions. Best practise is to completely delete the old version and then download/clone the new version to make sure you do not accidently mix files from different versions. **After downloading/cloning the latest version, make sure to also upload the "data" folder again using 'ESP32 Sketch Data Upload".**
 
-# Pre-Alpha Version!
+# Beta Version!
 
 This version is in it's very early stages of development. Chances are that if you are not using the exact
 same setup as I am, you will run in to problems. But that is what this version is for: finding out what is needed
