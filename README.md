@@ -30,7 +30,9 @@ For Capacitive touch:
 # !- Library Dependencies -!
 - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
 - TFT_eSPI (version 2.2.14), available through Library Manager
-- ESP32-BLE-Keyboard (latest version), download from: https://github.com/T-vK/ESP32-BLE-Keyboard
+- ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
+- ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
+- AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
 - ArduinoJson (version 6.16.1), available through Library Manager
 
 If you use capacitive touch:

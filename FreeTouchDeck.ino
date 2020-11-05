@@ -1,17 +1,19 @@
 /*
   FreeTouchDeck is based on the FreeDeck idea by Koriwi. It uses the TFT_eSPI library 
-  by Bodmer for the display and touch functionality and the ESP32-BLE-Keyboard library by T-vK. 
-  For saving and loading configuration it uses ArduinoJson V6.
+  by Bodmer for the display and touch functionality and it uses an ESP32-BLE-Keyboard fork 
+  with a few modifications. For saving and loading configuration it uses ArduinoJson V6.
 
-  FreeTouchDeck uses a few (4 or 5 depending on whether you use resistive or capacitive touch) 
-  libraries from other sources. These must be installed for FreeTouchDeck to compile and run. 
+  FreeTouchDeck uses some libraries from other sources. These must be installed for 
+  FreeTouchDeck to compile and run. 
   
   These are those libraries:
 
       !----------------------------- Library Dependencies --------------------------- !
       - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
       - TFT_eSPI (version 2.2.14), available through Library Manager
-      - ESP32-BLE-Keyboard (latest version) download from: https://github.com/T-vK/ESP32-BLE-Keyboard
+      - ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
+      - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
+      - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
       - ArduinoJson (version 6.16.1), available through Library Manager
 
       --- If you use Capacitive touch ---
@@ -47,12 +49,13 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-String versionnumber = "0.8.19";
+String versionnumber = "0.9.0";
 
-#include <pgmspace.h> // PROGMEM support header
-#include "FS.h"       // File System header
+#include <pgmspace.h>    // PROGMEM support header
+#include <FS.h>          // Filesystem support header
+#include <SPIFFS.h>      // Filesystem support header
 
-#include <TFT_eSPI.h> // The TFT_eSPI library
+#include <TFT_eSPI.h>    // The TFT_eSPI library
 
 #include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
 #include "BLEDevice.h"   // Additional BLE functionaity
@@ -60,14 +63,16 @@ String versionnumber = "0.8.19";
 #include "BLEBeacon.h"   // Additional BLE functionaity
 #include "esp_sleep.h"   // Additional BLE functionaity
 
-#include "esp_bt_main.h"   // Additional BLE functionaity
-#include "esp_bt_device.h" // Additional BLE functionaity
+#include "esp_bt_main.h"      // Additional BLE functionaity
+#include "esp_bt_device.h"    // Additional BLE functionaity
 
-#include <ArduinoJson.h> // Using ArduinoJson to read and write config files
+#include <ArduinoJson.h>    // Using ArduinoJson to read and write config files
 
-#include <WiFi.h>       // Wifi support
-#include <WiFiClient.h> // Wifi support
-#include <WebServer.h>  // Webserver functionality
+#include <WiFi.h>   // Wifi support
+
+#include <AsyncTCP.h>           //Async Webserver support header
+#include <ESPAsyncWebServer.h>  //Async Webserver support header
+
 #include <ESPmDNS.h>    // DNS functionality
 
 #ifdef USECAPTOUCH
@@ -77,9 +82,7 @@ FT6236 ts = FT6236();
 
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
-WebServer server(80);
-
-File fsUploadFile;
+AsyncWebServer webserver(80);
 
 TFT_eSPI tft = TFT_eSPI();
 
@@ -239,9 +242,10 @@ TFT_eSPI_Button key[6];
 
 void setup()
 {
-
+  
   // Use serial port
   Serial.begin(9600);
+  Serial.setDebugOutput(true);
   Serial.println("");
 
   #ifdef USECAPTOUCH
@@ -300,7 +304,10 @@ void setup()
   }else{
     Serial.println("[INFO]: WiFi Credentials Loaded");
   }
-  
+
+  // ---- Load webserver -------------------------------
+
+  handlerSetup();
 
   //------------------TFT/Touch Initialization ------------------------------------------------------------------------
 
@@ -330,7 +337,7 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.8.19 Added "info" screen to the settings menu. Changed to including Javascript for
+  /* Version 0.9.0 Added "info" screen to the settings menu. Changed to including Javascript for
    *  the configurator in the index.html file itself. This makes the code less clear but reduces the number
    *  of requests to the ESP32. From my experience this results in less "hanging" and a bit faster loading
    *  of the configurator. Also added the spacebar as an option in the configurator.
@@ -413,50 +420,12 @@ void setup()
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);  
 
-  //------------------Webserver Initialization ------------------------------------------------------------------------
-
-  // Restart handle
-  server.on("/restart", HTTP_POST, handleRestart);
-
-  server.onNotFound([]() {
-    if (!handleFileRead(server.uri()))
-    {
-      server.send(404, "text/plain", "FileNotFound");
-    }
-  });
-
-  server.on("/upload", HTTP_GET, []() {                 // if the client requests the upload page
-    if (!handleFileRead("/upload.htm"))                 // send it if it exists
-      server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
-  });
-
-  server.on(
-      "/upload", HTTP_POST,       // if the client posts to the upload page
-      []() { server.send(200); }, // Send status 200 (OK) to tell the client we are ready to receive
-      handleFileUpload            // Receive and save the file
-  );
-
-  // Save config handle
-  server.on("/saveconfig", HTTP_POST, saveconfig);
-
-  // Favicon Handle
-  server.on("/favicon.ico", HTTP_GET, faviconhandle);
-
-  server.on("/list", HTTP_GET, handleFileList);
-
-  Serial.println("[INFO]: Server handles loaded.");
-
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
 
   // Draw keypad
   Serial.println("[INFO]: Drawing keypad");
   drawKeypad();
-
-  //------------------BLE Initialization ------------------------------------------------------------------------
-
-  Serial.println("[INFO]: Starting BLE");
-  bleKeyboard.begin();
 
 #ifdef touchInterruptPin 
   if(wificonfig.sleepenable){
@@ -470,6 +439,11 @@ void setup()
   }
 #endif
 
+//------------------BLE Initialization ------------------------------------------------------------------------
+
+  Serial.println("[INFO]: Starting BLE");
+  bleKeyboard.begin();  
+
 }
 
 //--------------------- LOOP ---------------------------------------------------------------------
@@ -481,7 +455,6 @@ void loop(void)
 
     // If the pageNum is set to 7, do no draw anything on screen or check for touch
     // and start handeling incomming web requests.
-    server.handleClient();
 
   }else if (pageNum == 8){
 
@@ -489,7 +462,6 @@ void loop(void)
   {
     printinfo();
   }
-    // TODO Listen for touch anywhere
     
   uint16_t t_x = 0, t_y = 0;
 
@@ -3130,708 +3102,6 @@ void loadConfig(String value)
   }
 }
 
-// -------------------------------- SAVE CONFIG -------------------------------------
-
-void saveconfig()
-{
-  if (server.arg("save") == "homescreen")
-  {
-
-    Serial.println("[INFO]: Saving Homescreen");
-    FILESYSTEM.remove("/config/homescreen.json");
-    File file = FILESYSTEM.open("/config/homescreen.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create homescreen.json");
-      return;
-    }
-
-    DynamicJsonDocument doc(256);
-
-    JsonObject homescreen = doc.to<JsonObject>();
-
-    homescreen["logo0"] = server.arg("homescreenlogo0");
-    homescreen["logo1"] = server.arg("homescreenlogo1");
-    homescreen["logo2"] = server.arg("homescreenlogo2");
-    homescreen["logo3"] = server.arg("homescreenlogo3");
-    homescreen["logo4"] = server.arg("homescreenlogo4");
-    homescreen["logo5"] = server.arg("homescreenlogo5");
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-  }
-  else if (server.arg("save") == "savecolors")
-  {
-    Serial.println("[INFO]: Saving Colors");
-
-    FILESYSTEM.remove("/config/colors.json");
-    File file = FILESYSTEM.open("/config/colors.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create file");
-      return;
-    }
-
-    DynamicJsonDocument doc(256);
-
-    JsonObject colors = doc.to<JsonObject>();
-
-    colors["menubuttoncolor"] = server.arg("menubuttoncolor");
-    colors["functionbuttoncolor"] = server.arg("functionbuttoncolor");
-    colors["latchcolor"] = server.arg("latchcolor");
-    colors["background"] = server.arg("background");
-    
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-
-    // Save sleep settings
-    Serial.println("[INFO]: Saving Sleep Settings");
-
-    FILESYSTEM.remove("/config/wificonfig.json");
-    File sleep = FILESYSTEM.open("/config/wificonfig.json", "w");
-    if (!sleep)
-    {
-      Serial.println("[WARNING]: Failed to create file");
-      return;
-    }
-
-    DynamicJsonDocument doc2(256);
-
-    JsonObject wificonfigobject = doc2.to<JsonObject>();
-
-    wificonfigobject["ssid"] = wificonfig.ssid;
-    wificonfigobject["password"] = wificonfig.password;
-    wificonfigobject["wifihostname"] = wificonfig.hostname;
-
-    if(server.arg("sleepenable") == "true")
-    {
-      wificonfigobject["sleepenable"] = true;
-    }
-    else
-    {
-      wificonfigobject["sleepenable"] = false;
-    }
-
-    
-    wificonfigobject["sleeptimer"] = server.arg("sleeptimer");
-    
-    if (serializeJsonPretty(doc2, sleep) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-
-    // ----------------- Saving menu 1 -------------------
-  }
-  else if (server.arg("save") == "menu1")
-  {
-    
-    Serial.println("[INFO]: Saving Menu 1");
-    FILESYSTEM.remove("/config/menu1.json");
-    File file = FILESYSTEM.open("/config/menu1.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create menu1.json");
-      return;
-    }
-
-    DynamicJsonDocument doc(1200);
-
-    JsonObject menu = doc.to<JsonObject>();
-
-    menu["logo0"] = server.arg("screen1logo0");
-    menu["logo1"] = server.arg("screen1logo1");
-    menu["logo2"] = server.arg("screen1logo2");
-    menu["logo3"] = server.arg("screen1logo3");
-    menu["logo4"] = server.arg("screen1logo4");
-
-    JsonObject button0 = doc.createNestedObject("button0");
-    
-    if(server.arg("screen1button0latch") == "on"){
-      button0["latch"] = true;
-    }else{
-      button0["latch"] = false;
-    }
-
-    JsonArray button0_actionarray = button0.createNestedArray("actionarray");
-    button0_actionarray.add(server.arg("screen1button0action0"));
-    button0_actionarray.add(server.arg("screen1button0action1"));
-    button0_actionarray.add(server.arg("screen1button0action2"));
-
-    JsonArray button0_valuearray = button0.createNestedArray("valuearray");
-    button0_valuearray.add(server.arg("screen1button0value0"));
-    button0_valuearray.add(server.arg("screen1button0value1"));
-    button0_valuearray.add(server.arg("screen1button0value2"));
-
-    JsonObject button1 = doc.createNestedObject("button1");
-
-    if(server.arg("screen1button1latch") == "on"){
-      button1["latch"] = true;
-    }else{
-      button1["latch"] = false;
-    }
-
-    JsonArray button1_actionarray = button1.createNestedArray("actionarray");
-    button1_actionarray.add(server.arg("screen1button1action0"));
-    button1_actionarray.add(server.arg("screen1button1action1"));
-    button1_actionarray.add(server.arg("screen1button1action2"));
-
-    JsonArray button1_valuearray = button1.createNestedArray("valuearray");
-    button1_valuearray.add(server.arg("screen1button1value0"));
-    button1_valuearray.add(server.arg("screen1button1value1"));
-    button1_valuearray.add(server.arg("screen1button1value2"));
-
-    JsonObject button2 = doc.createNestedObject("button2");
-
-    if(server.arg("screen1button2latch") == "on"){
-      button2["latch"] = true;
-    }else{
-      button2["latch"] = false;
-    }
-
-    JsonArray button2_actionarray = button2.createNestedArray("actionarray");
-    button2_actionarray.add(server.arg("screen1button2action0"));
-    button2_actionarray.add(server.arg("screen1button2action1"));
-    button2_actionarray.add(server.arg("screen1button2action2"));
-
-    JsonArray button2_valuearray = button2.createNestedArray("valuearray");
-    button2_valuearray.add(server.arg("screen1button2value0"));
-    button2_valuearray.add(server.arg("screen1button2value1"));
-    button2_valuearray.add(server.arg("screen1button2value2"));
-
-    JsonObject button3 = doc.createNestedObject("button3");
-
-    if(server.arg("screen1button3latch") == "on"){
-      button3["latch"] = true;
-    }else{
-      button3["latch"] = false;
-    }
-
-    JsonArray button3_actionarray = button3.createNestedArray("actionarray");
-    button3_actionarray.add(server.arg("screen1button3action0"));
-    button3_actionarray.add(server.arg("screen1button3action1"));
-    button3_actionarray.add(server.arg("screen1button3action2"));
-
-    JsonArray button3_valuearray = button3.createNestedArray("valuearray");
-    button3_valuearray.add(server.arg("screen1button3value0"));
-    button3_valuearray.add(server.arg("screen1button3value1"));
-    button3_valuearray.add(server.arg("screen1button3value2"));
-
-    JsonObject button4 = doc.createNestedObject("button4");
-
-    if(server.arg("screen1button4latch") == "on"){
-      button4["latch"] = true;
-    }else{
-      button4["latch"] = false;
-    }
-
-    JsonArray button4_actionarray = button4.createNestedArray("actionarray");
-    button4_actionarray.add(server.arg("screen1button4action0"));
-    button4_actionarray.add(server.arg("screen1button4action1"));
-    button4_actionarray.add(server.arg("screen1button4action2"));
-
-    JsonArray button4_valuearray = button4.createNestedArray("valuearray");
-    button4_valuearray.add(server.arg("screen1button4value0"));
-    button4_valuearray.add(server.arg("screen1button4value1"));
-    button4_valuearray.add(server.arg("screen1button4value2"));
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-
-    // ----------------- Saving menu 2 -------------------
-  }
-  else if (server.arg("save") == "menu2")
-  {
-
-    Serial.println("[INFO]: Saving Menu 2");
-    FILESYSTEM.remove("/config/menu2.json");
-    File file = FILESYSTEM.open("/config/menu2.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create menu2.json");
-      return;
-    }
-
-    DynamicJsonDocument doc(1200);
-
-    JsonObject menu = doc.to<JsonObject>();
-
-    menu["logo0"] = server.arg("screen2logo0");
-    menu["logo1"] = server.arg("screen2logo1");
-    menu["logo2"] = server.arg("screen2logo2");
-    menu["logo3"] = server.arg("screen2logo3");
-    menu["logo4"] = server.arg("screen2logo4");
-
-    JsonObject button0 = doc.createNestedObject("button0");
-
-    if(server.arg("screen2button0latch") == "on"){
-      button0["latch"] = true;
-    }else{
-      button0["latch"] = false;
-    }
-
-    JsonArray button0_actionarray = button0.createNestedArray("actionarray");
-    button0_actionarray.add(server.arg("screen2button0action0"));
-    button0_actionarray.add(server.arg("screen2button0action1"));
-    button0_actionarray.add(server.arg("screen2button0action2"));
-
-    JsonArray button0_valuearray = button0.createNestedArray("valuearray");
-    button0_valuearray.add(server.arg("screen2button0value0"));
-    button0_valuearray.add(server.arg("screen2button0value1"));
-    button0_valuearray.add(server.arg("screen2button0value2"));
-
-    JsonObject button1 = doc.createNestedObject("button1");
-
-    if(server.arg("screen2button1latch") == "on"){
-      button1["latch"] = true;
-    }else{
-      button1["latch"] = false;
-    }
-
-    JsonArray button1_actionarray = button1.createNestedArray("actionarray");
-    button1_actionarray.add(server.arg("screen2button1action0"));
-    button1_actionarray.add(server.arg("screen2button1action1"));
-    button1_actionarray.add(server.arg("screen2button1action2"));
-
-    JsonArray button1_valuearray = button1.createNestedArray("valuearray");
-    button1_valuearray.add(server.arg("screen2button1value0"));
-    button1_valuearray.add(server.arg("screen2button1value1"));
-    button1_valuearray.add(server.arg("screen2button1value2"));
-
-    JsonObject button2 = doc.createNestedObject("button2");
-
-    if(server.arg("screen2button2latch") == "on"){
-      button2["latch"] = true;
-    }else{
-      button2["latch"] = false;
-    }
-
-    JsonArray button2_actionarray = button2.createNestedArray("actionarray");
-    button2_actionarray.add(server.arg("screen2button2action0"));
-    button2_actionarray.add(server.arg("screen2button2action1"));
-    button2_actionarray.add(server.arg("screen2button2action2"));
-
-    JsonArray button2_valuearray = button2.createNestedArray("valuearray");
-    button2_valuearray.add(server.arg("screen2button2value0"));
-    button2_valuearray.add(server.arg("screen2button2value1"));
-    button2_valuearray.add(server.arg("screen2button2value2"));
-
-    JsonObject button3 = doc.createNestedObject("button3");
-
-    if(server.arg("screen2button3latch") == "on"){
-      button3["latch"] = true;
-    }else{
-      button3["latch"] = false;
-    }
-
-    JsonArray button3_actionarray = button3.createNestedArray("actionarray");
-    button3_actionarray.add(server.arg("screen2button3action0"));
-    button3_actionarray.add(server.arg("screen2button3action1"));
-    button3_actionarray.add(server.arg("screen2button3action2"));
-
-    JsonArray button3_valuearray = button3.createNestedArray("valuearray");
-    button3_valuearray.add(server.arg("screen2button3value0"));
-    button3_valuearray.add(server.arg("screen2button3value1"));
-    button3_valuearray.add(server.arg("screen2button3value2"));
-
-    JsonObject button4 = doc.createNestedObject("button4");
-
-    if(server.arg("screen2button4latch") == "on"){
-      button4["latch"] = true;
-    }else{
-      button4["latch"] = false;
-    }
-
-    JsonArray button4_actionarray = button4.createNestedArray("actionarray");
-    button4_actionarray.add(server.arg("screen2button4action0"));
-    button4_actionarray.add(server.arg("screen2button4action1"));
-    button4_actionarray.add(server.arg("screen2button4action2"));
-
-    JsonArray button4_valuearray = button4.createNestedArray("valuearray");
-    button4_valuearray.add(server.arg("screen2button4value0"));
-    button4_valuearray.add(server.arg("screen2button4value1"));
-    button4_valuearray.add(server.arg("screen2button4value2"));
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-
-    // ----------------- Saving menu 3 -------------------
-  }
-  else if (server.arg("save") == "menu3")
-  {
-
-    Serial.println("[INFO]: Saving Menu 3");
-    FILESYSTEM.remove("/config/menu3.json");
-    File file = FILESYSTEM.open("/config/menu3.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create menu3.json");
-      return;
-    }
-
-    DynamicJsonDocument doc(1200);
-
-    JsonObject menu = doc.to<JsonObject>();
-
-    menu["logo0"] = server.arg("screen3logo0");
-    menu["logo1"] = server.arg("screen3logo1");
-    menu["logo2"] = server.arg("screen3logo2");
-    menu["logo3"] = server.arg("screen3logo3");
-    menu["logo4"] = server.arg("screen3logo4");
-
-    JsonObject button0 = doc.createNestedObject("button0");
-
-    if(server.arg("screen3button0latch") == "on"){
-      button0["latch"] = true;
-    }else{
-      button0["latch"] = false;
-    }
-
-    JsonArray button0_actionarray = button0.createNestedArray("actionarray");
-    button0_actionarray.add(server.arg("screen3button0action0"));
-    button0_actionarray.add(server.arg("screen3button0action1"));
-    button0_actionarray.add(server.arg("screen3button0action2"));
-
-    JsonArray button0_valuearray = button0.createNestedArray("valuearray");
-    button0_valuearray.add(server.arg("screen3button0value0"));
-    button0_valuearray.add(server.arg("screen3button0value1"));
-    button0_valuearray.add(server.arg("screen3button0value2"));
-
-    JsonObject button1 = doc.createNestedObject("button1");
-
-    if(server.arg("screen3button1latch") == "on"){
-      button1["latch"] = true;
-    }else{
-      button1["latch"] = false;
-    }
-
-    JsonArray button1_actionarray = button1.createNestedArray("actionarray");
-    button1_actionarray.add(server.arg("screen3button1action0"));
-    button1_actionarray.add(server.arg("screen3button1action1"));
-    button1_actionarray.add(server.arg("screen3button1action2"));
-
-    JsonArray button1_valuearray = button1.createNestedArray("valuearray");
-    button1_valuearray.add(server.arg("screen3button1value0"));
-    button1_valuearray.add(server.arg("screen3button1value1"));
-    button1_valuearray.add(server.arg("screen3button1value2"));
-
-    JsonObject button2 = doc.createNestedObject("button2");
-    
-    if(server.arg("screen3button2latch") == "on"){
-      button2["latch"] = true;
-    }else{
-      button2["latch"] = false;
-    }
-
-    JsonArray button2_actionarray = button2.createNestedArray("actionarray");
-    button2_actionarray.add(server.arg("screen3button2action0"));
-    button2_actionarray.add(server.arg("screen3button2action1"));
-    button2_actionarray.add(server.arg("screen3button2action2"));
-
-    JsonArray button2_valuearray = button2.createNestedArray("valuearray");
-    button2_valuearray.add(server.arg("screen3button2value0"));
-    button2_valuearray.add(server.arg("screen3button2value1"));
-    button2_valuearray.add(server.arg("screen3button2value2"));
-
-    JsonObject button3 = doc.createNestedObject("button3");
-
-    if(server.arg("screen3button3latch") == "on"){
-      button3["latch"] = true;
-    }else{
-      button0["latch"] = false;
-    }
-
-    JsonArray button3_actionarray = button3.createNestedArray("actionarray");
-    button3_actionarray.add(server.arg("screen3button3action0"));
-    button3_actionarray.add(server.arg("screen3button3action1"));
-    button3_actionarray.add(server.arg("screen3button3action2"));
-
-    JsonArray button3_valuearray = button3.createNestedArray("valuearray");
-    button3_valuearray.add(server.arg("screen3button3value0"));
-    button3_valuearray.add(server.arg("screen3button3value1"));
-    button3_valuearray.add(server.arg("screen3button3value2"));
-
-    JsonObject button4 = doc.createNestedObject("button4");
-
-    if(server.arg("screen3button4latch") == "on"){
-      button4["latch"] = true;
-    }else{
-      button4["latch"] = false;
-    }
-
-    JsonArray button4_actionarray = button4.createNestedArray("actionarray");
-    button4_actionarray.add(server.arg("screen3button4action0"));
-    button4_actionarray.add(server.arg("screen3button4action1"));
-    button4_actionarray.add(server.arg("screen3button4action2"));
-
-    JsonArray button4_valuearray = button4.createNestedArray("valuearray");
-    button4_valuearray.add(server.arg("screen3button4value0"));
-    button4_valuearray.add(server.arg("screen3button4value1"));
-    button4_valuearray.add(server.arg("screen3button4value2"));
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-
-    // ----------------- Saving menu 4 -------------------
-  }
-  else if (server.arg("save") == "menu4")
-  {
-
-    Serial.println("[INFO]: Saving Menu 4");
-    FILESYSTEM.remove("/config/menu4.json");
-    File file = FILESYSTEM.open("/config/menu4.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create menu4.json");
-      return;
-    }
-
-    DynamicJsonDocument doc(1200);
-
-    JsonObject menu = doc.to<JsonObject>();
-
-    menu["logo0"] = server.arg("screen4logo0");
-    menu["logo1"] = server.arg("screen4logo1");
-    menu["logo2"] = server.arg("screen4logo2");
-    menu["logo3"] = server.arg("screen4logo3");
-    menu["logo4"] = server.arg("screen4logo4");
-
-    JsonObject button0 = doc.createNestedObject("button0");
-
-    if(server.arg("screen4button0latch") == "on"){
-      button0["latch"] = true;
-    }else{
-      button0["latch"] = false;
-    }
-
-    JsonArray button0_actionarray = button0.createNestedArray("actionarray");
-    button0_actionarray.add(server.arg("screen4button0action0"));
-    button0_actionarray.add(server.arg("screen4button0action1"));
-    button0_actionarray.add(server.arg("screen4button0action2"));
-
-    JsonArray button0_valuearray = button0.createNestedArray("valuearray");
-    button0_valuearray.add(server.arg("screen4button0value0"));
-    button0_valuearray.add(server.arg("screen4button0value1"));
-    button0_valuearray.add(server.arg("screen4button0value2"));
-
-    JsonObject button1 = doc.createNestedObject("button1");
-
-    if(server.arg("screen4button1latch") == "on"){
-      button1["latch"] = true;
-    }else{
-      button1["latch"] = false;
-    }
-
-    JsonArray button1_actionarray = button1.createNestedArray("actionarray");
-    button1_actionarray.add(server.arg("screen4button1action0"));
-    button1_actionarray.add(server.arg("screen4button1action1"));
-    button1_actionarray.add(server.arg("screen4button1action2"));
-
-    JsonArray button1_valuearray = button1.createNestedArray("valuearray");
-    button1_valuearray.add(server.arg("screen4button1value0"));
-    button1_valuearray.add(server.arg("screen4button1value1"));
-    button1_valuearray.add(server.arg("screen4button1value2"));
-
-    JsonObject button2 = doc.createNestedObject("button2");
-
-    if(server.arg("screen4button2latch") == "on"){
-      button2["latch"] = true;
-    }else{
-      button2["latch"] = false;
-    }
-
-    JsonArray button2_actionarray = button2.createNestedArray("actionarray");
-    button2_actionarray.add(server.arg("screen4button2action0"));
-    button2_actionarray.add(server.arg("screen4button2action1"));
-    button2_actionarray.add(server.arg("screen4button2action2"));
-
-    JsonArray button2_valuearray = button2.createNestedArray("valuearray");
-    button2_valuearray.add(server.arg("screen4button2value0"));
-    button2_valuearray.add(server.arg("screen4button2value1"));
-    button2_valuearray.add(server.arg("screen4button2value2"));
-
-    JsonObject button3 = doc.createNestedObject("button3");
-
-    if(server.arg("screen4button3latch") == "on"){
-      button3["latch"] = true;
-    }else{
-      button3["latch"] = false;
-    }
-
-    JsonArray button3_actionarray = button3.createNestedArray("actionarray");
-    button3_actionarray.add(server.arg("screen4button3action0"));
-    button3_actionarray.add(server.arg("screen4button3action1"));
-    button3_actionarray.add(server.arg("screen4button3action2"));
-
-    JsonArray button3_valuearray = button3.createNestedArray("valuearray");
-    button3_valuearray.add(server.arg("screen4button3value0"));
-    button3_valuearray.add(server.arg("screen4button3value1"));
-    button3_valuearray.add(server.arg("screen4button3value2"));
-
-    JsonObject button4 = doc.createNestedObject("button4");
-
-    if(server.arg("screen4button4latch") == "on"){
-      button4["latch"] = true;
-    }else{
-      button4["latch"] = false;
-    }
-
-    JsonArray button4_actionarray = button4.createNestedArray("actionarray");
-    button4_actionarray.add(server.arg("screen4button4action0"));
-    button4_actionarray.add(server.arg("screen4button4action1"));
-    button4_actionarray.add(server.arg("screen4button4action2"));
-
-    JsonArray button4_valuearray = button4.createNestedArray("valuearray");
-    button4_valuearray.add(server.arg("screen4button4value0"));
-    button4_valuearray.add(server.arg("screen4button4value1"));
-    button4_valuearray.add(server.arg("screen4button4value2"));
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-
-    // ----------------- Saving menu 5 -------------------
-  }
-  else if (server.arg("save") == "menu5")
-  {
-
-    Serial.println("[INFO]: Saving Menu 5");
-    FILESYSTEM.remove("/config/menu5.json");
-    File file = FILESYSTEM.open("/config/menu5.json", "w");
-    if (!file)
-    {
-      Serial.println("[WARNING]: Failed to create menu5.json");
-      return;
-    }
-
-    DynamicJsonDocument doc(1200);
-
-    JsonObject menu = doc.to<JsonObject>();
-
-    menu["logo0"] = server.arg("screen5logo0");
-    menu["logo1"] = server.arg("screen5logo1");
-    menu["logo2"] = server.arg("screen5logo2");
-    menu["logo3"] = server.arg("screen5logo3");
-    menu["logo4"] = server.arg("screen5logo4");
-
-    JsonObject button0 = doc.createNestedObject("button0");
-
-    if(server.arg("screen5button0latch") == "on"){
-      button0["latch"] = true;
-    }else{
-      button0["latch"] = false;
-    }
-
-    JsonArray button0_actionarray = button0.createNestedArray("actionarray");
-    button0_actionarray.add(server.arg("screen5button0action0"));
-    button0_actionarray.add(server.arg("screen5button0action1"));
-    button0_actionarray.add(server.arg("screen5button0action2"));
-
-    JsonArray button0_valuearray = button0.createNestedArray("valuearray");
-    button0_valuearray.add(server.arg("screen5button0value0"));
-    button0_valuearray.add(server.arg("screen5button0value1"));
-    button0_valuearray.add(server.arg("screen5button0value2"));
-
-    JsonObject button1 = doc.createNestedObject("button1");
-
-    if(server.arg("screen5button1latch") == "on"){
-      button1["latch"] = true;
-    }else{
-      button1["latch"] = false;
-    }
-
-    JsonArray button1_actionarray = button1.createNestedArray("actionarray");
-    button1_actionarray.add(server.arg("screen5button1action0"));
-    button1_actionarray.add(server.arg("screen5button1action1"));
-    button1_actionarray.add(server.arg("screen5button1action2"));
-
-    JsonArray button1_valuearray = button1.createNestedArray("valuearray");
-    button1_valuearray.add(server.arg("screen5button1value0"));
-    button1_valuearray.add(server.arg("screen5button1value1"));
-    button1_valuearray.add(server.arg("screen5button1value2"));
-
-    JsonObject button2 = doc.createNestedObject("button2");
-
-    if(server.arg("screen5button2latch") == "on"){
-      button2["latch"] = true;
-    }else{
-      button2["latch"] = false;
-    }
-
-    JsonArray button2_actionarray = button2.createNestedArray("actionarray");
-    button2_actionarray.add(server.arg("screen5button2action0"));
-    button2_actionarray.add(server.arg("screen5button2action1"));
-    button2_actionarray.add(server.arg("screen5button2action2"));
-
-    JsonArray button2_valuearray = button2.createNestedArray("valuearray");
-    button2_valuearray.add(server.arg("screen5button2value0"));
-    button2_valuearray.add(server.arg("screen5button2value1"));
-    button2_valuearray.add(server.arg("screen5button2value2"));
-
-    JsonObject button3 = doc.createNestedObject("button3");
-
-    if(server.arg("screen5button3latch") == "on"){
-      button3["latch"] = true;
-    }else{
-      button3["latch"] = false;
-    }
-
-    JsonArray button3_actionarray = button3.createNestedArray("actionarray");
-    button3_actionarray.add(server.arg("screen5button3action0"));
-    button3_actionarray.add(server.arg("screen5button3action1"));
-    button3_actionarray.add(server.arg("screen5button3action2"));
-
-    JsonArray button3_valuearray = button3.createNestedArray("valuearray");
-    button3_valuearray.add(server.arg("screen5button3value0"));
-    button3_valuearray.add(server.arg("screen5button3value1"));
-    button3_valuearray.add(server.arg("screen5button3value2"));
-
-    JsonObject button4 = doc.createNestedObject("button4");
-    
-    if(server.arg("screen5button4latch") == "on"){
-      button4["latch"] = true;
-    }else{
-      button4["latch"] = false;
-    }
-
-    JsonArray button4_actionarray = button4.createNestedArray("actionarray");
-    button4_actionarray.add(server.arg("screen5button4action0"));
-    button4_actionarray.add(server.arg("screen5button4action1"));
-    button4_actionarray.add(server.arg("screen5button4action2"));
-
-    JsonArray button4_valuearray = button4.createNestedArray("valuearray");
-    button4_valuearray.add(server.arg("screen5button4value0"));
-    button4_valuearray.add(server.arg("screen5button4value1"));
-    button4_valuearray.add(server.arg("screen5button4value2"));
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      Serial.println("[WARNING]: Failed to write to file");
-    }
-    file.close();
-  }
-
-  // Redirect page
-  handleFileRead("/saveconfig.htm");
-}
-
 //----------------------------- Draw Error Message ------------------------------------------
 
 void drawErrorMessage(String message)
@@ -3845,18 +3115,22 @@ void drawErrorMessage(String message)
   tft.println(message);
 }
 
-// --------------------------------- WIFI Stuff ----------------------------------------
+// --------------------------------- Enter Config Mode ----------------------------------------
 
 void configmode()
 {
 
   Serial.println("[INFO]: Entering Config Mode");
   
-  // Stop BLE from interfering with our WIFI signal
+  // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+  bleKeyboard.end();
+
+  // Stop BLE from interfering with our WIFI signal  
   btStop();
   esp_bt_controller_disable();
   esp_bt_controller_deinit();
-  esp_bt_controller_mem_release(ESP_BT_MODE_IDLE);
+  esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+
   Serial.println("[INFO]: BLE Stopped");
 
   if(String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
@@ -3889,28 +3163,20 @@ void configmode()
     delay(500);
     Serial.print(".");
   }
+  
   Serial.println("");
   Serial.print("[INFO]: Connected! IP address: ");
   Serial.println(WiFi.localIP());
 
+  MDNS.addService("http","tcp",80);
   MDNS.begin(wificonfig.hostname);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
 
   // Start the webserver
-  server.begin();
+  webserver.begin();
   Serial.println("[INFO]: Webserver started");
-}
-
-void handleRestart()
-{
-
-  // First send some text to the browser otherwise an ugly browser error shows up
-  server.send(200, "text/plain", "FreeTouchDeck is restarting...");
-  // Then restart the ESP
-  Serial.println("[WARNING]: Restarting");
-  ESP.restart();
 }
 
 //----------- TOUCH Calibration -------------------------------------------------------------------------------
@@ -3988,202 +3254,6 @@ void touch_calibrate()
       f.write((const unsigned char *)calData, 14);
       f.close();
     }
-  }
-}
-
-
-//----------- Functions used by Webserver -------------------------------------------------------------------------------
-
-String getContentType(String filename)
-{
-  if (server.hasArg("download"))
-  {
-    return "application/octet-stream";
-  }
-  else if (filename.endsWith(".htm"))
-  {
-    return "text/html";
-  }
-  else if (filename.endsWith(".html"))
-  {
-    return "text/html";
-  }
-  else if (filename.endsWith(".css"))
-  {
-    return "text/css";
-  }
-  else if (filename.endsWith(".js"))
-  {
-    return "application/javascript";
-  }
-  else if (filename.endsWith(".png"))
-  {
-    return "image/png";
-  }
-  else if (filename.endsWith(".gif"))
-  {
-    return "image/gif";
-  }
-  else if (filename.endsWith(".jpg"))
-  {
-    return "image/jpeg";
-  }
-  else if (filename.endsWith(".ico"))
-  {
-    return "image/x-icon";
-  }
-  else if (filename.endsWith(".xml"))
-  {
-    return "text/xml";
-  }
-  else if (filename.endsWith(".pdf"))
-  {
-    return "application/x-pdf";
-  }
-  else if (filename.endsWith(".zip"))
-  {
-    return "application/x-zip";
-  }
-  else if (filename.endsWith(".gz"))
-  {
-    return "application/x-gzip";
-  }
-  else if (filename.endsWith(".json"))
-  {
-    return "application/json";
-  }
-  else if (filename.endsWith(".bmp"))
-  {
-    return "image/bmp";
-  }
-  return "text/plain";
-}
-
-bool exists(String path)
-{
-  bool yes = false;
-  File file = FILESYSTEM.open(path, "r");
-  if (!file.isDirectory())
-  {
-    yes = true;
-  }
-  file.close();
-  return yes;
-}
-
-bool handleFileRead(String path)
-{
-  Serial.println("[INFO]: Handeling file read");
-  Serial.println("handleFileRead: " + path);
-  if (path.endsWith("/"))
-  {
-    path += "index.htm";
-  }
-  String contentType = getContentType(path);
-  String pathWithGz = path + ".gz";
-  if (exists(pathWithGz) || exists(path))
-  {
-    if (exists(pathWithGz))
-    {
-      path += ".gz";
-    }
-    File file = FILESYSTEM.open(path, "r");
-    server.streamFile(file, contentType);
-    file.close();
-    return true;
-  }
-  return false;
-}
-
-void faviconhandle()
-{
-
-  File file = FILESYSTEM.open("/favicon.ico", "r");
-  server.streamFile(file, "image/x-icon");
-  file.close();
-}
-
-void handleFileList()
-{
-  Serial.println("[INFO]: Handeling file list");
-  if (!server.hasArg("dir"))
-  {
-    server.send(500, "text/plain", "BAD ARGS");
-    return;
-  }
-
-  String path = server.arg("dir");
-  Serial.println("handleFileList: " + path);
-
-  File root = FILESYSTEM.open(path);
-  path = String();
-  int filecount = 0;
-
-  String output = "[";
-  if (root.isDirectory())
-  {
-    File file = root.openNextFile();
-    while (file)
-    {
-      if (output != "[")
-      {
-        output += ',';
-      }
-
-      output += "{\"";
-      output += filecount;
-      output += "\":\"";
-      output += String(file.name()).substring(7);
-      output += "\"}";
-      file = root.openNextFile();
-      filecount++;
-    }
-
-    file.close();
-  }
-  output += "]";
-  server.send(200, "application/json", output);
-
-  root.close();
-}
-
-// ----- Handle File Upload -------
-
-void handleFileUpload()
-{
-  Serial.println("[INFO]: Handeling file upload");
-  if (server.uri() != "/upload")
-  {
-    return;
-  }
-  HTTPUpload &upload = server.upload();
-  if (upload.status == UPLOAD_FILE_START)
-  {
-    String filename = upload.filename;
-    if (!filename.startsWith("/"))
-    {
-      filename = "/logos/" + filename; // TODO: This should not be hard-coded!
-    }
-    Serial.println("[INFO]: File uploading");
-    fsUploadFile = FILESYSTEM.open(filename, "w");
-    filename = String();
-  }
-  else if (upload.status == UPLOAD_FILE_WRITE)
-  {
-    if (fsUploadFile)
-    {
-      fsUploadFile.write(upload.buf, upload.currentSize);
-    }
-  }
-  else if (upload.status == UPLOAD_FILE_END)
-  {
-    if (fsUploadFile)
-    {
-      fsUploadFile.close();
-      //handleFileRead("/upload.htm");
-    }
-    Serial.println("[INFO]: File Uploaded");
-    handleFileRead("/upload.htm");
   }
 }
 
@@ -4388,6 +3458,14 @@ bool checkfile(char *filename)
   }
 }
 
+/* ------------------------ Print Bluetooth device address function ---------------- 
+Purpose: This function gets the Bluetooth device address and prints it to the serial monitor
+         and the TFT screen in a 6 byte format, seperating each byte by ":".
+Input  : none
+Output : none
+Note   : e.g. 00:11:22:33:FF:EE
+*/
+
 void printDeviceAddress() {
  
   const uint8_t* point = esp_bt_dev_get_address();
@@ -4407,6 +3485,8 @@ void printDeviceAddress() {
  
   }
 }
+
+// -------------------------- Display info to TFT --------------------- 
 
 void printinfo()
 {
@@ -4436,9 +3516,1098 @@ void printinfo()
     tft.println("");
     tft.print("WiFi MAC: ");
     tft.println(WiFi.macAddress());
-    tft.println("SDK Version: ");
+    tft.println("ESP-IDF: ");
     tft.println(esp_get_idf_version());
 
     displayinginfo = true;
       
+}
+
+// -------------------------- Webserver handler setup --------------------- 
+
+void handlerSetup(){
+
+  webserver.serveStatic("/", FILESYSTEM, "/").setDefaultFile("index.htm");
+
+ //----------- index.htm handler -----------------
+
+  webserver.on("/index.htm", HTTP_POST, [](AsyncWebServerRequest *request){
+
+    request->send(FILESYSTEM, "/index.htm");
+  
+  });
+
+  
+  //----------- saveconfig handler -----------------
+
+  webserver.on("/saveconfig", HTTP_POST, [](AsyncWebServerRequest *request){
+
+  if(request->hasParam("save", true))
+    {
+      AsyncWebParameter* p = request->getParam("save", true);
+      String savemode = p->value().c_str();
+      
+      if(savemode == "savecolors"){
+
+        // --- Saving colours
+        Serial.println("[INFO]: Saving Colours");
+
+        FILESYSTEM.remove("/config/colors.json");
+        File file = FILESYSTEM.open("/config/colors.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create file");
+        return;
+        }
+
+        DynamicJsonDocument doc(256);
+
+        JsonObject colors = doc.to<JsonObject>();
+
+        AsyncWebParameter* menubuttoncolor = request->getParam("menubuttoncolor", true);
+        colors["menubuttoncolor"] = menubuttoncolor->value().c_str();
+        AsyncWebParameter* functionbuttoncolor = request->getParam("functionbuttoncolor", true);
+        colors["functionbuttoncolor"] = functionbuttoncolor->value().c_str();
+        AsyncWebParameter* latchcolor = request->getParam("latchcolor", true);
+        colors["latchcolor"] = latchcolor->value().c_str();
+        AsyncWebParameter* background = request->getParam("background", true);
+        colors["background"] = background->value().c_str();
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+
+    // Save sleep settings
+    Serial.println("[INFO]: Saving Sleep Settings");
+
+    FILESYSTEM.remove("/config/wificonfig.json");
+    File sleep = FILESYSTEM.open("/config/wificonfig.json", "w");
+    if (!sleep)
+    {
+      Serial.println("[WARNING]: Failed to create file");
+      return;
+    }
+
+    DynamicJsonDocument doc2(256);
+
+    JsonObject wificonfigobject = doc2.to<JsonObject>();
+
+    wificonfigobject["ssid"] = wificonfig.ssid;
+    wificonfigobject["password"] = wificonfig.password;
+    wificonfigobject["wifihostname"] = wificonfig.hostname;
+
+    AsyncWebParameter* sleepenable = request->getParam("sleepenable", true);
+    String sleepEnable = sleepenable->value().c_str();
+    
+    if(sleepEnable == "true")
+    {
+      wificonfigobject["sleepenable"] = true;
+    }
+    else
+    {
+      wificonfigobject["sleepenable"] = false;
+    }
+
+    AsyncWebParameter* sleeptimer = request->getParam("sleeptimer", true);
+    
+    String sleepTimer = sleeptimer->value().c_str();
+    wificonfigobject["sleeptimer"] = sleepTimer.toInt();
+    
+    if (serializeJsonPretty(doc2, sleep) == 0)
+    {
+      Serial.println("[WARNING]: Failed to write to file");
+    }
+    file.close();
+        
+      }else if (savemode == "homescreen"){
+
+        // --- Saving Homescreen
+
+        Serial.println("[INFO]: Saving Homescreen");
+
+        FILESYSTEM.remove("/config/homescreen.json");
+        File file = FILESYSTEM.open("/config/homescreen.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create file");
+        return;
+        }
+
+        DynamicJsonDocument doc(256);
+
+        JsonObject homescreen = doc.to<JsonObject>();
+
+        AsyncWebParameter* homescreenlogo0 = request->getParam("homescreenlogo0", true);
+        homescreen["logo0"] = homescreenlogo0->value().c_str();
+        AsyncWebParameter* homescreenlogo1 = request->getParam("homescreenlogo1", true);
+        homescreen["logo1"] = homescreenlogo1->value().c_str();
+        AsyncWebParameter* homescreenlogo2 = request->getParam("homescreenlogo2", true);
+        homescreen["logo2"] = homescreenlogo2->value().c_str();
+        AsyncWebParameter* homescreenlogo3 = request->getParam("homescreenlogo3", true);
+        homescreen["logo3"] = homescreenlogo3->value().c_str();
+        AsyncWebParameter* homescreenlogo4 = request->getParam("homescreenlogo4", true);
+        homescreen["logo4"] = homescreenlogo4->value().c_str();
+        AsyncWebParameter* homescreenlogo5 = request->getParam("homescreenlogo5", true);
+        homescreen["logo5"] = homescreenlogo5->value().c_str();
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
+      }else if (savemode == "menu1"){
+
+        // --- Save menu 1
+
+        Serial.println("[INFO]: Saving Menu 1");
+        FILESYSTEM.remove("/config/menu1.json");
+        File file = FILESYSTEM.open("/config/menu1.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create menu1.json");
+          return;
+        }
+
+        DynamicJsonDocument doc(1200);
+
+        JsonObject menu = doc.to<JsonObject>();
+
+        AsyncWebParameter* screen1logo0 = request->getParam("screen1logo0", true);
+        menu["logo0"] = screen1logo0->value().c_str();
+        AsyncWebParameter* screen1logo1 = request->getParam("screen1logo1", true);
+        menu["logo1"] = screen1logo1->value().c_str();
+        AsyncWebParameter* screen1logo2 = request->getParam("screen1logo2", true);
+        menu["logo2"] = screen1logo2->value().c_str();
+        AsyncWebParameter* screen1logo3 = request->getParam("screen1logo3", true);
+        menu["logo3"] = screen1logo3->value().c_str();
+        AsyncWebParameter* screen1logo4 = request->getParam("screen1logo4", true);
+        menu["logo4"] = screen1logo4->value().c_str();
+
+        JsonObject button0 = doc.createNestedObject("button0");
+        
+        if(request->hasParam("screen1button0latch", true))
+        {
+          button0["latch"] = true;
+        }else{
+          button0["latch"] = false;
+        }
+    
+        JsonArray button0_actionarray = button0.createNestedArray("actionarray");
+        AsyncWebParameter* screen1button0action0 = request->getParam("screen1button0action0", true);
+        button0_actionarray.add(screen1button0action0->value().c_str());
+        AsyncWebParameter* screen1button0action1 = request->getParam("screen1button0action1", true);
+        button0_actionarray.add(screen1button0action1->value().c_str());
+        AsyncWebParameter* screen1button0action2 = request->getParam("screen1button0action2", true);
+        button0_actionarray.add(screen1button0action2->value().c_str());
+    
+        JsonArray button0_valuearray = button0.createNestedArray("valuearray");
+        AsyncWebParameter* screen1button0value0 = request->getParam("screen1button0value0", true);
+        button0_valuearray.add(screen1button0value0->value().c_str());
+        AsyncWebParameter* screen1button0value1 = request->getParam("screen1button0value1", true);
+        button0_valuearray.add(screen1button0value1->value().c_str());
+        AsyncWebParameter* screen1button0value2 = request->getParam("screen1button0value2", true);
+        button0_valuearray.add(screen1button0value2->value().c_str());
+
+        JsonObject button1 = doc.createNestedObject("button1");
+        
+        if(request->hasParam("screen1button1latch", true))
+        {
+          button1["latch"] = true;
+        }else{
+          button1["latch"] = false;
+        }
+    
+        JsonArray button1_actionarray = button1.createNestedArray("actionarray");
+        AsyncWebParameter* screen1button1action0 = request->getParam("screen1button1action0", true);
+        button1_actionarray.add(screen1button1action0->value().c_str());
+        AsyncWebParameter* screen1button1action1 = request->getParam("screen1button1action1", true);
+        button1_actionarray.add(screen1button1action1->value().c_str());
+        AsyncWebParameter* screen1button1action2 = request->getParam("screen1button1action2", true);
+        button1_actionarray.add(screen1button1action2->value().c_str());
+    
+        JsonArray button1_valuearray = button1.createNestedArray("valuearray");
+        AsyncWebParameter* screen1button1value0 = request->getParam("screen1button1value0", true);
+        button1_valuearray.add(screen1button1value0->value().c_str());
+        AsyncWebParameter* screen1button1value1 = request->getParam("screen1button1value1", true);
+        button1_valuearray.add(screen1button1value1->value().c_str());
+        AsyncWebParameter* screen1button1value2 = request->getParam("screen1button1value2", true);
+        button1_valuearray.add(screen1button1value2->value().c_str());
+
+                JsonObject button2 = doc.createNestedObject("button2");
+        
+        if(request->hasParam("screen1button2latch", true))
+        {
+          button2["latch"] = true;
+        }else{
+          button2["latch"] = false;
+        }
+    
+        JsonArray button2_actionarray = button2.createNestedArray("actionarray");
+        AsyncWebParameter* screen1button2action0 = request->getParam("screen1button2action0", true);
+        button2_actionarray.add(screen1button2action0->value().c_str());
+        AsyncWebParameter* screen1button2action1 = request->getParam("screen1button2action1", true);
+        button2_actionarray.add(screen1button2action1->value().c_str());
+        AsyncWebParameter* screen1button2action2 = request->getParam("screen1button2action2", true);
+        button2_actionarray.add(screen1button2action2->value().c_str());
+    
+        JsonArray button2_valuearray = button2.createNestedArray("valuearray");
+        AsyncWebParameter* screen1button2value0 = request->getParam("screen1button2value0", true);
+        button2_valuearray.add(screen1button2value0->value().c_str());
+        AsyncWebParameter* screen1button2value1 = request->getParam("screen1button2value1", true);
+        button2_valuearray.add(screen1button2value1->value().c_str());
+        AsyncWebParameter* screen1button2value2 = request->getParam("screen1button2value2", true);
+        button2_valuearray.add(screen1button2value2->value().c_str());
+
+                JsonObject button3 = doc.createNestedObject("button3");
+        
+        if(request->hasParam("screen1button3latch", true))
+        {
+          button3["latch"] = true;
+        }else{
+          button3["latch"] = false;
+        }
+    
+        JsonArray button3_actionarray = button3.createNestedArray("actionarray");
+        AsyncWebParameter* screen1button3action0 = request->getParam("screen1button3action0", true);
+        button3_actionarray.add(screen1button3action0->value().c_str());
+        AsyncWebParameter* screen1button3action1 = request->getParam("screen1button3action1", true);
+        button3_actionarray.add(screen1button3action1->value().c_str());
+        AsyncWebParameter* screen1button3action2 = request->getParam("screen1button3action2", true);
+        button3_actionarray.add(screen1button3action2->value().c_str());
+    
+        JsonArray button3_valuearray = button3.createNestedArray("valuearray");
+        AsyncWebParameter* screen1button3value0 = request->getParam("screen1button3value0", true);
+        button3_valuearray.add(screen1button3value0->value().c_str());
+        AsyncWebParameter* screen1button3value1 = request->getParam("screen1button3value1", true);
+        button3_valuearray.add(screen1button3value1->value().c_str());
+        AsyncWebParameter* screen1button3value2 = request->getParam("screen1button3value2", true);
+        button3_valuearray.add(screen1button3value2->value().c_str());
+
+                JsonObject button4 = doc.createNestedObject("button4");
+        
+        if(request->hasParam("screen1button4latch", true))
+        {
+          button4["latch"] = true;
+        }else{
+          button4["latch"] = false;
+        }
+    
+        JsonArray button4_actionarray = button4.createNestedArray("actionarray");
+        AsyncWebParameter* screen1button4action0 = request->getParam("screen1button4action0", true);
+        button4_actionarray.add(screen1button4action0->value().c_str());
+        AsyncWebParameter* screen1button4action1 = request->getParam("screen1button4action1", true);
+        button4_actionarray.add(screen1button4action1->value().c_str());
+        AsyncWebParameter* screen1button4action2 = request->getParam("screen1button4action2", true);
+        button4_actionarray.add(screen1button4action2->value().c_str());
+    
+        JsonArray button4_valuearray = button4.createNestedArray("valuearray");
+        AsyncWebParameter* screen1button4value0 = request->getParam("screen1button4value0", true);
+        button4_valuearray.add(screen1button4value0->value().c_str());
+        AsyncWebParameter* screen1button4value1 = request->getParam("screen1button4value1", true);
+        button4_valuearray.add(screen1button4value1->value().c_str());
+        AsyncWebParameter* screen1button4value2 = request->getParam("screen1button4value2", true);
+        button4_valuearray.add(screen1button4value2->value().c_str());
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
+      }else if (savemode == "menu2"){
+
+        // --- Save menu 2
+
+        Serial.println("[INFO]: Saving Menu 2");
+        FILESYSTEM.remove("/config/menu2.json");
+        File file = FILESYSTEM.open("/config/menu2.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create menu2.json");
+          return;
+        }
+
+        DynamicJsonDocument doc(1200);
+
+        JsonObject menu = doc.to<JsonObject>();
+
+        AsyncWebParameter* screen2logo0 = request->getParam("screen2logo0", true);
+        menu["logo0"] = screen2logo0->value().c_str();
+        AsyncWebParameter* screen2logo1 = request->getParam("screen2logo1", true);
+        menu["logo1"] = screen2logo1->value().c_str();
+        AsyncWebParameter* screen2logo2 = request->getParam("screen2logo2", true);
+        menu["logo2"] = screen2logo2->value().c_str();
+        AsyncWebParameter* screen2logo3 = request->getParam("screen2logo3", true);
+        menu["logo3"] = screen2logo3->value().c_str();
+        AsyncWebParameter* screen2logo4 = request->getParam("screen2logo4", true);
+        menu["logo4"] = screen2logo4->value().c_str();
+
+        JsonObject button0 = doc.createNestedObject("button0");
+        
+        if(request->hasParam("screen2button0latch", true))
+        {
+          button0["latch"] = true;
+        }else{
+          button0["latch"] = false;
+        }
+    
+        JsonArray button0_actionarray = button0.createNestedArray("actionarray");
+        AsyncWebParameter* screen2button0action0 = request->getParam("screen2button0action0", true);
+        button0_actionarray.add(screen2button0action0->value().c_str());
+        AsyncWebParameter* screen2button0action1 = request->getParam("screen2button0action1", true);
+        button0_actionarray.add(screen2button0action1->value().c_str());
+        AsyncWebParameter* screen2button0action2 = request->getParam("screen2button0action2", true);
+        button0_actionarray.add(screen2button0action2->value().c_str());
+    
+        JsonArray button0_valuearray = button0.createNestedArray("valuearray");
+        AsyncWebParameter* screen2button0value0 = request->getParam("screen2button0value0", true);
+        button0_valuearray.add(screen2button0value0->value().c_str());
+        AsyncWebParameter* screen2button0value1 = request->getParam("screen2button0value1", true);
+        button0_valuearray.add(screen2button0value1->value().c_str());
+        AsyncWebParameter* screen2button0value2 = request->getParam("screen2button0value2", true);
+        button0_valuearray.add(screen2button0value2->value().c_str());
+
+        JsonObject button1 = doc.createNestedObject("button1");
+        
+        if(request->hasParam("screen2button1latch", true))
+        {
+          button1["latch"] = true;
+        }else{
+          button1["latch"] = false;
+        }
+    
+        JsonArray button1_actionarray = button1.createNestedArray("actionarray");
+        AsyncWebParameter* screen2button1action0 = request->getParam("screen2button1action0", true);
+        button1_actionarray.add(screen2button1action0->value().c_str());
+        AsyncWebParameter* screen2button1action1 = request->getParam("screen2button1action1", true);
+        button1_actionarray.add(screen2button1action1->value().c_str());
+        AsyncWebParameter* screen2button1action2 = request->getParam("screen2button1action2", true);
+        button1_actionarray.add(screen2button1action2->value().c_str());
+    
+        JsonArray button1_valuearray = button1.createNestedArray("valuearray");
+        AsyncWebParameter* screen2button1value0 = request->getParam("screen2button1value0", true);
+        button1_valuearray.add(screen2button1value0->value().c_str());
+        AsyncWebParameter* screen2button1value1 = request->getParam("screen2button1value1", true);
+        button1_valuearray.add(screen2button1value1->value().c_str());
+        AsyncWebParameter* screen2button1value2 = request->getParam("screen2button1value2", true);
+        button1_valuearray.add(screen2button1value2->value().c_str());
+
+                JsonObject button2 = doc.createNestedObject("button2");
+        
+        if(request->hasParam("screen2button2latch", true))
+        {
+          button2["latch"] = true;
+        }else{
+          button2["latch"] = false;
+        }
+    
+        JsonArray button2_actionarray = button2.createNestedArray("actionarray");
+        AsyncWebParameter* screen2button2action0 = request->getParam("screen2button2action0", true);
+        button2_actionarray.add(screen2button2action0->value().c_str());
+        AsyncWebParameter* screen2button2action1 = request->getParam("screen2button2action1", true);
+        button2_actionarray.add(screen2button2action1->value().c_str());
+        AsyncWebParameter* screen2button2action2 = request->getParam("screen2button2action2", true);
+        button2_actionarray.add(screen2button2action2->value().c_str());
+    
+        JsonArray button2_valuearray = button2.createNestedArray("valuearray");
+        AsyncWebParameter* screen2button2value0 = request->getParam("screen2button2value0", true);
+        button2_valuearray.add(screen2button2value0->value().c_str());
+        AsyncWebParameter* screen2button2value1 = request->getParam("screen2button2value1", true);
+        button2_valuearray.add(screen2button2value1->value().c_str());
+        AsyncWebParameter* screen2button2value2 = request->getParam("screen2button2value2", true);
+        button2_valuearray.add(screen2button2value2->value().c_str());
+
+                JsonObject button3 = doc.createNestedObject("button3");
+        
+        if(request->hasParam("screen2button3latch", true))
+        {
+          button3["latch"] = true;
+        }else{
+          button3["latch"] = false;
+        }
+    
+        JsonArray button3_actionarray = button3.createNestedArray("actionarray");
+        AsyncWebParameter* screen2button3action0 = request->getParam("screen2button3action0", true);
+        button3_actionarray.add(screen2button3action0->value().c_str());
+        AsyncWebParameter* screen2button3action1 = request->getParam("screen2button3action1", true);
+        button3_actionarray.add(screen2button3action1->value().c_str());
+        AsyncWebParameter* screen2button3action2 = request->getParam("screen2button3action2", true);
+        button3_actionarray.add(screen2button3action2->value().c_str());
+    
+        JsonArray button3_valuearray = button3.createNestedArray("valuearray");
+        AsyncWebParameter* screen2button3value0 = request->getParam("screen2button3value0", true);
+        button3_valuearray.add(screen2button3value0->value().c_str());
+        AsyncWebParameter* screen2button3value1 = request->getParam("screen2button3value1", true);
+        button3_valuearray.add(screen2button3value1->value().c_str());
+        AsyncWebParameter* screen2button3value2 = request->getParam("screen2button3value2", true);
+        button3_valuearray.add(screen2button3value2->value().c_str());
+
+                JsonObject button4 = doc.createNestedObject("button4");
+        
+        if(request->hasParam("screen2button4latch", true))
+        {
+          button4["latch"] = true;
+        }else{
+          button4["latch"] = false;
+        }
+    
+        JsonArray button4_actionarray = button4.createNestedArray("actionarray");
+        AsyncWebParameter* screen2button4action0 = request->getParam("screen2button4action0", true);
+        button4_actionarray.add(screen2button4action0->value().c_str());
+        AsyncWebParameter* screen2button4action1 = request->getParam("screen2button4action1", true);
+        button4_actionarray.add(screen2button4action1->value().c_str());
+        AsyncWebParameter* screen2button4action2 = request->getParam("screen2button4action2", true);
+        button4_actionarray.add(screen2button4action2->value().c_str());
+    
+        JsonArray button4_valuearray = button4.createNestedArray("valuearray");
+        AsyncWebParameter* screen2button4value0 = request->getParam("screen2button4value0", true);
+        button4_valuearray.add(screen2button4value0->value().c_str());
+        AsyncWebParameter* screen2button4value1 = request->getParam("screen2button4value1", true);
+        button4_valuearray.add(screen2button4value1->value().c_str());
+        AsyncWebParameter* screen2button4value2 = request->getParam("screen2button4value2", true);
+        button4_valuearray.add(screen2button4value2->value().c_str());
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
+      }else if (savemode == "menu3"){
+
+        // --- Save menu 3
+
+        Serial.println("[INFO]: Saving Menu 3");
+        FILESYSTEM.remove("/config/menu3.json");
+        File file = FILESYSTEM.open("/config/menu3.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create menu3.json");
+          return;
+        }
+
+        DynamicJsonDocument doc(1200);
+
+        JsonObject menu = doc.to<JsonObject>();
+
+        AsyncWebParameter* screen3logo0 = request->getParam("screen3logo0", true);
+        menu["logo0"] = screen3logo0->value().c_str();
+        AsyncWebParameter* screen3logo1 = request->getParam("screen3logo1", true);
+        menu["logo1"] = screen3logo1->value().c_str();
+        AsyncWebParameter* screen3logo2 = request->getParam("screen3logo2", true);
+        menu["logo2"] = screen3logo2->value().c_str();
+        AsyncWebParameter* screen3logo3 = request->getParam("screen3logo3", true);
+        menu["logo3"] = screen3logo3->value().c_str();
+        AsyncWebParameter* screen3logo4 = request->getParam("screen3logo4", true);
+        menu["logo4"] = screen3logo4->value().c_str();
+
+        JsonObject button0 = doc.createNestedObject("button0");
+        
+        if(request->hasParam("screen3button0latch", true))
+        {
+          button0["latch"] = true;
+        }else{
+          button0["latch"] = false;
+        }
+    
+        JsonArray button0_actionarray = button0.createNestedArray("actionarray");
+        AsyncWebParameter* screen3button0action0 = request->getParam("screen3button0action0", true);
+        button0_actionarray.add(screen3button0action0->value().c_str());
+        AsyncWebParameter* screen3button0action1 = request->getParam("screen3button0action1", true);
+        button0_actionarray.add(screen3button0action1->value().c_str());
+        AsyncWebParameter* screen3button0action2 = request->getParam("screen3button0action2", true);
+        button0_actionarray.add(screen3button0action2->value().c_str());
+    
+        JsonArray button0_valuearray = button0.createNestedArray("valuearray");
+        AsyncWebParameter* screen3button0value0 = request->getParam("screen3button0value0", true);
+        button0_valuearray.add(screen3button0value0->value().c_str());
+        AsyncWebParameter* screen3button0value1 = request->getParam("screen3button0value1", true);
+        button0_valuearray.add(screen3button0value1->value().c_str());
+        AsyncWebParameter* screen3button0value2 = request->getParam("screen3button0value2", true);
+        button0_valuearray.add(screen3button0value2->value().c_str());
+
+        JsonObject button1 = doc.createNestedObject("button1");
+        
+        if(request->hasParam("screen3button1latch", true))
+        {
+          button1["latch"] = true;
+        }else{
+          button1["latch"] = false;
+        }
+    
+        JsonArray button1_actionarray = button1.createNestedArray("actionarray");
+        AsyncWebParameter* screen3button1action0 = request->getParam("screen3button1action0", true);
+        button1_actionarray.add(screen3button1action0->value().c_str());
+        AsyncWebParameter* screen3button1action1 = request->getParam("screen3button1action1", true);
+        button1_actionarray.add(screen3button1action1->value().c_str());
+        AsyncWebParameter* screen3button1action2 = request->getParam("screen3button1action2", true);
+        button1_actionarray.add(screen3button1action2->value().c_str());
+    
+        JsonArray button1_valuearray = button1.createNestedArray("valuearray");
+        AsyncWebParameter* screen3button1value0 = request->getParam("screen3button1value0", true);
+        button1_valuearray.add(screen3button1value0->value().c_str());
+        AsyncWebParameter* screen3button1value1 = request->getParam("screen3button1value1", true);
+        button1_valuearray.add(screen3button1value1->value().c_str());
+        AsyncWebParameter* screen3button1value2 = request->getParam("screen3button1value2", true);
+        button1_valuearray.add(screen3button1value2->value().c_str());
+
+                JsonObject button2 = doc.createNestedObject("button2");
+        
+        if(request->hasParam("screen3button2latch", true))
+        {
+          button2["latch"] = true;
+        }else{
+          button2["latch"] = false;
+        }
+    
+        JsonArray button2_actionarray = button2.createNestedArray("actionarray");
+        AsyncWebParameter* screen3button2action0 = request->getParam("screen3button2action0", true);
+        button2_actionarray.add(screen3button2action0->value().c_str());
+        AsyncWebParameter* screen3button2action1 = request->getParam("screen3button2action1", true);
+        button2_actionarray.add(screen3button2action1->value().c_str());
+        AsyncWebParameter* screen3button2action2 = request->getParam("screen3button2action2", true);
+        button2_actionarray.add(screen3button2action2->value().c_str());
+    
+        JsonArray button2_valuearray = button2.createNestedArray("valuearray");
+        AsyncWebParameter* screen3button2value0 = request->getParam("screen3button2value0", true);
+        button2_valuearray.add(screen3button2value0->value().c_str());
+        AsyncWebParameter* screen3button2value1 = request->getParam("screen3button2value1", true);
+        button2_valuearray.add(screen3button2value1->value().c_str());
+        AsyncWebParameter* screen3button2value2 = request->getParam("screen3button2value2", true);
+        button2_valuearray.add(screen3button2value2->value().c_str());
+
+                JsonObject button3 = doc.createNestedObject("button3");
+        
+        if(request->hasParam("screen3button3latch", true))
+        {
+          button3["latch"] = true;
+        }else{
+          button3["latch"] = false;
+        }
+    
+        JsonArray button3_actionarray = button3.createNestedArray("actionarray");
+        AsyncWebParameter* screen3button3action0 = request->getParam("screen3button3action0", true);
+        button3_actionarray.add(screen3button3action0->value().c_str());
+        AsyncWebParameter* screen3button3action1 = request->getParam("screen3button3action1", true);
+        button3_actionarray.add(screen3button3action1->value().c_str());
+        AsyncWebParameter* screen3button3action2 = request->getParam("screen3button3action2", true);
+        button3_actionarray.add(screen3button3action2->value().c_str());
+    
+        JsonArray button3_valuearray = button3.createNestedArray("valuearray");
+        AsyncWebParameter* screen3button3value0 = request->getParam("screen3button3value0", true);
+        button3_valuearray.add(screen3button3value0->value().c_str());
+        AsyncWebParameter* screen3button3value1 = request->getParam("screen3button3value1", true);
+        button3_valuearray.add(screen3button3value1->value().c_str());
+        AsyncWebParameter* screen3button3value2 = request->getParam("screen3button3value2", true);
+        button3_valuearray.add(screen3button3value2->value().c_str());
+
+                JsonObject button4 = doc.createNestedObject("button4");
+        
+        if(request->hasParam("screen3button4latch", true))
+        {
+          button4["latch"] = true;
+        }else{
+          button4["latch"] = false;
+        }
+    
+        JsonArray button4_actionarray = button4.createNestedArray("actionarray");
+        AsyncWebParameter* screen3button4action0 = request->getParam("screen3button4action0", true);
+        button4_actionarray.add(screen3button4action0->value().c_str());
+        AsyncWebParameter* screen3button4action1 = request->getParam("screen3button4action1", true);
+        button4_actionarray.add(screen3button4action1->value().c_str());
+        AsyncWebParameter* screen3button4action2 = request->getParam("screen3button4action2", true);
+        button4_actionarray.add(screen3button4action2->value().c_str());
+    
+        JsonArray button4_valuearray = button4.createNestedArray("valuearray");
+        AsyncWebParameter* screen3button4value0 = request->getParam("screen3button4value0", true);
+        button4_valuearray.add(screen3button4value0->value().c_str());
+        AsyncWebParameter* screen3button4value1 = request->getParam("screen3button4value1", true);
+        button4_valuearray.add(screen3button4value1->value().c_str());
+        AsyncWebParameter* screen3button4value2 = request->getParam("screen3button4value2", true);
+        button4_valuearray.add(screen3button4value2->value().c_str());
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
+      }else if (savemode == "menu4"){
+
+        // --- Save menu 4
+
+        Serial.println("[INFO]: Saving Menu 4");
+        FILESYSTEM.remove("/config/menu4.json");
+        File file = FILESYSTEM.open("/config/menu4.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create menu3.json");
+          return;
+        }
+
+        DynamicJsonDocument doc(1200);
+
+        JsonObject menu = doc.to<JsonObject>();
+
+        AsyncWebParameter* screen4logo0 = request->getParam("screen4logo0", true);
+        menu["logo0"] = screen4logo0->value().c_str();
+        AsyncWebParameter* screen4logo1 = request->getParam("screen4logo1", true);
+        menu["logo1"] = screen4logo1->value().c_str();
+        AsyncWebParameter* screen4logo2 = request->getParam("screen4logo2", true);
+        menu["logo2"] = screen4logo2->value().c_str();
+        AsyncWebParameter* screen4logo3 = request->getParam("screen4logo3", true);
+        menu["logo3"] = screen4logo3->value().c_str();
+        AsyncWebParameter* screen4logo4 = request->getParam("screen4logo4", true);
+        menu["logo4"] = screen4logo4->value().c_str();
+
+        JsonObject button0 = doc.createNestedObject("button0");
+        
+        if(request->hasParam("screen4button0latch", true))
+        {
+          button0["latch"] = true;
+        }else{
+          button0["latch"] = false;
+        }
+    
+        JsonArray button0_actionarray = button0.createNestedArray("actionarray");
+        AsyncWebParameter* screen4button0action0 = request->getParam("screen4button0action0", true);
+        button0_actionarray.add(screen4button0action0->value().c_str());
+        AsyncWebParameter* screen4button0action1 = request->getParam("screen4button0action1", true);
+        button0_actionarray.add(screen4button0action1->value().c_str());
+        AsyncWebParameter* screen4button0action2 = request->getParam("screen4button0action2", true);
+        button0_actionarray.add(screen4button0action2->value().c_str());
+    
+        JsonArray button0_valuearray = button0.createNestedArray("valuearray");
+        AsyncWebParameter* screen4button0value0 = request->getParam("screen4button0value0", true);
+        button0_valuearray.add(screen4button0value0->value().c_str());
+        AsyncWebParameter* screen4button0value1 = request->getParam("screen4button0value1", true);
+        button0_valuearray.add(screen4button0value1->value().c_str());
+        AsyncWebParameter* screen4button0value2 = request->getParam("screen4button0value2", true);
+        button0_valuearray.add(screen4button0value2->value().c_str());
+
+        JsonObject button1 = doc.createNestedObject("button1");
+        
+        if(request->hasParam("screen4button1latch", true))
+        {
+          button1["latch"] = true;
+        }else{
+          button1["latch"] = false;
+        }
+    
+        JsonArray button1_actionarray = button1.createNestedArray("actionarray");
+        AsyncWebParameter* screen4button1action0 = request->getParam("screen4button1action0", true);
+        button1_actionarray.add(screen4button1action0->value().c_str());
+        AsyncWebParameter* screen4button1action1 = request->getParam("screen4button1action1", true);
+        button1_actionarray.add(screen4button1action1->value().c_str());
+        AsyncWebParameter* screen4button1action2 = request->getParam("screen4button1action2", true);
+        button1_actionarray.add(screen4button1action2->value().c_str());
+    
+        JsonArray button1_valuearray = button1.createNestedArray("valuearray");
+        AsyncWebParameter* screen4button1value0 = request->getParam("screen4button1value0", true);
+        button1_valuearray.add(screen4button1value0->value().c_str());
+        AsyncWebParameter* screen4button1value1 = request->getParam("screen4button1value1", true);
+        button1_valuearray.add(screen4button1value1->value().c_str());
+        AsyncWebParameter* screen4button1value2 = request->getParam("screen4button1value2", true);
+        button1_valuearray.add(screen4button1value2->value().c_str());
+
+                JsonObject button2 = doc.createNestedObject("button2");
+        
+        if(request->hasParam("screen4button2latch", true))
+        {
+          button2["latch"] = true;
+        }else{
+          button2["latch"] = false;
+        }
+    
+        JsonArray button2_actionarray = button2.createNestedArray("actionarray");
+        AsyncWebParameter* screen4button2action0 = request->getParam("screen4button2action0", true);
+        button2_actionarray.add(screen4button2action0->value().c_str());
+        AsyncWebParameter* screen4button2action1 = request->getParam("screen4button2action1", true);
+        button2_actionarray.add(screen4button2action1->value().c_str());
+        AsyncWebParameter* screen4button2action2 = request->getParam("screen4button2action2", true);
+        button2_actionarray.add(screen4button2action2->value().c_str());
+    
+        JsonArray button2_valuearray = button2.createNestedArray("valuearray");
+        AsyncWebParameter* screen4button2value0 = request->getParam("screen4button2value0", true);
+        button2_valuearray.add(screen4button2value0->value().c_str());
+        AsyncWebParameter* screen4button2value1 = request->getParam("screen4button2value1", true);
+        button2_valuearray.add(screen4button2value1->value().c_str());
+        AsyncWebParameter* screen4button2value2 = request->getParam("screen4button2value2", true);
+        button2_valuearray.add(screen4button2value2->value().c_str());
+
+                JsonObject button3 = doc.createNestedObject("button3");
+        
+        if(request->hasParam("screen4button3latch", true))
+        {
+          button3["latch"] = true;
+        }else{
+          button3["latch"] = false;
+        }
+    
+        JsonArray button3_actionarray = button3.createNestedArray("actionarray");
+        AsyncWebParameter* screen4button3action0 = request->getParam("screen4button3action0", true);
+        button3_actionarray.add(screen4button3action0->value().c_str());
+        AsyncWebParameter* screen4button3action1 = request->getParam("screen4button3action1", true);
+        button3_actionarray.add(screen4button3action1->value().c_str());
+        AsyncWebParameter* screen4button3action2 = request->getParam("screen4button3action2", true);
+        button3_actionarray.add(screen4button3action2->value().c_str());
+    
+        JsonArray button3_valuearray = button3.createNestedArray("valuearray");
+        AsyncWebParameter* screen4button3value0 = request->getParam("screen4button3value0", true);
+        button3_valuearray.add(screen4button3value0->value().c_str());
+        AsyncWebParameter* screen4button3value1 = request->getParam("screen4button3value1", true);
+        button3_valuearray.add(screen4button3value1->value().c_str());
+        AsyncWebParameter* screen4button3value2 = request->getParam("screen4button3value2", true);
+        button3_valuearray.add(screen4button3value2->value().c_str());
+
+                JsonObject button4 = doc.createNestedObject("button4");
+        
+        if(request->hasParam("screen4button4latch", true))
+        {
+          button4["latch"] = true;
+        }else{
+          button4["latch"] = false;
+        }
+    
+        JsonArray button4_actionarray = button4.createNestedArray("actionarray");
+        AsyncWebParameter* screen4button4action0 = request->getParam("screen4button4action0", true);
+        button4_actionarray.add(screen4button4action0->value().c_str());
+        AsyncWebParameter* screen4button4action1 = request->getParam("screen4button4action1", true);
+        button4_actionarray.add(screen4button4action1->value().c_str());
+        AsyncWebParameter* screen4button4action2 = request->getParam("screen4button4action2", true);
+        button4_actionarray.add(screen4button4action2->value().c_str());
+    
+        JsonArray button4_valuearray = button4.createNestedArray("valuearray");
+        AsyncWebParameter* screen4button4value0 = request->getParam("screen4button4value0", true);
+        button4_valuearray.add(screen4button4value0->value().c_str());
+        AsyncWebParameter* screen4button4value1 = request->getParam("screen4button4value1", true);
+        button4_valuearray.add(screen4button4value1->value().c_str());
+        AsyncWebParameter* screen4button4value2 = request->getParam("screen4button4value2", true);
+        button4_valuearray.add(screen4button4value2->value().c_str());
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
+      }else if (savemode == "menu5"){
+
+        // --- Save menu 5
+
+        Serial.println("[INFO]: Saving Menu 5");
+        FILESYSTEM.remove("/config/menu5.json");
+        File file = FILESYSTEM.open("/config/menu5.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create menu5.json");
+          return;
+        }
+
+        DynamicJsonDocument doc(1200);
+
+        JsonObject menu = doc.to<JsonObject>();
+
+        AsyncWebParameter* screen5logo0 = request->getParam("screen5logo0", true);
+        menu["logo0"] = screen5logo0->value().c_str();
+        AsyncWebParameter* screen5logo1 = request->getParam("screen5logo1", true);
+        menu["logo1"] = screen5logo1->value().c_str();
+        AsyncWebParameter* screen5logo2 = request->getParam("screen5logo2", true);
+        menu["logo2"] = screen5logo2->value().c_str();
+        AsyncWebParameter* screen5logo3 = request->getParam("screen5logo3", true);
+        menu["logo3"] = screen5logo3->value().c_str();
+        AsyncWebParameter* screen5logo4 = request->getParam("screen5logo4", true);
+        menu["logo4"] = screen5logo4->value().c_str();
+
+        JsonObject button0 = doc.createNestedObject("button0");
+        
+        if(request->hasParam("screen5button0latch", true))
+        {
+          button0["latch"] = true;
+        }else{
+          button0["latch"] = false;
+        }
+    
+        JsonArray button0_actionarray = button0.createNestedArray("actionarray");
+        AsyncWebParameter* screen5button0action0 = request->getParam("screen5button0action0", true);
+        button0_actionarray.add(screen5button0action0->value().c_str());
+        AsyncWebParameter* screen5button0action1 = request->getParam("screen5button0action1", true);
+        button0_actionarray.add(screen5button0action1->value().c_str());
+        AsyncWebParameter* screen5button0action2 = request->getParam("screen5button0action2", true);
+        button0_actionarray.add(screen5button0action2->value().c_str());
+    
+        JsonArray button0_valuearray = button0.createNestedArray("valuearray");
+        AsyncWebParameter* screen5button0value0 = request->getParam("screen5button0value0", true);
+        button0_valuearray.add(screen5button0value0->value().c_str());
+        AsyncWebParameter* screen5button0value1 = request->getParam("screen5button0value1", true);
+        button0_valuearray.add(screen5button0value1->value().c_str());
+        AsyncWebParameter* screen5button0value2 = request->getParam("screen5button0value2", true);
+        button0_valuearray.add(screen5button0value2->value().c_str());
+
+        JsonObject button1 = doc.createNestedObject("button1");
+        
+        if(request->hasParam("screen5button1latch", true))
+        {
+          button1["latch"] = true;
+        }else{
+          button1["latch"] = false;
+        }
+    
+        JsonArray button1_actionarray = button1.createNestedArray("actionarray");
+        AsyncWebParameter* screen5button1action0 = request->getParam("screen5button1action0", true);
+        button1_actionarray.add(screen5button1action0->value().c_str());
+        AsyncWebParameter* screen5button1action1 = request->getParam("screen5button1action1", true);
+        button1_actionarray.add(screen5button1action1->value().c_str());
+        AsyncWebParameter* screen5button1action2 = request->getParam("screen5button1action2", true);
+        button1_actionarray.add(screen5button1action2->value().c_str());
+    
+        JsonArray button1_valuearray = button1.createNestedArray("valuearray");
+        AsyncWebParameter* screen5button1value0 = request->getParam("screen5button1value0", true);
+        button1_valuearray.add(screen5button1value0->value().c_str());
+        AsyncWebParameter* screen5button1value1 = request->getParam("screen5button1value1", true);
+        button1_valuearray.add(screen5button1value1->value().c_str());
+        AsyncWebParameter* screen5button1value2 = request->getParam("screen5button1value2", true);
+        button1_valuearray.add(screen5button1value2->value().c_str());
+
+                JsonObject button2 = doc.createNestedObject("button2");
+        
+        if(request->hasParam("screen5button2latch", true))
+        {
+          button2["latch"] = true;
+        }else{
+          button2["latch"] = false;
+        }
+    
+        JsonArray button2_actionarray = button2.createNestedArray("actionarray");
+        AsyncWebParameter* screen5button2action0 = request->getParam("screen5button2action0", true);
+        button2_actionarray.add(screen5button2action0->value().c_str());
+        AsyncWebParameter* screen5button2action1 = request->getParam("screen5button2action1", true);
+        button2_actionarray.add(screen5button2action1->value().c_str());
+        AsyncWebParameter* screen5button2action2 = request->getParam("screen5button2action2", true);
+        button2_actionarray.add(screen5button2action2->value().c_str());
+    
+        JsonArray button2_valuearray = button2.createNestedArray("valuearray");
+        AsyncWebParameter* screen5button2value0 = request->getParam("screen5button2value0", true);
+        button2_valuearray.add(screen5button2value0->value().c_str());
+        AsyncWebParameter* screen5button2value1 = request->getParam("screen5button2value1", true);
+        button2_valuearray.add(screen5button2value1->value().c_str());
+        AsyncWebParameter* screen5button2value2 = request->getParam("screen5button2value2", true);
+        button2_valuearray.add(screen5button2value2->value().c_str());
+
+                JsonObject button3 = doc.createNestedObject("button3");
+        
+        if(request->hasParam("screen5button3latch", true))
+        {
+          button3["latch"] = true;
+        }else{
+          button3["latch"] = false;
+        }
+    
+        JsonArray button3_actionarray = button3.createNestedArray("actionarray");
+        AsyncWebParameter* screen5button3action0 = request->getParam("screen5button3action0", true);
+        button3_actionarray.add(screen5button3action0->value().c_str());
+        AsyncWebParameter* screen5button3action1 = request->getParam("screen5button3action1", true);
+        button3_actionarray.add(screen5button3action1->value().c_str());
+        AsyncWebParameter* screen5button3action2 = request->getParam("screen5button3action2", true);
+        button3_actionarray.add(screen5button3action2->value().c_str());
+    
+        JsonArray button3_valuearray = button3.createNestedArray("valuearray");
+        AsyncWebParameter* screen5button3value0 = request->getParam("screen5button3value0", true);
+        button3_valuearray.add(screen5button3value0->value().c_str());
+        AsyncWebParameter* screen5button3value1 = request->getParam("screen5button3value1", true);
+        button3_valuearray.add(screen5button3value1->value().c_str());
+        AsyncWebParameter* screen5button3value2 = request->getParam("screen5button3value2", true);
+        button3_valuearray.add(screen5button3value2->value().c_str());
+
+                JsonObject button4 = doc.createNestedObject("button4");
+        
+        if(request->hasParam("screen5button4latch", true))
+        {
+          button4["latch"] = true;
+        }else{
+          button4["latch"] = false;
+        }
+    
+        JsonArray button4_actionarray = button4.createNestedArray("actionarray");
+        AsyncWebParameter* screen5button4action0 = request->getParam("screen5button4action0", true);
+        button4_actionarray.add(screen5button4action0->value().c_str());
+        AsyncWebParameter* screen5button4action1 = request->getParam("screen5button4action1", true);
+        button4_actionarray.add(screen5button4action1->value().c_str());
+        AsyncWebParameter* screen5button4action2 = request->getParam("screen5button4action2", true);
+        button4_actionarray.add(screen5button4action2->value().c_str());
+    
+        JsonArray button4_valuearray = button4.createNestedArray("valuearray");
+        AsyncWebParameter* screen5button4value0 = request->getParam("screen5button4value0", true);
+        button4_valuearray.add(screen5button4value0->value().c_str());
+        AsyncWebParameter* screen5button4value1 = request->getParam("screen5button4value1", true);
+        button4_valuearray.add(screen5button4value1->value().c_str());
+        AsyncWebParameter* screen5button4value2 = request->getParam("screen5button4value2", true);
+        button4_valuearray.add(screen5button4value2->value().c_str());
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
+      }
+
+      request->send(FILESYSTEM, "/saveconfig.htm");
+      
+    }
+  
+  });
+
+  //----------- File list handler -----------------
+
+  webserver.on("/list", HTTP_GET, [](AsyncWebServerRequest *request){
+
+  if(request->hasParam("dir"))
+    {
+      AsyncWebParameter* p = request->getParam("dir");
+      request->send(200, "application/json", handleFileList(p->value().c_str()));
+      
+    }
+  
+  });
+
+  //----------- 404 handler -----------------
+  
+  webserver.onNotFound([](AsyncWebServerRequest *request){
+    Serial.printf("NOT_FOUND: ");
+    if(request->method() == HTTP_GET)
+      Serial.printf("GET");
+    else if(request->method() == HTTP_POST)
+      Serial.printf("POST");
+    else if(request->method() == HTTP_DELETE)
+      Serial.printf("DELETE");
+    else if(request->method() == HTTP_PUT)
+      Serial.printf("PUT");
+    else if(request->method() == HTTP_PATCH)
+      Serial.printf("PATCH");
+    else if(request->method() == HTTP_HEAD)
+      Serial.printf("HEAD");
+    else if(request->method() == HTTP_OPTIONS)
+      Serial.printf("OPTIONS");
+    else
+      Serial.printf("UNKNOWN");
+    Serial.printf(" http://%s%s\n", request->host().c_str(), request->url().c_str());
+
+    if(request->contentLength()){
+      Serial.printf("_CONTENT_TYPE: %s\n", request->contentType().c_str());
+      Serial.printf("_CONTENT_LENGTH: %u\n", request->contentLength());
+    }
+
+    int headers = request->headers();
+    int i;
+    for(i=0;i<headers;i++){
+      AsyncWebHeader* h = request->getHeader(i);
+      Serial.printf("_HEADER[%s]: %s\n", h->name().c_str(), h->value().c_str());
+    }
+
+    int params = request->params();
+    for(i=0;i<params;i++){
+      AsyncWebParameter* p = request->getParam(i);
+      if(p->isFile()){
+        Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
+      } else if(p->isPost()){
+        Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
+      } else {
+        Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
+      }
+    }
+
+    request->send(404);
+    
+  });
+  
+  webserver.onFileUpload([](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final){
+    if(!index)
+      Serial.printf("UploadStart: %s\n", filename.c_str());
+    Serial.printf("%s", (const char*)data);
+    if(final)
+      Serial.printf("UploadEnd: %s (%u)\n", filename.c_str(), index+len);
+  });
+  
+  webserver.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
+    if(!index)
+      Serial.printf("BodyStart: %u\n", total);
+    Serial.printf("%s", (const char*)data);
+    if(index + len == total)
+      Serial.printf("BodyEnd: %u\n", total);
+  });
+
+  webserver.on("/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
+        request->send(FILESYSTEM, "/upload.htm");
+      }, handleUpload);
+
+  webserver.on("/restart", HTTP_POST, [](AsyncWebServerRequest *request) {
+        // First send some text to the browser otherwise an ugly browser error shows up
+        request->send(200, "text/plain", "FreeTouchDeck is restarting...");
+        // Then restart the ESP
+        Serial.println("[WARNING]: Restarting");
+        ESP.restart();
+      });
+  
+}
+
+// ----------------------------- File Upload Handle ---------------------------------
+
+
+void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final){
+  if(!index){
+    Serial.printf("UploadStart: %S\n", filename.c_str());
+    filename = "/logos/" + filename; // TODO: This should not be hard-coded!
+    // open the file on first call and store the file handle in the request object
+    request->_tempFile = SPIFFS.open(filename, "w");
+  }
+  if(len) {
+    // stream the incoming chunk to the opened file
+    request->_tempFile.write(data,len);
+  }
+  if(final){
+    Serial.printf("UploadEnd: %S\n", filename.c_str());
+    // close the file handle as the upload is now done
+    request->_tempFile.close();
+    request->send(FILESYSTEM, "/upload.htm");
+  }
+}
+
+// ----------------------------- File List Handle ---------------------------------
+
+String handleFileList(String path)
+{
+
+  File root = FILESYSTEM.open(path);
+  path = String();
+  int filecount = 0;
+
+  String output = "[";
+  if (root.isDirectory())
+  {
+    File file = root.openNextFile();
+    while (file)
+    {
+      if (output != "[")
+      {
+        output += ',';
+      }
+
+      output += "{\"";
+      output += filecount;
+      output += "\":\"";
+      output += String(file.name()).substring(7);
+      output += "\"}";
+      file = root.openNextFile();
+      filecount++;
+    }
+
+    file.close();
+  }
+  output += "]";  
+  root.close();
+  return output;
 }
