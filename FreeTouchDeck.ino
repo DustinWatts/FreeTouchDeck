@@ -337,10 +337,10 @@ void setup()
   tft.setTextSize(1);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-  /* Version 0.9.0 Added "info" screen to the settings menu. Changed to including Javascript for
-   *  the configurator in the index.html file itself. This makes the code less clear but reduces the number
-   *  of requests to the ESP32. From my experience this results in less "hanging" and a bit faster loading
-   *  of the configurator. Also added the spacebar as an option in the configurator.
+  /* Version 0.9.0 Major switch to ESPAsyncWebServer! This should make the configurator a lot faster
+   *  and more reliable! Also (temporarily) switched to my fork of the ESP-BLE-Keyboard library because
+   *  the task created by ESP-BLE-Keyboard and ESPAsyncWebServer do not play nice. Make sure you have the
+   *  new needed libraries installed!
   */
 
   tft.printf("Loading version %s\n", versionnumber);
