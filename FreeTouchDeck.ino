@@ -270,7 +270,9 @@ void setup()
 
   // Setup PWM channel and attach pin 32
   ledcSetup(0, 5000, 8);
-  //ledcAttachPin(TFT_BL, 0);
+#ifdef TFT_BL
+  ledcAttachPin(TFT_BL, 0);
+#endif 
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // Setup PWM channel for Piezo speaker
