@@ -38,6 +38,10 @@
 // ------- Uncomment the next line if you use capacitive touch -------
 //#define USECAPTOUCH
 
+// ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
+//#define CUSTOM_TOUCH_SDA 26
+//#define CUSTOM_TOUCH_SCL 27
+
 // PAY ATTENTION! Even if resistive touch is not used, the TOUCH pin has to be defined!
 // It can be a random unused pin.
 // TODO: Find a way around this!
@@ -76,6 +80,7 @@ String versionnumber = "0.9.0";
 #include <ESPmDNS.h> // DNS functionality
 
 #ifdef USECAPTOUCH
+#include <Wire.h>
 #include <FT6236.h>
 FT6236 ts = FT6236();
 #endif
@@ -249,7 +254,11 @@ void setup()
   Serial.println("");
 
 #ifdef USECAPTOUCH
+  #ifdef CUSTOM_TOUCH_SDA
+  if (!ts.begin(40, 26, 27))
+  #elif
   if (!ts.begin(40))
+  #endif
   {
     Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
   }
@@ -261,7 +270,9 @@ void setup()
 
   // Setup PWM channel and attach pin 32
   ledcSetup(0, 5000, 8);
+#ifdef TFT_BL
   ledcAttachPin(TFT_BL, 0);
+#endif 
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // Setup PWM channel for Piezo speaker
