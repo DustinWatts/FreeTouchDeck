@@ -16,13 +16,13 @@
 		}
 
 		.pageloading{
-			border: 0;
-			border-radius: 0.3rem;
-			background-color: #ffc835;
-			color: #fff;
+			background-color: #ffffff;
+			color: #1fa3ec;
 			line-height: 2.4rem;
 			font-size: 1.2rem;
 			width: 100%;
+			position: absolute;
+			top: 32%;
 		}
 
 		a {
@@ -76,6 +76,60 @@
 			border: 1px solid #1fa3ec;
 			border-top: none;
 		}
+
+		.ball-loader {
+			width: 80px;
+			height: 16.6666666667px;
+			position: absolute;
+			top: 40%;
+			left: 50%;
+			-webkit-transform: translateX(-50%) translateY(-50%);
+			transform: translateX(-50%) translateY(-50%);
+		}
+
+		.ball-loader-ball {
+			will-change: transform;
+			height: 16.6666666667px;
+			width: 16.6666666667px;
+			border-radius: 50%;
+			background-color: #1fa3ec;
+			position: absolute;
+			-webkit-animation: grow .7s ease-in-out infinite alternate;
+			animation: grow .7s ease-in-out infinite alternate;
+		}
+		
+		.ball-loader-ball.ball1 {
+			left: 0;
+			-webkit-transform-origin: 100% 50%;
+			transform-origin: 100% 50%;
+		}
+		.ball-loader-ball.ball2 {
+			left: 50%;
+			-webkit-transform: translateX(-50%) scale(1);
+			transform: translateX(-50%) scale(1);
+			-webkit-animation-delay: 0.33s;
+			animation-delay: 0.33s;
+		}
+		.ball-loader-ball.ball3 {
+			right: 0;
+			-webkit-animation-delay: 0.66s;
+			animation-delay: 0.66s;
+		}
+
+		@-webkit-keyframes grow {
+			to {
+				-webkit-transform: translateX(-50%) scale(0);
+				transform: translateX(-50%) scale(0);
+			}
+		}
+
+		@keyframes grow {
+			to {
+				-webkit-transform: translateX(-50%) scale(0);
+				transform: translateX(-50%) scale(0);
+			}
+		}
+
 	</style>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -83,7 +137,19 @@
 </head>
 
 <body>
-	<div id="contentloading" class="pageloading"> Please wait while the configurator loads.</br>If this takes too long, please refresh the page.</div>
+	<!-- <div id="contentloading" class="pageloading"> Loading the configurator.</div> -->
+
+	<div id="contentloading" class="pageloading">
+		Loading Configurator
+	</div>
+
+	<div id="ball-loader" class="ball-loader">
+
+		<div class="ball-loader-ball ball1"></div>
+		<div class="ball-loader-ball ball2"></div>
+		<div class="ball-loader-ball ball3"></div>
+	</div>
+
 	<div id="maincontent" style="display: none;">
 	<h1>FreeTouchDeck Configurator</h1>
 	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
@@ -3795,6 +3861,7 @@ $(function () {
 					})
 					.then(() => {
 						document.getElementById("contentloading").style.display = "none";
+						document.getElementById('ball-loader').style.display = "none";
 						document.getElementById("maincontent").style.display = "block";
 					})
 					.catch((err) => {
