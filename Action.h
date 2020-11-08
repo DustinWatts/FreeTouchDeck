@@ -193,7 +193,10 @@ void bleKeyboardAction(int action, int value, char *symbol)
       else
       {
         wificonfig.sleepenable = true;
+        Interval = wificonfig.sleeptimer * 60000;
         Serial.println("[INFO]: Sleep enabled.");
+        Serial.print("[INFO]: Timer set to: ");
+        Serial.println(wificonfig.sleeptimer);
       }
       break;
     }
