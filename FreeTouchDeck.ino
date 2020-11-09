@@ -266,7 +266,7 @@ void setup()
 
 #ifdef USECAPTOUCH
   #ifdef CUSTOM_TOUCH_SDA
-  if (!ts.begin(40, 26, 27))
+  if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
   #elif
   if (!ts.begin(40))
   #endif
