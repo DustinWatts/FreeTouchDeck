@@ -1,4 +1,10 @@
 /*
+  Author: Dustin Watts
+  Date: 27-08-2020
+
+  My thanks goes out to Brian Lough, Colin Hickey, and the people on my Discord server
+  for helping me a lot with the code and troubleshooting! https://discord.gg/RE3XevS
+
   FreeTouchDeck is based on the FreeDeck idea by Koriwi. It uses the TFT_eSPI library 
   by Bodmer for the display and touch functionality and it uses an ESP32-BLE-Keyboard fork 
   with a few modifications. For saving and loading configuration it uses ArduinoJson V6.
@@ -19,9 +25,6 @@
       --- If you use Capacitive touch ---
       - Dustin Watts FT6236 Library (version 1.0.1), https://github.com/DustinWatts/FT6236
       
-  As this is an early beta version, the code is ugly and sometimes way more complicated
-  then necessary. It also lacks good documentation and comments in the code.
-
   The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
   It has to be runs at least once when using resistive touch. After that you can set 
   REPEAT_CAL to false (default).
@@ -78,7 +81,6 @@ String versionnumber = "0.9.0";
 #include <ESPAsyncWebServer.h> //Async Webserver support header
 
 #include <ESPmDNS.h> // DNS functionality
-
 
 #ifdef USECAPTOUCH
 #include <Wire.h>
@@ -265,11 +267,11 @@ void setup()
   Serial.println("");
 
 #ifdef USECAPTOUCH
-  #ifdef CUSTOM_TOUCH_SDA
+#ifdef CUSTOM_TOUCH_SDA
   if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
-  #elif
+#elif
   if (!ts.begin(40))
-  #endif
+#endif
   {
     Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
   }
@@ -283,7 +285,7 @@ void setup()
   ledcSetup(0, 5000, 8);
 #ifdef TFT_BL
   ledcAttachPin(TFT_BL, 0);
-#endif 
+#endif
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // Setup PWM channel for Piezo speaker

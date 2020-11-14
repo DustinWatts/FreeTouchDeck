@@ -1,4 +1,11 @@
-// --------------------------------- Enter Config Mode ----------------------------------------
+/* ------------------------ Entering config mode ---------------- 
+Purpose: This function stops Bluetooth and connects to the given 
+         WiFi network. It the starts mDNS and starts the Async
+         Webserver.
+Input  : none
+Output : none
+Note   : none
+*/
 
 void configmode()
 {

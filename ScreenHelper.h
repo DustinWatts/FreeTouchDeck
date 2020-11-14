@@ -1,3 +1,11 @@
+/* ------------ Read two bytes of date from a file  ---------------- 
+Purpose: This function reads chuncks of 2 bytes of data from a
+         file and returns the data.
+Input  : reference operator &f
+Output : uint16_t
+Note   : litte-endian
+*/
+
 uint16_t read16(fs::File &f)
 {
   uint16_t result;
@@ -5,6 +13,14 @@ uint16_t read16(fs::File &f)
   ((uint8_t *)&result)[1] = f.read(); // MSB
   return result;
 }
+
+/* ------------ Read four bytes of date from a file  ---------------- 
+Purpose: This function reads chuncks of 4 bytes of data from a
+         file and returns the data.
+Input  : reference operator &f
+Output : uint32_t
+Note   : litte-endian
+*/
 
 uint32_t read32(fs::File &f)
 {
@@ -16,7 +32,13 @@ uint32_t read32(fs::File &f)
   return result;
 }
 
-//-------------------- HTML color to RGB888 conversion ------------------------
+/* ------------ Convert HTML colour code to RGB888  ---------------- 
+Purpose: This functions accepts a HTML including the # colour code 
+         (eg. #FF00FF)  and returns it in RGB888 format.
+Input  : char *html (including #)
+Output : unsigned long
+Note   : none
+*/
 
 unsigned long convertHTMLtoRGB888(char *html)
 {
@@ -25,14 +47,25 @@ unsigned long convertHTMLtoRGB888(char *html)
   return rgb;
 }
 
-//-------------------- RGB888 to RGB565 conversion ------------------------
+/* ------------ Convert RGB888 colour code to RGB565  ---------------- 
+Purpose: This function converts RGB888 to RGB565. 
+Input  : unsigned long rgb
+Output : unsigned int
+Note   : none
+*/
 
 unsigned int convertRGB888ToRGB565(unsigned long rgb)
 {
   return (((rgb & 0xf80000) >> 8) | ((rgb & 0xfc00) >> 5) | ((rgb & 0xf8) >> 3));
 }
 
-// ----------------- BMP Drawing ----------------------------------------
+/* ------------ Drawing a transparent BMP  ---------------- 
+Purpose: This function draws a transparent BMP on the TFT screen according
+         to the given x and y coordinates. 
+Input  : *filename, int16_t x, int16_t y
+Output : none
+Note   : A completely black pixel is transparent e.g. (0x0000) not drawn.
+*/
 
 void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 {
@@ -104,6 +137,14 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
   }
   bmpFS.close();
 }
+
+/* ---------------- Drawing a BMP  ---------------- 
+Purpose: This function draws a BMP on the TFT screen according
+         to the given x and y coordinates. 
+Input  : *filename, int16_t x, int16_t y
+Output : none
+Note   : In contradiction to drawBmpTransparent() this does draw black pixels.
+*/
 
 void drawBmp(const char *filename, int16_t x, int16_t y)
 {

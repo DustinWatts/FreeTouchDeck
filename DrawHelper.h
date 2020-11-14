@@ -1,5 +1,12 @@
-//----------------------------------- Drawing Logo's ----------------------------------------------------------------
-
+/* --------------------- Drawing a logo ---------------- 
+Purpose: This function draws the logos according to the page
+         we are currently on. The pagenumber is a global variable
+         and doesn't need to be passed. 
+Input  : int logonumber, int col, int row
+Output : none
+Note   : Logos start at the top left and are 0 indexed. The same goes 
+         for the colomn and the row.
+*/
 void drawlogo(int logonumber, int col, int row)
 {
 
@@ -225,7 +232,14 @@ void drawlatched(int b, int col, int row, bool latched)
   }
 }
 
-//------------------------------------ Drawing Buttons --------------------------------------------------------
+/* ------------- Drawing keypad/buttons  ---------------- 
+Purpose: This function draws the 6 buttons that are on every page.
+         Pagenumber is global and doesn't need to be passed.
+Input  : none
+Output : none
+Note   : Three possibilities: pagenumber = 0 means homescreen,
+         pagenumber = 7 means config mode, anything else is a menu.
+*/
 
 void drawKeypad()
 {
@@ -340,8 +354,13 @@ void drawKeypad()
   }
 }
 
-
-//----------------------------- Draw Error Message ------------------------------------------
+/* ------------- Print an error message the TFT screen  ---------------- 
+Purpose: This function prints an message to the TFT screen on a black 
+         background. 
+Input  : String message
+Output : none
+Note   : none
+*/
 
 void drawErrorMessage(String message)
 {
@@ -384,7 +403,13 @@ void printDeviceAddress()
   }
 }
 
-// -------------------------- Display info to TFT ---------------------
+/* ------------- Print FreeTouchDeck info to the TFT screen  ---------------- 
+Purpose: This function prints some information about the current version 
+         and setup of FreetouchDeck to the TFT screen.
+Input  : none
+Output : none
+Note   : none
+*/
 
 void printinfo()
 {

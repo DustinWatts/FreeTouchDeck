@@ -1,3 +1,12 @@
+/* -------------- Send a Bluetooth action/keystroke ---------------- 
+Purpose: This function takes an int as an action and value. It uses 
+         a switch statement to determine which type of action to do.
+         e.g. write, print, press.
+Input  : int action, int value, char symbol
+Output : none
+Note   : Case 9 is used for special functions, none bleKeyboard related.
+*/
+
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 

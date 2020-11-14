@@ -1,4 +1,10 @@
-// ----------------------------- File List Handle ---------------------------------
+/* ------------ Convert RGB888 colour code to RGB565  ---------------- 
+Purpose: This function returns all the files in a given directory in a json 
+         formatted string.
+Input  : String path
+Output : String
+Note   : none
+*/
 
 String handleFileList(String path)
 {
@@ -34,7 +40,13 @@ String handleFileList(String path)
   return output;
 }
 
-// ----------------------------- File Upload Handle ---------------------------------
+/* ------------------- Uploading a file ---------------- 
+Purpose: This function handles a file upload used by the Webserver
+         formatted string.
+Input  : *request, String filename, size_t index, uint8_t *data, size_t len, bool final
+Output : none
+Note   : none
+*/
 
 void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
@@ -59,7 +71,12 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
   }
 }
 
-// -------------------------- Webserver handler setup ---------------------
+/* ----------------- Adding handelers to the Async Webserver ---------------- 
+Purpose: This function adds all the handlers we need to the webserver. 
+Input  : none
+Output : none
+Note   : Only need to call this once! This is also where the saving of config files is done.
+*/
 
 void handlerSetup()
 {

@@ -1,3 +1,11 @@
+/* --------------------- Loading main config ---------------- 
+Purpose: This function opens wificonfig.json and fills the wificonfig
+         object accordingly.
+Input  : none
+Output : boolean
+Note   : This is also where the sleep configuration lives.
+*/
+
 bool loadMainConfig()
 {
   if (!FILESYSTEM.exists("/config/wificonfig.json"))
@@ -33,6 +41,14 @@ bool loadMainConfig()
 
   return true;
 }
+
+/* -------------------- Loading menu config ---------------- 
+Purpose: This function loads the menu configuration. 
+Input  : String value
+Output : none
+Note   : Options for value are: colors, menu1, menu2, menu3
+         menu4, and menu5
+*/
 
 void loadConfig(String value)
 {
