@@ -1,4 +1,4 @@
-/* ------------ Convert RGB888 colour code to RGB565  ---------------- 
+/* ------------ Function: filelist handle  ---------------- 
 Purpose: This function returns all the files in a given directory in a json 
          formatted string.
 Input  : String path
@@ -42,7 +42,6 @@ String handleFileList(String path)
 
 /* ------------------- Uploading a file ---------------- 
 Purpose: This function handles a file upload used by the Webserver
-         formatted string.
 Input  : *request, String filename, size_t index, uint8_t *data, size_t len, bool final
 Output : none
 Note   : none
