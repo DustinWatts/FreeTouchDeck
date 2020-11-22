@@ -24,3 +24,5 @@ I recommend the following settings when printing the case:
 - Support Overhang Angle: 70
 
 Setting the Support Overhang Angle to 70 ensures that the hole for the USB cable and the the press fit ridge are properly supported, but doesn't over-support everything.
+
+You can also download the case from Thingiverse: [FreeTouchDeck Case](https://www.thingiverse.com/thing:4661069)
