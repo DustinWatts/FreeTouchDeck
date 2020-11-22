@@ -56,7 +56,7 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-String versionnumber = "0.9.0";
+String versionnumber = "0.9.1";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -367,11 +367,9 @@ void setup()
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    /* Version 0.9.0 Major switch to ESPAsyncWebServer! This should make the configurator a lot faster
-   *  and more reliable! Also (temporarily) switched to my fork of the ESP-BLE-Keyboard library because
-   *  the task created by ESP-BLE-Keyboard and ESPAsyncWebServer do not play nice. Make sure you have the
-   *  new needed libraries installed!
-  */
+    /* Version 0.9.1 Included: F13-F24 keys (MacOS only goes up to F20). Updated function descriptions. 
+     * Added case .stl files.
+    */
 
     tft.printf("Loading version %s\n", versionnumber);
     Serial.printf("[INFO]: Loading version %s\n", versionnumber);

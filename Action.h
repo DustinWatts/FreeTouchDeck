@@ -160,6 +160,42 @@ void bleKeyboardAction(int action, int value, char *symbol)
     case 12:
       bleKeyboard.press(KEY_F12);
       break;
+    case 13:
+      bleKeyboard.press(KEY_F13);
+      break;
+    case 14:
+      bleKeyboard.press(KEY_F14);
+      break;
+    case 15:
+      bleKeyboard.press(KEY_F15);
+      break;
+    case 16:
+      bleKeyboard.press(KEY_F16);
+      break;
+    case 17:
+      bleKeyboard.press(KEY_F17);
+      break;
+    case 18:
+      bleKeyboard.press(KEY_F18);
+      break;
+    case 19:
+      bleKeyboard.press(KEY_F19);
+      break;
+    case 20:
+      bleKeyboard.press(KEY_F20);
+      break;
+    case 21:
+      bleKeyboard.press(KEY_F21);
+      break;
+    case 22:
+      bleKeyboard.press(KEY_F22);
+      break;
+    case 23:
+      bleKeyboard.press(KEY_F23);
+      break;
+    case 24:
+      bleKeyboard.press(KEY_F24);
+      break;    
     default:
       //if nothing matches do nothing
       break;
