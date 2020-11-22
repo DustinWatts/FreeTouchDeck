@@ -1,6 +1,6 @@
 # FreeTouchDeck Case
 
-![](FreeTouchDeck_Case.png)
+![](freetouchdeck_case1.jpg)
 
 You can print the case that will house both The ILI9488 + TFT screen and you ESP32 in a nice case. This housing is made with the ESP32 TFT Combiner PCB in mind, but will also work if you made your FreeTouchDeck on a prototyping board.
 
