@@ -39,6 +39,13 @@ bool loadMainConfig()
 
   configfile.close();
 
+  if(error)
+  {
+    Serial.println("[ERROR]: deserializeJson() error");
+    Serial.println(error.c_str());
+    return false;
+  }
+
   return true;
 }
 
@@ -88,6 +95,13 @@ void loadConfig(String value)
     generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
 
     configfile.close();
+
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
+  
   }
   else if (value == "homescreen")
   {
@@ -129,6 +143,12 @@ void loadConfig(String value)
     strcpy(screen0.logo5, templogopath);
 
     configfile.close();
+
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
 
     // --------------------- Loading menu 1 ----------------------
   }
@@ -398,6 +418,12 @@ void loadConfig(String value)
 
     configfile.close();
 
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
+
     // --------------------- Loading menu 2 ----------------------
   }
   else if (value == "menu2")
@@ -666,6 +692,12 @@ void loadConfig(String value)
 
     configfile.close();
 
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
+
     // --------------------- Loading menu 3 ----------------------
   }
   else if (value == "menu3")
@@ -931,6 +963,12 @@ void loadConfig(String value)
     strcpy(screen3.logo4, templogopath);
 
     configfile.close();
+
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
 
     // --------------------- Loading menu 4 ----------------------
   }
@@ -1200,6 +1238,12 @@ void loadConfig(String value)
 
     configfile.close();
 
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
+
     // --------------------- Loading menu 5 ----------------------
   }
   else if (value == "menu5")
@@ -1467,5 +1511,11 @@ void loadConfig(String value)
     strcpy(screen5.logo4, templogopath);
 
     configfile.close();
+
+    if(error)
+    {
+      Serial.println("[ERROR]: deserializeJson() error");
+      Serial.println(error.c_str());
+    }
   }
 }

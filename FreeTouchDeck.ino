@@ -56,7 +56,7 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-String versionnumber = "0.9.1";
+const char* versionnumber = "0.9.2";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -367,8 +367,7 @@ void setup()
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    /* Version 0.9.1 Included: F13-F24 keys (MacOS only goes up to F20). Updated function descriptions. 
-     * Added case .stl files.
+    /* Version 0.9.2 Minor bug fixes, mainly to do with compiler warnings.
     */
 
     tft.printf("Loading version %s\n", versionnumber);
@@ -1211,19 +1210,19 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(9, 1, "0");
+            bleKeyboardAction(9, 1, 0);
           }
           else if (b == 1) // Button 1
           {
-            bleKeyboardAction(9, 2, "0");
+            bleKeyboardAction(9, 2, 0);
           }
           else if (b == 2) // Button 2
           {
-            bleKeyboardAction(9, 3, "0");
+            bleKeyboardAction(9, 3, 0);
           }
           else if (b == 3) // Button 3
           {
-            bleKeyboardAction(9, 4, "0");
+            bleKeyboardAction(9, 4, 0);
             if (islatched[28])
             {
               islatched[28] = 0;

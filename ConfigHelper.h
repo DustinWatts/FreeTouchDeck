@@ -77,7 +77,7 @@ Output : boolean
 Note   : Pass the filename including a leading /
 */
 
-bool checkfile(char *filename)
+bool checkfile(const char *filename)
 {
 
   if (!FILESYSTEM.exists(filename))
@@ -91,5 +91,9 @@ bool checkfile(char *filename)
     tft.setTextSize(1);
     tft.printf("If this has happend after confguration, the data on the ESP may \nbe corrupted.");
     return false;
+  }
+  else
+  {
+    return true;
   }
 }

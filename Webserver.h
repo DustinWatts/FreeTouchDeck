@@ -51,7 +51,7 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
 {
   if (!index)
   {
-    Serial.printf("[INFO]: File Upload Start: %S\n", filename.c_str());
+    Serial.printf("[INFO]: File Upload Start: %s\n", filename.c_str());
     filename = "/logos/" + filename; // TODO: Does the logo directory need to be hardcoded?
     // Open the file on first call and store the file handle in the request object
     request->_tempFile = SPIFFS.open(filename, "w");
@@ -63,7 +63,7 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
   }
   if (final)
   {
-    Serial.printf("[INFO]: File Uploaded: %S\n", filename.c_str());
+    Serial.printf("[INFO]: File Uploaded: %s\n", filename.c_str());
     // Close the file handle as the upload is now done
     request->_tempFile.close();
     request->send(FILESYSTEM, "/upload.htm");

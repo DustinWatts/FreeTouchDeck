@@ -86,10 +86,8 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
   }
 
   uint32_t seekOffset;
-  uint16_t w, h, row, col;
+  uint16_t w, h, row;
   uint8_t r, g, b;
-
-  uint32_t startTime = millis();
 
   if (read16(bmpFS) == 0x4D42)
   {
@@ -163,10 +161,8 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
   }
 
   uint32_t seekOffset;
-  uint16_t w, h, row, col;
+  uint16_t w, h, row;
   uint8_t r, g, b;
-
-  uint32_t startTime = millis();
 
   if (read16(bmpFS) == 0x4D42)
   {
