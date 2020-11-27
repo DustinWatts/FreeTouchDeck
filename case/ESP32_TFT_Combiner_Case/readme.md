@@ -10,11 +10,15 @@ This case is made to have a press fit. If you are happy with your print and don'
 
 I recommend the following settings when printing the case:
 
+![](top_screenshot.jpg)
+
 ## Top
 - Orientation: Flat side down
 - Layer height: 0.2 mm
 - Infill: 100%
 - Support: none
+
+![](bottom_screenshot.jpg)
 
 ## Bottom
 - Orientation: The part that connects to the top down
