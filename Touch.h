@@ -34,6 +34,8 @@ void touch_calibrate()
   if (calDataOK && !REPEAT_CAL)
   {
     // calibration data valid
+
+    
     tft.setTouch(calData);
   }
   else
