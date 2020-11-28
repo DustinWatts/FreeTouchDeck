@@ -2,6 +2,5 @@
 	"ssid": "YOUR_WIFI_SSID2",
 	"password": "YOUR_WIFI_PASSWORD2",
 	"wifihostname": "freetouchdeck",
-	"sleepenable": false,
-	"sleeptimer": 10
+	"debuglevel": 2
 }
