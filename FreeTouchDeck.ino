@@ -56,7 +56,7 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char* versionnumber = "0.9.2";
+const char* versionnumber = "0.9.3";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -321,6 +321,11 @@ void setup()
   }
   Serial.println("[INFO]: SPIFFS initialised.");
 
+  // Check for free space
+
+  Serial.print("[INFO]: Free Space: ");
+  Serial.println(SPIFFS.totalBytes() - SPIFFS.usedBytes());
+
   //------------------ Load Wifi Config ----------------------------------------------
 
   Serial.println("[INFO]: Loading Wifi Config");
@@ -367,7 +372,7 @@ void setup()
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    /* Version 0.9.2 Minor bug fixes, mainly to do with compiler warnings.
+    /* Version 0.9.3 Added support for Stream Deck images. Backwards compatible with the images made for FreeTouchDeck
     */
 
     tft.printf("Loading version %s\n", versionnumber);
@@ -616,15 +621,96 @@ void loop(void)
       {
 
         // Draw normal button space (non inverted)
-        key[b].drawButton();
-        // Call the drawLogo function
-        drawlogo(b, colArray[b], rowArray[b]);
+
+            int col, row;
+
+            if(b == 0){
+              col = 0;
+              row = 0;
+            } else if(b == 1){
+              col = 1;
+              row = 0;
+            } else if(b == 2){
+              col = 2;
+              row = 0;
+            } else if(b == 3){
+              col = 0;
+              row = 1;
+            } else if(b == 4){
+              col = 1;
+              row = 1;
+            } else if(b == 5){
+              col = 2;
+              row = 1;
+            }
+              
+            
+            uint16_t buttonBG;
+            bool drawTransparent;
+            uint16_t imageBGColor = getImageBG(b);
+            if(imageBGColor > 0)
+            {
+              buttonBG = imageBGColor;
+              drawTransparent = false;
+            }
+            else
+            {
+              if(pageNum == 0){
+                buttonBG = generalconfig.menuButtonColour;
+                drawTransparent = true;
+              }else{
+                if(pageNum == 6 && b == 5)
+                {
+                  buttonBG = generalconfig.menuButtonColour;
+                  drawTransparent = true;
+                }else{
+                buttonBG = generalconfig.functionButtonColour;
+                drawTransparent = true;
+                }
+              }
+            }
+            tft.setFreeFont(LABEL_FONT);
+            key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                              KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                              KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
+                              "", KEY_TEXTSIZE);
+            key[b].drawButton();
+            drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+  
       }
 
       if (key[b].justPressed())
-      {
-        key[b].drawButton(true); // Draw inverted button space (white)
+      { 
+            int col, row;
 
+            if(b == 0){
+              col = 0;
+              row = 0;
+            } else if(b == 1){
+              col = 1;
+              row = 0;
+            } else if(b == 2){
+              col = 2;
+              row = 0;
+            } else if(b == 3){
+              col = 0;
+              row = 1;
+            } else if(b == 4){
+              col = 1;
+              row = 1;
+            } else if(b == 5){
+              col = 2;
+              row = 1;
+            }
+
+            tft.setFreeFont(LABEL_FONT);
+            key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                              KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                              KEY_W, KEY_H, TFT_WHITE, TFT_WHITE, 0xFFFF,
+                              "", KEY_TEXTSIZE);
+            key[b].drawButton();
+            //drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+            
         //---------------------------------------- Button press handeling --------------------------------------------------
 
         if (pageNum == 0) //Home menu

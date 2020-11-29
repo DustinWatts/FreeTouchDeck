@@ -799,9 +799,12 @@
 	<!-- Upload Logo -->
 	<div id="uploadimage" class="tabcontent">
 		<h3>Upload a new logo</h3>
-		<div style="width: 70%; text-align: left; margin: auto;"> You can cumstomize the logo's that are used. If you upload a file
-		with a name that already exists, the file is <u>overwritten</u>. You can only upload .bmp images. There images should be 75x75 pixels
-		and be in a 24-bit RGB format. A perfectly black (#000000) pixel will be rendered as transparent.<br/><br/></div>
+		<div style="width: 70%; text-align: left; margin: auto;"> You can customize the logos that are used. If you upload a file with a name that already exists, the file is <u>overwritten</u>. You can only upload .bmp images. There images should be in a 24-bit RGB format and should be no more then 75x75 pixels. Smaller images are supported.<br/><br/>
+
+		Images that are used for Elgato's Stream Deck are also supported. These should also be in a 24-bit RGB format. You can convert these using free online tools like <a href="https://online-converting.com/image/convert2bmp/" target="_blank">https://online-converting.com/image/convert2bmp/</a>.<br/><br/>
+
+		FreeTouchDeck will check the colour of the first pixel in the image. If that pixel is black (#000000), all black pixels will be rendered as transparent and the button colour chosen in the "General" tab will be used. If that pixel has a colour, the button will have that colour so that the image blends in nicely.
+	</div>
 		<p>
 		<div class="form" style="width: 10%; text-align: : center; margin: auto;">
 			<input form="uploadfile" type="file" name="name" accept=".bmp"><br /><br />

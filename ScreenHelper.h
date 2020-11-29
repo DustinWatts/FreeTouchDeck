@@ -156,7 +156,9 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
 
   if (!bmpFS)
   {
-    Serial.print("File not found");
+    
+    Serial.print("File not found:");
+    Serial.println(filename);
     return;
   }
 
@@ -209,4 +211,248 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
       Serial.println("[WARNING]: BMP format not recognized.");
   }
   bmpFS.close();
+}
+
+/* --------------- Read bytes from file  ---------------- 
+Purpose: This function reads a number of bytes from the given
+         file at the given position.
+Input  : File *p_file, int position, byte nBytes
+Output : int32_t
+Note   : none
+*/
+
+int32_t readNbytesInt(File *p_file, int position, byte nBytes)
+{
+    if (nBytes > 4)
+        return 0;
+
+    p_file->seek(position);
+
+    int32_t weight = 1;
+    int32_t result = 0;
+    for (; nBytes; nBytes--)
+    {
+        result += weight * p_file->read();
+        weight <<= 8;
+    }
+    return result;
+}
+
+/* ---------- Read the colour of the first pixel  ---------------- 
+Purpose: This function reads the RGB565 colour of the first pixel for a
+         given the logo number. The pagenumber is global.
+Input  : const char *filename
+Output : uint16_t
+Note   : Uses readNbytesInt
+*/
+
+uint16_t getBMPColor(const char *filename){
+
+    // Open File
+    File bmpImage;
+    bmpImage = SPIFFS.open(filename, FILE_READ);
+
+    int32_t dataStartingOffset = readNbytesInt(&bmpImage, 0x0A, 4);
+    int16_t pixelsize = readNbytesInt(&bmpImage, 0x1C, 2);
+
+    if (pixelsize != 24)
+    {
+        Serial.println("[WARNING]: getBMPColor: Image is not 24 bpp");
+        return 0x0000;
+    }
+
+    bmpImage.seek(dataStartingOffset); //skip bitmap header
+
+    byte R, G, B;
+
+    B = bmpImage.read();
+    G = bmpImage.read();
+    R = bmpImage.read();
+ 
+    bmpImage.close();
+
+    return tft.color565(R, G, B);
+}
+
+/* ---------- Get the colour of the first pixel in an image  ---------------- 
+Purpose: This function returns the RGB565 colour of the first pixel for a
+         given the logo number. The pagenumber is global.
+Input  : int logonumber
+Output : uint16_t
+Note   : Uses getBMPColor to read the actual image data.
+*/
+
+uint16_t getImageBG(int logonumber)
+{
+
+  if (pageNum == 0)
+  {
+    if (logonumber == 0)
+    {
+      return getBMPColor(screen0.logo0);
+    }
+    else if (logonumber == 1)
+    {
+      return getBMPColor(screen0.logo1);
+    }
+    else if (logonumber == 2)
+    {
+      return getBMPColor(screen0.logo2);
+    }
+    else if (logonumber == 3)
+    {
+      return getBMPColor(screen0.logo3);
+    }
+    else if (logonumber == 4)
+    {
+      return getBMPColor(screen0.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 1)
+  {
+    if (logonumber == 0)
+    {
+      return getBMPColor(screen1.logo0);
+    }
+    else if (logonumber == 1)
+    {
+      return getBMPColor(screen1.logo1);
+    }
+    else if (logonumber == 2)
+    {
+      return getBMPColor(screen1.logo2);
+    }
+    else if (logonumber == 3)
+    {
+      return getBMPColor(screen1.logo3);
+    }
+    else if (logonumber == 4)
+    {
+      return getBMPColor(screen1.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 2)
+  {
+    if (logonumber == 0)
+    {
+      return getBMPColor(screen2.logo0);
+    }
+    else if (logonumber == 1)
+    {
+      return getBMPColor(screen2.logo1);
+    }
+    else if (logonumber == 2)
+    {
+      return getBMPColor(screen2.logo2);
+    }
+    else if (logonumber == 3)
+    {
+      return getBMPColor(screen2.logo3);
+    }
+    else if (logonumber == 4)
+    {
+      return getBMPColor(screen2.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 3)
+  {
+    if (logonumber == 0)
+    {
+      return getBMPColor(screen3.logo0);
+    }
+    else if (logonumber == 1)
+    {
+      return getBMPColor(screen3.logo1);
+    }
+    else if (logonumber == 2)
+    {
+      return getBMPColor(screen3.logo2);
+    }
+    else if (logonumber == 3)
+    {
+      return getBMPColor(screen3.logo3);
+    }
+    else if (logonumber == 4)
+    {
+      return getBMPColor(screen3.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 4)
+  {
+    if (logonumber == 0)
+    {
+      return getBMPColor(screen4.logo0);
+    }
+    else if (logonumber == 1)
+    {
+      return getBMPColor(screen4.logo1);
+    }
+    else if (logonumber == 2)
+    {
+      return getBMPColor(screen4.logo2);
+    }
+    else if (logonumber == 3)
+    {
+      return getBMPColor(screen4.logo3);
+    }
+    else if (logonumber == 4)
+    {
+      return getBMPColor(screen4.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 5)
+  {
+    if (logonumber == 0)
+    {
+      return getBMPColor(screen5.logo0);
+    }
+    else if (logonumber == 1)
+    {
+      return getBMPColor(screen5.logo1);
+    }
+    else if (logonumber == 2)
+    {
+      return getBMPColor(screen5.logo2);
+    }
+    else if (logonumber == 3)
+    {
+      return getBMPColor(screen5.logo3);
+    }
+    else if (logonumber == 4)
+    {
+      return getBMPColor(screen5.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 6)
+  {   
+    return 0x0000;
+  }
+  else
+  {
+    return 0x0000;
+  }
 }
