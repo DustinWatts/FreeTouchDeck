@@ -1,9 +1,9 @@
 {
-  "logo0": "question.bmp",
-  "logo1": "question.bmp",
-  "logo2": "question.bmp",
-  "logo3": "question.bmp",
-  "logo4": "question.bmp",
+  "logo0": "spotify.bmp",
+  "logo1": "soundcloud.bmp",
+  "logo2": "teamspeak.bmp",
+  "logo3": "vlc.bmp",
+  "logo4": "itunes.bmp",
   "button0":{
     "latch": false,
     "actionarray": [ "0", "0", "0" ],

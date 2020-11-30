@@ -1,7 +1,7 @@
 {
-	"ssid": "YOUR_WIFI_SSID",
-	"password": "YOUR_WIFI_PASSWORD",
+	"ssid": "Things",
+	"password": "!!Lady0911!!",
 	"wifihostname": "freetouchdeck",
-	"sleepenable": false,
+	"sleepenable": true,
 	"sleeptimer": 10
 }

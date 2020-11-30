@@ -1,9 +1,9 @@
 {
-  "logo0": "question.bmp",
-  "logo1": "question.bmp",
-  "logo2": "question.bmp",
-  "logo3": "question.bmp",
-  "logo4": "question.bmp",
+  "logo0": "broadcast-start.bmp",
+  "logo1": "broadcast-pause.bmp",
+  "logo2": "broadcast-stop.bmp",
+  "logo3": "broadcast-replay.bmp",
+  "logo4": "monitor-1.bmp",
   "button0":{
     "latch": false,
     "actionarray": [ "0", "0", "0" ],
