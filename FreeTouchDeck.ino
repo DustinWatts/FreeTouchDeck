@@ -643,6 +643,33 @@ void loop(void)
               col = 2;
               row = 1;
             }
+
+            int index;
+
+          if (pageNum == 2)
+          {
+            index = b + 5;
+          }
+          else if (pageNum == 3)
+          {
+            index = b + 10;
+          }
+          else if (pageNum == 4)
+          {
+            index = b + 15;
+          }
+          else if (pageNum == 5)
+          {
+            index = b + 20;
+          }
+          else if (pageNum == 6)
+          {
+            index = b + 25;
+          }
+          else
+          {
+            index = b;
+          }
               
             
             uint16_t buttonBG;
@@ -675,8 +702,13 @@ void loop(void)
                               KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
                               "", KEY_TEXTSIZE);
             key[b].drawButton();
-            drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
-  
+            drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.            
+
+          if (islatched[index] && b < 5)
+          {
+            drawlatched(b, col, row, true);
+          }
+          
       }
 
       if (key[b].justPressed())

@@ -399,24 +399,33 @@ void drawlogo(int logonumber, int col, int row, bool transparent)
 
 void drawlatched(int b, int col, int row, bool latched)
 {
-//  if (latched)
-//  {
-//    tft.setFreeFont(LABEL_FONT);
-//    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-//                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-//                      KEY_W, KEY_H, TFT_WHITE, generalconfig.latchedColour, TFT_WHITE,
-//                      "", KEY_TEXTSIZE);
-//    key[b].drawButton();
-//  }
-//  else
-//  {
-//    tft.setFreeFont(LABEL_FONT);
-//    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-//                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-//                      KEY_W, KEY_H, TFT_WHITE, generalconfig.functionButtonColour, TFT_WHITE,
-//                      "", KEY_TEXTSIZE);
-//    key[b].drawButton();
-//  }
+  if (latched)
+  {
+    tft.fillRoundRect((KEY_X - 37 + col * (KEY_W + KEY_SPACING_X)) - 12, (KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y)) - 12, 18, 18, 4, generalconfig.latchedColour);
+  }
+  else
+  {
+    uint16_t buttonBG;
+    bool drawTransparent;
+    uint16_t imageBGColor = getImageBG(b);
+    if(imageBGColor > 0)
+    {
+      buttonBG = imageBGColor;
+      drawTransparent = false;
+    }
+    else
+    {
+      buttonBG = generalconfig.functionButtonColour;
+      drawTransparent = true;
+    }
+    tft.setFreeFont(LABEL_FONT);
+    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                      KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
+                      "", KEY_TEXTSIZE);
+    key[b].drawButton();
+    drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+  }
 }
 
 /* ------------- Drawing keypad/buttons  ---------------- 
@@ -507,6 +516,33 @@ void drawKeypad()
         {
           // Otherwise use functionButtonColour
 
+          int index;
+
+          if (pageNum == 2)
+          {
+            index = b + 5;
+          }
+          else if (pageNum == 3)
+          {
+            index = b + 10;
+          }
+          else if (pageNum == 4)
+          {
+            index = b + 15;
+          }
+          else if (pageNum == 5)
+          {
+            index = b + 20;
+          }
+          else if (pageNum == 6)
+          {
+            index = b + 25;
+          }
+          else
+          {
+            index = b;
+          }
+
             uint16_t buttonBG;
             bool drawTransparent;
             uint16_t imageBGColor = getImageBG(b);
@@ -527,6 +563,11 @@ void drawKeypad()
                               "", KEY_TEXTSIZE);
             key[b].drawButton();
             drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+
+            if (islatched[index] && b < 5)
+            {
+            drawlatched(b, col, row, true);
+            }
           
         }
       }
