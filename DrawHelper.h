@@ -2,12 +2,12 @@
 Purpose: This function draws the logos according to the page
          we are currently on. The pagenumber is a global variable
          and doesn't need to be passed. 
-Input  : int logonumber, int col, int row
+Input  : int logonumber, int col, int row, bool transparent
 Output : none
 Note   : Logos start at the top left and are 0 indexed. The same goes 
          for the colomn and the row.
 */
-void drawlogo(int logonumber, int col, int row)
+void drawlogo(int logonumber, int col, int row, bool transparent)
 {
 
   if (pageNum == 0)
@@ -15,27 +15,63 @@ void drawlogo(int logonumber, int col, int row)
     //Draw Home screen logo's
     if (logonumber == 0)
     {
-      drawBmpTransparent(screen0.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen0.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen0.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen0.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen0.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen0.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen0.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen0.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen0.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen0.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen0.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen0.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen0.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen0.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen0.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+    }
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(screen0.logo5, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen0.logo5, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen0.logo5, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
   else if (pageNum == 1)
@@ -43,27 +79,57 @@ void drawlogo(int logonumber, int col, int row)
     // Menu 1
     if (logonumber == 0)
     {
-      drawBmpTransparent(screen1.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen1.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen1.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen1.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen1.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen1.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen1.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen1.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen1.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen1.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen1.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen1.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen1.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen1.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen1.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
   }
   else if (pageNum == 2)
@@ -71,27 +137,57 @@ void drawlogo(int logonumber, int col, int row)
     // Menu 2
     if (logonumber == 0)
     {
-      drawBmpTransparent(screen2.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen2.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen2.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen2.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen2.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen2.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen2.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen2.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen2.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen2.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen2.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen2.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen2.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen2.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen2.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
   }
   else if (pageNum == 3)
@@ -99,27 +195,57 @@ void drawlogo(int logonumber, int col, int row)
     // Menu 3
     if (logonumber == 0)
     {
-      drawBmpTransparent(screen3.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen3.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen3.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen3.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen3.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen3.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen3.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen3.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen3.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen3.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen3.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen3.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen3.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen3.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen3.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
   }
   else if (pageNum == 4)
@@ -127,27 +253,57 @@ void drawlogo(int logonumber, int col, int row)
     // Menu 4
     if (logonumber == 0)
     {
-      drawBmpTransparent(screen4.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen4.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen4.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen4.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen4.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen4.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen4.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen4.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen4.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen4.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen4.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen4.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen4.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen4.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen4.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
   }
   else if (pageNum == 5)
@@ -155,27 +311,58 @@ void drawlogo(int logonumber, int col, int row)
     // Menu 5
     if (logonumber == 0)
     {
-      drawBmpTransparent(screen5.logo0, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      if(transparent == true){
+      drawBmpTransparent(screen5.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen5.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent(screen5.logo1, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen5.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen5.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent(screen5.logo2, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen5.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen5.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent(screen5.logo3, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen5.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen5.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent(screen5.logo4, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+    if(transparent == true){
+      drawBmpTransparent(screen5.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+       drawBmp(screen5.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+    }
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+
     }
   }
   else if (pageNum == 6)
@@ -183,27 +370,27 @@ void drawlogo(int logonumber, int col, int row)
     // pageNum6 contains settings logos
     if (logonumber == 0)
     {
-      drawBmpTransparent(generallogo.configurator, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.configurator, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 1)
     {
-      drawBmpTransparent("/logos/brightnessdown.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/brightnessdown.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 2)
     {
-      drawBmpTransparent("/logos/brightnessup.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/brightnessup.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 3)
     {
-      drawBmpTransparent("/logos/sleep.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/sleep.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent("/logos/info.bmp", KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/info.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 37 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
     }
   }
 }
@@ -212,24 +399,24 @@ void drawlogo(int logonumber, int col, int row)
 
 void drawlatched(int b, int col, int row, bool latched)
 {
-  if (latched)
-  {
-    tft.setFreeFont(LABEL_FONT);
-    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                      KEY_W, KEY_H, TFT_WHITE, generalconfig.latchedColour, TFT_WHITE,
-                      "", KEY_TEXTSIZE);
-    key[b].drawButton();
-  }
-  else
-  {
-    tft.setFreeFont(LABEL_FONT);
-    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                      KEY_W, KEY_H, TFT_WHITE, generalconfig.functionButtonColour, TFT_WHITE,
-                      "", KEY_TEXTSIZE);
-    key[b].drawButton();
-  }
+//  if (latched)
+//  {
+//    tft.setFreeFont(LABEL_FONT);
+//    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+//                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+//                      KEY_W, KEY_H, TFT_WHITE, generalconfig.latchedColour, TFT_WHITE,
+//                      "", KEY_TEXTSIZE);
+//    key[b].drawButton();
+//  }
+//  else
+//  {
+//    tft.setFreeFont(LABEL_FONT);
+//    key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+//                      KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+//                      KEY_W, KEY_H, TFT_WHITE, generalconfig.functionButtonColour, TFT_WHITE,
+//                      "", KEY_TEXTSIZE);
+//    key[b].drawButton();
+//  }
 }
 
 /* ------------- Drawing keypad/buttons  ---------------- 
@@ -252,13 +439,26 @@ void drawKeypad()
       {
 
         uint8_t b = col + row * 3;
+        uint16_t buttonBG;
+        bool drawTransparent;
+        uint16_t imageBGColor = getImageBG(b);
+        if(imageBGColor > 0)
+        {
+          buttonBG = imageBGColor;
+          drawTransparent = false;
+        }
+        else
+        {
+          buttonBG = generalconfig.menuButtonColour;
+          drawTransparent = true;
+        }
         tft.setFreeFont(LABEL_FONT);
         key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
                           KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                          KEY_W, KEY_H, TFT_WHITE, generalconfig.menuButtonColour, 0xFFFF,
+                          KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
                           "", KEY_TEXTSIZE);
         key[b].drawButton();
-        drawlogo(b, col, row); // After drawing the button outline we call this to draw a logo.
+        drawlogo(b, col, row, buttonBG); // After drawing the button outline we call this to draw a logo.
       }
     }
   }
@@ -301,53 +501,33 @@ void drawKeypad()
                             KEY_W, KEY_H, TFT_WHITE, generalconfig.menuButtonColour, TFT_WHITE,
                             "", KEY_TEXTSIZE);
           key[b].drawButton();
-          drawlogo(b, col, row);
+          drawlogo(b, col, row, true);
         }
         else
         {
           // Otherwise use functionButtonColour
 
-          int index;
-
-          if (pageNum == 2)
-          {
-            index = b + 5;
-          }
-          else if (pageNum == 3)
-          {
-            index = b + 10;
-          }
-          else if (pageNum == 4)
-          {
-            index = b + 15;
-          }
-          else if (pageNum == 5)
-          {
-            index = b + 20;
-          }
-          else if (pageNum == 6)
-          {
-            index = b + 25;
-          }
-          else
-          {
-            index = b;
-          }
-
-          if (islatched[index])
-          {
-            drawlatched(b, col, row, true);
-          }
-          else
-          {
+            uint16_t buttonBG;
+            bool drawTransparent;
+            uint16_t imageBGColor = getImageBG(b);
+            if(imageBGColor > 0)
+            {
+              buttonBG = imageBGColor;
+              drawTransparent = false;
+            }
+            else
+            {
+              buttonBG = generalconfig.functionButtonColour;
+              drawTransparent = true;
+            }
             tft.setFreeFont(LABEL_FONT);
             key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
                               KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                              KEY_W, KEY_H, TFT_WHITE, generalconfig.functionButtonColour, TFT_WHITE,
+                              KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
                               "", KEY_TEXTSIZE);
             key[b].drawButton();
-          }
-          drawlogo(b, col, row);
+            drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+          
         }
       }
     }
