@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <link rel="shortcut icon" href="">
+  <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+  <meta content="utf-8" http-equiv="encoding">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
+  <title>FreeTouchDeck Configurator</title>
+
+  <style>
+    body {
+      text-align: center;
+      font-family: verdana;
+    }
+
+    button {
+      border: 0;
+      border-radius: 0.3rem;
+      background-color: #1fa3ec;
+      color: #fff;
+      line-height: 2.4rem;
+      font-size: 1.2rem;
+      width: 100%;
+    }
+
+    div{
+      padding: 5px;
+      font-size: 1em;
+      width: 96%;
+      border-radius: 0.3rem;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+    <h1>FreeTouchDeck Configurator</h1>
+  </div>
+  <div style="background-color: #ffffff; font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+    <h3>Oops! Something went wrong. The configurator returned the following error:<br> 
+    </h3>
+    %ERROR_CODE% : %ERROR_TEXT%
+  <br><br>
+  </div>
+  <div style="text-align:left;display:inline-block;min-width:260px;"><center>
+
+    <form method='post' id="backhome" action='/index.htm'>
+      <button style='cursor: pointer;' type='save'>Return to Configuration page</button>
+    </form>
+
+  </center>
+  </div>
+</body>
+
+</html>

@@ -40,11 +40,161 @@ String handleFileList(String path)
   return output;
 }
 
+/* ------------ Function: info handle  ---------------- 
+Purpose: This function returns information about FreeTouchDeck in a json 
+         formatted string.
+Input  : none
+Output : String
+Note   : none
+*/
+
+String handleInfo()
+{
+
+  float freemem = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+
+  String output = "[";
+
+  output += "{\"";
+  output += "Version";
+  output += "\":\"";
+  output += String(versionnumber);
+  output += "\"},";
+
+  output += "{\"";
+  output += "Free Space";
+  output += "\":\"";
+  output += String(freemem / 1000);
+  output += " kB\"},";
+
+  output += "{\"";
+  output += "ESP-IDF";
+  output += "\":\"";
+  output += String(esp_get_idf_version());
+  output += "\"},";
+
+#ifdef touchInterruptPin
+  output += "{\"";
+  output += "Sleep";
+  output += "\":\"";
+  if (wificonfig.sleepenable)
+  {
+    output += String("Enabled. ");
+    output += String("Timer: ");
+    output += String(wificonfig.sleeptimer);
+    output += String(" minutes");
+    output += "\"}";
+  }
+  else
+  {
+    output += String("Disabled");
+    output += "\"}";
+  }
+#else
+  output += "{\"";
+  output += "Sleep";
+  output += "\":\"";
+  output += String("Disabled");
+  output += "\"}";
+
+#endif
+
+  output += "]";
+
+  return output;
+}
+
+/* ----------------- Error template processing ---------------- 
+Purpose: This function handles error.htm template processing. 
+Input  : const String& var
+Output : String
+Note   : none
+*/
+
+String errorCode;
+String errorText;
+
+String processor(const String &var)
+{
+  if (var == "ERROR_CODE")
+  {
+    return errorCode;
+  }
+  if (var == "ERROR_TEXT")
+  {
+    return errorText;
+  }
+  return String();
+}
+
+/* ------------ Function: filelist handle  ---------------- 
+Purpose: This function returns all the files in a given directory in a json 
+         formatted string.
+Input  : none
+Output : AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final
+Note   : Returns error if filename is not one of the allowed files.
+*/
+void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+  if (filename != "menu1.json" && filename != "menu2.json" && filename != "menu3.json" && filename != "menu4.json" && filename != "menu5.json" && filename != "colors.json" && filename != "homescreen.json")
+  {
+    Serial.printf("[INFO]: JSON has invalid name: %s\n", filename.c_str());
+    errorCode = "102";
+    errorText = "JSON file has an invalid name. You can only upload JSON files with the following file names:";
+    errorText += "<ul><li>menu1.json</li><li>menu2.json</li><li>menu3.json</li><li>menu4.json</li><li>menu5.json</li>";
+    errorText += "<li>colors.json</li><li>homescreen.json</li></ul>";
+    request->send(FILESYSTEM, "/error.htm", String(), false, processor);
+    return;
+  }
+  if (!index)
+  {
+    Serial.printf("[INFO]: JSON Upload Start: %s\n", filename.c_str());
+    filename = "/config/" + filename; // TODO: Does the config directory need to be hardcoded?
+
+    // Open the file on first call and store the file handle in the request object
+    request->_tempFile = SPIFFS.open(filename, "w");
+  }
+  if (len)
+  {
+    // Stream the incoming chunk to the opened file
+    request->_tempFile.write(data, len);
+  }
+  if (final)
+  {
+    Serial.printf("[INFO]: JSON Uploaded: %s\n", filename.c_str());
+    // Close the file handle as the upload is now done
+    request->_tempFile.close();
+    request->send(FILESYSTEM, "/upload.htm");
+  }
+}
+
+/* --------------- Checking for free space on SPIFFS ---------------- 
+Purpose: This checks if the free memory on the SPIFFS is bigger then a set threshold
+Input  : none
+Output : boolean
+Note   : none
+*/
+
+bool spaceLeft()
+{
+  float minmem = 100000.00; // Always leave 100 kB free pace on SPIFFS
+  float freeMemory = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+  Serial.printf("[INFO]: Free memory left: %f bytes\n", freeMemory);
+  if (freeMemory < minmem)
+  {
+    return false;
+  }
+
+  return true;
+}
+
 /* ------------------- Uploading a file ---------------- 
 Purpose: This function handles a file upload used by the Webserver
 Input  : *request, String filename, size_t index, uint8_t *data, size_t len, bool final
 Output : none
-Note   : none
+Note   : The reason the file is first uploaded and then deleted if there is not enough free space, is that
+         if the request is not handled, the ESP32 craches. So we have to accept the upload but
+         can delete it.
 */
 
 void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
@@ -52,7 +202,7 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
   if (!index)
   {
     Serial.printf("[INFO]: File Upload Start: %s\n", filename.c_str());
-    filename = "/logos/" + filename; // TODO: Does the logo directory need to be hardcoded?
+    filename = "/logos/" + filename;
     // Open the file on first call and store the file handle in the request object
     request->_tempFile = SPIFFS.open(filename, "w");
   }
@@ -66,11 +216,58 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
     Serial.printf("[INFO]: File Uploaded: %s\n", filename.c_str());
     // Close the file handle as the upload is now done
     request->_tempFile.close();
-    request->send(FILESYSTEM, "/upload.htm");
+
+    // If there is not enough space left, we have to delete the recently uploaded file
+    if (!spaceLeft())
+    {
+      Serial.println("[WARNING]: Not enough free space left");
+      errorCode = "103";
+      errorText = "There is not enough free space left to upload a logo. Please delete unused logos and try again.";
+      request->send(FILESYSTEM, "/error.htm", String(), false, processor);
+
+      // Remove the recently uploaded file
+      String fileToDelete = "/logos/";
+      fileToDelete += filename;
+      FILESYSTEM.remove(fileToDelete);
+      Serial.println("[WARNING]: File removed to keep enough free space");
+      return;
+    }
+    else
+    {
+      request->send(FILESYSTEM, "/upload.htm");
+    }
   }
 }
 
-/* ----------------- Adding handelers to the Async Webserver ---------------- 
+/* ----------------- Delete result processing ---------------- 
+Purpose: This function handles delete.htm template processing. 
+Input  : const String& var
+Output : String
+Note   : none
+*/
+
+String resultHeader;
+String resultText;
+String resultFiles = "";
+
+String deleteProcessor(const String &var)
+{
+  if (var == "RESULT")
+  {
+    return resultHeader;
+  }
+  if (var == "TEXT")
+  {
+    return resultText;
+  }
+  if (var == "FILES")
+  {
+    return resultFiles;
+  }
+  return String();
+}
+
+/* ----------------- Adding handlers to the Async Webserver ---------------- 
 Purpose: This function adds all the handlers we need to the webserver. 
 Input  : none
 Output : none
@@ -1074,6 +1271,10 @@ void handlerSetup()
     }
   });
 
+  webserver.on("/info", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(200, "application/json", handleInfo());
+  });
+
   //----------- 404 handler -----------------
 
   webserver.onNotFound([](AsyncWebServerRequest *request) {
@@ -1160,4 +1361,72 @@ void handlerSetup()
     Serial.println("[WARNING]: Restarting");
     ESP.restart();
   });
+
+  // ----------------------------- Error Handle ---------------------------------
+
+  webserver.on("/error", HTTP_GET, [](AsyncWebServerRequest *request) {
+    errorCode = "123";
+    errorText = "Nothing went wrong, all is good. This is just a test";
+    request->send(FILESYSTEM, "/error.htm", String(), false, processor);
+  });
+
+  // ----------------------------- Editor Handle ---------------------------------
+
+  webserver.on("/editor", HTTP_POST, [](AsyncWebServerRequest *request) {
+    int params = request->params();
+    int i;
+    int filecount = 0;
+    for (i = 0; i < params; i++)
+    {
+      AsyncWebParameter *p = request->getParam(i);
+      Serial.printf("[INFO]: Deleting file: %s\n", p->value().c_str());
+      String filename = "/logos/";
+      filename += p->value().c_str();
+      if (SPIFFS.exists(filename))
+      {
+        SPIFFS.remove(filename);
+      }
+
+      resultFiles += p->value().c_str();
+      resultFiles += "<br>";
+      filecount++;
+    }
+    if (filecount > 0)
+    {
+      resultHeader = "Succes!";
+    }
+    else
+    {
+      resultHeader = "Fail!";
+    }
+    resultText = String(filecount);
+    request->send(FILESYSTEM, "/editor.htm", String(), false, deleteProcessor);
+    resultFiles = "";
+  });
+
+  // ----------------------------- JSON Download Handle ---------------------------------
+
+  webserver.on("/download", HTTP_GET, [](AsyncWebServerRequest *request) {
+    AsyncWebParameter *p = request->getParam("file");
+    String filerequest = p->value().c_str();
+    Serial.printf("[INFO]: Requested file: %s\n", filerequest.c_str());
+
+    String downloadfile = "/config/" + filerequest;
+    Serial.printf("[INFO]: Full path: %s\n", downloadfile.c_str());
+
+    if (FILESYSTEM.exists(downloadfile))
+    {
+      Serial.printf("[INFO]: Download file %s\n", downloadfile.c_str());
+      request->send(FILESYSTEM, downloadfile, String(), true);
+    }
+    else
+    {
+      Serial.printf("[INFO]: Download file %s doesn't exits!\n", downloadfile.c_str());
+    }
+  });
+
+  // ----------------------------- JSON Upload Handle ---------------------------------
+
+  webserver.on(
+      "/uploadJSON", HTTP_POST, [](AsyncWebServerRequest *request) {}, handleJSONUpload);
 }

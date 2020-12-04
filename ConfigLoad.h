@@ -39,7 +39,7 @@ bool loadMainConfig()
 
   configfile.close();
 
-  if(error)
+  if (error)
   {
     Serial.println("[ERROR]: deserializeJson() error");
     Serial.println(error.c_str());
@@ -96,12 +96,11 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
     }
-  
   }
   else if (value == "homescreen")
   {
@@ -144,7 +143,7 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
@@ -418,7 +417,7 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
@@ -692,7 +691,7 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
@@ -964,7 +963,7 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
@@ -1238,7 +1237,7 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
@@ -1512,7 +1511,7 @@ void loadConfig(String value)
 
     configfile.close();
 
-    if(error)
+    if (error)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());

@@ -153,7 +153,9 @@
 	<div id="maincontent" style="display: none;">
 	<h1>FreeTouchDeck Configurator</h1>
 	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
+	<form class="form" method="post" action='/uploadJSON' id="uploadjsonfile" enctype="multipart/form-data"></form>
 
+	
 	<!-- Menu -->
 	<div class="tab">
 		<button class="tablinks" onclick="openMenu(event, 'general')">General</button>
@@ -163,10 +165,18 @@
 		<button class="tablinks" onclick="openMenu(event, 'menu3')">Menu 3</button>
 		<button class="tablinks" onclick="openMenu(event, 'menu4')">Menu 4</button>
 		<button class="tablinks" onclick="openMenu(event, 'menu5')">Menu 5</button>
-		<button class="tablinks" onclick="openMenu(event, 'uploadimage')">Upload</button>
+		<button class="tablinks" onclick="openMenu(event, 'uploadimage')">Upload logo</button>
 		
 		<form method='post' action='/restart'>
 		<button style="float: right;" onclick="return confirm('Are you sure? Unsaved configuration will be lost!')" class="tablinks"> Restart </button></form>
+
+		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'info')">Info</button>
+
+		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'editor')">File editor</button>
+
+		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'uploadjson')">Upload Json</button>
+ 
+
 
 	</div>
 
@@ -176,11 +186,12 @@
 		<p>
 			Welcome to the configurator! Select an option/page from the top menu. If you have any questions, join my 
 			Discord server: <a href="https://discord.gg/RE3XevS" target="_blank">https://discord.gg/RE3XevS</a><br/>
-			A guide on how to use the configurator can be found here: <a href="https://github.com/DustinWatts/FreeTouchDeck/wiki/The-Configurator" target="_blank"> FreeTouchDeck Wiki</a>
+			A guide on how to use the configurator can be found here: <a href="https://github.com/DustinWatts/FreeTouchDeck/wiki/3.-The-Configurator" target="_blank"> FreeTouchDeck Wiki</a>
 		</p>
 	</div>
 	<!-- Tab General -->
 	<div id="general" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=colors.json">download colors.json</a></div><br>
 		<h3>General Settings</h3>
 		<p>
 		<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
@@ -228,6 +239,7 @@
 	</div>
 	<!-- Tab Home Menu -->
 	<div id="home" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=homescreen.json">download homescreen.json</a></div><br>
 		<h3>Home Menu</h3>
 		<p>
 		<form method='post' id="savehomescreen" action='/saveconfig'>
@@ -283,6 +295,7 @@
 	</div>
 	<!-- Tab Menu 1 -->
 	<div id="menu1" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=menu1.json">download menu1.json</a></div><br>
 		<h3>Menu 1</h3>
 		<p>
 		<form method='post' id="savemenu1" action='/saveconfig'>
@@ -386,6 +399,7 @@
 	</div>
 	<!-- Tab Menu 2 -->
 	<div id="menu2" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=menu2.json">download menu2.json</a></div><br>
 		<h3>Menu 2</h3>
 		<p>
 		<form method='post' id="savemenu2" action='/saveconfig'>
@@ -489,6 +503,7 @@
 	</div>
 	<!-- Tab Menu 3 -->
 	<div id="menu3" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=menu3.json">download menu3.json</a></div><br>
 		<h3>Menu 3</h3>
 		<p>
 		<form method='post' id="savemenu3" action='/saveconfig'>
@@ -592,6 +607,7 @@
 	</div>
 	<!-- Tab Menu 4 -->
 	<div id="menu4" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=menu4.json">download menu4.json</a></div><br>
 		<h3>Menu 4</h3>
 		<p>
 		<form method='post' id="savemenu4" action='/saveconfig'>
@@ -695,6 +711,7 @@
 	</div>
 	<!-- Tab Menu 5 -->
 	<div id="menu5" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=menu5.json">download menu5.json</a></div><br>
 		<h3>Menu 5</h3>
 		<p>
 		<form method='post' id="savemenu5" action='/saveconfig'>
@@ -811,6 +828,37 @@
 			<button style='cursor: pointer;' form="uploadfile" type="save">Upload</button>
 		</div>
 		</p>
+	</div>
+
+	<!-- File Editor -->
+	<div id="editor" class="tabcontent">
+		<h3>Remove files</h3>
+			
+			<div class="form" id=deletefilelist style="width: 20%; text-align: left; margin: auto;">
+				
+			</div>
+
+	</div>
+
+	 <!-- Upload JSON -->
+	 <div id="uploadjson" class="tabcontent">
+	    <h3>Upload a JSON Config File</h3>
+	    <div style="width: 70%; text-align: left; margin: auto;"> You can upload a previously downloaded JSON file to save you some time from having to configure a whole menu. The filename should be the menu name (all lower-case), e.g. menu1.json for Menu 1, menu2.json for Menu 2, etc. It is also a good idea to validate your .json file if you made any manual modifications. You can do that using <a href="https://jsonlint.com/" target="_blank">JSONLint</a><br/><br/></div>
+	    <p>
+	    <div class="form" style="width: 10%; text-align: center; margin: auto;">
+	        <input form="uploadjsonfile" type="file" name="name" accept=".json"><br /><br />
+	        <button style='cursor: pointer;' form="uploadjsonfile" type="save">Upload JSON</button>
+	    </div>
+	    </p>
+	</div>
+
+	<!-- Upload JSON -->
+	 <div id="info" class="tabcontent">
+	    <h3>About FreeTouchDeck</h3>
+	    <div id ="infocontent" style="width: 40%; text-align: left; margin: auto;">
+	    
+	    </div>
+	    <p>
 	</div>
 
 
@@ -1293,6 +1341,67 @@
 		      }
 
 		      ]
+		  },
+		  	{
+		    name: 'Combos',
+		    value: '10',
+		    subitems: [{
+		        name: 'Left CTRL + SHIFT',
+		        value: '1'
+		      },
+		      {
+		        name: 'Left ALT + SHIFT',
+		        value: '2'
+		      },
+		      {
+		        name: 'Left GUI + SHIFT',
+		        value: '3'
+		      },
+		      {
+		        name: 'Left CTRL + GUI',
+		        value: '4'
+		      },
+		      {
+		        name: 'Left ALT + GUI',
+		        value: '5'
+		      },
+		      {
+		        name: 'Left CTRL + ALT',
+		        value: '6'
+		      },
+		      {
+		        name: 'Left CTRL + ALT + GUI',
+		        value: '7'
+		      },
+		      {
+		        name: 'Right CTRL + SHIFT',
+		        value: '8'
+		      },
+		      {
+		        name: 'Right ALT + SHIFT',
+		        value: '9'
+		      },
+		      {
+		        name: 'Right GUI + SHIFT',
+		        value: '10'
+		      },
+		      {
+		        name: 'Right CTRL + GUI',
+		        value: '11'
+		      },
+		      {
+		        name: 'Right ALT + GUI',
+		        value: '12'
+		      },
+		      {
+		        name: 'Right CTRL + ALT',
+		        value: '13'
+		      },
+		      {
+		        name: 'Right CTRL + ALT + GUI',
+		        value: '14'
+		      }
+			]
 		  }
 		];
 
@@ -3415,6 +3524,10 @@ $(function () {
 
 	<script>
 
+		function createCheck(filename) {
+    		return `<input form="delete" type="checkbox" id="${filename}" name="${filename}" value="${filename}"><label for="${filename}"> ${filename}</label><br>`;
+		}
+
 		function fillvaluelist(targetNode, srcArray) {
 
 			targetNode.innerHTML = srcArray.reduce((options, { value, name }) =>
@@ -3887,6 +4000,54 @@ $(function () {
 				document.getElementById("homescreenlogo5").add(new Option(data.logo5));
 
 			})
+			.then((data) => {
+				fetch('/list?dir=/logos')
+					.then((response3) => {
+						return response3.json()
+					})
+					.then((data3) => {
+						var checkboxlist = '<form method="post" id="delete" action="/editor">';
+						data3.forEach(obj => {
+							Object.entries(obj).forEach(([key, value]) => {
+								
+								var input = createCheck(value); // Creates the html for the checkbox
+        						checkboxlist += input;
+
+							});
+
+						});
+						checkboxlist += '<br><button style="cursor: pointer;"" type="save">Delete files</button></form>';
+						document.getElementById("deletefilelist").innerHTML = checkboxlist;
+
+					})
+					.catch((err) => {
+						console.log(err)
+					})
+
+			})
+			.then((data) => {
+				fetch('/info')
+					.then((response4) => {
+						return response4.json()
+					})
+					.then((data4) => {
+						var divcontent = '';
+						data4.forEach(obj => {
+							Object.entries(obj).forEach(([key, value]) => {
+								
+								divcontent += `${key}: ${value}<br>`;
+							});
+
+						});
+						document.getElementById("infocontent").innerHTML = divcontent;
+
+					})
+					.catch((err) => {
+						console.log(err)
+					})
+
+			})
+
 			.then((data) => {
 				fetch('/list?dir=/logos')
 					.then((response2) => {

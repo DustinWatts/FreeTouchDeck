@@ -4,7 +4,7 @@ Purpose: This function takes an int as an action and value. It uses
          e.g. write, print, press.
 Input  : int action, int value, char symbol
 Output : none
-Note   : Case 9 is used for special functions, none bleKeyboard related.
+Note   : Case 9 is used for special functions, non-bleKeyboard related.
 */
 
 void bleKeyboardAction(int action, int value, char *symbol)
@@ -195,7 +195,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     case 24:
       bleKeyboard.press(KEY_F24);
-      break;    
+      break;
     default:
       //if nothing matches do nothing
       break;
@@ -243,6 +243,69 @@ void bleKeyboardAction(int action, int value, char *symbol)
         Serial.print("[INFO]: Timer set to: ");
         Serial.println(wificonfig.sleeptimer);
       }
+      break;
+    }
+    break;
+  case 10: // Combos
+    switch (value)
+    {
+    case 1:
+      bleKeyboard.press(KEY_LEFT_CTRL);
+      bleKeyboard.press(KEY_LEFT_SHIFT);
+      break;
+    case 2:
+      bleKeyboard.press(KEY_LEFT_ALT);
+      bleKeyboard.press(KEY_LEFT_SHIFT);
+      break;
+    case 3:
+      bleKeyboard.press(KEY_LEFT_GUI);
+      bleKeyboard.press(KEY_LEFT_SHIFT);
+      break;
+    case 4:
+      bleKeyboard.press(KEY_LEFT_CTRL);
+      bleKeyboard.press(KEY_LEFT_GUI);
+      break;
+    case 5:
+      bleKeyboard.press(KEY_LEFT_ALT);
+      bleKeyboard.press(KEY_LEFT_GUI);
+      break;
+    case 6:
+      bleKeyboard.press(KEY_LEFT_CTRL);
+      bleKeyboard.press(KEY_LEFT_ALT);
+      break;
+    case 7:
+      bleKeyboard.press(KEY_LEFT_CTRL);
+      bleKeyboard.press(KEY_LEFT_ALT);
+      bleKeyboard.press(KEY_LEFT_GUI);
+      break;
+    case 8:
+      bleKeyboard.press(KEY_RIGHT_CTRL);
+      bleKeyboard.press(KEY_RIGHT_SHIFT);
+      break;
+    case 9:
+      bleKeyboard.press(KEY_RIGHT_ALT);
+      bleKeyboard.press(KEY_RIGHT_SHIFT);
+      break;
+    case 10:
+      bleKeyboard.press(KEY_RIGHT_GUI);
+      bleKeyboard.press(KEY_RIGHT_SHIFT);
+      break;
+    case 11:
+      bleKeyboard.press(KEY_RIGHT_CTRL);
+      bleKeyboard.press(KEY_RIGHT_GUI);
+      break;
+    case 12:
+      bleKeyboard.press(KEY_RIGHT_ALT);
+      bleKeyboard.press(KEY_RIGHT_GUI);
+      break;
+    case 13:
+      bleKeyboard.press(KEY_RIGHT_CTRL);
+      bleKeyboard.press(KEY_RIGHT_ALT);
+      break;
+    case 14:
+      bleKeyboard.press(KEY_RIGHT_CTRL);
+      bleKeyboard.press(KEY_RIGHT_ALT);
+      bleKeyboard.press(KEY_RIGHT_GUI);
       break;
     }
     break;

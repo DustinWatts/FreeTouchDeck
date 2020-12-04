@@ -156,7 +156,7 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
 
   if (!bmpFS)
   {
-    
+
     Serial.print("File not found:");
     Serial.println(filename);
     return;
@@ -223,19 +223,19 @@ Note   : none
 
 int32_t readNbytesInt(File *p_file, int position, byte nBytes)
 {
-    if (nBytes > 4)
-        return 0;
+  if (nBytes > 4)
+    return 0;
 
-    p_file->seek(position);
+  p_file->seek(position);
 
-    int32_t weight = 1;
-    int32_t result = 0;
-    for (; nBytes; nBytes--)
-    {
-        result += weight * p_file->read();
-        weight <<= 8;
-    }
-    return result;
+  int32_t weight = 1;
+  int32_t result = 0;
+  for (; nBytes; nBytes--)
+  {
+    result += weight * p_file->read();
+    weight <<= 8;
+  }
+  return result;
 }
 
 /* ---------- Read the colour of the first pixel  ---------------- 
@@ -246,32 +246,33 @@ Output : uint16_t
 Note   : Uses readNbytesInt
 */
 
-uint16_t getBMPColor(const char *filename){
+uint16_t getBMPColor(const char *filename)
+{
 
-    // Open File
-    File bmpImage;
-    bmpImage = SPIFFS.open(filename, FILE_READ);
+  // Open File
+  File bmpImage;
+  bmpImage = SPIFFS.open(filename, FILE_READ);
 
-    int32_t dataStartingOffset = readNbytesInt(&bmpImage, 0x0A, 4);
-    int16_t pixelsize = readNbytesInt(&bmpImage, 0x1C, 2);
+  int32_t dataStartingOffset = readNbytesInt(&bmpImage, 0x0A, 4);
+  int16_t pixelsize = readNbytesInt(&bmpImage, 0x1C, 2);
 
-    if (pixelsize != 24)
-    {
-        Serial.println("[WARNING]: getBMPColor: Image is not 24 bpp");
-        return 0x0000;
-    }
+  if (pixelsize != 24)
+  {
+    Serial.println("[WARNING]: getBMPColor: Image is not 24 bpp");
+    return 0x0000;
+  }
 
-    bmpImage.seek(dataStartingOffset); //skip bitmap header
+  bmpImage.seek(dataStartingOffset); //skip bitmap header
 
-    byte R, G, B;
+  byte R, G, B;
 
-    B = bmpImage.read();
-    G = bmpImage.read();
-    R = bmpImage.read();
- 
-    bmpImage.close();
+  B = bmpImage.read();
+  G = bmpImage.read();
+  R = bmpImage.read();
 
-    return tft.color565(R, G, B);
+  bmpImage.close();
+
+  return tft.color565(R, G, B);
 }
 
 /* ---------- Get the colour of the first pixel in an image  ---------------- 
@@ -448,7 +449,7 @@ uint16_t getImageBG(int logonumber)
     }
   }
   else if (pageNum == 6)
-  {   
+  {
     return 0x0000;
   }
   else

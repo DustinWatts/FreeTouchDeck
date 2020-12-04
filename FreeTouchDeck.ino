@@ -39,7 +39,7 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
-//#define USECAPTOUCH
+#define USECAPTOUCH
 
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
 //#define CUSTOM_TOUCH_SDA 26
@@ -54,9 +54,9 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define speakerPin 26
 
-const char* versionnumber = "0.9.3";
+const char *versionnumber = "0.9.4";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -359,7 +359,6 @@ void setup()
   // If we are woken up we do not need the splash screen
   if (wakeup_reason > 0)
   {
-
     // Don't draw splash screen
   }
   else
@@ -372,7 +371,9 @@ void setup()
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    /* Version 0.9.3 Added support for Stream Deck images. Backwards compatible with the images made for FreeTouchDeck
+    /* Version 0.9.4 Added the configurator option to delete images. Added the option to download and upload menu configurations for
+     *  sharing or saving. Also now checking for free space in SPIFFS when uploading an image. Added "combos" in conigurator 
+     *  (i.e. CRTL + ALT) for most used combinations.
     */
 
     tft.printf("Loading version %s\n", versionnumber);
@@ -451,6 +452,13 @@ void setup()
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
 
+  //------------------BLE Initialization ------------------------------------------------------------------------
+
+  Serial.println("[INFO]: Starting BLE");
+  bleKeyboard.begin();
+
+  // ---------------- Start the first keypad -------------
+
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
 
@@ -470,11 +478,6 @@ void setup()
     islatched[28] = 1;
   }
 #endif
-
-  //------------------BLE Initialization ------------------------------------------------------------------------
-
-  Serial.println("[INFO]: Starting BLE");
-  bleKeyboard.begin();
 }
 
 //--------------------- LOOP ---------------------------------------------------------------------
@@ -622,127 +625,152 @@ void loop(void)
 
         // Draw normal button space (non inverted)
 
-            int col, row;
+        int col, row;
 
-            if(b == 0){
-              col = 0;
-              row = 0;
-            } else if(b == 1){
-              col = 1;
-              row = 0;
-            } else if(b == 2){
-              col = 2;
-              row = 0;
-            } else if(b == 3){
-              col = 0;
-              row = 1;
-            } else if(b == 4){
-              col = 1;
-              row = 1;
-            } else if(b == 5){
-              col = 2;
-              row = 1;
-            }
+        if (b == 0)
+        {
+          col = 0;
+          row = 0;
+        }
+        else if (b == 1)
+        {
+          col = 1;
+          row = 0;
+        }
+        else if (b == 2)
+        {
+          col = 2;
+          row = 0;
+        }
+        else if (b == 3)
+        {
+          col = 0;
+          row = 1;
+        }
+        else if (b == 4)
+        {
+          col = 1;
+          row = 1;
+        }
+        else if (b == 5)
+        {
+          col = 2;
+          row = 1;
+        }
 
-            int index;
+        int index;
 
-          if (pageNum == 2)
+        if (pageNum == 2)
+        {
+          index = b + 5;
+        }
+        else if (pageNum == 3)
+        {
+          index = b + 10;
+        }
+        else if (pageNum == 4)
+        {
+          index = b + 15;
+        }
+        else if (pageNum == 5)
+        {
+          index = b + 20;
+        }
+        else if (pageNum == 6)
+        {
+          index = b + 25;
+        }
+        else
+        {
+          index = b;
+        }
+
+        uint16_t buttonBG;
+        bool drawTransparent;
+        uint16_t imageBGColor = getImageBG(b);
+        if (imageBGColor > 0)
+        {
+          buttonBG = imageBGColor;
+          drawTransparent = false;
+        }
+        else
+        {
+          if (pageNum == 0)
           {
-            index = b + 5;
-          }
-          else if (pageNum == 3)
-          {
-            index = b + 10;
-          }
-          else if (pageNum == 4)
-          {
-            index = b + 15;
-          }
-          else if (pageNum == 5)
-          {
-            index = b + 20;
-          }
-          else if (pageNum == 6)
-          {
-            index = b + 25;
+            buttonBG = generalconfig.menuButtonColour;
+            drawTransparent = true;
           }
           else
           {
-            index = b;
-          }
-              
-            
-            uint16_t buttonBG;
-            bool drawTransparent;
-            uint16_t imageBGColor = getImageBG(b);
-            if(imageBGColor > 0)
+            if (pageNum == 6 && b == 5)
             {
-              buttonBG = imageBGColor;
-              drawTransparent = false;
+              buttonBG = generalconfig.menuButtonColour;
+              drawTransparent = true;
             }
             else
             {
-              if(pageNum == 0){
-                buttonBG = generalconfig.menuButtonColour;
-                drawTransparent = true;
-              }else{
-                if(pageNum == 6 && b == 5)
-                {
-                  buttonBG = generalconfig.menuButtonColour;
-                  drawTransparent = true;
-                }else{
-                buttonBG = generalconfig.functionButtonColour;
-                drawTransparent = true;
-                }
-              }
+              buttonBG = generalconfig.functionButtonColour;
+              drawTransparent = true;
             }
-            tft.setFreeFont(LABEL_FONT);
-            key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                              KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                              KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
-                              "", KEY_TEXTSIZE);
-            key[b].drawButton();
-            drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.            
-
-          if (islatched[index] && b < 5)
-          {
-            drawlatched(b, col, row, true);
           }
-          
+        }
+        tft.setFreeFont(LABEL_FONT);
+        key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                          KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                          KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
+                          "", KEY_TEXTSIZE);
+        key[b].drawButton();
+        drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+
+        if (islatched[index] && b < 5)
+        {
+          drawlatched(b, col, row, true);
+        }
       }
 
       if (key[b].justPressed())
-      { 
-            int col, row;
+      {
+        int col, row;
 
-            if(b == 0){
-              col = 0;
-              row = 0;
-            } else if(b == 1){
-              col = 1;
-              row = 0;
-            } else if(b == 2){
-              col = 2;
-              row = 0;
-            } else if(b == 3){
-              col = 0;
-              row = 1;
-            } else if(b == 4){
-              col = 1;
-              row = 1;
-            } else if(b == 5){
-              col = 2;
-              row = 1;
-            }
+        if (b == 0)
+        {
+          col = 0;
+          row = 0;
+        }
+        else if (b == 1)
+        {
+          col = 1;
+          row = 0;
+        }
+        else if (b == 2)
+        {
+          col = 2;
+          row = 0;
+        }
+        else if (b == 3)
+        {
+          col = 0;
+          row = 1;
+        }
+        else if (b == 4)
+        {
+          col = 1;
+          row = 1;
+        }
+        else if (b == 5)
+        {
+          col = 2;
+          row = 1;
+        }
 
-            tft.setFreeFont(LABEL_FONT);
-            key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                              KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                              KEY_W, KEY_H, TFT_WHITE, TFT_WHITE, 0xFFFF,
-                              "", KEY_TEXTSIZE);
-            key[b].drawButton();
-            //drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
-            
+        tft.setFreeFont(LABEL_FONT);
+        key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+                          KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+                          KEY_W, KEY_H, TFT_WHITE, TFT_WHITE, 0xFFFF,
+                          "", KEY_TEXTSIZE);
+        key[b].drawButton();
+        //drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
+
         //---------------------------------------- Button press handeling --------------------------------------------------
 
         if (pageNum == 0) //Home menu
