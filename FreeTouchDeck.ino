@@ -56,7 +56,9 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.5";
+// ------- Uncomment the code below if you want to use RGB LEDs -------
+#define PIXELPIN 25
+const char *versionnumber = "0.9.5.1";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -203,6 +205,7 @@ struct Config
   uint16_t functionButtonColour;
   uint16_t backgroundColour;
   uint16_t latchedColour;
+  uint16_t ledColour;
 };
 
 struct Wificonfig
@@ -245,6 +248,45 @@ bool displayinginfo;
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
+
+#ifdef PIXELPIN
+#include "NeoPixelBus.h"
+#include "NeoPixelAnimator.h"
+#define PIXELCOUNT 7 //Define the number of leds
+const uint16_t PixelCount = PIXELCOUNT; // make sure to set this to the number of pixels in your strip
+const uint8_t PixelPin = PIXELPIN;   // make sure to set this to the correct pin, ignored for Esp8266
+
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount, PixelPin);
+// For Esp8266, the Pin is omitted and it uses GPIO3 due to DMA hardware use.  
+// There are other Esp8266 alternative methods that provide more pin options, but also have
+// other side effects.
+//NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
+//
+// NeoEsp8266Uart800KbpsMethod uses GPI02 instead
+
+void SetPixelColorAndShow(RgbColor colortarget)
+{
+     for (uint16_t pixel = 0; pixel < PixelCount; pixel++) {
+         strip.SetPixelColor(pixel, colortarget); 
+     }
+     strip.Show();
+}
+
+void SetPixelColorToBlack()
+{
+  SetPixelColorAndShow(RgbColor(0,0,0));
+}
+
+void SetPixelColorToConfiguredValue()
+{
+  double r = ((generalconfig.ledColour >> 11) & 0x1F) / 31.0; // red   0.0 .. 1.0
+  double g = ((generalconfig.ledColour >> 5) & 0x3F) / 63.0;  // green 0.0 .. 1.0
+  double b = (generalconfig.ledColour & 0x1F) / 31.0;        
+
+  SetPixelColorAndShow(RgbColor(r,g,b));
+}
+
+#endif
 
 //--------- Internal references ------------
 // (this needs to be below all structs etc..)
@@ -456,6 +498,13 @@ void setup()
   Serial.println("[INFO]: Starting BLE");
   bleKeyboard.begin();
 
+  //------------------LED Shield Initialization------------------------------------------------------------------
+  #ifdef PIXELPIN
+  //------LED Initialization----
+  Serial.println("[INFO: Starting LED");
+  strip.Begin();
+  #endif
+  
   // ---------------- Start the first keypad -------------
 
   // Draw background
@@ -483,7 +532,10 @@ void setup()
 
 void loop(void)
 {
-
+  #ifdef PIXELPIN
+     SetPixelColorToBlack();
+  #endif
+  
   if (pageNum == 7)
   {
 
@@ -606,6 +658,10 @@ void loop(void)
       if (pressed && key[b].contains(t_x, t_y))
       {
         key[b].press(true); // tell the button it is pressed
+
+        #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue();
+        #endif 
 
         // After receiving a valid touch reset the sleep timer
         previousMillis = millis();

@@ -211,7 +211,10 @@
 					name='latchcolor' type="color" value=''>
 				&nbsp;&nbsp;Background Colour:&nbsp;
 				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='background'
-					name='background' type="color" value=''></div><br>
+					name='background' type="color" value=''>
+				&nbsp;&nbsp;Led Colour:&nbsp;
+				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='ledcolor'
+						name='ledcolor' type="color" value=''></div><br>	
 
 				<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
 					<h2>Deep Sleep</h2>
@@ -1344,7 +1347,11 @@
 		  },
 		  	{
 		    name: 'Combos',
+<<<<<<< HEAD
 		    value: '9',
+=======
+		    value: '10',
+>>>>>>> 8de5a55e8f4c1b512333aa452357d03302f24211
 		    subitems: [{
 		        name: 'Left CTRL + SHIFT',
 		        value: '1'
@@ -4114,6 +4121,7 @@ $(function () {
 				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
 				document.getElementById("latchcolor").value = data.latchcolor;
 				document.getElementById("background").value = data.background;
+				document.getElementById("ledcolor").value=data.ledcolor;
 			}).then(() => {
 				getsleepconfig();
 			})

@@ -319,6 +319,8 @@ void handlerSetup()
         colors["latchcolor"] = latchcolor->value().c_str();
         AsyncWebParameter *background = request->getParam("background", true);
         colors["background"] = background->value().c_str();
+        AsyncWebParameter *ledcolor = request->getParam("ledcolor", true);
+        colors["ledcolor"] = ledcolor->value().c_str();
 
         if (serializeJsonPretty(doc, file) == 0)
         {

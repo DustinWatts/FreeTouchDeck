@@ -73,6 +73,8 @@ void loadConfig(String value)
     const char *functionbuttoncolor = doc["functionbuttoncolor"]; // Get the colour for the function buttons.
     const char *latchcolor = doc["latchcolor"];                   // Get the colour to use when latching.
     const char *bgcolor = doc["background"];                      // Get the colour for the background.
+    const char *ledcolor = doc["ledcolor"];
+    
 
     char menubuttoncolorchar[64];
     strcpy(menubuttoncolorchar, menubuttoncolor);
@@ -93,6 +95,11 @@ void loadConfig(String value)
     strcpy(backgroundcolorchar, bgcolor);
     unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
     generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
+
+    char ledcolorchar[64];
+    strcpy(ledcolorchar, ledcolor);
+    unsigned long rgb888ledcolor = convertHTMLtoRGB888(ledcolorchar);
+    generalconfig.ledColour = convertRGB888ToRGB565(rgb888ledcolor);
 
     configfile.close();
 
