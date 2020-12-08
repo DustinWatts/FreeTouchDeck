@@ -1,9 +1,9 @@
 {
-  "logo0": "question.bmp",
-  "logo1": "question.bmp",
-  "logo2": "question.bmp",
-  "logo3": "question.bmp",
-  "logo4": "question.bmp",
+  "logo0": "chrome.bmp",
+  "logo1": "ie.bmp",
+  "logo2": "firefox.bmp",
+  "logo3": "discord.bmp",
+  "logo4": "teams.bmp",
   "button0":{
     "latch": false,
     "actionarray": [ "0", "0", "0" ],
