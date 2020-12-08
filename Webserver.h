@@ -179,7 +179,7 @@ bool spaceLeft()
 {
   float minmem = 100000.00; // Always leave 100 kB free pace on SPIFFS
   float freeMemory = SPIFFS.totalBytes() - SPIFFS.usedBytes();
-  Serial.printf("[INFO]: Free memory left: %f bytes\n", freeMemory);
+  Serial.printf("[INFO]: Free memory left: %i bytes\n", static_cast<int>(freeMemory));
   if (freeMemory < minmem)
   {
     return false;

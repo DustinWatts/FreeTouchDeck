@@ -56,7 +56,7 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.4";
+const char *versionnumber = "0.9.5";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -371,9 +371,8 @@ void setup()
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    /* Version 0.9.4 Added the configurator option to delete images. Added the option to download and upload menu configurations for
-     *  sharing or saving. Also now checking for free space in SPIFFS when uploading an image. Added "combos" in conigurator 
-     *  (i.e. CRTL + ALT) for most used combinations.
+    /* Version 0.9.5 Fix combos being undefined is HTML/JS. Action "9" is now combos 
+     * and "10" is special functions (used by FreeTouchDeck). 
     */
 
     tft.printf("Loading version %s\n", versionnumber);
@@ -1356,19 +1355,19 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(9, 1, 0);
+            bleKeyboardAction(10, 1, 0);
           }
           else if (b == 1) // Button 1
           {
-            bleKeyboardAction(9, 2, 0);
+            bleKeyboardAction(10, 2, 0);
           }
           else if (b == 2) // Button 2
           {
-            bleKeyboardAction(9, 3, 0);
+            bleKeyboardAction(10, 3, 0);
           }
           else if (b == 3) // Button 3
           {
-            bleKeyboardAction(9, 4, 0);
+            bleKeyboardAction(10, 4, 0);
             if (islatched[28])
             {
               islatched[28] = 0;

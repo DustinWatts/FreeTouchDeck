@@ -207,46 +207,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
   case 8: // Send Special Character
     bleKeyboard.print(symbol);
     break;
-  case 9: // Special functions
-    switch (value)
-    {
-    case 1:        // Enter config mode
-      pageNum = 7; // By setting pageNum to 7
-      configmode();
-      drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 7
-      break;
-    case 2: // Display Brightness Down
-      if (ledBrightness > 25)
-      {
-        ledBrightness = ledBrightness - 25;
-        ledcWrite(0, ledBrightness);
-      }
-      break;
-    case 3: // Display Brightness Up
-      if (ledBrightness < 230)
-      {
-        ledBrightness = ledBrightness + 25;
-        ledcWrite(0, ledBrightness);
-      }
-      break;
-    case 4: // Sleep Enabled
-      if (wificonfig.sleepenable)
-      {
-        wificonfig.sleepenable = false;
-        Serial.println("[INFO]: Sleep disabled.");
-      }
-      else
-      {
-        wificonfig.sleepenable = true;
-        Interval = wificonfig.sleeptimer * 60000;
-        Serial.println("[INFO]: Sleep enabled.");
-        Serial.print("[INFO]: Timer set to: ");
-        Serial.println(wificonfig.sleeptimer);
-      }
-      break;
-    }
-    break;
-  case 10: // Combos
+  case 9: // Combos
     switch (value)
     {
     case 1:
@@ -306,6 +267,45 @@ void bleKeyboardAction(int action, int value, char *symbol)
       bleKeyboard.press(KEY_RIGHT_CTRL);
       bleKeyboard.press(KEY_RIGHT_ALT);
       bleKeyboard.press(KEY_RIGHT_GUI);
+      break;
+    }
+    break;
+  case 10: // Special functions
+    switch (value)
+    {
+    case 1:        // Enter config mode
+      pageNum = 7; // By setting pageNum to 7
+      configmode();
+      drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 7
+      break;
+    case 2: // Display Brightness Down
+      if (ledBrightness > 25)
+      {
+        ledBrightness = ledBrightness - 25;
+        ledcWrite(0, ledBrightness);
+      }
+      break;
+    case 3: // Display Brightness Up
+      if (ledBrightness < 230)
+      {
+        ledBrightness = ledBrightness + 25;
+        ledcWrite(0, ledBrightness);
+      }
+      break;
+    case 4: // Sleep Enabled
+      if (wificonfig.sleepenable)
+      {
+        wificonfig.sleepenable = false;
+        Serial.println("[INFO]: Sleep disabled.");
+      }
+      else
+      {
+        wificonfig.sleepenable = true;
+        Interval = wificonfig.sleeptimer * 60000;
+        Serial.println("[INFO]: Sleep enabled.");
+        Serial.print("[INFO]: Timer set to: ");
+        Serial.println(wificonfig.sleeptimer);
+      }
       break;
     }
     break;
