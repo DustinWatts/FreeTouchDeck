@@ -58,7 +58,7 @@
 
 // ------- Uncomment the code below if you want to use RGB LEDs -------
 #define PIXELPIN 25
-const char *versionnumber = "0.9.5.1";
+const char *versionnumber = "0.9.5.2";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -189,6 +189,7 @@ struct Menu
   struct Button button3;
   struct Button button4;
   struct Button button5;
+  uint16_t ledColour;
 };
 
 // Struct to hold the general logos.
@@ -206,6 +207,7 @@ struct Config
   uint16_t backgroundColour;
   uint16_t latchedColour;
   uint16_t ledColour;
+  
 };
 
 struct Wificonfig
@@ -277,11 +279,11 @@ void SetPixelColorToBlack()
   SetPixelColorAndShow(RgbColor(0,0,0));
 }
 
-void SetPixelColorToConfiguredValue()
+void SetPixelColorToConfiguredValue(uint16_t ledColour)
 {
-  double r = ((generalconfig.ledColour >> 11) & 0x1F) / 31.0; // red   0.0 .. 1.0
-  double g = ((generalconfig.ledColour >> 5) & 0x3F) / 63.0;  // green 0.0 .. 1.0
-  double b = (generalconfig.ledColour & 0x1F) / 31.0;        
+  double r = ((ledColour >> 11) & 0x1F) / 3.1;
+  double g = ((ledColour >> 5) & 0x3F) / 6.3; 
+  double b = (ledColour & 0x1F) / 3.1;        
 
   SetPixelColorAndShow(RgbColor(r,g,b));
 }
@@ -659,10 +661,6 @@ void loop(void)
       {
         key[b].press(true); // tell the button it is pressed
 
-        #ifdef PIXELPIN         
-            SetPixelColorToConfiguredValue();
-        #endif 
-
         // After receiving a valid touch reset the sleep timer
         previousMillis = millis();
       }
@@ -830,6 +828,11 @@ void loop(void)
 
         if (pageNum == 0) //Home menu
         {
+
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(generalconfig.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             pageNum = 1;
@@ -864,6 +867,10 @@ void loop(void)
 
         else if (pageNum == 1) // Menu 1
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu1.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu1.button0.actions.action0, menu1.button0.actions.value0, menu1.button0.actions.symbol0);
@@ -973,6 +980,10 @@ void loop(void)
 
         else if (pageNum == 2) // Menu 2
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu2.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu2.button0.actions.action0, menu2.button0.actions.value0, menu2.button0.actions.symbol0);
@@ -1082,6 +1093,10 @@ void loop(void)
 
         else if (pageNum == 3) // Menu 3
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu3.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu3.button0.actions.action0, menu3.button0.actions.value0, menu3.button0.actions.symbol0);
@@ -1191,6 +1206,10 @@ void loop(void)
 
         else if (pageNum == 4) // Menu 4
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu4.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu4.button0.actions.action0, menu4.button0.actions.value0, menu4.button0.actions.symbol0);
@@ -1300,6 +1319,10 @@ void loop(void)
 
         else if (pageNum == 5) // Menu 5
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu5.ledColour);
+          #endif 
+        
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu5.button0.actions.action0, menu5.button0.actions.value0, menu5.button0.actions.symbol0);
@@ -1409,6 +1432,10 @@ void loop(void)
 
         else if (pageNum == 6) // Settings page
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(generalconfig.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(10, 1, 0);

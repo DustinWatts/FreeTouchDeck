@@ -212,9 +212,10 @@
 				&nbsp;&nbsp;Background Colour:&nbsp;
 				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='background'
 					name='background' type="color" value=''>
-				&nbsp;&nbsp;Led Colour:&nbsp;
+				&nbsp;&nbsp;Led Colour for Main Menu and Settings:&nbsp;
 				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='ledcolor'
-						name='ledcolor' type="color" value=''></div><br>	
+					name='ledcolor' type="color" value=''>
+				</div><br>
 
 				<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
 					<h2>Deep Sleep</h2>
@@ -392,7 +393,10 @@
 
 					</tr>
 				</tbody>
-			</table>
+			</table><br>
+			&nbsp;&nbsp;Led Colour:&nbsp;
+			<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='screen1ledcolor'
+			name='screen1ledcolor' type="color" value=''>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu1">
 				<br /><button style='cursor: pointer;' form="savemenu1" type='save'>Save Menu 1 Config</button>
@@ -496,7 +500,10 @@
 
 					</tr>
 				</tbody>
-			</table>
+			</table><br>
+			&nbsp;&nbsp;Led Colour:&nbsp;
+			<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='screen2ledcolor'
+			name='screen2ledcolor' type="color" value=''>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu2">
 				<br /><button style='cursor: pointer;' form="savemenu2" type='save'>Save Menu 2 Config</button>
@@ -600,7 +607,10 @@
 
 					</tr>
 				</tbody>
-			</table>
+			</table><br>
+			&nbsp;&nbsp;Led Colour:&nbsp;
+			<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='screen3ledcolor'
+			name='screen3ledcolor' type="color" value=''>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu3">
 				<br /><button style='cursor: pointer;' form="savemenu3" type='save'>Save Menu 3 Config</button>
@@ -704,7 +714,10 @@
 
 					</tr>
 				</tbody>
-			</table>
+			</table><br>
+			&nbsp;&nbsp;Led Colour:&nbsp;
+			<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='screen4ledcolor'
+			name='screen4ledcolor' type="color" value=''>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu4">
 				<br /><button style='cursor: pointer;' form="savemenu4" type='save'>Save Menu 4 Config</button>
@@ -808,7 +821,10 @@
 
 					</tr>
 				</tbody>
-			</table>
+			</table><br>
+			&nbsp;&nbsp;Led Colour:&nbsp;
+			<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='screen5ledcolor'
+			name='screen5ledcolor' type="color" value=''>
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu5">
 				<br /><button style='cursor: pointer;' form="savemenu5" type='save'>Save Menu 5 Config</button>
@@ -1347,11 +1363,7 @@
 		  },
 		  	{
 		    name: 'Combos',
-<<<<<<< HEAD
 		    value: '9',
-=======
-		    value: '10',
->>>>>>> 8de5a55e8f4c1b512333aa452357d03302f24211
 		    subitems: [{
 		        name: 'Left CTRL + SHIFT',
 		        value: '1'
@@ -3625,6 +3637,8 @@ $(function () {
 
 					document.getElementById("screen1logo5").add(new Option("home.bmp"));
 
+					document.getElementById("screen1ledcolor").value = data.ledcolor;
+
 				})
 				.catch((err) => {
 				console.log(err)
@@ -3712,6 +3726,8 @@ $(function () {
 					document.getElementById('screen2button4value2').value = data.button4.valuearray[2];
 
 					document.getElementById("screen2logo5").add(new Option("home.bmp"));
+
+					document.getElementById("screen2ledcolor").value = data.ledcolor;
 
 					})
 						.catch((err) => {
@@ -3802,6 +3818,7 @@ $(function () {
 
 				document.getElementById("screen3logo5").add(new Option("home.bmp"));
 
+				document.getElementById("screen3ledcolor").value = data.ledcolor;
 				})
 					.catch((err) => {
 					console.log(err)
@@ -3891,6 +3908,8 @@ $(function () {
 
 				document.getElementById("screen4logo5").add(new Option("home.bmp"));
 
+				document.getElementById("screen4ledcolor").value = data.ledcolor;
+
 				})
 				.catch((err) => {
 					console.log(err)
@@ -3978,6 +3997,8 @@ $(function () {
 				document.getElementById('screen5button4value2').value = data.button4.valuearray[2];
 
 				document.getElementById("screen5logo5").add(new Option("home.bmp"));
+
+				document.getElementById("screen5ledcolor").value = data.ledcolor;
 
 			})
 			.catch((err) => {
@@ -4121,7 +4142,7 @@ $(function () {
 				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
 				document.getElementById("latchcolor").value = data.latchcolor;
 				document.getElementById("background").value = data.background;
-				document.getElementById("ledcolor").value=data.ledcolor;
+				document.getElementById("ledcolor").value = data.ledcolor;
 			}).then(() => {
 				getsleepconfig();
 			})

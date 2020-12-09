@@ -436,6 +436,8 @@ void handlerSetup()
         menu["logo3"] = screen1logo3->value().c_str();
         AsyncWebParameter *screen1logo4 = request->getParam("screen1logo4", true);
         menu["logo4"] = screen1logo4->value().c_str();
+        AsyncWebParameter *ledcolor = request->getParam("ledcolor", true);
+        menu["ledcolor"] = ledcolor->value().c_str();
 
         JsonObject button0 = doc.createNestedObject("button0");
 
@@ -606,6 +608,8 @@ void handlerSetup()
         menu["logo3"] = screen2logo3->value().c_str();
         AsyncWebParameter *screen2logo4 = request->getParam("screen2logo4", true);
         menu["logo4"] = screen2logo4->value().c_str();
+        AsyncWebParameter *ledcolor = request->getParam("ledcolor", true);
+        menu["ledcolor"] = ledcolor->value().c_str();
 
         JsonObject button0 = doc.createNestedObject("button0");
 
@@ -776,6 +780,8 @@ void handlerSetup()
         menu["logo3"] = screen3logo3->value().c_str();
         AsyncWebParameter *screen3logo4 = request->getParam("screen3logo4", true);
         menu["logo4"] = screen3logo4->value().c_str();
+        AsyncWebParameter *ledcolor = request->getParam("ledcolor", true);
+        menu["ledcolor"] = ledcolor->value().c_str();
 
         JsonObject button0 = doc.createNestedObject("button0");
 
@@ -946,6 +952,8 @@ void handlerSetup()
         menu["logo3"] = screen4logo3->value().c_str();
         AsyncWebParameter *screen4logo4 = request->getParam("screen4logo4", true);
         menu["logo4"] = screen4logo4->value().c_str();
+        AsyncWebParameter *ledcolor = request->getParam("ledcolor", true);
+        menu["ledcolor"] = ledcolor->value().c_str();
 
         JsonObject button0 = doc.createNestedObject("button0");
 
@@ -1116,6 +1124,8 @@ void handlerSetup()
         menu["logo3"] = screen5logo3->value().c_str();
         AsyncWebParameter *screen5logo4 = request->getParam("screen5logo4", true);
         menu["logo4"] = screen5logo4->value().c_str();
+        AsyncWebParameter *ledcolor = request->getParam("ledcolor", true);
+        menu["ledcolor"] = ledcolor->value().c_str();
 
         JsonObject button0 = doc.createNestedObject("button0");
 
