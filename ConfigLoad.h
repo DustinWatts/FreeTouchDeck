@@ -73,6 +73,8 @@ void loadConfig(String value)
     const char *functionbuttoncolor = doc["functionbuttoncolor"]; // Get the colour for the function buttons.
     const char *latchcolor = doc["latchcolor"];                   // Get the colour to use when latching.
     const char *bgcolor = doc["background"];                      // Get the colour for the background.
+    const char *ledcolor = doc["ledcolor"];
+    
 
     char menubuttoncolorchar[64];
     strcpy(menubuttoncolorchar, menubuttoncolor);
@@ -93,6 +95,11 @@ void loadConfig(String value)
     strcpy(backgroundcolorchar, bgcolor);
     unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
     generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
+
+    char ledcolorchar[64];
+    strcpy(ledcolorchar, ledcolor);
+    unsigned long rgb888ledcolor = convertHTMLtoRGB888(ledcolorchar);
+    generalconfig.ledColour = convertRGB888ToRGB565(rgb888ledcolor);
 
     configfile.close();
 
@@ -257,7 +264,7 @@ void loadConfig(String value)
     menu1.button1.actions.action0 = button1_actionarray_0;
     menu1.button1.actions.action1 = button1_actionarray_1;
     menu1.button1.actions.action2 = button1_actionarray_2;
-
+    
     menu1.button2.latch = doc["button2"]["latch"];
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
@@ -303,7 +310,7 @@ void loadConfig(String value)
     menu1.button2.actions.action0 = button2_actionarray_0;
     menu1.button2.actions.action1 = button2_actionarray_1;
     menu1.button2.actions.action2 = button2_actionarray_2;
-
+    
     menu1.button3.latch = doc["button3"]["latch"];
 
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
@@ -394,6 +401,12 @@ void loadConfig(String value)
     menu1.button4.actions.action0 = button4_actionarray_0;
     menu1.button4.actions.action1 = button4_actionarray_1;
     menu1.button4.actions.action2 = button4_actionarray_2;
+
+    const char* ledcolor1 = doc["ledcolor"];
+    char ledcolorchar1[64];
+    strcpy(ledcolorchar1, ledcolor1);
+    unsigned long rgb888ledcolor1 = convertHTMLtoRGB888(ledcolorchar1);
+    menu1.ledColour = convertRGB888ToRGB565(rgb888ledcolor1);
 
     strcpy(templogopath, logopath);
     strcat(templogopath, logo10);
@@ -669,6 +682,12 @@ void loadConfig(String value)
     menu2.button4.actions.action1 = button4_actionarray_1;
     menu2.button4.actions.action2 = button4_actionarray_2;
 
+    const char* ledcolor2 = doc["ledcolor"];
+    char ledcolorchar2[64];
+    strcpy(ledcolorchar2, ledcolor2);
+    unsigned long rgb888ledcolor2 = convertHTMLtoRGB888(ledcolorchar2);
+    menu2.ledColour = convertRGB888ToRGB565(rgb888ledcolor2);
+
     strcpy(templogopath, logopath);
     strcat(templogopath, logo20);
     strcpy(screen2.logo0, templogopath);
@@ -940,6 +959,12 @@ void loadConfig(String value)
     menu3.button4.actions.action0 = button4_actionarray_0;
     menu3.button4.actions.action1 = button4_actionarray_1;
     menu3.button4.actions.action2 = button4_actionarray_2;
+
+    const char* ledcolor3 = doc["ledcolor"];
+    char ledcolorchar3[64];
+    strcpy(ledcolorchar3, ledcolor3);
+    unsigned long rgb888ledcolor3 = convertHTMLtoRGB888(ledcolorchar3);
+    menu3.ledColour = convertRGB888ToRGB565(rgb888ledcolor3);
 
     strcpy(templogopath, logopath);
     strcat(templogopath, logo30);
@@ -1215,6 +1240,12 @@ void loadConfig(String value)
     menu4.button4.actions.action1 = button4_actionarray_1;
     menu4.button4.actions.action2 = button4_actionarray_2;
 
+    const char* ledcolor4 = doc["ledcolor"];
+    char ledcolorchar4[64];
+    strcpy(ledcolorchar4, ledcolor4);
+    unsigned long rgb888ledcolor4 = convertHTMLtoRGB888(ledcolorchar4);
+    menu4.ledColour = convertRGB888ToRGB565(rgb888ledcolor4);
+
     strcpy(templogopath, logopath);
     strcat(templogopath, logo40);
     strcpy(screen4.logo0, templogopath);
@@ -1242,7 +1273,6 @@ void loadConfig(String value)
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
     }
-
     // --------------------- Loading menu 5 ----------------------
   }
   else if (value == "menu5")
@@ -1488,6 +1518,13 @@ void loadConfig(String value)
     menu5.button4.actions.action0 = button4_actionarray_0;
     menu5.button4.actions.action1 = button4_actionarray_1;
     menu5.button4.actions.action2 = button4_actionarray_2;
+
+
+    const char* ledcolor5 = doc["ledcolor"];
+    char ledcolorchar5[64];
+    strcpy(ledcolorchar5, ledcolor5);
+    unsigned long rgb888ledcolor5 = convertHTMLtoRGB888(ledcolorchar5);
+    menu5.ledColour = convertRGB888ToRGB565(rgb888ledcolor5);
 
     strcpy(templogopath, logopath);
     strcat(templogopath, logo50);

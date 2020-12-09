@@ -1,6 +1,7 @@
 {
-	"menubuttoncolor": "#009bf4",
-	"functionbuttoncolor": "#00efcb",
-	"latchcolor": "#fe0149",
-	"background": "#620003"
+	"menubuttoncolor": "#000000",
+	"functionbuttoncolor": "#010e0c",
+	"latchcolor": "#ffffff",
+	"background": "#222425",
+	"ledcolor":"#4019FF"
 }

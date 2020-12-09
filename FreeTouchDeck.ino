@@ -56,7 +56,9 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.5";
+// ------- Uncomment the code below if you want to use RGB LEDs -------
+#define PIXELPIN 25
+const char *versionnumber = "0.9.5.2";
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -187,6 +189,7 @@ struct Menu
   struct Button button3;
   struct Button button4;
   struct Button button5;
+  uint16_t ledColour;
 };
 
 // Struct to hold the general logos.
@@ -203,6 +206,8 @@ struct Config
   uint16_t functionButtonColour;
   uint16_t backgroundColour;
   uint16_t latchedColour;
+  uint16_t ledColour;
+  
 };
 
 struct Wificonfig
@@ -245,6 +250,45 @@ bool displayinginfo;
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
+
+#ifdef PIXELPIN
+#include "NeoPixelBus.h"
+#include "NeoPixelAnimator.h"
+#define PIXELCOUNT 7 //Define the number of leds
+const uint16_t PixelCount = PIXELCOUNT; // make sure to set this to the number of pixels in your strip
+const uint8_t PixelPin = PIXELPIN;   // make sure to set this to the correct pin, ignored for Esp8266
+
+NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount, PixelPin);
+// For Esp8266, the Pin is omitted and it uses GPIO3 due to DMA hardware use.  
+// There are other Esp8266 alternative methods that provide more pin options, but also have
+// other side effects.
+//NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(PixelCount);
+//
+// NeoEsp8266Uart800KbpsMethod uses GPI02 instead
+
+void SetPixelColorAndShow(RgbColor colortarget)
+{
+     for (uint16_t pixel = 0; pixel < PixelCount; pixel++) {
+         strip.SetPixelColor(pixel, colortarget); 
+     }
+     strip.Show();
+}
+
+void SetPixelColorToBlack()
+{
+  SetPixelColorAndShow(RgbColor(0,0,0));
+}
+
+void SetPixelColorToConfiguredValue(uint16_t ledColour)
+{
+  double r = ((ledColour >> 11) & 0x1F) / 3.1;
+  double g = ((ledColour >> 5) & 0x3F) / 6.3; 
+  double b = (ledColour & 0x1F) / 3.1;        
+
+  SetPixelColorAndShow(RgbColor(r,g,b));
+}
+
+#endif
 
 //--------- Internal references ------------
 // (this needs to be below all structs etc..)
@@ -456,6 +500,13 @@ void setup()
   Serial.println("[INFO]: Starting BLE");
   bleKeyboard.begin();
 
+  //------------------LED Shield Initialization------------------------------------------------------------------
+  #ifdef PIXELPIN
+  //------LED Initialization----
+  Serial.println("[INFO: Starting LED");
+  strip.Begin();
+  #endif
+  
   // ---------------- Start the first keypad -------------
 
   // Draw background
@@ -483,7 +534,10 @@ void setup()
 
 void loop(void)
 {
-
+  #ifdef PIXELPIN
+     SetPixelColorToBlack();
+  #endif
+  
   if (pageNum == 7)
   {
 
@@ -774,6 +828,11 @@ void loop(void)
 
         if (pageNum == 0) //Home menu
         {
+
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(generalconfig.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             pageNum = 1;
@@ -808,6 +867,10 @@ void loop(void)
 
         else if (pageNum == 1) // Menu 1
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu1.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu1.button0.actions.action0, menu1.button0.actions.value0, menu1.button0.actions.symbol0);
@@ -917,6 +980,10 @@ void loop(void)
 
         else if (pageNum == 2) // Menu 2
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu2.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu2.button0.actions.action0, menu2.button0.actions.value0, menu2.button0.actions.symbol0);
@@ -1026,6 +1093,10 @@ void loop(void)
 
         else if (pageNum == 3) // Menu 3
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu3.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu3.button0.actions.action0, menu3.button0.actions.value0, menu3.button0.actions.symbol0);
@@ -1135,6 +1206,10 @@ void loop(void)
 
         else if (pageNum == 4) // Menu 4
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu4.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu4.button0.actions.action0, menu4.button0.actions.value0, menu4.button0.actions.symbol0);
@@ -1244,6 +1319,10 @@ void loop(void)
 
         else if (pageNum == 5) // Menu 5
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(menu5.ledColour);
+          #endif 
+        
           if (b == 0) // Button 0
           {
             bleKeyboardAction(menu5.button0.actions.action0, menu5.button0.actions.value0, menu5.button0.actions.symbol0);
@@ -1353,6 +1432,10 @@ void loop(void)
 
         else if (pageNum == 6) // Settings page
         {
+          #ifdef PIXELPIN         
+            SetPixelColorToConfiguredValue(generalconfig.ledColour);
+          #endif 
+          
           if (b == 0) // Button 0
           {
             bleKeyboardAction(10, 1, 0);

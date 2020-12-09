@@ -28,5 +28,6 @@
     "latch": false,
     "actionarray": [ "0", "0", "0" ],
     "valuearray": [ "0", "0", "0" ] 
-  }
+  },
+  "ledcolor":"#4019FF"
 }
