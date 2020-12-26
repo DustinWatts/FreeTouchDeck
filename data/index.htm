@@ -132,7 +132,7 @@
 
 	</style>
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="jquery-3.5.1.slim.min.js"></script>
 
 </head>
 
@@ -154,7 +154,6 @@
 	<h1>FreeTouchDeck Configurator</h1>
 	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
 	<form class="form" method="post" action='/uploadJSON' id="uploadjsonfile" enctype="multipart/form-data"></form>
-
 	
 	<!-- Menu -->
 	<div class="tab">
@@ -174,9 +173,7 @@
 
 		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'editor')">File editor</button>
 
-		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'uploadjson')">Upload Json</button>
- 
-
+		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'uploadjson')">Upload Menu Config</button>
 
 	</div>
 
@@ -315,7 +312,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen1button0action2' name='screen1button0action2'></select>
 							<select class="actions" id='screen1button0value2' name='screen1button0value2'></select>
-							<br />Latch? <input type="checkbox"id="screen1button0latch" name="screen1button0latch">
+							<br />Latch? <input type="checkbox"id="screen1button0latch" name="screen1button0latch"> latch to: <select class="images" id='screen1latchlogo0' name='screen1latchlogo0'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 2
@@ -330,7 +327,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen1button1action2' name='screen1button1action2'></select>
 							<select class="actions" id='screen1button1value2' name='screen1button1value2'></select>
-							<br />Latch? <input type="checkbox"id="screen1button1latch" name="screen1button1latch">
+							<br />Latch? <input type="checkbox"id="screen1button1latch" name="screen1button1latch"> latch to: <select class="images" id='screen1latchlogo1' name='screen1latchlogo1'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 3
@@ -345,7 +342,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen1button2action2' name='screen1button2action2'></select>
 							<select class="actions" id='screen1button2value2' name='screen1button2value2'></select>
-							<br />Latch? <input type="checkbox"id="screen1button2latch" name="screen1button2latch">
+							<br />Latch? <input type="checkbox"id="screen1button2latch" name="screen1button2latch"> latch to: <select class="images" id='screen1latchlogo2' name='screen1latchlogo2'></select>
 						</td>
 					</tr>
 					<tr>
@@ -362,7 +359,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen1button3action2' name='screen1button3action2'></select>
 							<select class="actions" id='screen1button3value2' name='screen1button3value2'></select>
-							<br />Latch? <input type="checkbox"id="screen1button3latch" name="screen1button3latch">
+							<br />Latch? <input type="checkbox"id="screen1button3latch" name="screen1button3latch"> latch to: <select class="images" id='screen1latchlogo3' name='screen1latchlogo3'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 5
@@ -377,7 +374,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen1button4action2' name='screen1button4action2'></select>
 							<select class="actions" id='screen1button4value2' name='screen1button4value2'></select>
-							<br />Latch? <input type="checkbox"id="screen1button4latch" name="screen1button4latch">
+							<br />Latch? <input type="checkbox"id="screen1button4latch" name="screen1button4latch"> latch to: <select class="images" id='screen1latchlogo4' name='screen1latchlogo4'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 6
@@ -419,7 +416,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen2button0action2' name='screen2button0action2'></select>
 							<select class="actions" id='screen2button0value2' name='screen2button0value2'></select>
-							<br />Latch? <input type="checkbox"id="screen2button0latch" name="screen2button0latch">
+							<br />Latch? <input type="checkbox"id="screen2button0latch" name="screen2button0latch"> latch to: <select class="images" id='screen2latchlogo0' name='screen2latchlogo0'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 2
@@ -434,7 +431,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen2button1action2' name='screen2button1action2'></select>
 							<select class="actions" id='screen2button1value2' name='screen2button1value2'></select>
-							<br />Latch? <input type="checkbox"id="screen2button1latch" name="screen2button1latch">
+							<br />Latch? <input type="checkbox"id="screen2button1latch" name="screen2button1latch"> latch to: <select class="images" id='screen2latchlogo1' name='screen2latchlogo1'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 3
@@ -449,7 +446,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen2button2action2' name='screen2button2action2'></select>
 							<select class="actions" id='screen2button2value2' name='screen2button2value2'></select>
-							<br />Latch? <input type="checkbox"id="screen2button2latch" name="screen2button2latch">
+							<br />Latch? <input type="checkbox"id="screen2button2latch" name="screen2button2latch"> latch to: <select class="images" id='screen2latchlogo2' name='screen2latchlogo2'></select>
 						</td>
 					</tr>
 					<tr>
@@ -466,7 +463,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen2button3action2' name='screen2button3action2'></select>
 							<select class="actions" id='screen2button3value2' name='screen2button3value2'></select>
-							<br />Latch? <input type="checkbox"id="screen2button3latch" name="screen2button3latch">
+							<br />Latch? <input type="checkbox"id="screen2button3latch" name="screen2button3latch"> latch to: <select class="images" id='screen2latchlogo3' name='screen2latchlogo3'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 5
@@ -481,7 +478,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen2button4action2' name='screen2button4action2'></select>
 							<select class="actions" id='screen2button4value2' name='screen2button4value2'></select>
-							<br />Latch? <input type="checkbox"id="screen2button4latch" name="screen2button4latch">
+							<br />Latch? <input type="checkbox"id="screen2button4latch" name="screen2button4latch"> latch to: <select class="images" id='screen2latchlogo4' name='screen2latchlogo4'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 6
@@ -523,7 +520,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen3button0action2' name='screen3button0action2'></select>
 							<select class="actions" id='screen3button0value2' name='screen3button0value2'></select>
-							<br />Latch? <input type="checkbox"id="screen3button0latch" name="screen3button0latch">
+							<br />Latch? <input type="checkbox"id="screen3button0latch" name="screen3button0latch"> latch to: <select class="images" id='screen3latchlogo0' name='screen3latchlogo0'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 2
@@ -538,7 +535,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen3button1action2' name='screen3button1action2'></select>
 							<select class="actions" id='screen3button1value2' name='screen3button1value2'></select>
-							<br />Latch? <input type="checkbox"id="screen3button1latch" name="screen3button1latch">
+							<br />Latch? <input type="checkbox"id="screen3button1latch" name="screen3button1latch"> latch to: <select class="images" id='screen3latchlogo1' name='screen3latchlogo1'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 3
@@ -553,7 +550,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen3button2action2' name='screen3button2action2'></select>
 							<select class="actions" id='screen3button2value2' name='screen3button2value2'></select>
-							<br />Latch? <input type="checkbox"id="screen3button2latch" name="screen3button2latch">
+							<br />Latch? <input type="checkbox"id="screen3button2latch" name="screen3button2latch"> latch to: <select class="images" id='screen3latchlogo2' name='screen3latchlogo2'></select>
 						</td>
 					</tr>
 					<tr>
@@ -570,7 +567,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen3button3action2' name='screen3button3action2'></select>
 							<select class="actions" id='screen3button3value2' name='screen3button3value2'></select>
-							<br />Latch? <input type="checkbox"id="screen3button3latch" name="screen3button3latch">
+							<br />Latch? <input type="checkbox"id="screen3button3latch" name="screen3button3latch">  latch to: <select class="images" id='screen3latchlogo3' name='screen3latchlogo3'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 5
@@ -585,7 +582,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen3button4action2' name='screen3button4action2'></select>
 							<select class="actions" id='screen3button4value2' name='screen3button4value2'></select>
-							<br />Latch? <input type="checkbox"id="screen3button4latch" name="screen3button4latch">
+							<br />Latch? <input type="checkbox"id="screen3button4latch" name="screen3button4latch"> latch to: <select class="images" id='screen3latchlogo4' name='screen3latchlogo4'></select>
 						</td>
 						<td style="width: 33%;">
 							Button 6
@@ -627,7 +624,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen4button0action2' name='screen4button0action2'></select>
 							<select class="actions" id='screen4button0value2' name='screen4button0value2'></select>
-							<br />Latch? <input type="checkbox"id="screen4button0latch" name="screen4button0latch">
+							<br />Latch? <input type="checkbox"id="screen4button0latch" name="screen4button0latch"> latch to: <select class="images" id='screen4latchlogo0' name='screen4latchlogo0'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 2
@@ -642,7 +639,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen4button1action2' name='screen4button1action2'></select>
 							<select class="actions" id='screen4button1value2' name='screen4button1value2'></select>
-							<br />Latch? <input type="checkbox"id="screen4button1latch" name="screen4button1latch">
+							<br />Latch? <input type="checkbox"id="screen4button1latch" name="screen4button1latch"> latch to: <select class="images" id='screen4latchlogo1' name='screen4latchlogo1'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 3
@@ -657,7 +654,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen4button2action2' name='screen4button2action2'></select>
 							<select class="actions" id='screen4button2value2' name='screen4button2value2'></select>
-							<br />Latch? <input type="checkbox"id="screen4button2latch" name="screen4button2latch">
+							<br />Latch? <input type="checkbox"id="screen4button2latch" name="screen4button2latch"> latch to: <select class="images" id='screen4latchlogo2' name='screen4latchlogo2'></select> 
 						</td>
 					</tr>
 					<tr>
@@ -674,7 +671,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen4button3action2' name='screen4button3action2'></select>
 							<select class="actions" id='screen4button3value2' name='screen4button3value2'></select>
-							<br />Latch? <input type="checkbox"id="screen4button3latch" name="screen4button3latch">
+							<br />Latch? <input type="checkbox"id="screen4button3latch" name="screen4button3latch"> latch to: <select class="images" id='screen4latchlogo3' name='screen4latchlogo3'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 5
@@ -689,7 +686,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen4button4action2' name='screen4button4action2'></select>
 							<select class="actions" id='screen4button4value2' name='screen4button4value2'></select>
-							<br />Latch? <input type="checkbox"id="screen4button4latch" name="screen4button4latch">
+							<br />Latch? <input type="checkbox"id="screen4button4latch" name="screen4button4latch"> latch to: <select class="images" id='screen4latchlogo4' name='screen4latchlogo4'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 6
@@ -731,7 +728,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen5button0action2' name='screen5button0action2'></select>
 							<select class="actions" id='screen5button0value2' name='screen5button0value2'></select>
-							<br />Latch? <input type="checkbox"id="screen5button0latch" name="screen5button0latch">
+							<br />Latch? <input type="checkbox"id="screen5button0latch" name="screen5button0latch"> latch to: <select class="images" id='screen5latchlogo0' name='screen5latchlogo0'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 2
@@ -746,7 +743,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen5button1action2' name='screen5button1action2'></select>
 							<select class="actions" id='screen5button1value2' name='screen5button1value2'></select>
-							<br />Latch? <input type="checkbox"id="screen5button1latch" name="screen5button1latch">
+							<br />Latch? <input type="checkbox"id="screen5button1latch" name="screen5button1latch"> latch to: <select class="images" id='screen5latchlogo1' name='screen5latchlogo1'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 3
@@ -761,7 +758,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen5button2action2' name='screen5button2action2'></select>
 							<select class="actions" id='screen5button2value2' name='screen5button2value2'></select>
-							<br />Latch? <input type="checkbox"id="screen5button2latch" name="screen5button2latch">
+							<br />Latch? <input type="checkbox"id="screen5button2latch" name="screen5button2latch"> latch to: <select class="images" id='screen5latchlogo2' name='screen5latchlogo2'></select> 
 						</td>
 					</tr>
 					<tr>
@@ -778,7 +775,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen5button3action2' name='screen5button3action2'></select>
 							<select class="actions" id='screen5button3value2' name='screen5button3value2'></select>
-							<br />Latch? <input type="checkbox"id="screen5button3latch" name="screen5button3latch">
+							<br />Latch? <input type="checkbox"id="screen5button3latch" name="screen5button3latch"> latch to: <select class="images" id='screen5latchlogo3' name='screen5latchlogo3'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 5
@@ -793,7 +790,7 @@
 							<br />Action 3:
 							<select class="actions" id='screen5button4action2' name='screen5button4action2'></select>
 							<select class="actions" id='screen5button4value2' name='screen5button4value2'></select>
-							<br />Latch? <input type="checkbox"id="screen5button4latch" name="screen5button4latch">
+							<br />Latch? <input type="checkbox"id="screen5button4latch" name="screen5button4latch"> latch to: <select class="images" id='screen5latchlogo4' name='screen5latchlogo4'></select> 
 						</td>
 						<td style="width: 33%;">
 							Button 6
@@ -852,7 +849,7 @@
 	    </p>
 	</div>
 
-	<!-- Upload JSON -->
+	<!-- INFO -->
 	 <div id="info" class="tabcontent">
 	    <h3>About FreeTouchDeck</h3>
 	    <div id ="infocontent" style="width: 40%; text-align: left; margin: auto;">
@@ -860,8 +857,6 @@
 	    </div>
 	    <p>
 	</div>
-
-
 	</div>
 
 </div>
@@ -1341,67 +1336,6 @@
 		      }
 
 		      ]
-		  },
-		  	{
-		    name: 'Combos',
-		    value: '9',
-		    subitems: [{
-		        name: 'Left CTRL + SHIFT',
-		        value: '1'
-		      },
-		      {
-		        name: 'Left ALT + SHIFT',
-		        value: '2'
-		      },
-		      {
-		        name: 'Left GUI + SHIFT',
-		        value: '3'
-		      },
-		      {
-		        name: 'Left CTRL + GUI',
-		        value: '4'
-		      },
-		      {
-		        name: 'Left ALT + GUI',
-		        value: '5'
-		      },
-		      {
-		        name: 'Left CTRL + ALT',
-		        value: '6'
-		      },
-		      {
-		        name: 'Left CTRL + ALT + GUI',
-		        value: '7'
-		      },
-		      {
-		        name: 'Right CTRL + SHIFT',
-		        value: '8'
-		      },
-		      {
-		        name: 'Right ALT + SHIFT',
-		        value: '9'
-		      },
-		      {
-		        name: 'Right GUI + SHIFT',
-		        value: '10'
-		      },
-		      {
-		        name: 'Right CTRL + GUI',
-		        value: '11'
-		      },
-		      {
-		        name: 'Right ALT + GUI',
-		        value: '12'
-		      },
-		      {
-		        name: 'Right CTRL + ALT',
-		        value: '13'
-		      },
-		      {
-		        name: 'Right CTRL + ALT + GUI',
-		        value: '14'
-		      }
-			]
 		  }
 		];
 
@@ -3550,6 +3484,14 @@ $(function () {
 					if(data.button0.latch){
 						document.getElementById("screen1button0latch").checked = true;
 					}
+
+					if(data.button0.latchlogo == ""){
+						document.getElementById("screen1latchlogo0").add(new Option("---"));
+					}else{
+						document.getElementById("screen1latchlogo0").add(new Option(data.button0.latchlogo));
+						document.getElementById("screen1latchlogo0").add(new Option("---"));
+					}
+
 					document.getElementById('screen1button0action0').value = data.button0.actionarray[0];
 					document.getElementById('screen1button0action1').value = data.button0.actionarray[1];
 					document.getElementById('screen1button0action2').value = data.button0.actionarray[2];
@@ -3564,6 +3506,15 @@ $(function () {
 					if(data.button1.latch){
 						document.getElementById("screen1button1latch").checked = true;
 					}
+
+					if(data.button1.latchlogo == ""){
+						document.getElementById("screen1latchlogo1").add(new Option("---"));
+					}else{
+						document.getElementById("screen1latchlogo1").add(new Option(data.button1.latchlogo));
+						document.getElementById("screen1latchlogo1").add(new Option("---"));
+					}
+
+
 					document.getElementById('screen1button1action0').value = data.button1.actionarray[0];
 					document.getElementById('screen1button1action1').value = data.button1.actionarray[1];
 					document.getElementById('screen1button1action2').value = data.button1.actionarray[2];
@@ -3578,6 +3529,14 @@ $(function () {
 					if(data.button2.latch){
 						document.getElementById("screen1button2latch").checked = true;
 					}
+
+					if(data.button2.latchlogo == ""){
+						document.getElementById("screen1latchlogo2").add(new Option("---"));
+					}else{
+						document.getElementById("screen1latchlogo2").add(new Option(data.button2.latchlogo));
+						document.getElementById("screen1latchlogo2").add(new Option("---"));
+					}
+
 					document.getElementById('screen1button2action0').value = data.button2.actionarray[0];
 					document.getElementById('screen1button2action1').value = data.button2.actionarray[1];
 					document.getElementById('screen1button2action2').value = data.button2.actionarray[2];
@@ -3592,6 +3551,14 @@ $(function () {
 					if(data.button3.latch){
 						document.getElementById("screen1button3latch").checked = true;
 					}
+
+					if(data.button3.latchlogo == ""){
+						document.getElementById("screen1latchlogo3").add(new Option("---"));
+					}else{
+						document.getElementById("screen1latchlogo3").add(new Option(data.button3.latchlogo));
+						document.getElementById("screen1latchlogo3").add(new Option("---"));
+					}
+
 					document.getElementById('screen1button3action0').value = data.button3.actionarray[0];
 					document.getElementById('screen1button3action1').value = data.button3.actionarray[1];
 					document.getElementById('screen1button3action2').value = data.button3.actionarray[2];
@@ -3606,6 +3573,14 @@ $(function () {
 					if(data.button4.latch){
 						document.getElementById("screen1button4latch").checked = true;
 					}
+
+					if(data.button4.latchlogo == ""){
+						document.getElementById("screen1latchlogo4").add(new Option("---"));
+					}else{
+						document.getElementById("screen1latchlogo4").add(new Option(data.button4.latchlogo));
+						document.getElementById("screen1latchlogo4").add(new Option("---"));
+					}
+
 					document.getElementById('screen1button4action0').value = data.button4.actionarray[0];
 					document.getElementById('screen1button4action1').value = data.button4.actionarray[1];
 					document.getElementById('screen1button4action2').value = data.button4.actionarray[2];
@@ -3638,6 +3613,14 @@ $(function () {
 					if(data.button0.latch){
 						document.getElementById("screen2button0latch").checked = true;
 					}
+
+					if(data.button0.latchlogo == ""){
+						document.getElementById("screen2latchlogo0").add(new Option("---"));
+					}else{
+						document.getElementById("screen2latchlogo0").add(new Option(data.button0.latchlogo));
+						document.getElementById("screen2latchlogo0").add(new Option("---"));
+					}
+
 					document.getElementById('screen2button0action0').value = data.button0.actionarray[0];
 					document.getElementById('screen2button0action1').value = data.button0.actionarray[1];
 					document.getElementById('screen2button0action2').value = data.button0.actionarray[2];
@@ -3652,6 +3635,14 @@ $(function () {
 					if(data.button1.latch){
 						document.getElementById("screen2button1latch").checked = true;
 					}
+
+					if(data.button1.latchlogo == ""){
+						document.getElementById("screen2latchlogo1").add(new Option("---"));
+					}else{
+						document.getElementById("screen2latchlogo1").add(new Option(data.button1.latchlogo));
+						document.getElementById("screen2latchlogo1").add(new Option("---"));
+					}
+
 					document.getElementById('screen2button1action0').value = data.button1.actionarray[0];
 					document.getElementById('screen2button1action1').value = data.button1.actionarray[1];
 					document.getElementById('screen2button1action2').value = data.button1.actionarray[2];
@@ -3666,6 +3657,14 @@ $(function () {
 					if(data.button2.latch){
 						document.getElementById("screen2button2latch").checked = true;
 					}
+
+					if(data.button2.latchlogo == ""){
+						document.getElementById("screen2latchlogo2").add(new Option("---"));
+					}else{
+						document.getElementById("screen2latchlogo2").add(new Option(data.button2.latchlogo));
+						document.getElementById("screen2latchlogo2").add(new Option("---"));
+					}
+
 					document.getElementById('screen2button2action0').value = data.button2.actionarray[0];
 					document.getElementById('screen2button2action1').value = data.button2.actionarray[1];
 					document.getElementById('screen2button2action2').value = data.button2.actionarray[2];
@@ -3680,6 +3679,14 @@ $(function () {
 					if(data.button3.latch){
 						document.getElementById("screen2button3latch").checked = true;
 					}
+
+					if(data.button3.latchlogo == ""){
+						document.getElementById("screen2latchlogo3").add(new Option("---"));
+					}else{
+						document.getElementById("screen2latchlogo3").add(new Option(data.button3.latchlogo));
+						document.getElementById("screen2latchlogo3").add(new Option("---"));
+					}
+
 					document.getElementById('screen2button3action0').value = data.button3.actionarray[0];
 					document.getElementById('screen2button3action1').value = data.button3.actionarray[1];
 					document.getElementById('screen2button3action2').value = data.button3.actionarray[2];
@@ -3694,6 +3701,14 @@ $(function () {
 					if(data.button4.latch){
 						document.getElementById("screen2button4latch").checked = true;
 					}
+
+					if(data.button4.latchlogo == ""){
+						document.getElementById("screen2latchlogo4").add(new Option("---"));
+					}else{
+						document.getElementById("screen2latchlogo4").add(new Option(data.button4.latchlogo));
+						document.getElementById("screen2latchlogo4").add(new Option("---"));
+					}
+
 					document.getElementById('screen2button4action0').value = data.button4.actionarray[0];
 					document.getElementById('screen2button4action1').value = data.button4.actionarray[1];
 					document.getElementById('screen2button4action2').value = data.button4.actionarray[2];
@@ -3727,6 +3742,14 @@ $(function () {
 				if(data.button0.latch){
 					document.getElementById("screen3button0latch").checked = true;
 				}
+
+				if(data.button0.latchlogo == ""){
+					document.getElementById("screen3latchlogo0").add(new Option("---"));
+				}else{
+					document.getElementById("screen3latchlogo0").add(new Option(data.button0.latchlogo));
+					document.getElementById("screen3latchlogo0").add(new Option("---"));
+				}
+
 				document.getElementById('screen3button0action0').value = data.button0.actionarray[0];
 				document.getElementById('screen3button0action1').value = data.button0.actionarray[1];
 				document.getElementById('screen3button0action2').value = data.button0.actionarray[2];
@@ -3741,6 +3764,14 @@ $(function () {
 				if(data.button1.latch){
 					document.getElementById("screen3button1latch").checked = true;
 				}
+
+				if(data.button1.latchlogo == ""){
+					document.getElementById("screen3latchlogo1").add(new Option("---"));
+				}else{
+					document.getElementById("screen3latchlogo1").add(new Option(data.button1.latchlogo));
+					document.getElementById("screen3latchlogo1").add(new Option("---"));
+				}
+
 				document.getElementById('screen3button1action0').value = data.button1.actionarray[0];
 				document.getElementById('screen3button1action1').value = data.button1.actionarray[1];
 				document.getElementById('screen3button1action2').value = data.button1.actionarray[2];
@@ -3755,6 +3786,14 @@ $(function () {
 				if(data.button2.latch){
 					document.getElementById("screen3button2latch").checked = true;
 				}
+
+				if(data.button2.latchlogo == ""){
+					document.getElementById("screen3latchlogo2").add(new Option("---"));
+				}else{
+					document.getElementById("screen3latchlogo2").add(new Option(data.button2.latchlogo));
+					document.getElementById("screen3latchlogo2").add(new Option("---"));
+				}
+
 				document.getElementById('screen3button2action0').value = data.button2.actionarray[0];
 				document.getElementById('screen3button2action1').value = data.button2.actionarray[1];
 				document.getElementById('screen3button2action2').value = data.button2.actionarray[2];
@@ -3769,6 +3808,14 @@ $(function () {
 				if(data.button3.latch){
 					document.getElementById("screen3button3latch").checked = true;
 				}
+
+				if(data.button3.latchlogo == ""){
+					document.getElementById("screen3latchlogo3").add(new Option("---"));
+				}else{
+					document.getElementById("screen3latchlogo3").add(new Option(data.button3.latchlogo));
+					document.getElementById("screen3latchlogo3").add(new Option("---"));
+				}
+
 				document.getElementById('screen3button3action0').value = data.button3.actionarray[0];
 				document.getElementById('screen3button3action1').value = data.button3.actionarray[1];
 				document.getElementById('screen3button3action2').value = data.button3.actionarray[2];
@@ -3783,6 +3830,14 @@ $(function () {
 				if(data.button4.latch){
 					document.getElementById("screen3button4latch").checked = true;
 				}
+
+				if(data.button4.latchlogo == ""){
+					document.getElementById("screen3latchlogo4").add(new Option("---"));
+				}else{
+					document.getElementById("screen3latchlogo4").add(new Option(data.button4.latchlogo));
+					document.getElementById("screen3latchlogo4").add(new Option("---"));
+				}
+
 				document.getElementById('screen3button4action0').value = data.button4.actionarray[0];
 				document.getElementById('screen3button4action1').value = data.button4.actionarray[1];
 				document.getElementById('screen3button4action2').value = data.button4.actionarray[2];
@@ -3816,6 +3871,14 @@ $(function () {
 				if(data.button0.latch){
 					document.getElementById("screen4button0latch").checked = true;
 				}
+
+				if(data.button0.latchlogo == ""){
+					document.getElementById("screen4latchlogo0").add(new Option("---"));
+				}else{
+					document.getElementById("screen4latchlogo0").add(new Option(data.button0.latchlogo));
+					document.getElementById("screen4latchlogo0").add(new Option("---"));
+				}
+
 				document.getElementById('screen4button0action0').value = data.button0.actionarray[0];
 				document.getElementById('screen4button0action1').value = data.button0.actionarray[1];
 				document.getElementById('screen4button0action2').value = data.button0.actionarray[2];
@@ -3830,6 +3893,14 @@ $(function () {
 				if(data.button1.latch){
 					document.getElementById("screen4button1latch").checked = true;
 				}
+
+				if(data.button1.latchlogo == ""){
+					document.getElementById("screen4latchlogo1").add(new Option("---"));
+				}else{
+					document.getElementById("screen4latchlogo1").add(new Option(data.button1.latchlogo));
+					document.getElementById("screen4latchlogo1").add(new Option("---"));
+				}
+
 				document.getElementById('screen4button1action0').value = data.button1.actionarray[0];
 				document.getElementById('screen4button1action1').value = data.button1.actionarray[1];
 				document.getElementById('screen4button1action2').value = data.button1.actionarray[2];
@@ -3844,6 +3915,14 @@ $(function () {
 				if(data.button2.latch){
 					document.getElementById("screen4button2latch").checked = true;
 				}
+
+				if(data.button2.latchlogo == ""){
+					document.getElementById("screen4latchlogo2").add(new Option("---"));
+				}else{
+					document.getElementById("screen4latchlogo2").add(new Option(data.button2.latchlogo));
+					document.getElementById("screen4latchlogo2").add(new Option("---"));
+				}
+
 				document.getElementById('screen4button2action0').value = data.button2.actionarray[0];
 				document.getElementById('screen4button2action1').value = data.button2.actionarray[1];
 				document.getElementById('screen4button2action2').value = data.button2.actionarray[2];
@@ -3858,6 +3937,14 @@ $(function () {
 				if(data.button3.latch){
 					document.getElementById("screen4button3latch").checked = true;
 				}
+
+				if(data.button3.latchlogo == ""){
+					document.getElementById("screen4latchlogo3").add(new Option("---"));
+				}else{
+					document.getElementById("screen4latchlogo3").add(new Option(data.button3.latchlogo));
+					document.getElementById("screen4latchlogo3").add(new Option("---"));
+				}
+
 				document.getElementById('screen4button3action0').value = data.button3.actionarray[0];
 				document.getElementById('screen4button3action1').value = data.button3.actionarray[1];
 				document.getElementById('screen4button3action2').value = data.button3.actionarray[2];
@@ -3872,6 +3959,14 @@ $(function () {
 				if(data.button4.latch){
 					document.getElementById("screen4button4latch").checked = true;
 				}
+
+				if(data.button4.latchlogo == ""){
+					document.getElementById("screen4latchlogo4").add(new Option("---"));
+				}else{
+					document.getElementById("screen4latchlogo4").add(new Option(data.button4.latchlogo));
+					document.getElementById("screen4latchlogo4").add(new Option("---"));
+				}
+
 				document.getElementById('screen4button4action0').value = data.button4.actionarray[0];
 				document.getElementById('screen4button4action1').value = data.button4.actionarray[1];
 				document.getElementById('screen4button4action2').value = data.button4.actionarray[2];
@@ -3904,6 +3999,14 @@ $(function () {
 				if(data.button0.latch){
 					document.getElementById("screen5button0latch").checked = true;
 				}
+
+				if(data.button0.latchlogo == ""){
+					document.getElementById("screen5latchlogo0").add(new Option("---"));
+				}else{
+					document.getElementById("screen5latchlogo0").add(new Option(data.button0.latchlogo));
+					document.getElementById("screen5latchlogo0").add(new Option("---"));
+				}
+
 				document.getElementById('screen5button0action0').value = data.button0.actionarray[0];
 				document.getElementById('screen5button0action1').value = data.button0.actionarray[1];
 				document.getElementById('screen5button0action2').value = data.button0.actionarray[2];
@@ -3918,6 +4021,14 @@ $(function () {
 				if(data.button1.latch){
 					document.getElementById("screen5button1latch").checked = true;
 				}
+
+				if(data.button1.latchlogo == ""){
+					document.getElementById("screen5latchlogo1").add(new Option("---"));
+				}else{
+					document.getElementById("screen5latchlogo1").add(new Option(data.button1.latchlogo));
+					document.getElementById("screen5latchlogo1").add(new Option("---"));
+				}
+
 				document.getElementById('screen5button1action0').value = data.button1.actionarray[0];
 				document.getElementById('screen5button1action1').value = data.button1.actionarray[1];
 				document.getElementById('screen5button1action2').value = data.button1.actionarray[2];
@@ -3932,6 +4043,14 @@ $(function () {
 				if(data.button2.latch){
 					document.getElementById("screen5button2latch").checked = true;
 				}
+
+				if(data.button2.latchlogo == ""){
+					document.getElementById("screen5latchlogo2").add(new Option("---"));
+				}else{
+					document.getElementById("screen5latchlogo2").add(new Option(data.button2.latchlogo));
+					document.getElementById("screen5latchlogo2").add(new Option("---"));
+				}
+
 				document.getElementById('screen5button2action0').value = data.button2.actionarray[0];
 				document.getElementById('screen5button2action1').value = data.button2.actionarray[1];
 				document.getElementById('screen5button2action2').value = data.button2.actionarray[2];
@@ -3946,6 +4065,14 @@ $(function () {
 				if(data.button3.latch){
 					document.getElementById("screen5button3latch").checked = true;
 				}
+
+				if(data.button3.latchlogo == ""){
+					document.getElementById("screen5latchlogo3").add(new Option("---"));
+				}else{
+					document.getElementById("screen5latchlogo3").add(new Option(data.button3.latchlogo));
+					document.getElementById("screen5latchlogo3").add(new Option("---"));
+				}
+
 				document.getElementById('screen5button3action0').value = data.button3.actionarray[0];
 				document.getElementById('screen5button3action1').value = data.button3.actionarray[1];
 				document.getElementById('screen5button3action2').value = data.button3.actionarray[2];
@@ -3960,6 +4087,14 @@ $(function () {
 				if(data.button4.latch){
 					document.getElementById("screen5button4latch").checked = true;
 				}
+
+				if(data.button4.latchlogo == ""){
+					document.getElementById("screen5latchlogo4").add(new Option("---"));
+				}else{
+					document.getElementById("screen5latchlogo4").add(new Option(data.button4.latchlogo));
+					document.getElementById("screen5latchlogo4").add(new Option("---"));
+				}
+
 				document.getElementById('screen5button4action0').value = data.button4.actionarray[0];
 				document.getElementById('screen5button4action1').value = data.button4.actionarray[1];
 				document.getElementById('screen5button4action2').value = data.button4.actionarray[2];

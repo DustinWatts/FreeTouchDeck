@@ -56,7 +56,12 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.5";
+const char *versionnumber = "0.9.6";
+
+    /* Version 0.9.6 Add latchting to different image instead of just a dot. This version also adds the ability to change the WiFi
+     *  mode to be an Access Point and the ability to change the SSID and Password via the serial monitor. Furthermore, the touch
+     *  calibration can be reset. See docs for usage!
+    */
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -176,6 +181,7 @@ struct Button
 {
   struct Actions actions;
   bool latch;
+  char latchlogo[32];
 };
 
 // Each menu has 6 buttons
@@ -209,6 +215,7 @@ struct Wificonfig
 {
   char ssid[64];
   char password[64];
+  char wifimode[9];
   char hostname[64];
   bool sleepenable;
   uint16_t sleeptimer;
@@ -359,7 +366,9 @@ void setup()
   // If we are woken up we do not need the splash screen
   if (wakeup_reason > 0)
   {
-    // Don't draw splash screen
+    // But we do draw something to indicate we are waking up
+    tft.setTextFont(2);
+    tft.println(" Waking up...");
   }
   else
   {
@@ -370,11 +379,6 @@ void setup()
     tft.setTextFont(2);
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-    /* Version 0.9.5 Fix combos being undefined is HTML/JS. Action "9" is now combos 
-     * and "10" is special functions (used by FreeTouchDeck). 
-    */
-
     tft.printf("Loading version %s\n", versionnumber);
     Serial.printf("[INFO]: Loading version %s\n", versionnumber);
   }
@@ -483,11 +487,61 @@ void setup()
 
 void loop(void)
 {
+  
+  // Check if there is data available on the serial input that needs to be handled.
+  
+  if (Serial.available())
+  {
 
+    String command = Serial.readStringUntil(' ');
+
+    if (command == "cal")
+    {
+      FILESYSTEM.remove(CALIBRATION_FILE);
+      ESP.restart();
+    }
+    else if (command == "setssid")
+    {
+
+      String value = Serial.readString();
+      if (saveWifiSSID(value))
+      {
+        Serial.printf("[INFO]: Saved new SSID: %s\n", value.c_str());
+        loadMainConfig();
+        Serial.println("[INFO]: New configuration loaded");
+      }
+    }
+    else if (command == "setpassword")
+    {
+      String value = Serial.readString();
+      if (saveWifiPW(value))
+      {
+        Serial.printf("[INFO]: Saved new Password: %s\n", value.c_str());
+        loadMainConfig();
+        Serial.println("[INFO]: New configuration loaded");
+      }
+    }
+    else if (command == "setwifimode")
+    {
+      String value = Serial.readString();
+      if (saveWifiMode(value))
+      {
+        Serial.printf("[INFO]: Saved new WiFi Mode: %s\n", value.c_str());
+        loadMainConfig();
+        Serial.println("[INFO]: New configuration loaded");
+      }
+    }
+    else if (command == "restart")
+    {
+      Serial.println("[WARNING]: Restarting");
+      ESP.restart();
+    }
+  }
+  
   if (pageNum == 7)
   {
 
-    // If the pageNum is set to 7, do no draw anything on screen or check for touch
+    // If the pageNum is set to 7, do not draw anything on screen or check for touch
     // and start handeling incomming web requests.
   }
   else if (pageNum == 8)
@@ -686,7 +740,17 @@ void loop(void)
 
         uint16_t buttonBG;
         bool drawTransparent;
-        uint16_t imageBGColor = getImageBG(b);
+
+        uint16_t imageBGColor;
+        if (islatched[index] && b < 5)
+        {
+          imageBGColor = getLatchImageBG(b);
+        }
+        else
+        {
+          imageBGColor = getImageBG(b);
+        }
+
         if (imageBGColor > 0)
         {
           buttonBG = imageBGColor;
@@ -719,11 +783,15 @@ void loop(void)
                           KEY_W, KEY_H, TFT_WHITE, buttonBG, 0xFFFF,
                           "", KEY_TEXTSIZE);
         key[b].drawButton();
-        drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
 
+        // After drawing the button outline we call this to draw a logo.
         if (islatched[index] && b < 5)
         {
-          drawlatched(b, col, row, true);
+          drawlogo(b, col, row, drawTransparent, true);
+        }
+        else
+        {
+          drawlogo(b, col, row, drawTransparent, false);
         }
       }
 
@@ -768,7 +836,6 @@ void loop(void)
                           KEY_W, KEY_H, TFT_WHITE, TFT_WHITE, 0xFFFF,
                           "", KEY_TEXTSIZE);
         key[b].drawButton();
-        //drawlogo(b, col, row, drawTransparent); // After drawing the button outline we call this to draw a logo.
 
         //---------------------------------------- Button press handeling --------------------------------------------------
 
@@ -819,12 +886,10 @@ void loop(void)
               if (islatched[0])
               {
                 islatched[0] = 0;
-                drawlatched(b, 0, 0, false);
               }
               else
               {
                 islatched[0] = 1;
-                drawlatched(b, 0, 0, true);
               }
             }
           }
@@ -839,12 +904,10 @@ void loop(void)
               if (islatched[1])
               {
                 islatched[1] = 0;
-                drawlatched(b, 1, 0, false);
               }
               else
               {
                 islatched[1] = 1;
-                drawlatched(b, 1, 0, true);
               }
             }
           }
@@ -859,12 +922,10 @@ void loop(void)
               if (islatched[2])
               {
                 islatched[2] = 0;
-                drawlatched(b, 2, 0, false);
               }
               else
               {
                 islatched[2] = 1;
-                drawlatched(b, 2, 0, true);
               }
             }
           }
@@ -879,12 +940,10 @@ void loop(void)
               if (islatched[3])
               {
                 islatched[3] = 0;
-                drawlatched(b, 0, 1, false);
               }
               else
               {
                 islatched[3] = 1;
-                drawlatched(b, 0, 1, true);
               }
             }
           }
@@ -899,12 +958,10 @@ void loop(void)
               if (islatched[4])
               {
                 islatched[4] = 0;
-                drawlatched(b, 1, 1, false);
               }
               else
               {
                 islatched[4] = 1;
-                drawlatched(b, 1, 1, true);
               }
             }
           }
@@ -928,12 +985,10 @@ void loop(void)
               if (islatched[5])
               {
                 islatched[5] = 0;
-                drawlatched(b, 0, 0, false);
               }
               else
               {
                 islatched[5] = 1;
-                drawlatched(b, 0, 0, true);
               }
             }
           }
@@ -948,12 +1003,10 @@ void loop(void)
               if (islatched[6])
               {
                 islatched[6] = 0;
-                drawlatched(b, 1, 0, false);
               }
               else
               {
                 islatched[6] = 1;
-                drawlatched(b, 1, 0, true);
               }
             }
           }
@@ -968,12 +1021,10 @@ void loop(void)
               if (islatched[7])
               {
                 islatched[7] = 0;
-                drawlatched(b, 2, 0, false);
               }
               else
               {
                 islatched[7] = 1;
-                drawlatched(b, 2, 0, true);
               }
             }
           }
@@ -988,12 +1039,10 @@ void loop(void)
               if (islatched[8])
               {
                 islatched[8] = 0;
-                drawlatched(b, 0, 1, false);
               }
               else
               {
                 islatched[8] = 1;
-                drawlatched(b, 0, 1, true);
               }
             }
           }
@@ -1008,12 +1057,10 @@ void loop(void)
               if (islatched[9])
               {
                 islatched[9] = 0;
-                drawlatched(b, 1, 1, false);
               }
               else
               {
                 islatched[9] = 1;
-                drawlatched(b, 1, 1, true);
               }
             }
           }
@@ -1037,12 +1084,10 @@ void loop(void)
               if (islatched[10])
               {
                 islatched[10] = 0;
-                drawlatched(b, 0, 0, false);
               }
               else
               {
                 islatched[10] = 1;
-                drawlatched(b, 0, 0, true);
               }
             }
           }
@@ -1057,12 +1102,10 @@ void loop(void)
               if (islatched[11])
               {
                 islatched[11] = 0;
-                drawlatched(b, 1, 0, false);
               }
               else
               {
                 islatched[11] = 1;
-                drawlatched(b, 1, 0, true);
               }
             }
           }
@@ -1077,12 +1120,10 @@ void loop(void)
               if (islatched[12])
               {
                 islatched[12] = 0;
-                drawlatched(b, 2, 0, false);
               }
               else
               {
                 islatched[12] = 1;
-                drawlatched(b, 2, 0, true);
               }
             }
           }
@@ -1097,12 +1138,10 @@ void loop(void)
               if (islatched[13])
               {
                 islatched[13] = 0;
-                drawlatched(b, 0, 1, false);
               }
               else
               {
                 islatched[13] = 1;
-                drawlatched(b, 0, 1, true);
               }
             }
           }
@@ -1117,12 +1156,10 @@ void loop(void)
               if (islatched[14])
               {
                 islatched[14] = 0;
-                drawlatched(b, 1, 1, false);
               }
               else
               {
                 islatched[14] = 1;
-                drawlatched(b, 1, 1, true);
               }
             }
           }
@@ -1146,12 +1183,10 @@ void loop(void)
               if (islatched[15])
               {
                 islatched[15] = 0;
-                drawlatched(b, 0, 0, false);
               }
               else
               {
                 islatched[15] = 1;
-                drawlatched(b, 0, 0, true);
               }
             }
           }
@@ -1166,12 +1201,10 @@ void loop(void)
               if (islatched[16])
               {
                 islatched[16] = 0;
-                drawlatched(b, 1, 0, false);
               }
               else
               {
                 islatched[16] = 1;
-                drawlatched(b, 1, 0, true);
               }
             }
           }
@@ -1186,12 +1219,10 @@ void loop(void)
               if (islatched[17])
               {
                 islatched[17] = 0;
-                drawlatched(b, 2, 0, false);
               }
               else
               {
                 islatched[17] = 1;
-                drawlatched(b, 2, 0, true);
               }
             }
           }
@@ -1206,12 +1237,10 @@ void loop(void)
               if (islatched[18])
               {
                 islatched[18] = 0;
-                drawlatched(b, 0, 1, false);
               }
               else
               {
                 islatched[18] = 1;
-                drawlatched(b, 0, 1, true);
               }
             }
           }
@@ -1226,12 +1255,10 @@ void loop(void)
               if (islatched[19])
               {
                 islatched[19] = 0;
-                drawlatched(b, 1, 1, false);
               }
               else
               {
                 islatched[19] = 1;
-                drawlatched(b, 1, 1, true);
               }
             }
           }
@@ -1255,12 +1282,10 @@ void loop(void)
               if (islatched[20])
               {
                 islatched[20] = 0;
-                drawlatched(b, 0, 0, false);
               }
               else
               {
                 islatched[20] = 1;
-                drawlatched(b, 0, 0, true);
               }
             }
           }
@@ -1275,12 +1300,10 @@ void loop(void)
               if (islatched[21])
               {
                 islatched[21] = 0;
-                drawlatched(b, 1, 0, false);
               }
               else
               {
                 islatched[21] = 1;
-                drawlatched(b, 1, 0, true);
               }
             }
           }
@@ -1295,12 +1318,10 @@ void loop(void)
               if (islatched[22])
               {
                 islatched[22] = 0;
-                drawlatched(b, 2, 0, false);
               }
               else
               {
                 islatched[22] = 1;
-                drawlatched(b, 2, 0, true);
               }
             }
           }
@@ -1315,12 +1336,10 @@ void loop(void)
               if (islatched[23])
               {
                 islatched[23] = 0;
-                drawlatched(b, 0, 1, false);
               }
               else
               {
                 islatched[23] = 1;
-                drawlatched(b, 0, 1, true);
               }
             }
           }
@@ -1335,12 +1354,10 @@ void loop(void)
               if (islatched[24])
               {
                 islatched[24] = 0;
-                drawlatched(b, 1, 1, false);
               }
               else
               {
                 islatched[24] = 1;
-                drawlatched(b, 1, 1, true);
               }
             }
           }
@@ -1371,12 +1388,10 @@ void loop(void)
             if (islatched[28])
             {
               islatched[28] = 0;
-              drawlatched(b, 0, 1, false);
             }
             else
             {
               islatched[28] = 1;
-              drawlatched(b, 0, 1, true);
             }
           }
           else if (b == 4) // Button 4

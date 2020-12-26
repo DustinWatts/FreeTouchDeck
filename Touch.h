@@ -1,11 +1,13 @@
-/* ---------------- Calibrate for resistive touch  ---------------- 
-Purpose: This function presents the user with 4 points to touch and saves
+/**
+* @brief This function presents the user with 4 points to touch and saves
          that data to a claibration file.
-Input  : none
-Output : none
-Note   : If USECAPTOUCH is defined we do not need to calibrate touch
+*
+* @param none
+*
+* @return none
+*
+* @note If USECAPTOUCH is defined we do not need to calibrate touch
 */
-
 void touch_calibrate()
 {
   uint16_t calData[5];

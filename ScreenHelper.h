@@ -1,11 +1,13 @@
-/* ------------ Read two bytes of date from a file  ---------------- 
-Purpose: This function reads chuncks of 2 bytes of data from a
+/**
+* @brief This function reads chuncks of 2 bytes of data from a
          file and returns the data.
-Input  : reference operator &f
-Output : uint16_t
-Note   : litte-endian
+*
+* @param &f
+*
+* @return uint16_t
+*
+* @note litte-endian
 */
-
 uint16_t read16(fs::File &f)
 {
   uint16_t result;
@@ -14,14 +16,16 @@ uint16_t read16(fs::File &f)
   return result;
 }
 
-/* ------------ Read four bytes of date from a file  ---------------- 
-Purpose: This function reads chuncks of 4 bytes of data from a
+/**
+* @brief This function reads chuncks of 4 bytes of data from a
          file and returns the data.
-Input  : reference operator &f
-Output : uint32_t
-Note   : litte-endian
+*
+* @param &f
+*
+* @return uint32_t
+*
+* @note litte-endian
 */
-
 uint32_t read32(fs::File &f)
 {
   uint32_t result;
@@ -32,14 +36,16 @@ uint32_t read32(fs::File &f)
   return result;
 }
 
-/* ------------ Convert HTML colour code to RGB888  ---------------- 
-Purpose: This functions accepts a HTML including the # colour code 
+/**
+* @brief This functions accepts a HTML including the # colour code 
          (eg. #FF00FF)  and returns it in RGB888 format.
-Input  : char *html (including #)
-Output : unsigned long
-Note   : none
+*
+* @param *html char (including #)
+*
+* @return unsigned long
+*
+* @note none
 */
-
 unsigned long convertHTMLtoRGB888(char *html)
 {
   char *hex = html + 1; // remove the #
@@ -47,26 +53,32 @@ unsigned long convertHTMLtoRGB888(char *html)
   return rgb;
 }
 
-/* ------------ Convert RGB888 colour code to RGB565  ---------------- 
-Purpose: This function converts RGB888 to RGB565. 
-Input  : unsigned long rgb
-Output : unsigned int
-Note   : none
+/**
+* @brief This function converts RGB888 to RGB565.
+*
+* @param rgb unsigned long
+*
+* @return unsigned int
+*
+* @note none
 */
-
 unsigned int convertRGB888ToRGB565(unsigned long rgb)
 {
   return (((rgb & 0xf80000) >> 8) | ((rgb & 0xfc00) >> 5) | ((rgb & 0xf8) >> 3));
 }
 
-/* ------------ Drawing a transparent BMP  ---------------- 
-Purpose: This function draws a transparent BMP on the TFT screen according
+/**
+* @brief This function draws a transparent BMP on the TFT screen according
          to the given x and y coordinates. 
-Input  : *filename, int16_t x, int16_t y
-Output : none
-Note   : A completely black pixel is transparent e.g. (0x0000) not drawn.
+*
+* @param  *filename
+* @param x int16_t 
+* @param y int16_t 
+*
+* @return none
+*
+* @note A completely black pixel is transparent e.g. (0x0000) not drawn.
 */
-
 void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 {
 
@@ -136,14 +148,18 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
   bmpFS.close();
 }
 
-/* ---------------- Drawing a BMP  ---------------- 
-Purpose: This function draws a BMP on the TFT screen according
+/**
+* @brief This function draws a BMP on the TFT screen according
          to the given x and y coordinates. 
-Input  : *filename, int16_t x, int16_t y
-Output : none
-Note   : In contradiction to drawBmpTransparent() this does draw black pixels.
+*
+* @param  *filename
+* @param x int16_t 
+* @param y int16_t 
+*
+* @return none
+*
+* @note In contradiction to drawBmpTransparent() this does draw black pixels.
 */
-
 void drawBmp(const char *filename, int16_t x, int16_t y)
 {
 
@@ -213,14 +229,18 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
   bmpFS.close();
 }
 
-/* --------------- Read bytes from file  ---------------- 
-Purpose: This function reads a number of bytes from the given
+/**
+* @brief This function reads a number of bytes from the given
          file at the given position.
-Input  : File *p_file, int position, byte nBytes
-Output : int32_t
-Note   : none
+*
+* @param *p_file File
+* @param position int
+* @param nBytes byte 
+*
+* @return int32_t
+*
+* @note none
 */
-
 int32_t readNbytesInt(File *p_file, int position, byte nBytes)
 {
   if (nBytes > 4)
@@ -238,14 +258,16 @@ int32_t readNbytesInt(File *p_file, int position, byte nBytes)
   return result;
 }
 
-/* ---------- Read the colour of the first pixel  ---------------- 
-Purpose: This function reads the RGB565 colour of the first pixel for a
+/**
+* @brief This function reads the RGB565 colour of the first pixel for a
          given the logo number. The pagenumber is global.
-Input  : const char *filename
-Output : uint16_t
-Note   : Uses readNbytesInt
+*
+* @param *filename const char
+*
+* @return uint16_t
+*
+* @note Uses readNbytesInt
 */
-
 uint16_t getBMPColor(const char *filename)
 {
 
@@ -275,14 +297,16 @@ uint16_t getBMPColor(const char *filename)
   return tft.color565(R, G, B);
 }
 
-/* ---------- Get the colour of the first pixel in an image  ---------------- 
-Purpose: This function returns the RGB565 colour of the first pixel for a
+/**
+* @brief This function returns the RGB565 colour of the first pixel for a
          given the logo number. The pagenumber is global.
-Input  : int logonumber
-Output : uint16_t
-Note   : Uses getBMPColor to read the actual image data.
+*
+* @param logonumber int
+*
+* @return uint16_t
+*
+* @note Uses getBMPColor to read the actual image data.
 */
-
 uint16_t getImageBG(int logonumber)
 {
 
@@ -442,6 +466,264 @@ uint16_t getImageBG(int logonumber)
     else if (logonumber == 4)
     {
       return getBMPColor(screen5.logo4);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 6)
+  {
+    return 0x0000;
+  }
+  else
+  {
+    return 0x0000;
+  }
+}
+
+/**
+* @brief This function returns the RGB565 colour of the first pixel of the image which
+*          is being latched to for a given the logo number. The pagenumber is global.
+*
+* @param logonumber int
+*
+* @return uint16_t
+*
+* @note Uses getBMPColor to read the actual image data.
+*/
+uint16_t getLatchImageBG(int logonumber)
+{
+
+  if (pageNum == 1)
+  {
+    if (logonumber == 0)
+    {
+      if (strcmp(menu1.button0.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen1.logo0);
+      }
+      return getBMPColor(menu1.button0.latchlogo);
+    }
+    else if (logonumber == 1)
+    {
+      if (strcmp(menu1.button1.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen1.logo1);
+      }
+      return getBMPColor(menu1.button1.latchlogo);
+    }
+    else if (logonumber == 2)
+    {
+      if (strcmp(menu1.button2.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen1.logo2);
+      }
+      return getBMPColor(menu1.button2.latchlogo);
+    }
+    else if (logonumber == 3)
+    {
+      if (strcmp(menu1.button3.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen1.logo3);
+      }
+      return getBMPColor(menu1.button3.latchlogo);
+    }
+    else if (logonumber == 4)
+    {
+      if (strcmp(menu1.button4.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen1.logo4);
+      }
+      return getBMPColor(menu1.button4.latchlogo);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 2)
+  {
+    if (logonumber == 0)
+    {
+      if (strcmp(menu2.button0.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen2.logo0);
+      }
+      return getBMPColor(menu2.button0.latchlogo);
+    }
+    else if (logonumber == 1)
+    {
+      if (strcmp(menu2.button1.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen2.logo1);
+      }
+      return getBMPColor(menu2.button1.latchlogo);
+    }
+    else if (logonumber == 2)
+    {
+      if (strcmp(menu2.button2.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen2.logo2);
+      }
+      return getBMPColor(menu2.button2.latchlogo);
+    }
+    else if (logonumber == 3)
+    {
+      if (strcmp(menu2.button3.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen2.logo3);
+      }
+      return getBMPColor(menu2.button3.latchlogo);
+    }
+    else if (logonumber == 4)
+    {
+      if (strcmp(menu2.button4.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen2.logo4);
+      }
+      return getBMPColor(menu2.button4.latchlogo);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 3)
+  {
+    if (logonumber == 0)
+    {
+      if (strcmp(menu3.button0.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen3.logo0);
+      }
+      return getBMPColor(menu3.button0.latchlogo);
+    }
+    else if (logonumber == 1)
+    {
+      if (strcmp(menu3.button1.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen3.logo1);
+      }
+      return getBMPColor(menu3.button1.latchlogo);
+    }
+    else if (logonumber == 2)
+    {
+      if (strcmp(menu3.button2.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen3.logo2);
+      }
+      return getBMPColor(menu3.button2.latchlogo);
+    }
+    else if (logonumber == 3)
+    {
+      if (strcmp(menu3.button3.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen3.logo3);
+      }
+      return getBMPColor(menu3.button3.latchlogo);
+    }
+    else if (logonumber == 4)
+    {
+      if (strcmp(menu3.button4.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen3.logo4);
+      }
+      return getBMPColor(menu3.button4.latchlogo);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 4)
+  {
+    if (logonumber == 0)
+    {
+      if (strcmp(menu4.button0.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen4.logo0);
+      }
+      return getBMPColor(menu4.button0.latchlogo);
+    }
+    else if (logonumber == 1)
+    {
+      if (strcmp(menu4.button1.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen4.logo1);
+      }
+      return getBMPColor(menu4.button1.latchlogo);
+    }
+    else if (logonumber == 2)
+    {
+      if (strcmp(menu4.button2.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen4.logo2);
+      }
+      return getBMPColor(menu4.button2.latchlogo);
+    }
+    else if (logonumber == 3)
+    {
+      if (strcmp(menu4.button3.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen4.logo3);
+      }
+      return getBMPColor(menu4.button3.latchlogo);
+    }
+    else if (logonumber == 4)
+    {
+      if (strcmp(menu4.button4.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen4.logo4);
+      }
+      return getBMPColor(menu4.button4.latchlogo);
+    }
+    else
+    {
+      return 0x0000;
+    }
+  }
+  else if (pageNum == 5)
+  {
+    if (logonumber == 0)
+    {
+      if (strcmp(menu5.button0.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen5.logo0);
+      }
+      return getBMPColor(menu5.button0.latchlogo);
+    }
+    else if (logonumber == 1)
+    {
+      if (strcmp(menu5.button1.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen5.logo1);
+      }
+      return getBMPColor(menu5.button1.latchlogo);
+    }
+    else if (logonumber == 2)
+    {
+      if (strcmp(menu5.button2.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen5.logo2);
+      }
+      return getBMPColor(menu5.button2.latchlogo);
+    }
+    else if (logonumber == 3)
+    {
+      if (strcmp(menu5.button3.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen5.logo3);
+      }
+      return getBMPColor(menu5.button3.latchlogo);
+    }
+    else if (logonumber == 4)
+    {
+      if (strcmp(menu5.button4.latchlogo, "/logos/") == 0)
+      {
+        return getBMPColor(screen5.logo4);
+      }
+      return getBMPColor(menu5.button4.latchlogo);
     }
     else
     {

@@ -1,11 +1,13 @@
-/* ------------ Function: filelist handle  ---------------- 
-Purpose: This function returns all the files in a given directory in a json 
+/**
+* @brief This function returns all the files in a given directory in a json 
          formatted string.
-Input  : String path
-Output : String
-Note   : none
+*
+* @param path String
+*
+* @return String
+*
+* @note none
 */
-
 String handleFileList(String path)
 {
 
@@ -40,14 +42,62 @@ String handleFileList(String path)
   return output;
 }
 
-/* ------------ Function: info handle  ---------------- 
-Purpose: This function returns information about FreeTouchDeck in a json 
-         formatted string.
-Input  : none
-Output : String
-Note   : none
-*/
+String handleAPISList()
+{
 
+  File root = FILESYSTEM.open("/uploads");
+
+  int filecount = 0;
+
+  String output = "[";
+  if (root.isDirectory())
+  {
+    File file = root.openNextFile();
+    while (file)
+    {
+      String filepath = String(file.name()).substring(0,16);
+      if(filepath == "/uploads/config_"){
+
+        file = root.openNextFile();
+        filecount++;
+        
+      }
+      else
+      {
+        String filename = String(file.name()).substring(9);
+        if (output != "[")
+        {
+          output += ',';
+        }
+  
+        output += "{\"";
+        output += filecount;
+        output += "\":\"";
+        output += String(file.name()).substring(9);
+        output += "\"}";
+        file = root.openNextFile();
+        filecount++;
+
+      }
+    }
+    file.close();
+  }
+  output += "]";
+  root.close();
+  return output;
+}
+
+
+/**
+* @brief This function returns information about FreeTouchDeck in a json 
+         formatted string.
+*
+* @param none
+*
+* @return String
+*
+* @note none
+*/
 String handleInfo()
 {
 
@@ -71,6 +121,12 @@ String handleInfo()
   output += "ESP-IDF";
   output += "\":\"";
   output += String(esp_get_idf_version());
+  output += "\"},";
+
+  output += "{\"";
+  output += "WiFi Mode";
+  output += "\":\"";
+  output += String(wificonfig.wifimode);
   output += "\"},";
 
 #ifdef touchInterruptPin
@@ -104,16 +160,18 @@ String handleInfo()
   return output;
 }
 
-/* ----------------- Error template processing ---------------- 
-Purpose: This function handles error.htm template processing. 
-Input  : const String& var
-Output : String
-Note   : none
-*/
-
 String errorCode;
 String errorText;
 
+/**
+* @brief This function handles error.htm template processing.
+*
+* @param var const String& 
+*
+* @return String
+*
+* @note none
+*/
 String processor(const String &var)
 {
   if (var == "ERROR_CODE")
@@ -127,12 +185,20 @@ String processor(const String &var)
   return String();
 }
 
-/* ------------ Function: filelist handle  ---------------- 
-Purpose: This function returns all the files in a given directory in a json 
-         formatted string.
-Input  : none
-Output : AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final
-Note   : Returns error if filename is not one of the allowed files.
+/**
+* @brief This function handles JSON file uploads. only menu1.json, menu2.json, menu3.json, menu4.json
+*        menu5.json, colors.json, and homescreen.json are accepted.
+*
+* @param *request AsyncWebServerRequest
+* @param filename String
+* @param index size_t
+* @param *data uint8_t
+* @param len size_t
+* @param final boolean
+*
+* @return none
+*
+* @note none
 */
 void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
@@ -168,6 +234,44 @@ void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t in
   }
 }
 
+/**
+* @brief This function handles API JSON file uploads. These are placed in the uploads folder.
+*
+* @param *request AsyncWebServerRequest
+* @param filename String
+* @param index size_t
+* @param *data uint8_t
+* @param len size_t
+* @param final boolean
+*
+* @return none
+*
+* @note none
+*/
+void handleAPIUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
+{
+  if (!index)
+  {
+    Serial.printf("[INFO]: API file Upload Start: %s\n", filename.c_str());
+    filename = "/uploads/" + filename; // TODO: Does the uploads directory need to be hardcoded?
+
+    // Open the file on first call and store the file handle in the request object
+    request->_tempFile = SPIFFS.open(filename, "w");
+  }
+  if (len)
+  {
+    // Stream the incoming chunk to the opened file
+    request->_tempFile.write(data, len);
+  }
+  if (final)
+  {
+    Serial.printf("[INFO]: API file Uploaded: %s\n", filename.c_str());
+    // Close the file handle as the upload is now done
+    request->_tempFile.close();
+    request->send(FILESYSTEM, "/upload.htm");
+  }
+}
+
 /* --------------- Checking for free space on SPIFFS ---------------- 
 Purpose: This checks if the free memory on the SPIFFS is bigger then a set threshold
 Input  : none
@@ -179,7 +283,7 @@ bool spaceLeft()
 {
   float minmem = 100000.00; // Always leave 100 kB free pace on SPIFFS
   float freeMemory = SPIFFS.totalBytes() - SPIFFS.usedBytes();
-  Serial.printf("[INFO]: Free memory left: %i bytes\n", static_cast<int>(freeMemory));
+  Serial.printf("[INFO]: Free memory left: %f bytes\n", freeMemory);
   if (freeMemory < minmem)
   {
     return false;
@@ -187,16 +291,22 @@ bool spaceLeft()
 
   return true;
 }
-
-/* ------------------- Uploading a file ---------------- 
-Purpose: This function handles a file upload used by the Webserver
-Input  : *request, String filename, size_t index, uint8_t *data, size_t len, bool final
-Output : none
-Note   : The reason the file is first uploaded and then deleted if there is not enough free space, is that
+/**
+* @brief This function handles a file upload used by the Webserver 
+*
+* @param *request
+* @param filename String
+* @param index size_t
+* @param *data uint8_t
+* @param len size_t
+* @param final boolean
+*
+* @return none
+*
+* @note The reason the file is first uploaded and then deleted if there is not enough free space, is that
          if the request is not handled, the ESP32 craches. So we have to accept the upload but
          can delete it.
 */
-
 void handleUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
   if (!index)
@@ -239,17 +349,19 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
   }
 }
 
-/* ----------------- Delete result processing ---------------- 
-Purpose: This function handles delete.htm template processing. 
-Input  : const String& var
-Output : String
-Note   : none
-*/
-
 String resultHeader;
 String resultText;
 String resultFiles = "";
 
+/**
+* @brief This function handles delete.htm template processing. 
+*
+* @param  &var const String
+*
+* @return String
+*
+* @note Only need to call this once! This is also where the saving of config files is done.
+*/
 String deleteProcessor(const String &var)
 {
   if (var == "RESULT")
@@ -267,13 +379,15 @@ String deleteProcessor(const String &var)
   return String();
 }
 
-/* ----------------- Adding handlers to the Async Webserver ---------------- 
-Purpose: This function adds all the handlers we need to the webserver. 
-Input  : none
-Output : none
-Note   : Only need to call this once! This is also where the saving of config files is done.
+/**
+* @brief This function adds all the handlers we need to the webserver. 
+*
+* @param none
+*
+* @return none
+*
+* @note Only need to call this once! This is also where the saving of config files is done.
 */
-
 void handlerSetup()
 {
 
@@ -446,6 +560,17 @@ void handlerSetup()
           button0["latch"] = false;
         }
 
+        AsyncWebParameter *screen1latchlogo0 = request->getParam("screen1latchlogo0", true);
+        Serial.println(screen1latchlogo0->value().c_str());
+        if (strcmp(screen1latchlogo0->value().c_str(), "---") == 0)
+        {
+          button0["latchlogo"] = "";
+        }
+        else
+        {
+          button0["latchlogo"] = screen1latchlogo0->value().c_str();
+        }
+
         JsonArray button0_actionarray = button0.createNestedArray("actionarray");
         AsyncWebParameter *screen1button0action0 = request->getParam("screen1button0action0", true);
         button0_actionarray.add(screen1button0action0->value().c_str());
@@ -471,6 +596,19 @@ void handlerSetup()
         else
         {
           button1["latch"] = false;
+        }
+
+        AsyncWebParameter *screen1latchlogo1 = request->getParam("screen1latchlogo1", true);
+        Serial.println(screen1latchlogo1->value().c_str());
+        if (strcmp(screen1latchlogo1->value().c_str(), "---") == 0)
+        {
+          Serial.println(screen1latchlogo1->value().c_str());
+          button1["latchlogo"] = "";
+        }
+        else
+        {
+          Serial.println(screen1latchlogo1->value().c_str());
+          button1["latchlogo"] = screen1latchlogo1->value().c_str();
         }
 
         JsonArray button1_actionarray = button1.createNestedArray("actionarray");
@@ -500,6 +638,17 @@ void handlerSetup()
           button2["latch"] = false;
         }
 
+        AsyncWebParameter *screen1latchlogo2 = request->getParam("screen1latchlogo2", true);
+        Serial.println(screen1latchlogo2->value().c_str());
+        if (strcmp(screen1latchlogo2->value().c_str(), "---") == 0)
+        {
+          button2["latchlogo"] = "";
+        }
+        else
+        {
+          button2["latchlogo"] = screen1latchlogo2->value().c_str();
+        }
+
         JsonArray button2_actionarray = button2.createNestedArray("actionarray");
         AsyncWebParameter *screen1button2action0 = request->getParam("screen1button2action0", true);
         button2_actionarray.add(screen1button2action0->value().c_str());
@@ -527,6 +676,17 @@ void handlerSetup()
           button3["latch"] = false;
         }
 
+        AsyncWebParameter *screen1latchlogo3 = request->getParam("screen1latchlogo3", true);
+        Serial.println(screen1latchlogo3->value().c_str());
+        if (strcmp(screen1latchlogo3->value().c_str(), "---") == 0)
+        {
+          button3["latchlogo"] = "";
+        }
+        else
+        {
+          button3["latchlogo"] = screen1latchlogo3->value().c_str();
+        }
+
         JsonArray button3_actionarray = button3.createNestedArray("actionarray");
         AsyncWebParameter *screen1button3action0 = request->getParam("screen1button3action0", true);
         button3_actionarray.add(screen1button3action0->value().c_str());
@@ -552,6 +712,17 @@ void handlerSetup()
         else
         {
           button4["latch"] = false;
+        }
+
+        AsyncWebParameter *screen1latchlogo4 = request->getParam("screen1latchlogo4", true);
+        Serial.println(screen1latchlogo4->value().c_str());
+        if (strcmp(screen1latchlogo4->value().c_str(), "---") == 0)
+        {
+          button4["latchlogo"] = "";
+        }
+        else
+        {
+          button4["latchlogo"] = screen1latchlogo4->value().c_str();
         }
 
         JsonArray button4_actionarray = button4.createNestedArray("actionarray");
@@ -616,6 +787,17 @@ void handlerSetup()
           button0["latch"] = false;
         }
 
+        AsyncWebParameter *screen2latchlogo0 = request->getParam("screen2latchlogo0", true);
+        Serial.println(screen2latchlogo0->value().c_str());
+        if (strcmp(screen2latchlogo0->value().c_str(), "---") == 0)
+        {
+          button0["latchlogo"] = "";
+        }
+        else
+        {
+          button0["latchlogo"] = screen2latchlogo0->value().c_str();
+        }
+
         JsonArray button0_actionarray = button0.createNestedArray("actionarray");
         AsyncWebParameter *screen2button0action0 = request->getParam("screen2button0action0", true);
         button0_actionarray.add(screen2button0action0->value().c_str());
@@ -641,6 +823,17 @@ void handlerSetup()
         else
         {
           button1["latch"] = false;
+        }
+
+        AsyncWebParameter *screen2latchlogo1 = request->getParam("screen2latchlogo1", true);
+        Serial.println(screen2latchlogo1->value().c_str());
+        if (strcmp(screen2latchlogo1->value().c_str(), "---") == 0)
+        {
+          button1["latchlogo"] = "";
+        }
+        else
+        {
+          button1["latchlogo"] = screen2latchlogo1->value().c_str();
         }
 
         JsonArray button1_actionarray = button1.createNestedArray("actionarray");
@@ -670,6 +863,17 @@ void handlerSetup()
           button2["latch"] = false;
         }
 
+        AsyncWebParameter *screen2latchlogo2 = request->getParam("screen2latchlogo2", true);
+        Serial.println(screen2latchlogo2->value().c_str());
+        if (strcmp(screen2latchlogo2->value().c_str(), "---") == 0)
+        {
+          button2["latchlogo"] = "";
+        }
+        else
+        {
+          button2["latchlogo"] = screen2latchlogo2->value().c_str();
+        }
+
         JsonArray button2_actionarray = button2.createNestedArray("actionarray");
         AsyncWebParameter *screen2button2action0 = request->getParam("screen2button2action0", true);
         button2_actionarray.add(screen2button2action0->value().c_str());
@@ -697,6 +901,17 @@ void handlerSetup()
           button3["latch"] = false;
         }
 
+        AsyncWebParameter *screen2latchlogo3 = request->getParam("screen2latchlogo3", true);
+        Serial.println(screen2latchlogo3->value().c_str());
+        if (strcmp(screen2latchlogo3->value().c_str(), "---") == 0)
+        {
+          button3["latchlogo"] = "";
+        }
+        else
+        {
+          button3["latchlogo"] = screen2latchlogo3->value().c_str();
+        }
+
         JsonArray button3_actionarray = button3.createNestedArray("actionarray");
         AsyncWebParameter *screen2button3action0 = request->getParam("screen2button3action0", true);
         button3_actionarray.add(screen2button3action0->value().c_str());
@@ -722,6 +937,17 @@ void handlerSetup()
         else
         {
           button4["latch"] = false;
+        }
+
+        AsyncWebParameter *screen2latchlogo4 = request->getParam("screen2latchlogo4", true);
+        Serial.println(screen2latchlogo4->value().c_str());
+        if (strcmp(screen2latchlogo4->value().c_str(), "---") == 0)
+        {
+          button4["latchlogo"] = "";
+        }
+        else
+        {
+          button4["latchlogo"] = screen2latchlogo4->value().c_str();
         }
 
         JsonArray button4_actionarray = button4.createNestedArray("actionarray");
@@ -786,6 +1012,17 @@ void handlerSetup()
           button0["latch"] = false;
         }
 
+        AsyncWebParameter *screen3latchlogo0 = request->getParam("screen3latchlogo0", true);
+        Serial.println(screen3latchlogo0->value().c_str());
+        if (strcmp(screen3latchlogo0->value().c_str(), "---") == 0)
+        {
+          button0["latchlogo"] = "";
+        }
+        else
+        {
+          button0["latchlogo"] = screen3latchlogo0->value().c_str();
+        }
+
         JsonArray button0_actionarray = button0.createNestedArray("actionarray");
         AsyncWebParameter *screen3button0action0 = request->getParam("screen3button0action0", true);
         button0_actionarray.add(screen3button0action0->value().c_str());
@@ -811,6 +1048,17 @@ void handlerSetup()
         else
         {
           button1["latch"] = false;
+        }
+
+        AsyncWebParameter *screen3latchlogo1 = request->getParam("screen3latchlogo1", true);
+        Serial.println(screen3latchlogo1->value().c_str());
+        if (strcmp(screen3latchlogo1->value().c_str(), "---") == 0)
+        {
+          button1["latchlogo"] = "";
+        }
+        else
+        {
+          button1["latchlogo"] = screen3latchlogo1->value().c_str();
         }
 
         JsonArray button1_actionarray = button1.createNestedArray("actionarray");
@@ -840,6 +1088,17 @@ void handlerSetup()
           button2["latch"] = false;
         }
 
+        AsyncWebParameter *screen3latchlogo2 = request->getParam("screen3latchlogo2", true);
+        Serial.println(screen3latchlogo2->value().c_str());
+        if (strcmp(screen3latchlogo2->value().c_str(), "---") == 0)
+        {
+          button2["latchlogo"] = "";
+        }
+        else
+        {
+          button2["latchlogo"] = screen3latchlogo2->value().c_str();
+        }
+
         JsonArray button2_actionarray = button2.createNestedArray("actionarray");
         AsyncWebParameter *screen3button2action0 = request->getParam("screen3button2action0", true);
         button2_actionarray.add(screen3button2action0->value().c_str());
@@ -867,6 +1126,17 @@ void handlerSetup()
           button3["latch"] = false;
         }
 
+        AsyncWebParameter *screen3latchlogo3 = request->getParam("screen3latchlogo3", true);
+        Serial.println(screen3latchlogo3->value().c_str());
+        if (strcmp(screen3latchlogo3->value().c_str(), "---") == 0)
+        {
+          button3["latchlogo"] = "";
+        }
+        else
+        {
+          button3["latchlogo"] = screen3latchlogo3->value().c_str();
+        }
+
         JsonArray button3_actionarray = button3.createNestedArray("actionarray");
         AsyncWebParameter *screen3button3action0 = request->getParam("screen3button3action0", true);
         button3_actionarray.add(screen3button3action0->value().c_str());
@@ -892,6 +1162,17 @@ void handlerSetup()
         else
         {
           button4["latch"] = false;
+        }
+
+        AsyncWebParameter *screen3latchlogo4 = request->getParam("screen3latchlogo4", true);
+        Serial.println(screen3latchlogo4->value().c_str());
+        if (strcmp(screen3latchlogo4->value().c_str(), "---") == 0)
+        {
+          button4["latchlogo"] = "";
+        }
+        else
+        {
+          button4["latchlogo"] = screen3latchlogo4->value().c_str();
         }
 
         JsonArray button4_actionarray = button4.createNestedArray("actionarray");
@@ -956,6 +1237,17 @@ void handlerSetup()
           button0["latch"] = false;
         }
 
+        AsyncWebParameter *screen4latchlogo0 = request->getParam("screen4latchlogo0", true);
+        Serial.println(screen4latchlogo0->value().c_str());
+        if (strcmp(screen4latchlogo0->value().c_str(), "---") == 0)
+        {
+          button0["latchlogo"] = "";
+        }
+        else
+        {
+          button0["latchlogo"] = screen4latchlogo0->value().c_str();
+        }
+
         JsonArray button0_actionarray = button0.createNestedArray("actionarray");
         AsyncWebParameter *screen4button0action0 = request->getParam("screen4button0action0", true);
         button0_actionarray.add(screen4button0action0->value().c_str());
@@ -981,6 +1273,17 @@ void handlerSetup()
         else
         {
           button1["latch"] = false;
+        }
+
+        AsyncWebParameter *screen4latchlogo1 = request->getParam("screen4latchlogo1", true);
+        Serial.println(screen4latchlogo1->value().c_str());
+        if (strcmp(screen4latchlogo1->value().c_str(), "---") == 0)
+        {
+          button1["latchlogo"] = "";
+        }
+        else
+        {
+          button1["latchlogo"] = screen4latchlogo1->value().c_str();
         }
 
         JsonArray button1_actionarray = button1.createNestedArray("actionarray");
@@ -1010,6 +1313,17 @@ void handlerSetup()
           button2["latch"] = false;
         }
 
+        AsyncWebParameter *screen4latchlogo2 = request->getParam("screen4latchlogo2", true);
+        Serial.println(screen4latchlogo2->value().c_str());
+        if (strcmp(screen4latchlogo2->value().c_str(), "---") == 0)
+        {
+          button2["latchlogo"] = "";
+        }
+        else
+        {
+          button2["latchlogo"] = screen4latchlogo2->value().c_str();
+        }
+
         JsonArray button2_actionarray = button2.createNestedArray("actionarray");
         AsyncWebParameter *screen4button2action0 = request->getParam("screen4button2action0", true);
         button2_actionarray.add(screen4button2action0->value().c_str());
@@ -1037,6 +1351,17 @@ void handlerSetup()
           button3["latch"] = false;
         }
 
+        AsyncWebParameter *screen4latchlogo3 = request->getParam("screen4latchlogo3", true);
+        Serial.println(screen4latchlogo3->value().c_str());
+        if (strcmp(screen4latchlogo3->value().c_str(), "---") == 0)
+        {
+          button3["latchlogo"] = "";
+        }
+        else
+        {
+          button3["latchlogo"] = screen4latchlogo3->value().c_str();
+        }
+
         JsonArray button3_actionarray = button3.createNestedArray("actionarray");
         AsyncWebParameter *screen4button3action0 = request->getParam("screen4button3action0", true);
         button3_actionarray.add(screen4button3action0->value().c_str());
@@ -1062,6 +1387,17 @@ void handlerSetup()
         else
         {
           button4["latch"] = false;
+        }
+
+        AsyncWebParameter *screen4latchlogo4 = request->getParam("screen4latchlogo4", true);
+        Serial.println(screen4latchlogo4->value().c_str());
+        if (strcmp(screen4latchlogo4->value().c_str(), "---") == 0)
+        {
+          button4["latchlogo"] = "";
+        }
+        else
+        {
+          button4["latchlogo"] = screen4latchlogo4->value().c_str();
         }
 
         JsonArray button4_actionarray = button4.createNestedArray("actionarray");
@@ -1126,6 +1462,17 @@ void handlerSetup()
           button0["latch"] = false;
         }
 
+        AsyncWebParameter *screen5latchlogo0 = request->getParam("screen5latchlogo0", true);
+        Serial.println(screen5latchlogo0->value().c_str());
+        if (strcmp(screen5latchlogo0->value().c_str(), "---") == 0)
+        {
+          button0["latchlogo"] = "";
+        }
+        else
+        {
+          button0["latchlogo"] = screen5latchlogo0->value().c_str();
+        }
+
         JsonArray button0_actionarray = button0.createNestedArray("actionarray");
         AsyncWebParameter *screen5button0action0 = request->getParam("screen5button0action0", true);
         button0_actionarray.add(screen5button0action0->value().c_str());
@@ -1151,6 +1498,17 @@ void handlerSetup()
         else
         {
           button1["latch"] = false;
+        }
+
+        AsyncWebParameter *screen5latchlogo1 = request->getParam("screen5latchlogo1", true);
+        Serial.println(screen5latchlogo1->value().c_str());
+        if (strcmp(screen5latchlogo1->value().c_str(), "---") == 0)
+        {
+          button1["latchlogo"] = "";
+        }
+        else
+        {
+          button1["latchlogo"] = screen5latchlogo1->value().c_str();
         }
 
         JsonArray button1_actionarray = button1.createNestedArray("actionarray");
@@ -1180,6 +1538,17 @@ void handlerSetup()
           button2["latch"] = false;
         }
 
+        AsyncWebParameter *screen5latchlogo2 = request->getParam("screen5latchlogo2", true);
+        Serial.println(screen5latchlogo2->value().c_str());
+        if (strcmp(screen5latchlogo2->value().c_str(), "---") == 0)
+        {
+          button2["latchlogo"] = "";
+        }
+        else
+        {
+          button2["latchlogo"] = screen5latchlogo2->value().c_str();
+        }
+
         JsonArray button2_actionarray = button2.createNestedArray("actionarray");
         AsyncWebParameter *screen5button2action0 = request->getParam("screen5button2action0", true);
         button2_actionarray.add(screen5button2action0->value().c_str());
@@ -1207,6 +1576,17 @@ void handlerSetup()
           button3["latch"] = false;
         }
 
+        AsyncWebParameter *screen5latchlogo3 = request->getParam("screen5latchlogo3", true);
+        Serial.println(screen5latchlogo3->value().c_str());
+        if (strcmp(screen5latchlogo3->value().c_str(), "---") == 0)
+        {
+          button3["latchlogo"] = "";
+        }
+        else
+        {
+          button3["latchlogo"] = screen5latchlogo3->value().c_str();
+        }
+
         JsonArray button3_actionarray = button3.createNestedArray("actionarray");
         AsyncWebParameter *screen5button3action0 = request->getParam("screen5button3action0", true);
         button3_actionarray.add(screen5button3action0->value().c_str());
@@ -1232,6 +1612,17 @@ void handlerSetup()
         else
         {
           button4["latch"] = false;
+        }
+
+        AsyncWebParameter *screen5latchlogo4 = request->getParam("screen5latchlogo4", true);
+        Serial.println(screen5latchlogo4->value().c_str());
+        if (strcmp(screen5latchlogo4->value().c_str(), "---") == 0)
+        {
+          button4["latchlogo"] = "";
+        }
+        else
+        {
+          button4["latchlogo"] = screen5latchlogo4->value().c_str();
         }
 
         JsonArray button4_actionarray = button4.createNestedArray("actionarray");
@@ -1269,6 +1660,12 @@ void handlerSetup()
       AsyncWebParameter *p = request->getParam("dir");
       request->send(200, "application/json", handleFileList(p->value().c_str()));
     }
+  });
+
+  webserver.on("/apislist", HTTP_GET, [](AsyncWebServerRequest *request) {
+
+      request->send(200, "application/json", handleAPISList());
+
   });
 
   webserver.on("/info", HTTP_GET, [](AsyncWebServerRequest *request) {
