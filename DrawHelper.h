@@ -1507,10 +1507,15 @@ void printinfo()
     tft.println("Sleep: Disabled");
   }
 #else
-
   tft.println("Sleep: Disabled");
-
 #endif
+
+#ifdef speakerPin
+  tft.println("Speaker: Enabled");
+#else
+  tft.println("Speaker: Disabled");
+#endif
+
   tft.print("Free Storage: ");
   float freemem = SPIFFS.totalBytes() - SPIFFS.usedBytes();
   tft.print(freemem / 1000);

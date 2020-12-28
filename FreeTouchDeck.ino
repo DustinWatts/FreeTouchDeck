@@ -54,7 +54,7 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define speakerPin 26
 
 const char *versionnumber = "0.9.6";
 
@@ -579,8 +579,7 @@ void loop(void)
 #endif
 
     if (pressed)
-    {
-
+    {     
       displayinginfo = false;
       pageNum = 6;
       tft.fillScreen(generalconfig.backgroundColour);
@@ -663,6 +662,14 @@ void loop(void)
 
         // After receiving a valid touch reset the sleep timer
         previousMillis = millis();
+        // Beep
+        #ifdef speakerPin
+          ledcAttachPin(speakerPin, 0);
+          ledcWriteTone(1, 600);
+          delay(50);
+          ledcDetachPin(speakerPin);
+          ledcWrite(1, 0);
+        #endif 
       }
       else
       {
