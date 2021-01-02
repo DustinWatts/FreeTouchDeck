@@ -12,8 +12,16 @@
 */
 void drawlatched(int b, int col, int row)
 {
-
-  tft.fillRoundRect((KEY_X - 37 + col * (KEY_W + KEY_SPACING_X)) - 12, (KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y)) - 12, 18, 18, 4, generalconfig.latchedColour);
+  int offset;
+  if(SCREEN_WIDTH < 480)
+  {
+    offset = 2;
+  }
+  else
+  {
+    offset = 12;
+  }
+  tft.fillRoundRect((KEY_X - 37 + col * (KEY_W + KEY_SPACING_X)) - offset, (KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y)) - offset, 18, 18, 4, generalconfig.latchedColour);
 }
 
 /**
@@ -1492,7 +1500,14 @@ void printinfo()
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(1, 3);
   tft.setTextFont(2);
-  tft.setTextSize(2);
+  if(SCREEN_WIDTH < 480)
+  {
+    tft.setTextSize(1);
+  }
+  else
+  {
+    tft.setTextSize(2);
+  }
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.printf("Version: %s\n", versionnumber);
 
@@ -1515,11 +1530,12 @@ void printinfo()
   float freemem = SPIFFS.totalBytes() - SPIFFS.usedBytes();
   tft.print(freemem / 1000);
   tft.println(" kB");
-  tft.print("BLE MAC: ");
-  printDeviceAddress();
-  tft.println("");
-  tft.print("WiFi MAC: ");
-  tft.println(WiFi.macAddress());
+  tft.print("BLE Keyboard version: ");
+  tft.println(BLE_KEYBOARD_VERSION);
+  tft.print("ArduinoJson version: ");
+  tft.println(ARDUINOJSON_VERSION);
+  tft.print("TFT_eSPI version: ");
+  tft.println(TFT_ESPI_VERSION);
   tft.println("ESP-IDF: ");
   tft.println(esp_get_idf_version());
 

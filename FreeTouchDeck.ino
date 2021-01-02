@@ -58,9 +58,10 @@
 
 const char *versionnumber = "0.9.6";
 
-    /* Version 0.9.6 Add latchting to different image instead of just a dot. This version also adds the ability to change the WiFi
-     *  mode to be an Access Point and the ability to change the SSID and Password via the serial monitor. Furthermore, the touch
-     *  calibration can be reset. See docs for usage!
+    /* Version 0.9.6 Bug fix: Changing colour causes reboot when entering config mode. "Combos" dissapeared and are now back. 
+     *  Move the FreeTouchDeck logo to the "logos" folder so it can be deleted to create more space. 
+     *  Fixed the latching dot to fall within the boundaries of a button when using a 320 * 240 screen. 
+     *  Remember to re-upload the data folder ! !
     */
 
 #include <pgmspace.h> // PROGMEM support header
@@ -374,7 +375,7 @@ void setup()
   {
 
     // Draw a splash screen
-    drawBmp("/freetouchdeck_logo.bmp", 0, 0);
+    drawBmp("/logos/freetouchdeck_logo.bmp", 0, 0);
     tft.setCursor(1, 3);
     tft.setTextFont(2);
     tft.setTextSize(1);
@@ -450,7 +451,7 @@ void setup()
 
   strcpy(generallogo.homebutton, "/logos/home.bmp");
   strcpy(generallogo.configurator, "/logos/wifi.bmp");
-  Serial.println("[INFO]: General logo's loaded.");
+  Serial.println("[INFO]: General logos loaded.");
 
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
@@ -459,6 +460,15 @@ void setup()
 
   Serial.println("[INFO]: Starting BLE");
   bleKeyboard.begin();
+
+  // ---------------- Printing version numbers -----------------------------------------------
+
+  Serial.print("[INFO]: BLE Keyboard version: ");
+  Serial.println(BLE_KEYBOARD_VERSION);
+  Serial.print("[INFO]: ArduinoJson version: ");
+  Serial.println(ARDUINOJSON_VERSION);
+  Serial.print("[INFO]: TFT_eSPI version: ");
+  Serial.println(TFT_ESPI_VERSION);
 
   // ---------------- Start the first keypad -------------
 
@@ -1372,19 +1382,19 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(10, 1, 0);
+            bleKeyboardAction(11, 1, 0);
           }
           else if (b == 1) // Button 1
           {
-            bleKeyboardAction(10, 2, 0);
+            bleKeyboardAction(11, 2, 0);
           }
           else if (b == 2) // Button 2
           {
-            bleKeyboardAction(10, 3, 0);
+            bleKeyboardAction(11, 3, 0);
           }
           else if (b == 3) // Button 3
           {
-            bleKeyboardAction(10, 4, 0);
+            bleKeyboardAction(11, 4, 0);
             if (islatched[28])
             {
               islatched[28] = 0;

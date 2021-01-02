@@ -458,6 +458,7 @@ void handlerSetup()
         wificonfigobject["ssid"] = wificonfig.ssid;
         wificonfigobject["password"] = wificonfig.password;
         wificonfigobject["wifihostname"] = wificonfig.hostname;
+        wificonfigobject["wifimode"] = wificonfig.wifimode;
 
         AsyncWebParameter *sleepenable = request->getParam("sleepenable", true);
         String sleepEnable = sleepenable->value().c_str();

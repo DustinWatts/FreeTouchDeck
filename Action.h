@@ -274,7 +274,9 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 10: // Special functions
+  case 10: // future feature
+    break;
+  case 11: // Special functions
     switch (value)
     {
     case 1:        // Enter config mode
