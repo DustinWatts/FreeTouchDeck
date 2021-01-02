@@ -254,6 +254,12 @@ bool displayinginfo;
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
 
+// Checking for BLE Keyboard version
+#ifndef BLE_KEYBOARD_VERSION
+  #warning Old BLE Keyboard version detected. Please update.
+  #define BLE_KEYBOARD_VERSION "Outdated"
+#endif  
+
 //--------- Internal references ------------
 // (this needs to be below all structs etc..)
 #include "ScreenHelper.h"
@@ -462,7 +468,6 @@ void setup()
   bleKeyboard.begin();
 
   // ---------------- Printing version numbers -----------------------------------------------
-
   Serial.print("[INFO]: BLE Keyboard version: ");
   Serial.println(BLE_KEYBOARD_VERSION);
   Serial.print("[INFO]: ArduinoJson version: ");
