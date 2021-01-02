@@ -56,12 +56,12 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.6";
+const char *versionnumber = "0.9.7";
 
-    /* Version 0.9.6 Bug fix: Changing colour causes reboot when entering config mode. "Combos" dissapeared and are now back. 
+    /* Version 0.9.7 Bug fix: Changing colour causes reboot when entering config mode. "Combos" dissapeared and are now back. 
      *  Move the FreeTouchDeck logo to the "logos" folder so it can be deleted to create more space. 
      *  Fixed the latching dot to fall within the boundaries of a button when using a 320 * 240 screen. 
-     *  Remember to re-upload the data folder ! !
+     *  When updating: remember to re-upload the data folder ! !
     */
 
 #include <pgmspace.h> // PROGMEM support header
