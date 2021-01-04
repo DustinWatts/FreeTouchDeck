@@ -33,7 +33,7 @@ void configmode()
       yield(); // Stop!
   }
 
-  if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED") // The wificonfig.json failed to load
+  if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED" || String(wificonfig.wifimode) == "FAILED") // The wificonfig.json failed to load
   {
     drawErrorMessage("WiFi Config Failed to load!");
     Serial.println("[ERROR]: WiFi Config Failed to load!");
@@ -69,8 +69,8 @@ void configmode()
     }
   }
 
-  MDNS.addService("http", "tcp", 80);
   MDNS.begin(wificonfig.hostname);
+  MDNS.addService("http", "tcp", 80);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
   pageNum = 7;
