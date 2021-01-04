@@ -154,6 +154,8 @@
 	<h1>FreeTouchDeck Configurator</h1>
 	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
 	<form class="form" method="post" action='/uploadJSON' id="uploadjsonfile" enctype="multipart/form-data"></form>
+	<form class="form" method="post" action='/uploadAPI' id="uploadapifile" enctype="multipart/form-data"></form>
+
 	
 	<!-- Menu -->
 	<div class="tab">
@@ -174,6 +176,10 @@
 		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'editor')">File editor</button>
 
 		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'uploadjson')">Upload Menu Config</button>
+
+		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'apipost')">APIpost(beta)</button>
+ 
+
 
 	</div>
 
@@ -849,7 +855,7 @@
 	    </p>
 	</div>
 
-	<!-- INFO -->
+	<!-- Upload JSON -->
 	 <div id="info" class="tabcontent">
 	    <h3>About FreeTouchDeck</h3>
 	    <div id ="infocontent" style="width: 40%; text-align: left; margin: auto;">
@@ -857,6 +863,26 @@
 	    </div>
 	    <p>
 	</div>
+
+	 <!-- Upload JSON -->
+	 <div id="apipost" class="tabcontent">
+	    <h3>Upload a API Post JSON file</h3>
+	    <div style="width: 70%; text-align: left; margin: auto;"> APIpost (hass.io) support is added since version 0.9.6. To use this, #define ENABLEAPISUPPORT should be uncommented during compile time. <br/><br/>
+	    Useage: there are two files linked to each other. The json file that will be posted and the configuration file for that json post. The configuration file starts with "config_". For example: "example json" is posted with the configuration from "config_example.json".
+
+	    A configuration file contains the server IP address, the server port, your bearer token and the endpoint of the API. 
+
+	    If you upload a file that already exists, that file will be <u>overwritten</u>!
+	    </div>
+	    <p>
+	    <div class="form" style="width: 25%; text-align: center; margin: auto;">
+	        <input form="uploadapifile" type="file" name="name" accept=".json"><br /><br />
+	        <button style='cursor: pointer;' form="uploadapifile" type="save">Upload JSON object</button>
+	    </div>
+	    </p>
+	</div>
+
+
 	</div>
 
 </div>
@@ -1397,9 +1423,45 @@
 		        value: '14'
 		      }
 
-		      ]
+			  ]
+			},
+			{
+		    name: 'APIpost',
+		    value: '9',
+		    subitems: [{
+		        name: '---',
+		        value: '---'
+		      }]
 		  }
 		];
+
+	</script>
+
+	<!-- Adding uploaded JSON files to hass.io array --->
+	<script>
+
+		fetch('/apislist')
+					.then((response) => {
+						return response.json()
+					})
+					.then((data) => {
+						data.forEach(obj => {
+							
+							Object.entries(obj).forEach(([key, value]) => {
+							
+							var newvalue = {}
+
+							newvalue.name = value;
+						    newvalue.value = value;
+
+						    selecteditems[9].subitems.push(newvalue);
+							});
+
+						});
+					})
+					.catch((err) => {
+						console.log(err)
+					})
 
 	</script>
 	

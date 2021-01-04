@@ -1,37 +1,77 @@
 {
-  "logo0": "question.bmp",
-  "logo1": "question.bmp",
-  "logo2": "question.bmp",
-  "logo3": "question.bmp",
-  "logo4": "question.bmp",
-  "button0":{
-    "latch": false,
-    "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+  "logo0": "mic_on.bmp",
+  "logo1": "webcam_off.bmp",
+  "logo2": "exit.bmp",
+  "logo3": "zoom.bmp",
+  "logo4": "share.bmp",
+  "button0": {
+    "latch": true,
+    "latchlogo": "mic_off.bmp",
+    "actionarray": [
+      "5",
+      "4",
+      "0"
+    ],
+    "valuearray": [
+      "3",
+      "a",
+      "0"
+    ]
   },
-  "button1":{
-    "latch": false,
-    "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+  "button1": {
+    "latch": true,
+    "latchlogo": "webcam_on.bmp",
+    "actionarray": [
+      "5",
+      "4",
+      "0"
+    ],
+    "valuearray": [
+      "3",
+      "v",
+      "0"
+    ]
   },
-  "button2":{
+  "button2": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "5",
+      "4",
+      "0"
+    ],
+    "valuearray": [
+      "3",
+      "q",
+      "0"
+    ]
   },
-  "button3":{
+  "button3": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0"],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "5",
+      "5",
+      "4"
+    ],
+    "valuearray": [
+      "1",
+      "3",
+      "z"
+    ]
   },
-  "button4":{
+  "button4": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "5",
+      "4",
+      "0"
+    ],
+    "valuearray": [
+      "3",
+      "s",
+      "0"
+    ]
   }
 }
