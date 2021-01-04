@@ -54,7 +54,7 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-#define speakerPin 26
+//#define speakerPin 26
 
 const char *versionnumber = "0.9.7";
 
