@@ -1,3 +1,7 @@
+extern "C" {
+#include <esp_wifi.h>
+}
+
 /**
 * @brief This function draws the a "latched" dot. it uses the logonumber, colomn and row to
 *        determine where.
@@ -1322,7 +1326,7 @@ void drawKeypad()
     }
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-    if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
+    if (WiFi.getMode() == WIFI_STA)
     {
       tft.println("Started as STA and in config mode.");
       tft.println("To configure:");
@@ -1332,7 +1336,12 @@ void drawKeypad()
     }
     else
     {
+      wifi_config_t conf_current;
+      esp_wifi_get_config(WIFI_IF_AP, &conf_current);
+
       tft.println("Started as AP and in config mode.");
+      tft.printf("SSID: %s\n", conf_current.ap.ssid);
+      tft.printf("Password: %s\n", conf_current.ap.password);
       tft.println("To configure:");
       tft.println("http://freetouchdeck.local");
       tft.print("The IP is: ");
@@ -1512,10 +1521,10 @@ void printinfo()
   tft.printf("Version: %s\n", versionnumber);
 
 #ifdef touchInterruptPin
-  if (wificonfig.sleepenable)
+  if (systemconfig.sleepenable)
   {
     tft.println("Sleep: Enabled");
-    tft.printf("Sleep timer: %u minutes\n", wificonfig.sleeptimer);
+    tft.printf("Sleep timer: %u minutes\n", systemconfig.sleeptimer);
   }
   else
   {

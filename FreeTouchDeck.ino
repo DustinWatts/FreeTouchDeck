@@ -102,6 +102,10 @@ TFT_eSPI tft = TFT_eSPI();
 
 // Define the storage to be used. For now just SPIFFS.
 #define FILESYSTEM SPIFFS
+#define CONFIG_JSON_SIZE 512
+#define CONFIG_FILE_PATH "/config/config.json"
+
+#define FAILED "F"
 
 // This is the file name used to store the calibration data
 // You can change this to create new calibration files.
@@ -217,18 +221,25 @@ struct Wificonfig
   char ssid[64];
   char password[64];
   char wifimode[9];
+};
+
+struct SystemConfig
+{
   char hostname[64];
   bool sleepenable;
   uint16_t sleeptimer;
+  Wificonfig wificonfig;
+  Wificonfig wificonfigfallback;
 };
+
+
 
 // Array to hold all the latching statuses
 bool islatched[30] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Create instances of the structs
-Wificonfig wificonfig;
-
 Config generalconfig;
+SystemConfig systemconfig;
 
 Generallogos generallogo;
 
@@ -269,6 +280,18 @@ TFT_eSPI_Button key[6];
 #include "Action.h"
 #include "Webserver.h"
 #include "Touch.h"
+
+//
+
+void updateSystemConfigFromSerial(char *configString)
+{
+  String value = Serial.readString();
+  value.toCharArray(configString, 64);
+  if (saveConfig())
+  {
+    loadMainConfig();
+  }
+}
 
 //-------------------------------- SETUP --------------------------------------------------------------
 
@@ -485,13 +508,13 @@ void setup()
   drawKeypad();
 
 #ifdef touchInterruptPin
-  if (wificonfig.sleepenable)
+  if (systemconfig.sleepenable)
   {
     pinMode(touchInterruptPin, INPUT_PULLUP);
-    Interval = wificonfig.sleeptimer * 60000;
+    Interval = systemconfig.sleeptimer * 60000;
     Serial.println("[INFO]: Sleep enabled.");
     Serial.print("[INFO]: Sleep timer = ");
-    Serial.print(wificonfig.sleeptimer);
+    Serial.print(systemconfig.sleeptimer);
     Serial.println(" minutes");
     islatched[28] = 1;
   }
@@ -507,7 +530,6 @@ void loop(void)
   
   if (Serial.available())
   {
-
     String command = Serial.readStringUntil(' ');
 
     if (command == "cal")
@@ -517,34 +539,15 @@ void loop(void)
     }
     else if (command == "setssid")
     {
-
-      String value = Serial.readString();
-      if (saveWifiSSID(value))
-      {
-        Serial.printf("[INFO]: Saved new SSID: %s\n", value.c_str());
-        loadMainConfig();
-        Serial.println("[INFO]: New configuration loaded");
-      }
+      updateSystemConfigFromSerial(systemconfig.wificonfig.ssid);
     }
     else if (command == "setpassword")
     {
-      String value = Serial.readString();
-      if (saveWifiPW(value))
-      {
-        Serial.printf("[INFO]: Saved new Password: %s\n", value.c_str());
-        loadMainConfig();
-        Serial.println("[INFO]: New configuration loaded");
-      }
+      updateSystemConfigFromSerial(systemconfig.wificonfig.password);
     }
     else if (command == "setwifimode")
     {
-      String value = Serial.readString();
-      if (saveWifiMode(value))
-      {
-        Serial.printf("[INFO]: Saved new WiFi Mode: %s\n", value.c_str());
-        loadMainConfig();
-        Serial.println("[INFO]: New configuration loaded");
-      }
+      updateSystemConfigFromSerial(systemconfig.wificonfig.wifimode);
     }
     else if (command == "restart")
     {
@@ -607,7 +610,7 @@ void loop(void)
     // Check if sleep is enabled and if our timer has ended.
 
 #ifdef touchInterruptPin
-    if (wificonfig.sleepenable)
+    if (systemconfig.sleepenable)
     {
       if (millis() > previousMillis + Interval)
       {

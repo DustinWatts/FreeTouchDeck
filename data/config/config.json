@@ -1,0 +1,17 @@
+{
+	"sleepenable": true,
+	"sleeptimer": 10,
+	"hostname": "freetouchdeck",
+	"wifi": {
+		"default": {
+			"ssid": "YOUR_WIFI_SSID",
+			"password": "YOUR_WIFI_PASSWORD",
+			"wifimode": "WIFI_STA"
+		},
+		"fallback": {
+			"ssid": "FreeTouchDeck_AP",
+			"password": "ThanksForAllTheFish",
+			"wifimode": "WIFI_AP"
+		}
+	}
+}

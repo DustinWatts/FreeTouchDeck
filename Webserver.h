@@ -126,18 +126,18 @@ String handleInfo()
   output += "{\"";
   output += "WiFi Mode";
   output += "\":\"";
-  output += String(wificonfig.wifimode);
+  output += String(systemconfig.wificonfig.wifimode);
   output += "\"},";
 
 #ifdef touchInterruptPin
   output += "{\"";
   output += "Sleep";
   output += "\":\"";
-  if (wificonfig.sleepenable)
+  if (systemconfig.sleepenable)
   {
     output += String("Enabled. ");
     output += String("Timer: ");
-    output += String(wificonfig.sleeptimer);
+    output += String(systemconfig.sleeptimer);
     output += String(" minutes");
     output += "\"}";
   }
@@ -442,46 +442,29 @@ void handlerSetup()
 
         // Save sleep settings
         Serial.println("[INFO]: Saving Sleep Settings");
-
-        FILESYSTEM.remove("/config/wificonfig.json");
-        File sleep = FILESYSTEM.open("/config/wificonfig.json", "w");
-        if (!sleep)
-        {
-          Serial.println("[WARNING]: Failed to create file");
-          return;
-        }
-
-        DynamicJsonDocument doc2(256);
-
-        JsonObject wificonfigobject = doc2.to<JsonObject>();
-
-        wificonfigobject["ssid"] = wificonfig.ssid;
-        wificonfigobject["password"] = wificonfig.password;
-        wificonfigobject["wifihostname"] = wificonfig.hostname;
-        wificonfigobject["wifimode"] = wificonfig.wifimode;
-
         AsyncWebParameter *sleepenable = request->getParam("sleepenable", true);
         String sleepEnable = sleepenable->value().c_str();
-
-        if (sleepEnable == "true")
-        {
-          wificonfigobject["sleepenable"] = true;
-        }
-        else
-        {
-          wificonfigobject["sleepenable"] = false;
-        }
-
+        systemconfig.sleepenable = sleepEnable == "true";
+        
         AsyncWebParameter *sleeptimer = request->getParam("sleeptimer", true);
-
         String sleepTimer = sleeptimer->value().c_str();
-        wificonfigobject["sleeptimer"] = sleepTimer.toInt();
+        systemconfig.sleeptimer = sleepTimer.toInt();
 
-        if (serializeJsonPretty(doc2, sleep) == 0)
+        AsyncWebParameter *wifissid = request->getParam("wifissid", true);
+        String wifiSSID = wifissid->value().c_str();
+        wifiSSID.toCharArray(systemconfig.wificonfig.ssid, 64);
+        AsyncWebParameter *wifipassword = request->getParam("wifipassword", true);
+        String wifiPassword = wifipassword->value().c_str();
+        wifiPassword.toCharArray(systemconfig.wificonfig.password, 64);
+        AsyncWebParameter *wifimode = request->getParam("wifimode", true);
+        String wifiMode = wifimode->value().c_str();
+        wifiMode.toCharArray(systemconfig.wificonfig.wifimode, 64);
+
+
+        if (!saveConfig())
         {
-          Serial.println("[WARNING]: Failed to write to file");
+          Serial.println("[WARNING]: Failed to update config");
         }
-        file.close();
       }
       else if (savemode == "homescreen")
       {

@@ -227,6 +227,22 @@
   					<option value="60">60 Minutes</option>
 				</select>
 
+				<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+					<h2>WiFi Settings</h2>
+				</div>
+
+				&nbsp;&nbsp;SSID:&nbsp;
+				<input id='wifissid'
+					name='wifissid' type="text" value=''>
+				&nbsp;&nbsp;Password:&nbsp;
+				<input id='wifipassword'
+					name='wifipassword' type="password" value=''>
+				&nbsp;&nbsp;Mode:&nbsp;
+				<select class="sleeptimer" id='wifimode' name='wifimode'>
+					<option value="WIFI_STA">Station</option>
+  					<option value="WIFI_AP">Access Point</option>
+				</select>
+
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="savecolors">
 				<br /><button style='cursor: pointer;' form="savecolors" type='save'>Save General Config</button></div>
@@ -4285,7 +4301,7 @@ $(function () {
 		function getsleepconfig(){
 
 				// Load Menu 5
-		fetch('config/wificonfig.json')
+		fetch('config/config.json')
 			.then((response) => {
 				return response.json()
 			})
@@ -4293,6 +4309,10 @@ $(function () {
 
 				document.getElementById("sleepenable").value = data.sleepenable;
 				document.getElementById("sleeptimer").value = data.sleeptimer;
+
+				document.getElementById("wifissid").value = data.wifi.default.ssid;
+				document.getElementById("wifipassword").value = data.wifi.default.password;
+				document.getElementById("wifimode").value = data.wifi.default.wifimode;
 
 			})
 			.catch((err) => {

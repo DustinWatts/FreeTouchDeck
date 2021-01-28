@@ -1,8 +1,0 @@
-{
-	"ssid": "YOUR_WIFI_SSID",
-	"password": "YOUR_WIFI_PASSWORD",
-	"wifimode": "WIFI_STA",
-	"wifihostname": "freetouchdeck",
-	"sleepenable": true,
-	"sleeptimer": 10
-}

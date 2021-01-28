@@ -299,18 +299,17 @@ void bleKeyboardAction(int action, int value, char *symbol)
       }
       break;
     case 4: // Sleep Enabled
-      if (wificonfig.sleepenable)
+      systemconfig.sleepenable = !systemconfig.sleepenable;
+      if (systemconfig.sleepenable)
       {
-        wificonfig.sleepenable = false;
-        Serial.println("[INFO]: Sleep disabled.");
+        Interval = systemconfig.sleeptimer * 60000;
+        Serial.println("[INFO]: Sleep enabled.");
+        Serial.print("[INFO]: Timer set to: ");
+        Serial.println(systemconfig.sleeptimer);
       }
       else
       {
-        wificonfig.sleepenable = true;
-        Interval = wificonfig.sleeptimer * 60000;
-        Serial.println("[INFO]: Sleep enabled.");
-        Serial.print("[INFO]: Timer set to: ");
-        Serial.println(wificonfig.sleeptimer);
+        Serial.println("[INFO]: Sleep disabled.");
       }
       break;
     }

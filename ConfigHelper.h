@@ -1,4 +1,66 @@
 /**
+* @brief This function start the WiFi Connection. Return true if success.
+*
+* @param Wificonfig
+*
+* @return bool
+*
+* @note none
+*/
+bool startWifiConnection(Wificonfig &wificonfig)
+{
+  int timeout = 10;
+  if (String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
+  {
+    drawErrorMessage("WiFi Config still set to default!");
+    Serial.println("[ERROR]: WiFi Config still set to default!");
+    return false;
+  }
+
+  if (String(wificonfig.ssid) == FAILED || String(wificonfig.password) == FAILED || String(wificonfig.wifimode) == FAILED) // The config.json failed to load
+  {
+    drawErrorMessage("WiFi Config Failed to load!");
+    Serial.println("[ERROR]: WiFi Config Failed to load!");
+    return false;
+  }
+
+  drawErrorMessage("Connecting to Wifi...");
+
+  Serial.printf("[INFO]: Connecting to %s", wificonfig.ssid);
+  if (String(WiFi.SSID()) != String(wificonfig.ssid))
+  {
+    if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
+    {
+      WiFi.mode(WIFI_STA);
+      WiFi.begin(wificonfig.ssid, wificonfig.password);
+      while (WiFi.status() != WL_CONNECTED)
+      {
+        if(timeout == 0) {
+          WiFi.disconnect();
+          return false;
+        }
+        delay(500);
+        Serial.print(".");
+        timeout--;
+      }
+      Serial.println("");
+      Serial.print("[INFO]: Connected! IP address: ");
+      Serial.println(WiFi.localIP());
+    }
+    else if (strcmp(wificonfig.wifimode, "WIFI_AP") == 0)
+    {
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP(wificonfig.ssid, wificonfig.password);
+      Serial.println("");
+      Serial.print("[INFO]: Access Point Started! IP address: ");
+      Serial.println(WiFi.softAPIP());
+    }
+  }
+
+  return true;
+}
+
+/**
 * @brief This function stops Bluetooth and connects to the given 
          WiFi network. It the starts mDNS and starts the Async
          Webserver.
@@ -25,51 +87,15 @@ void configmode()
 
   Serial.println("[INFO]: BLE Stopped");
 
-  if (String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
-  {
-    drawErrorMessage("WiFi Config still set to default!");
-    Serial.println("[ERROR]: WiFi Config still set to default!");
-    while (1)
-      yield(); // Stop!
-  }
-
-  if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED" || String(wificonfig.wifimode) == "FAILED") // The wificonfig.json failed to load
-  {
-    drawErrorMessage("WiFi Config Failed to load!");
-    Serial.println("[ERROR]: WiFi Config Failed to load!");
-    while (1)
-      yield(); // Stop!
-  }
-
-  drawErrorMessage("Connecting to Wifi...");
-
-  Serial.printf("[INFO]: Connecting to %s", wificonfig.ssid);
-  if (String(WiFi.SSID()) != String(wificonfig.ssid))
-  {
-    if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
-    {
-      WiFi.mode(WIFI_STA);
-      WiFi.begin(wificonfig.ssid, wificonfig.password);
-      while (WiFi.status() != WL_CONNECTED)
-      {
-        delay(500);
-        Serial.print(".");
-      }
-      Serial.println("");
-      Serial.print("[INFO]: Connected! IP address: ");
-      Serial.println(WiFi.localIP());
-    }
-    else if (strcmp(wificonfig.wifimode, "WIFI_AP") == 0)
-    {
-      WiFi.mode(WIFI_AP);
-      WiFi.softAP(wificonfig.ssid, wificonfig.password);
-      Serial.println("");
-      Serial.print("[INFO]: Access Point Started! IP address: ");
-      Serial.println(WiFi.softAPIP());
+  if(startWifiConnection(systemconfig.wificonfig) == false) {
+    Serial.println("[WARNING]: Failed to connect to the default WiFi network");
+    if(startWifiConnection(systemconfig.wificonfigfallback) == false) {
+      Serial.println("[ERROR]: Failed to connect to the fallback WiFi network");
+      return;
     }
   }
 
-  MDNS.begin(wificonfig.hostname);
+  MDNS.begin(systemconfig.hostname);
   MDNS.addService("http", "tcp", 80);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
@@ -80,118 +106,49 @@ void configmode()
   Serial.println("[INFO]: Webserver started");
 }
 
-/**
-* @brief This function allows for saving (updating) the WiFi SSID
-*
-* @param String ssid
-*
-* @return boolean True if succeeded. False otherwise.
-*
-* @note Returns true if successful. To enable the new set SSID, you must reload the the 
-         configuration using loadMainConfig()
-*/
-bool saveWifiSSID(String ssid)
+JsonObject wifiConfigToJSONObject(Wificonfig &wificonfig)
 {
+  DynamicJsonDocument doc(CONFIG_JSON_SIZE);
+  
+  JsonObject configobject = doc.to<JsonObject>();
 
-  FILESYSTEM.remove("/config/wificonfig.json");
-  File file = FILESYSTEM.open("/config/wificonfig.json", "w");
+  configobject["ssid"] = wificonfig.ssid;
+  configobject["wifimode"] = wificonfig.wifimode;
+  configobject["password"] = wificonfig.password;
 
-  DynamicJsonDocument doc(256);
-
-  JsonObject wificonfigobject = doc.to<JsonObject>();
-
-  wificonfigobject["ssid"] = ssid;
-  wificonfigobject["password"] = wificonfig.password;
-  wificonfigobject["wifimode"] = wificonfig.wifimode;
-  wificonfigobject["wifihostname"] = wificonfig.hostname;
-  wificonfigobject["sleepenable"] = wificonfig.sleepenable;
-  wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
-
-  if (serializeJsonPretty(doc, file) == 0)
-  {
-    Serial.println("[WARNING]: Failed to write to file");
-    return false;
-  }
-  file.close();
-  return true;
+  return configobject;
 }
 
-/**
-* @brief This function allows for saving (updating) the WiFi Password
-*
-* @param String password
-*
-* @return boolean True if succeeded. False otherwise.
-*
-* @note Returns true if successful. To enable the new set password, you must reload the the 
-         configuration using loadMainConfig()
-*/
-bool saveWifiPW(String password)
+bool saveConfig()
 {
+  Serial.println("[INFO]: Saving Config");
+  DynamicJsonDocument doc(CONFIG_JSON_SIZE);
+  DynamicJsonDocument wifidoc(CONFIG_JSON_SIZE);
+  
+  JsonObject configobject = doc.to<JsonObject>();
 
-  FILESYSTEM.remove("/config/wificonfig.json");
-  File file = FILESYSTEM.open("/config/wificonfig.json", "w");
+  configobject["sleepenable"] = systemconfig.sleepenable;
+  configobject["sleeptimer"] = systemconfig.sleeptimer;
+  configobject["hostname"] = systemconfig.hostname;
 
-  DynamicJsonDocument doc(256);
+  JsonObject wificonfigobject = wifidoc.to<JsonObject>();
+  wificonfigobject["default"] = wifiConfigToJSONObject(systemconfig.wificonfig);
+  wificonfigobject["fallback"] = wifiConfigToJSONObject(systemconfig.wificonfigfallback);
+  configobject["wifi"] = wificonfigobject;
 
-  JsonObject wificonfigobject = doc.to<JsonObject>();
-
-  wificonfigobject["ssid"] = wificonfig.ssid;
-  wificonfigobject["password"] = password;
-  wificonfigobject["wifimode"] = wificonfig.wifimode;
-  wificonfigobject["wifihostname"] = wificonfig.hostname;
-  wificonfigobject["sleepenable"] = wificonfig.sleepenable;
-  wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
+  File file = FILESYSTEM.open(CONFIG_FILE_PATH, "w");
 
   if (serializeJsonPretty(doc, file) == 0)
   {
     Serial.println("[WARNING]: Failed to write to file");
     return false;
   }
+
+  serializeJsonPretty(doc, Serial);
+
   file.close();
   return true;
-}
 
-/**
-* @brief This function allows for saving (updating) the WiFi Mode
-*
-* @param String wifimode "WIFI_STA" of "WIFI_AP"
-*
-* @return boolean True if succeeded. False otherwise.
-*
-* @note Returns true if successful. To enable the new set WiFi Mode, you must reload the the 
-         configuration using loadMainConfig()
-*/
-bool saveWifiMode(String wifimode)
-{
-
-  if (wifimode != "WIFI_STA" && wifimode != "WIFI_AP")
-  {
-    Serial.println("[WARNING]: WiFi Mode not supported. Try WIFI_STA of WIFI_AP.");
-    return false;
-  }
-
-  FILESYSTEM.remove("/config/wificonfig.json");
-  File file = FILESYSTEM.open("/config/wificonfig.json", "w");
-
-  DynamicJsonDocument doc(256);
-
-  JsonObject wificonfigobject = doc.to<JsonObject>();
-
-  wificonfigobject["ssid"] = wificonfig.ssid;
-  wificonfigobject["password"] = wificonfig.password;
-  wificonfigobject["wifimode"] = wifimode;
-  wificonfigobject["wifihostname"] = wificonfig.hostname;
-  wificonfigobject["sleepenable"] = wificonfig.sleepenable;
-  wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
-
-  if (serializeJsonPretty(doc, file) == 0)
-  {
-    Serial.println("[WARNING]: Failed to write to file");
-    return false;
-  }
-  file.close();
-  return true;
 }
 
 /**

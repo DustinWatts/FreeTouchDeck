@@ -1,6 +1,6 @@
 
 .DS_Store
-data/config/wificonfig.json
+data/config/config.json
 .vscode/c_cpp_properties.json
 .vscode/arduino.json
 *.json

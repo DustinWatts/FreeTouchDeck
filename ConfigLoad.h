@@ -1,5 +1,14 @@
+
+
+void loadWifiConfig(DynamicJsonDocument config, Wificonfig &wificonfig)
+{
+  strlcpy(wificonfig.ssid, config["ssid"] | FAILED, sizeof(wificonfig.ssid));
+  strlcpy(wificonfig.password, config["password"] | FAILED, sizeof(wificonfig.password));
+  strlcpy(wificonfig.wifimode, config["wifimode"] | FAILED, sizeof(wificonfig.wifimode));
+}
+
 /**
-* @brief This function opens wificonfig.json and fills the wificonfig
+* @brief This function opens config.json and fills the wificonfig
 *        struct accordingly.
 *
 * @param none
@@ -10,37 +19,17 @@
 */
 bool loadMainConfig()
 {
-  if (!FILESYSTEM.exists("/config/wificonfig.json"))
+  if (!FILESYSTEM.exists(CONFIG_FILE_PATH))
   {
     Serial.println("[WARNING]: Config file not found!");
     return false;
   }
-  File configfile = FILESYSTEM.open("/config/wificonfig.json");
 
-  DynamicJsonDocument doc(256);
+  File configfile = FILESYSTEM.open(CONFIG_FILE_PATH);
+
+  DynamicJsonDocument doc(CONFIG_JSON_SIZE);
 
   DeserializationError error = deserializeJson(doc, configfile);
-
-  strlcpy(wificonfig.ssid, doc["ssid"] | "FAILED", sizeof(wificonfig.ssid));
-  strlcpy(wificonfig.password, doc["password"] | "FAILED", sizeof(wificonfig.password));
-  strlcpy(wificonfig.wifimode, doc["wifimode"] | "FAILED", sizeof(wificonfig.wifimode));
-  strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));
-
-  bool sleepenable = doc["sleepenable"] | false;
-  if (sleepenable)
-  {
-    wificonfig.sleepenable = true;
-    islatched[28] = 1;
-  }
-  else
-  {
-    wificonfig.sleepenable = false;
-  }
-
-  uint16_t sleeptimer = doc["sleeptimer"];
-  wificonfig.sleeptimer = sleeptimer;
-
-  configfile.close();
 
   if (error)
   {
@@ -48,6 +37,23 @@ bool loadMainConfig()
     Serial.println(error.c_str());
     return false;
   }
+
+  systemconfig.sleepenable = doc["sleepenable"] | false;
+  systemconfig.sleeptimer = doc["sleeptimer"];
+  strlcpy(systemconfig.hostname, doc["hostname"] | "freetouchdeck", sizeof(systemconfig.hostname));
+
+  loadWifiConfig(doc["wifi"]["default"], systemconfig.wificonfig);
+  loadWifiConfig(doc["wifi"]["fallback"], systemconfig.wificonfigfallback);
+
+  
+  configfile.close();
+
+  if (systemconfig.sleepenable)
+  {
+    islatched[28] = 1;
+  }
+
+  Serial.println("[INFO]: Configuration loaded");
 
   return true;
 }
@@ -69,7 +75,7 @@ void loadConfig(String value)
   {
     File configfile = FILESYSTEM.open("/config/colors.json", "r");
 
-    DynamicJsonDocument doc(256);
+    DynamicJsonDocument doc(CONFIG_JSON_SIZE);
 
     DeserializationError error = deserializeJson(doc, configfile);
 
