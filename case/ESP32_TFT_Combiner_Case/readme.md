@@ -6,6 +6,10 @@ You can print the case that will house both The ILI9488 + TFT screen and you ESP
 
 This case is made to have a press fit. If you are happy with your print and don't plan on taking it apart again, you could use some CA glue to hold the two halves together, but is it not necessary.
 
+## Two different "Top" versions
+
+There are two "Top" versions. The only difference is that one of them is a bit higher. If you use the TFT + ESP32 combiner PCB with female headers for the TFT it needs a slightly higher front. So if you are using female headers for the TFT --> use Top_for_TFT_with_Headers.stl!
+
 # Print settings
 
 I recommend the following settings when printing the case:
@@ -18,6 +22,16 @@ I recommend the following settings when printing the case:
 - Support: none
 
 ![](top_screenshot.jpg)
+
+## Top for TFT with Headers
+
+- Orientation: Flat side down
+- Layer height: 0.2 mm
+- Infill: 100%
+- Support: none
+
+![](Case_for_tft_with_headers.png)
+
 
 ## Bottom
 
