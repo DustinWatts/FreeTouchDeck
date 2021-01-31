@@ -39,7 +39,7 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
-//#define USECAPTOUCH
+#define USECAPTOUCH
 
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
 //#define CUSTOM_TOUCH_SDA 26
@@ -54,7 +54,7 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define speakerPin 26
 
 const char *versionnumber = "0.9.7";
 
@@ -116,6 +116,9 @@ TFT_eSPI tft = TFT_eSPI();
 // Set the width and height of your screen here:
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 320
+
+// Set the screen rotation here 1=Landscape, 3=Landscape 180°:
+#define SCREEN_ROTATION  3
 
 // Keypad start position, centre of the first button
 #define KEY_X SCREEN_WIDTH / 6
@@ -362,7 +365,7 @@ void setup()
   tft.init();
 
   // Set the rotation before we calibrate
-  tft.setRotation(1);
+  tft.setRotation(SCREEN_ROTATION);
 
   // Clear the screen
   tft.fillScreen(TFT_BLACK);
@@ -572,26 +575,7 @@ void loop(void)
     //At the beginning of a new loop, make sure we do not use last loop's touch.
     boolean pressed = false;
 
-#ifdef USECAPTOUCH
-    if (ts.touched())
-    {
-
-      // Retrieve a point
-      TS_Point p = ts.getPoint();
-
-      //Flip things around so it matches our screen rotation
-      p.x = map(p.x, 0, 320, 320, 0);
-      t_y = p.x;
-      t_x = p.y;
-
-      pressed = true;
-    }
-
-#else
-
-    pressed = tft.getTouch(&t_x, &t_y);
-
-#endif
+    pressed = getTouch(&t_x, &t_y);
 
     if (pressed)
     {     
@@ -647,26 +631,7 @@ void loop(void)
     //At the beginning of a new loop, make sure we do not use last loop's touch.
     boolean pressed = false;
 
-#ifdef USECAPTOUCH
-    if (ts.touched())
-    {
-
-      // Retrieve a point
-      TS_Point p = ts.getPoint();
-
-      //Flip things around so it matches our screen rotation
-      p.x = map(p.x, 0, 320, 320, 0);
-      t_y = p.x;
-      t_x = p.y;
-
-      pressed = true;
-    }
-
-#else
-
-    pressed = tft.getTouch(&t_x, &t_y);
-
-#endif
+    pressed = getTouch(&t_x, &t_y);
 
     // Check if the X and Y coordinates of the touch are within one of our buttons
     for (uint8_t b = 0; b < 6; b++)
@@ -1432,4 +1397,33 @@ void loop(void)
       }
     }
   }
+}
+
+bool getTouch(uint16_t* x, uint16_t* y)
+{
+#ifdef USECAPTOUCH
+
+    if (ts.touched())
+    {
+
+      // Retrieve a point
+      TS_Point p = ts.getPoint();
+
+      //Flip things around so it matches our screen rotation
+#if SCREEN_ROTATION == 1
+      p.x = map(p.x, 0, SCREEN_HEIGHT, SCREEN_HEIGHT, 0);      
+#elif SCREEN_ROTATION == 3
+      p.y = map(p.y, 0, SCREEN_WIDTH, SCREEN_WIDTH, 0);
+#endif      
+      *y = p.x;
+      *x = p.y;
+      return true;
+    }
+    return false;
+
+#else
+
+    return tft.getTouch(&x, &y);
+
+#endif
 }
