@@ -9,8 +9,9 @@
 *
 * @return none
 *
-* @note Case 9 is used for special functions, none bleKeyboard related.
+* @note Case 11 is used for special functions, none bleKeyboard related.
 */
+
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 
@@ -280,9 +281,14 @@ void bleKeyboardAction(int action, int value, char *symbol)
     switch (value)
     {
     case 1:        // Enter config mode
-      pageNum = 7; // By setting pageNum to 7
-      configmode();
-      drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 7
+      
+      if(configmode()){
+        pageNum = 7; // By setting pageNum to 7
+        drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 7
+      }else{
+        pageNum = 9; // By setting pageNum to 9
+        drawKeypad(); // and calling drawKeypad() we are drawing an error message that we are not able to connect to WiFi
+      }
       break;
     case 2: // Display Brightness Down
       if (ledBrightness > 25)

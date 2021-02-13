@@ -118,6 +118,24 @@ String handleInfo()
   output += " kB\"},";
 
   output += "{\"";
+  output += "BLE Keyboard Version";
+  output += "\":\"";
+  output += String(BLE_KEYBOARD_VERSION);
+  output += "\"},";
+
+  output += "{\"";
+  output += "ArduinoJson Version";
+  output += "\":\"";
+  output += String(ARDUINOJSON_VERSION);
+  output += "\"},";
+
+  output += "{\"";
+  output += "TFT_eSPI Version";
+  output += "\":\"";
+  output += String(TFT_ESPI_VERSION);
+  output += "\"},";
+
+  output += "{\"";
   output += "ESP-IDF";
   output += "\":\"";
   output += String(esp_get_idf_version());

@@ -56,12 +56,12 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.7";
+const char *versionnumber = "0.9.8";
 
-    /* Version 0.9.7 Bug fix: Changing colour causes reboot when entering config mode. "Combos" dissapeared and are now back. 
-     *  Move the FreeTouchDeck logo to the "logos" folder so it can be deleted to create more space. 
-     *  Fixed the latching dot to fall within the boundaries of a button when using a 320 * 240 screen. 
-     *  When updating: remember to re-upload the data folder ! !
+    /* Version 0.9.8. Update fixes boot-loop. If using the configurator somehow hangs and causes a corrupted JSON file, defaults
+     *  are used so that FreeTouchDeck always boots. Included some options to reset to default configuration. Typing "reset menu<menunumber>",
+     *  "reset homescreen", or "reset colors" will reset that config to default. This has to be done when a config gets corrupted, otherwise the
+     *  configurator will not (properly) load.
     */
 
 #include <pgmspace.h> // PROGMEM support header
@@ -250,6 +250,7 @@ Menu menu6;
 unsigned long previousMillis = 0;
 unsigned long Interval = 0;
 bool displayinginfo;
+char* jsonfilefail = "";
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
@@ -446,13 +447,48 @@ void setup()
   }
 
   // Load the all the configuration
-  loadConfig("colors");
-  loadConfig("homescreen");
-  loadConfig("menu1");
-  loadConfig("menu2");
-  loadConfig("menu3");
-  loadConfig("menu4");
-  loadConfig("menu5");
+  if(!loadConfig("colors")){
+    Serial.println("[WARNING]: colors.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset colors'.");
+    jsonfilefail = "colors";
+    pageNum = 10;
+  }
+  if(!loadConfig("homescreen")){
+    Serial.println("[WARNING]: homescreen.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset homescreen'.");
+    jsonfilefail = "homescreen";
+    pageNum = 10;
+  }
+  if(!loadConfig("menu1")){
+    Serial.println("[WARNING]: menu1.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset menu1'.");
+    jsonfilefail = "menu1";
+    pageNum = 10;
+  }
+  if(!loadConfig("menu2")){
+    Serial.println("[WARNING]: menu2.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset menu2'.");
+    jsonfilefail = "menu2";
+    pageNum = 10;
+  }
+  if(!loadConfig("menu3")){
+    Serial.println("[WARNING]: menu3.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset menu3'.");
+    jsonfilefail = "menu3";
+    pageNum = 10;
+  }
+  if(!loadConfig("menu4")){
+    Serial.println("[WARNING]: menu4.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset menu4'.");
+    jsonfilefail = "menu4";
+    pageNum = 10;
+  }
+  if(!loadConfig("menu5")){
+    Serial.println("[WARNING]: menu5.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset menu5'.");
+    jsonfilefail = "menu5";
+    pageNum = 10;
+  }
   Serial.println("[INFO]: All configs loaded");
 
   strcpy(generallogo.homebutton, "/logos/home.bmp");
@@ -551,6 +587,13 @@ void loop(void)
       Serial.println("[WARNING]: Restarting");
       ESP.restart();
     }
+
+    else if (command == "reset")
+    {
+      String file = Serial.readString();
+      Serial.printf("[INFO]: Resetting %s.json now\n", file.c_str());
+      resetconfig(file);
+    }
   }
   
   if (pageNum == 7)
@@ -597,6 +640,84 @@ void loop(void)
     {     
       displayinginfo = false;
       pageNum = 6;
+      tft.fillScreen(generalconfig.backgroundColour);
+      drawKeypad();
+    }
+  }
+  else if (pageNum == 9)
+  {
+
+    // We were unable to connect to WiFi. Waiting for touch to get back to the settings menu.
+    uint16_t t_x = 0, t_y = 0;
+
+    //At the beginning of a new loop, make sure we do not use last loop's touch.
+    boolean pressed = false;
+
+#ifdef USECAPTOUCH
+    if (ts.touched())
+    {
+
+      // Retrieve a point
+      TS_Point p = ts.getPoint();
+
+      //Flip things around so it matches our screen rotation
+      p.x = map(p.x, 0, 320, 320, 0);
+      t_y = p.x;
+      t_x = p.y;
+
+      pressed = true;
+    }
+
+#else
+
+    pressed = tft.getTouch(&t_x, &t_y);
+
+#endif
+
+    if (pressed)
+    {     
+      // Return to Settings page
+      displayinginfo = false;
+      pageNum = 6;
+      tft.fillScreen(generalconfig.backgroundColour);
+      drawKeypad();
+    }
+  }
+  else if (pageNum == 10)
+  {
+
+    // A JSON file failed to load. We are drawing an error message. And waiting for a touch.
+    uint16_t t_x = 0, t_y = 0;
+
+    //At the beginning of a new loop, make sure we do not use last loop's touch.
+    boolean pressed = false;
+
+#ifdef USECAPTOUCH
+    if (ts.touched())
+    {
+
+      // Retrieve a point
+      TS_Point p = ts.getPoint();
+
+      //Flip things around so it matches our screen rotation
+      p.x = map(p.x, 0, 320, 320, 0);
+      t_y = p.x;
+      t_x = p.y;
+
+      pressed = true;
+    }
+
+#else
+
+    pressed = tft.getTouch(&t_x, &t_y);
+
+#endif
+
+    if (pressed)
+    {     
+      // Load home screen
+      displayinginfo = false;
+      pageNum = 0;
       tft.fillScreen(generalconfig.backgroundColour);
       drawKeypad();
     }

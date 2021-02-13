@@ -1262,7 +1262,7 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
 }
 
 /**
-* @brief his function draws the 6 buttons that are on every page.
+* @brief This function draws the 6 buttons that are on every page.
          Pagenumber is global and doesn't need to be passed.
 *
 * @param none
@@ -1338,6 +1338,34 @@ void drawKeypad()
       tft.print("The IP is: ");
       tft.println(WiFi.softAPIP());
     }
+  }
+
+  else if (pageNum == 9)
+  {
+    // Pagenum 9 means that we were unable to connect to WiFi.
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 0);
+    tft.setTextFont(2);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+    tft.printf("  Unable to connect to %s\n", wificonfig.ssid);
+    tft.println("  Make sure you have set the correct SSID and password.");
+    tft.println("  Touch the screen to return to the settings page.");
+  }
+  else if (pageNum == 10)
+  {
+    // Pagenum 10 means that a JSON config failed to load completely.
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 0);
+    tft.setTextFont(2);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+    tft.printf("  %s failed to load and might be corrupted.\n", jsonfilefail);
+    tft.println("  You can reset that specific file to default by opening the serial monitor");
+    tft.printf("  and typing \"reset %s\"\n", jsonfilefail);
+    tft.println("  If you don't do this, the configurator will fail to load.");
   }
   else
   {
