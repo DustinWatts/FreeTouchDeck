@@ -12,6 +12,33 @@
 * @note Case 11 is used for special functions, none bleKeyboard related.
 */
 
+void sleepNow() 
+{
+        tft.fillScreen(TFT_BLACK);
+        Serial.println("[INFO]: Going to sleep.");
+#ifdef speakerPin
+        ledcAttachPin(speakerPin, 0);
+        ledcWriteTone(1, 1200);
+        delay(150);
+        ledcDetachPin(speakerPin);
+        ledcWrite(1, 0);
+
+        ledcAttachPin(speakerPin, 0);
+        ledcWriteTone(1, 800);
+        delay(150);
+        ledcDetachPin(speakerPin);
+        ledcWrite(1, 0);
+
+        ledcAttachPin(speakerPin, 0);
+        ledcWriteTone(1, 600);
+        delay(150);
+        ledcDetachPin(speakerPin);
+        ledcWrite(1, 0);
+#endif
+        esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
+        esp_deep_sleep_start();
+}
+
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 
@@ -305,18 +332,22 @@ void bleKeyboardAction(int action, int value, char *symbol)
       }
       break;
     case 4: // Sleep Enabled
-      if (wificonfig.sleepenable)
+      if (strcmp("enabled", wificonfig.sleepenable) == 0)
       {
-        wificonfig.sleepenable = false;
+        strlcpy(wificonfig.sleepenable, "disabled", sizeof(wificonfig.sleepenable));
         Serial.println("[INFO]: Sleep disabled.");
       }
-      else
+      else if (strcmp("disabled", wificonfig.sleepenable) == 0)
       {
-        wificonfig.sleepenable = true;
+        strlcpy(wificonfig.sleepenable, "enabled", sizeof(wificonfig.sleepenable));
         Interval = wificonfig.sleeptimer * 60000;
         Serial.println("[INFO]: Sleep enabled.");
         Serial.print("[INFO]: Timer set to: ");
         Serial.println(wificonfig.sleeptimer);
+      } 
+      else if (strcmp("immediate", wificonfig.sleepenable) == 0) 
+      {
+        sleepNow();
       }
       break;
     }

@@ -1540,14 +1540,17 @@ void printinfo()
   tft.printf("Version: %s\n", versionnumber);
 
 #ifdef touchInterruptPin
-  if (wificonfig.sleepenable)
+ if (strcmp("enabled", wificonfig.sleepenable) == 0)
   {
     tft.println("Sleep: Enabled");
     tft.printf("Sleep timer: %u minutes\n", wificonfig.sleeptimer);
   }
-  else
+  else if (strcmp("disabled", wificonfig.sleepenable) == 0)
   {
     tft.println("Sleep: Disabled");
+  } else if (strcmp("immediate", wificonfig.sleepenable) == 0)
+  {
+    tft.println("Sleep: Immediate");
   }
 #else
   tft.println("Sleep: Disabled");

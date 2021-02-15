@@ -1,37 +1,77 @@
 {
-  "logo0": "question.bmp",
-  "logo1": "question.bmp",
-  "logo2": "question.bmp",
+  "logo0": "chrome.bmp",
+  "logo1": "slack.bmp",
+  "logo2": "calculator.bmp",
   "logo3": "question.bmp",
   "logo4": "question.bmp",
-  "button0":{
+  "button0": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "5",
+      "5",
+      "4"
+    ],
+    "valuearray": [
+      "1",
+      "3",
+      "c"
+    ]
   },
-  "button1":{
+  "button1": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "5",
+      "5",
+      "4"
+    ],
+    "valuearray": [
+      "1",
+      "3",
+      "s"
+    ]
   },
-  "button2":{
+  "button2": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "5",
+      "5",
+      "4"
+    ],
+    "valuearray": [
+      "1",
+      "3",
+      "w"
+    ]
   },
-  "button3":{
+  "button3": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0"],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "0",
+      "0",
+      "0"
+    ],
+    "valuearray": [
+      "0",
+      "0",
+      "0"
+    ]
   },
-  "button4":{
+  "button4": {
     "latch": false,
     "latchlogo": "",
-    "actionarray": [ "0", "0", "0" ],
-    "valuearray": [ "0", "0", "0" ] 
+    "actionarray": [
+      "0",
+      "0",
+      "0"
+    ],
+    "valuearray": [
+      "0",
+      "0",
+      "0"
+    ]
   }
 }

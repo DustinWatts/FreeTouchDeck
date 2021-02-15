@@ -151,7 +151,7 @@ String handleInfo()
   output += "{\"";
   output += "Sleep";
   output += "\":\"";
-  if (wificonfig.sleepenable)
+  if (strcmp("enabled", wificonfig.sleepenable) == 0)
   {
     output += String("Enabled. ");
     output += String("Timer: ");
@@ -159,10 +159,15 @@ String handleInfo()
     output += String(" minutes");
     output += "\"}";
   }
-  else
+  else if (strcmp("disabled", wificonfig.sleepenable) == 0)
   {
     output += String("Disabled");
     output += "\"}";
+  } 
+  else if (strcmp("immediate", wificonfig.sleepenable) == 0)
+  {
+    output += String("Immediate");
+    output += "\"}";    
   }
 #else
   output += "{\"";
