@@ -1,8 +1,8 @@
 {
-	"ssid": "Byron",
-	"password": "kw1k3m4rt",
+	"ssid": "YOUR_WIFI_SSID",
+	"password": "YOUR_WIFI_PASSWORD",
 	"wifimode": "WIFI_STA",
 	"wifihostname": "freetouchdeck",
-	"sleepenable": true,
+	"sleepenable": "disabled",
 	"sleeptimer": 10
 }

@@ -25,16 +25,11 @@ bool loadMainConfig()
   strlcpy(wificonfig.password, doc["password"] | "FAILED", sizeof(wificonfig.password));
   strlcpy(wificonfig.wifimode, doc["wifimode"] | "FAILED", sizeof(wificonfig.wifimode));
   strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));
-
-  bool sleepenable = doc["sleepenable"] | false;
-  if (sleepenable)
+  strlcpy(wificonfig.sleepenable, doc["sleepenable"] | "immediate", sizeof(wificonfig.sleepenable));
+  
+   if (strcmp("enabled", wificonfig.sleepenable) == 0)
   {
-    wificonfig.sleepenable = true;
     islatched[28] = 1;
-  }
-  else
-  {
-    wificonfig.sleepenable = false;
   }
 
   //uint16_t sleeptimer = doc["sleeptimer"];

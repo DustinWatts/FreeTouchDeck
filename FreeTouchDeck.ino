@@ -54,7 +54,7 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define speakerPin 26
 
 const char *versionnumber = "0.9.8";
 
@@ -218,7 +218,7 @@ struct Wificonfig
   char password[64];
   char wifimode[9];
   char hostname[64];
-  bool sleepenable;
+  char sleepenable[10];
   uint16_t sleeptimer;
 };
 
@@ -521,7 +521,7 @@ void setup()
   drawKeypad();
 
 #ifdef touchInterruptPin
-  if (wificonfig.sleepenable)
+  if (strcmp("enabled", wificonfig.sleepenable) == 0 || strcmp("immediate", wificonfig.sleepenable) == 0)
   {
     pinMode(touchInterruptPin, INPUT_PULLUP);
     Interval = wificonfig.sleeptimer * 60000;
@@ -728,36 +728,13 @@ void loop(void)
     // Check if sleep is enabled and if our timer has ended.
 
 #ifdef touchInterruptPin
-    if (wificonfig.sleepenable)
+    if (strcmp("enabled", wificonfig.sleepenable) == 0)
     {
       if (millis() > previousMillis + Interval)
       {
 
         // The timer has ended and we are going to sleep  .
-        tft.fillScreen(TFT_BLACK);
-        Serial.println("[INFO]: Going to sleep.");
-#ifdef speakerPin
-        ledcAttachPin(speakerPin, 0);
-        ledcWriteTone(1, 1200);
-        delay(150);
-        ledcDetachPin(speakerPin);
-        ledcWrite(1, 0);
-
-        ledcAttachPin(speakerPin, 0);
-        ledcWriteTone(1, 800);
-        delay(150);
-        ledcDetachPin(speakerPin);
-        ledcWrite(1, 0);
-
-        ledcAttachPin(speakerPin, 0);
-        ledcWriteTone(1, 600);
-        delay(150);
-        ledcDetachPin(speakerPin);
-        ledcWrite(1, 0);
-#endif
-
-        esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
-        esp_deep_sleep_start();
+        sleepNow();
       }
     }
 #endif
