@@ -37,7 +37,8 @@ bool loadMainConfig()
     wificonfig.sleepenable = false;
   }
 
-  uint16_t sleeptimer = doc["sleeptimer"];
+  //uint16_t sleeptimer = doc["sleeptimer"];
+  uint16_t sleeptimer = doc["sleeptimer"] | 60 ;
   wificonfig.sleeptimer = sleeptimer;
 
   configfile.close();
@@ -62,7 +63,7 @@ bool loadMainConfig()
 * @note Options for values are: colors, homescreen, menu1, menu2, menu3
          menu4, and menu5
 */
-void loadConfig(String value)
+bool loadConfig(String value)
 {
 
   if (value == "colors")
@@ -74,10 +75,10 @@ void loadConfig(String value)
     DeserializationError error = deserializeJson(doc, configfile);
 
     // Parsing colors
-    const char *menubuttoncolor = doc["menubuttoncolor"];         // Get the colour for the menu and back home buttons.
-    const char *functionbuttoncolor = doc["functionbuttoncolor"]; // Get the colour for the function buttons.
-    const char *latchcolor = doc["latchcolor"];                   // Get the colour to use when latching.
-    const char *bgcolor = doc["background"];                      // Get the colour for the background.
+    const char *menubuttoncolor = doc["menubuttoncolor"] | "#009bf4";         // Get the colour for the menu and back home buttons.
+    const char *functionbuttoncolor = doc["functionbuttoncolor"] | "#00efcb"; // Get the colour for the function buttons.
+    const char *latchcolor = doc["latchcolor"] | "#fe0149";                   // Get the colour to use when latching.
+    const char *bgcolor = doc["background"] | "#000000";                      // Get the colour for the background.
 
     char menubuttoncolorchar[64];
     strcpy(menubuttoncolorchar, menubuttoncolor);
@@ -105,7 +106,9 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+    return true;
   }
   else if (value == "homescreen")
   {
@@ -115,12 +118,12 @@ void loadConfig(String value)
 
     DeserializationError error = deserializeJson(doc, configfile);
 
-    const char *logo00 = doc["logo0"];
-    const char *logo01 = doc["logo1"];
-    const char *logo02 = doc["logo2"];
-    const char *logo03 = doc["logo3"];
-    const char *logo04 = doc["logo4"];
-    const char *logo05 = doc["logo5"]; // Only screen 0 has 6 buttons
+    const char *logo00 = doc["logo0"] | "question.bmp";
+    const char *logo01 = doc["logo1"] | "question.bmp";
+    const char *logo02 = doc["logo2"] | "question.bmp";
+    const char *logo03 = doc["logo3"] | "question.bmp";
+    const char *logo04 = doc["logo4"] | "question.bmp";
+    const char *logo05 = doc["logo5"] | "question.bmp"; // Only screen 0 has 6 buttons
 
     strcpy(templogopath, logopath);
     strcat(templogopath, logo00);
@@ -152,7 +155,9 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+    return true;
 
     // --------------------- Loading menu 1 ----------------------
   }
@@ -164,19 +169,19 @@ void loadConfig(String value)
 
     DeserializationError error = deserializeJson(doc, configfile);
 
-    const char *logo10 = doc["logo0"];
-    const char *logo11 = doc["logo1"];
-    const char *logo12 = doc["logo2"];
-    const char *logo13 = doc["logo3"];
-    const char *logo14 = doc["logo4"];
+    const char *logo10 = doc["logo0"] | "question.bmp";
+    const char *logo11 = doc["logo1"] | "question.bmp";
+    const char *logo12 = doc["logo2"] | "question.bmp";
+    const char *logo13 = doc["logo3"] | "question.bmp";
+    const char *logo14 = doc["logo4"] | "question.bmp";
 
-    const char *latchlogo10 = doc["button0"]["latchlogo"];
-    const char *latchlogo11 = doc["button1"]["latchlogo"];
-    const char *latchlogo12 = doc["button2"]["latchlogo"];
-    const char *latchlogo13 = doc["button3"]["latchlogo"];
-    const char *latchlogo14 = doc["button4"]["latchlogo"];
+    const char *latchlogo10 = doc["button0"]["latchlogo"] | "question.bmp";
+    const char *latchlogo11 = doc["button1"]["latchlogo"] | "question.bmp";
+    const char *latchlogo12 = doc["button2"]["latchlogo"] | "question.bmp";
+    const char *latchlogo13 = doc["button3"]["latchlogo"] | "question.bmp";
+    const char *latchlogo14 = doc["button4"]["latchlogo"] | "question.bmp";
 
-    menu1.button0.latch = doc["button0"]["latch"];
+    menu1.button0.latch = doc["button0"]["latch"] | false;
 
     strcpy(templogopath, logopath);
     strcat(templogopath, latchlogo10);
@@ -243,7 +248,7 @@ void loadConfig(String value)
     menu1.button0.actions.action1 = button0_actionarray_1;
     menu1.button0.actions.action2 = button0_actionarray_2;
 
-    menu1.button1.latch = doc["button1"]["latch"];
+    menu1.button1.latch = doc["button1"]["latch"] | false;
 
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
@@ -289,7 +294,7 @@ void loadConfig(String value)
     menu1.button1.actions.action1 = button1_actionarray_1;
     menu1.button1.actions.action2 = button1_actionarray_2;
 
-    menu1.button2.latch = doc["button2"]["latch"];
+    menu1.button2.latch = doc["button2"]["latch"] | false;
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -335,7 +340,7 @@ void loadConfig(String value)
     menu1.button2.actions.action1 = button2_actionarray_1;
     menu1.button2.actions.action2 = button2_actionarray_2;
 
-    menu1.button3.latch = doc["button3"]["latch"];
+    menu1.button3.latch = doc["button3"]["latch"] | false;
 
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
@@ -381,7 +386,7 @@ void loadConfig(String value)
     menu1.button3.actions.action1 = button3_actionarray_1;
     menu1.button3.actions.action2 = button3_actionarray_2;
 
-    menu1.button4.latch = doc["button4"]["latch"];
+    menu1.button4.latch = doc["button4"]["latch"] | false;
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -452,7 +457,9 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+    return true;
 
     // --------------------- Loading menu 2 ----------------------
   }
@@ -464,17 +471,17 @@ void loadConfig(String value)
 
     DeserializationError error = deserializeJson(doc, configfile);
 
-    const char *logo20 = doc["logo0"];
-    const char *logo21 = doc["logo1"];
-    const char *logo22 = doc["logo2"];
-    const char *logo23 = doc["logo3"];
-    const char *logo24 = doc["logo4"];
+    const char *logo20 = doc["logo0"] | "question.bmp";
+    const char *logo21 = doc["logo1"] | "question.bmp";
+    const char *logo22 = doc["logo2"] | "question.bmp";
+    const char *logo23 = doc["logo3"] | "question.bmp";
+    const char *logo24 = doc["logo4"] | "question.bmp";
 
-    const char *latchlogo20 = doc["button0"]["latchlogo"];
-    const char *latchlogo21 = doc["button1"]["latchlogo"];
-    const char *latchlogo22 = doc["button2"]["latchlogo"];
-    const char *latchlogo23 = doc["button3"]["latchlogo"];
-    const char *latchlogo24 = doc["button4"]["latchlogo"];
+    const char *latchlogo20 = doc["button0"]["latchlogo"] | "question.bmp";
+    const char *latchlogo21 = doc["button1"]["latchlogo"] | "question.bmp";
+    const char *latchlogo22 = doc["button2"]["latchlogo"] | "question.bmp";
+    const char *latchlogo23 = doc["button3"]["latchlogo"] | "question.bmp";
+    const char *latchlogo24 = doc["button4"]["latchlogo"] | "question.bmp";
 
     strcpy(templogopath, logopath);
     strcat(templogopath, latchlogo20);
@@ -496,7 +503,7 @@ void loadConfig(String value)
     strcat(templogopath, latchlogo24);
     strcpy(menu2.button4.latchlogo, templogopath);
 
-    menu2.button0.latch = doc["button0"]["latch"];
+    menu2.button0.latch = doc["button0"]["latch"] | false;
 
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
@@ -543,7 +550,7 @@ void loadConfig(String value)
     menu2.button0.actions.action1 = button0_actionarray_1;
     menu2.button0.actions.action2 = button0_actionarray_2;
 
-    menu2.button1.latch = doc["button1"]["latch"];
+    menu2.button1.latch = doc["button1"]["latch"] | false;
 
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
@@ -589,7 +596,7 @@ void loadConfig(String value)
     menu2.button1.actions.action1 = button1_actionarray_1;
     menu2.button1.actions.action2 = button1_actionarray_2;
 
-    menu2.button2.latch = doc["button2"]["latch"];
+    menu2.button2.latch = doc["button2"]["latch"] | false;
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -635,7 +642,7 @@ void loadConfig(String value)
     menu2.button2.actions.action1 = button2_actionarray_1;
     menu2.button2.actions.action2 = button2_actionarray_2;
 
-    menu2.button3.latch = doc["button3"]["latch"];
+    menu2.button3.latch = doc["button3"]["latch"] | false;
 
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
@@ -681,7 +688,7 @@ void loadConfig(String value)
     menu2.button3.actions.action1 = button3_actionarray_1;
     menu2.button3.actions.action2 = button3_actionarray_2;
 
-    menu2.button4.latch = doc["button4"]["latch"];
+    menu2.button4.latch = doc["button4"]["latch"] | false;
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -752,7 +759,9 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+    return true;
 
     // --------------------- Loading menu 3 ----------------------
   }
@@ -764,17 +773,17 @@ void loadConfig(String value)
 
     DeserializationError error = deserializeJson(doc, configfile);
 
-    const char *logo30 = doc["logo0"];
-    const char *logo31 = doc["logo1"];
-    const char *logo32 = doc["logo2"];
-    const char *logo33 = doc["logo3"];
-    const char *logo34 = doc["logo4"];
+    const char *logo30 = doc["logo0"] | "question.bmp";
+    const char *logo31 = doc["logo1"] | "question.bmp";
+    const char *logo32 = doc["logo2"] | "question.bmp";
+    const char *logo33 = doc["logo3"] | "question.bmp";
+    const char *logo34 = doc["logo4"] | "question.bmp";
 
-    const char *latchlogo30 = doc["button0"]["latchlogo"];
-    const char *latchlogo31 = doc["button1"]["latchlogo"];
-    const char *latchlogo32 = doc["button2"]["latchlogo"];
-    const char *latchlogo33 = doc["button3"]["latchlogo"];
-    const char *latchlogo34 = doc["button4"]["latchlogo"];
+    const char *latchlogo30 = doc["button0"]["latchlogo"] | "question.bmp";
+    const char *latchlogo31 = doc["button1"]["latchlogo"] | "question.bmp";
+    const char *latchlogo32 = doc["button2"]["latchlogo"] | "question.bmp";
+    const char *latchlogo33 = doc["button3"]["latchlogo"] | "question.bmp";
+    const char *latchlogo34 = doc["button4"]["latchlogo"] | "question.bmp";
 
     strcpy(templogopath, logopath);
     strcat(templogopath, latchlogo30);
@@ -796,7 +805,7 @@ void loadConfig(String value)
     strcat(templogopath, latchlogo34);
     strcpy(menu3.button4.latchlogo, templogopath);
 
-    menu3.button0.latch = doc["button0"]["latch"];
+    menu3.button0.latch = doc["button0"]["latch"] | false;
 
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
@@ -843,7 +852,7 @@ void loadConfig(String value)
     menu3.button0.actions.action1 = button0_actionarray_1;
     menu3.button0.actions.action2 = button0_actionarray_2;
 
-    menu3.button1.latch = doc["button1"]["latch"];
+    menu3.button1.latch = doc["button1"]["latch"] | false;
 
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
@@ -889,7 +898,7 @@ void loadConfig(String value)
     menu3.button1.actions.action1 = button1_actionarray_1;
     menu3.button1.actions.action2 = button1_actionarray_2;
 
-    menu3.button2.latch = doc["button2"]["latch"];
+    menu3.button2.latch = doc["button2"]["latch"] | false;
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -979,7 +988,7 @@ void loadConfig(String value)
     menu3.button3.actions.action1 = button3_actionarray_1;
     menu3.button3.actions.action2 = button3_actionarray_2;
 
-    menu3.button4.latch = doc["button4"]["latch"];
+    menu3.button4.latch = doc["button4"]["latch"] | false;
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -1050,7 +1059,9 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+    return true;
 
     // --------------------- Loading menu 4 ----------------------
   }
@@ -1062,17 +1073,17 @@ void loadConfig(String value)
 
     DeserializationError error = deserializeJson(doc, configfile);
 
-    const char *logo40 = doc["logo0"];
-    const char *logo41 = doc["logo1"];
-    const char *logo42 = doc["logo2"];
-    const char *logo43 = doc["logo3"];
-    const char *logo44 = doc["logo4"];
+    const char *logo40 = doc["logo0"] | "question.bmp";
+    const char *logo41 = doc["logo1"] | "question.bmp";
+    const char *logo42 = doc["logo2"] | "question.bmp";
+    const char *logo43 = doc["logo3"] | "question.bmp";
+    const char *logo44 = doc["logo4"] | "question.bmp";
 
-    const char *latchlogo40 = doc["button0"]["latchlogo"];
-    const char *latchlogo41 = doc["button1"]["latchlogo"];
-    const char *latchlogo42 = doc["button2"]["latchlogo"];
-    const char *latchlogo43 = doc["button3"]["latchlogo"];
-    const char *latchlogo44 = doc["button4"]["latchlogo"];
+    const char *latchlogo40 = doc["button0"]["latchlogo"] | "question.bmp";
+    const char *latchlogo41 = doc["button1"]["latchlogo"] | "question.bmp";
+    const char *latchlogo42 = doc["button2"]["latchlogo"] | "question.bmp";
+    const char *latchlogo43 = doc["button3"]["latchlogo"] | "question.bmp";
+    const char *latchlogo44 = doc["button4"]["latchlogo"] | "question.bmp";
 
     strcpy(templogopath, logopath);
     strcat(templogopath, latchlogo40);
@@ -1094,7 +1105,7 @@ void loadConfig(String value)
     strcat(templogopath, latchlogo44);
     strcpy(menu4.button4.latchlogo, templogopath);
 
-    menu4.button0.latch = doc["button0"]["latch"];
+    menu4.button0.latch = doc["button0"]["latch"] | false;
 
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
@@ -1141,7 +1152,7 @@ void loadConfig(String value)
     menu4.button0.actions.action1 = button0_actionarray_1;
     menu4.button0.actions.action2 = button0_actionarray_2;
 
-    menu4.button1.latch = doc["button1"]["latch"];
+    menu4.button1.latch = doc["button1"]["latch"] | false;
 
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
@@ -1187,7 +1198,7 @@ void loadConfig(String value)
     menu4.button1.actions.action1 = button1_actionarray_1;
     menu4.button1.actions.action2 = button1_actionarray_2;
 
-    menu4.button2.latch = doc["button2"]["latch"];
+    menu4.button2.latch = doc["button2"]["latch"] | false;
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -1233,7 +1244,7 @@ void loadConfig(String value)
     menu4.button2.actions.action1 = button2_actionarray_1;
     menu4.button2.actions.action2 = button2_actionarray_2;
 
-    menu4.button3.latch = doc["button3"]["latch"];
+    menu4.button3.latch = doc["button3"]["latch"] | false;
 
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
@@ -1279,7 +1290,7 @@ void loadConfig(String value)
     menu4.button3.actions.action1 = button3_actionarray_1;
     menu4.button3.actions.action2 = button3_actionarray_2;
 
-    menu4.button4.latch = doc["button4"]["latch"];
+    menu4.button4.latch = doc["button4"]["latch"] | false;
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -1350,7 +1361,9 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+    return true;
 
     // --------------------- Loading menu 5 ----------------------
   }
@@ -1362,17 +1375,17 @@ void loadConfig(String value)
 
     DeserializationError error = deserializeJson(doc, configfile);
 
-    const char *logo50 = doc["logo0"];
-    const char *logo51 = doc["logo1"];
-    const char *logo52 = doc["logo2"];
-    const char *logo53 = doc["logo3"];
-    const char *logo54 = doc["logo4"];
+    const char *logo50 = doc["logo0"] | "question.bmp";
+    const char *logo51 = doc["logo1"] | "question.bmp";
+    const char *logo52 = doc["logo2"] | "question.bmp";
+    const char *logo53 = doc["logo3"] | "question.bmp";
+    const char *logo54 = doc["logo4"] | "question.bmp";
 
-    const char *latchlogo50 = doc["button0"]["latchlogo"];
-    const char *latchlogo51 = doc["button1"]["latchlogo"];
-    const char *latchlogo52 = doc["button2"]["latchlogo"];
-    const char *latchlogo53 = doc["button3"]["latchlogo"];
-    const char *latchlogo54 = doc["button4"]["latchlogo"];
+    const char *latchlogo50 = doc["button0"]["latchlogo"] | "question.bmp";
+    const char *latchlogo51 = doc["button1"]["latchlogo"] | "question.bmp";
+    const char *latchlogo52 = doc["button2"]["latchlogo"] | "question.bmp";
+    const char *latchlogo53 = doc["button3"]["latchlogo"] | "question.bmp";
+    const char *latchlogo54 = doc["button4"]["latchlogo"] | "question.bmp";
 
     strcpy(templogopath, logopath);
     strcat(templogopath, latchlogo50);
@@ -1394,7 +1407,7 @@ void loadConfig(String value)
     strcat(templogopath, latchlogo54);
     strcpy(menu5.button4.latchlogo, templogopath);
 
-    menu5.button0.latch = doc["button0"]["latch"];
+    menu5.button0.latch = doc["button0"]["latch"] | false;
 
     JsonArray button0_actionarray = doc["button0"]["actionarray"];
 
@@ -1441,7 +1454,7 @@ void loadConfig(String value)
     menu5.button0.actions.action1 = button0_actionarray_1;
     menu5.button0.actions.action2 = button0_actionarray_2;
 
-    menu5.button1.latch = doc["button1"]["latch"];
+    menu5.button1.latch = doc["button1"]["latch"] | false;
 
     JsonArray button1_actionarray = doc["button1"]["actionarray"];
     int button1_actionarray_0 = button1_actionarray[0];
@@ -1487,7 +1500,7 @@ void loadConfig(String value)
     menu5.button1.actions.action1 = button1_actionarray_1;
     menu5.button1.actions.action2 = button1_actionarray_2;
 
-    menu5.button2.latch = doc["button2"]["latch"];
+    menu5.button2.latch = doc["button2"]["latch"] | false;
 
     JsonArray button2_actionarray = doc["button2"]["actionarray"];
     int button2_actionarray_0 = button2_actionarray[0];
@@ -1533,7 +1546,7 @@ void loadConfig(String value)
     menu5.button2.actions.action1 = button2_actionarray_1;
     menu5.button2.actions.action2 = button2_actionarray_2;
 
-    menu5.button3.latch = doc["button3"]["latch"];
+    menu5.button3.latch = doc["button3"]["latch"] | false;
 
     JsonArray button3_actionarray = doc["button3"]["actionarray"];
     int button3_actionarray_0 = button3_actionarray[0]; // 3
@@ -1579,7 +1592,7 @@ void loadConfig(String value)
     menu5.button3.actions.action1 = button3_actionarray_1;
     menu5.button3.actions.action2 = button3_actionarray_2;
 
-    menu5.button4.latch = doc["button4"]["latch"];
+    menu5.button4.latch = doc["button4"]["latch"] | false;
 
     JsonArray button4_actionarray = doc["button4"]["actionarray"];
     int button4_actionarray_0 = button4_actionarray[0]; // 3
@@ -1650,6 +1663,13 @@ void loadConfig(String value)
     {
       Serial.println("[ERROR]: deserializeJson() error");
       Serial.println(error.c_str());
+      return false;
     }
+
+    return true;
+  }
+  else
+  {
+    return false;
   }
 }
