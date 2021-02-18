@@ -38,6 +38,10 @@ For Capacitive touch:
 If you use capacitive touch:
 - FT6236 (latest version), download from: https://github.com/DustinWatts/FT6236
 
+# Combiner PCB for an ESP32 DevKit C (38-pin only) + ILI9488 Touch Module:
+
+https://github.com/DustinWatts/ESP32_TFT_Combiner
+
 # TFT_eSPI configuration
 
 Before compiling and uploading the FreeTouchDeck.ino sketch, you will have to edit the **user_setup.h** file included with the TFT_eSPI library. This can be found in your Arduino skechtbook folder under "libraries". If you have not renamed the TFT_eSPI library folder, the file **user_setup.h** can be found in **TFT_eSPI-master**. Here you will have to uncomment the lines that apply to you hardware configuration. For example: if you have an TFT with an ILI9488 driver, you will have to uncomment that line under `Section 1`. Make sure all the other drivers are commented out!  
