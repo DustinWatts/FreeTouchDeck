@@ -15,12 +15,12 @@
   These are those libraries:
 
       !----------------------------- Library Dependencies --------------------------- !
-      - Adafruit-GFX-Library (version 1.10.0), available through Library Manager
-      - TFT_eSPI (version 2.2.14), available through Library Manager
+      - Adafruit-GFX-Library (version 1.10.0 or above), available through Library Manager
+      - TFT_eSPI (version 2.2.14 or above), available through Library Manager
       - ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
       - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
       - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-      - ArduinoJson (version 6.16.1), available through Library Manager
+      - ArduinoJson (version 6.16.1 or above), available through Library Manager
 
       --- If you use Capacitive touch ---
       - Dustin Watts FT6236 Library (version 1.0.1), https://github.com/DustinWatts/FT6236
@@ -56,12 +56,26 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.8";
+const char *versionnumber = "0.9.10";
 
-    /* Version 0.9.8. Update fixes boot-loop. If using the configurator somehow hangs and causes a corrupted JSON file, defaults
-     *  are used so that FreeTouchDeck always boots. Included some options to reset to default configuration. Typing "reset menu<menunumber>",
-     *  "reset homescreen", or "reset colors" will reset that config to default. This has to be done when a config gets corrupted, otherwise the
-     *  configurator will not (properly) load.
+    /* Version 0.9.10. 
+     *  
+     *  Version 0.9.9 is the version that was preloaded on the ESP32 TouchDown
+     *  
+     * Fix: PWM Speaker channel is now channel 2.
+     * Fix: Changed location of startup beep to be after config is loaded.
+     * Fix: Stop BLE also in WIFI_AP mode.
+     * Fix: Typos.
+     * Fix: Added Delete key in action.h and configurator.
+     * 
+     * Improved: ESP32 TouchDown compatibility.
+     * 
+     * Added: Speaker config to json files, to the configurator and to the "info" page on the screen. 
+     * Added: "previous" and "next" to the configurator (thanks @JonnyBergdahl) 
+     *  
+     * Important! This version changes json structure and HTML files. So an ESP sketch data upload is nescecarry. The only json
+     * file that changes is the wificonfig.json so if you back up your menu configs, you can use them unaltered in the new version 
+     * (provided you come from 0.9.8).
     */
 
 #include <pgmspace.h> // PROGMEM support header
@@ -220,6 +234,7 @@ struct Wificonfig
   char hostname[64];
   bool sleepenable;
   uint16_t sleeptimer;
+  bool beep;
 };
 
 // Array to hold all the latching statuses
@@ -300,33 +315,10 @@ void setup()
   ledcSetup(0, 5000, 8);
 #ifdef TFT_BL
   ledcAttachPin(TFT_BL, 0);
+#else
+  ledcAttachPin(32, 0);
 #endif
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
-
-  // Setup PWM channel for Piezo speaker
-
-#ifdef speakerPin
-  ledcSetup(1, 500, 8);
-
-  ledcAttachPin(speakerPin, 0);
-  ledcWriteTone(1, 600);
-  delay(150);
-  ledcDetachPin(speakerPin);
-  ledcWrite(1, 0);
-
-  ledcAttachPin(speakerPin, 0);
-  ledcWriteTone(1, 800);
-  delay(150);
-  ledcDetachPin(speakerPin);
-  ledcWrite(1, 0);
-
-  ledcAttachPin(speakerPin, 0);
-  ledcWriteTone(1, 1200);
-  delay(150);
-  ledcDetachPin(speakerPin);
-  ledcWrite(1, 0);
-
-#endif
 
   if (!FILESYSTEM.begin())
   {
@@ -453,6 +445,34 @@ void setup()
     jsonfilefail = "colors";
     pageNum = 10;
   }
+
+    // Setup PWM channel for Piezo speaker
+
+#ifdef speakerPin
+  ledcSetup(2, 500, 8);
+
+if(wificonfig.beep){
+  ledcAttachPin(speakerPin, 2);
+  ledcWriteTone(2, 600);
+  delay(150);
+  ledcDetachPin(speakerPin);
+  ledcWrite(2, 0);
+
+  ledcAttachPin(speakerPin, 2);
+  ledcWriteTone(2, 800);
+  delay(150);
+  ledcDetachPin(speakerPin);
+  ledcWrite(2, 0);
+
+  ledcAttachPin(speakerPin, 2);
+  ledcWriteTone(2, 1200);
+  delay(150);
+  ledcDetachPin(speakerPin);
+  ledcWrite(2, 0);
+}
+
+#endif
+
   if(!loadConfig("homescreen")){
     Serial.println("[WARNING]: homescreen.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset homescreen'.");
@@ -490,6 +510,8 @@ void setup()
     pageNum = 10;
   }
   Serial.println("[INFO]: All configs loaded");
+
+  
 
   strcpy(generallogo.homebutton, "/logos/home.bmp");
   strcpy(generallogo.configurator, "/logos/wifi.bmp");
@@ -737,23 +759,25 @@ void loop(void)
         tft.fillScreen(TFT_BLACK);
         Serial.println("[INFO]: Going to sleep.");
 #ifdef speakerPin
-        ledcAttachPin(speakerPin, 0);
-        ledcWriteTone(1, 1200);
+        if(wificonfig.beep){
+        ledcAttachPin(speakerPin, 2);
+        ledcWriteTone(2, 1200);
         delay(150);
         ledcDetachPin(speakerPin);
-        ledcWrite(1, 0);
+        ledcWrite(2, 0);
 
-        ledcAttachPin(speakerPin, 0);
-        ledcWriteTone(1, 800);
+        ledcAttachPin(speakerPin, 2);
+        ledcWriteTone(2, 800);
         delay(150);
         ledcDetachPin(speakerPin);
-        ledcWrite(1, 0);
+        ledcWrite(2, 0);
 
-        ledcAttachPin(speakerPin, 0);
-        ledcWriteTone(1, 600);
+        ledcAttachPin(speakerPin, 2);
+        ledcWriteTone(2, 600);
         delay(150);
         ledcDetachPin(speakerPin);
-        ledcWrite(1, 0);
+        ledcWrite(2, 0);
+        }
 #endif
 
         esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
@@ -798,14 +822,6 @@ void loop(void)
 
         // After receiving a valid touch reset the sleep timer
         previousMillis = millis();
-        // Beep
-        #ifdef speakerPin
-          ledcAttachPin(speakerPin, 0);
-          ledcWriteTone(1, 600);
-          delay(50);
-          ledcDetachPin(speakerPin);
-          ledcWrite(1, 0);
-        #endif 
       }
       else
       {
@@ -940,6 +956,18 @@ void loop(void)
 
       if (key[b].justPressed())
       {
+        
+        // Beep
+        #ifdef speakerPin
+        if(wificonfig.beep){
+          ledcAttachPin(speakerPin, 2);
+          ledcWriteTone(2, 600);
+          delay(50);
+          ledcDetachPin(speakerPin);
+          ledcWrite(2, 0);
+        }
+        #endif 
+        
         int col, row;
 
         if (b == 0)

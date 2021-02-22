@@ -1554,7 +1554,13 @@ void printinfo()
 #endif
 
 #ifdef speakerPin
-  tft.println("Speaker: Enabled");
+  if(wificonfig.beep){
+    tft.println("Speaker: Enabled");
+  }
+  else
+  {
+    tft.println("Speaker: Disabled");
+  }
 #else
   tft.println("Speaker: Disabled");
 #endif

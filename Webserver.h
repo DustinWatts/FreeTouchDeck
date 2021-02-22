@@ -490,6 +490,18 @@ void handlerSetup()
           wificonfigobject["sleepenable"] = false;
         }
 
+        AsyncWebParameter *beep = request->getParam("beep", true);
+        String Beep = beep->value().c_str();
+
+        if (Beep == "true")
+        {
+          wificonfigobject["beep"] = true;
+        }
+        else
+        {
+          wificonfigobject["beep"] = false;
+        }
+
         AsyncWebParameter *sleeptimer = request->getParam("sleeptimer", true);
 
         String sleepTimer = sleeptimer->value().c_str();

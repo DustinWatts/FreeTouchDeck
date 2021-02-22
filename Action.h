@@ -54,6 +54,9 @@ void bleKeyboardAction(int action, int value, char *symbol)
     case 9:
       bleKeyboard.write(KEY_PAGE_DOWN);
       break;
+    case 10:
+      bleKeyboard.write(KEY_DELETE);
+      break;
     default:
       //if nothing matches do nothing
       break;

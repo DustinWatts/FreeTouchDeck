@@ -227,6 +227,16 @@
   					<option value="60">60 Minutes</option>
 				</select>
 
+				<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+					<h2>Sound</h2>
+				</div>
+				
+				&nbsp;&nbsp;Beep on Touch:&nbsp;
+				<select class="sleepenable" id='beep' name='beep'>
+					<option value="true">Enabled</option>
+  					<option value="false">Disabled</option>
+				</select>
+
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="savecolors">
 				<br /><button style='cursor: pointer;' form="savecolors" type='save'>Save General Config</button></div>
@@ -966,6 +976,10 @@
 		      {
 		        name: 'Page Down',
 		        value: '9'
+		      },
+		      {
+		        name: 'Delete',
+		        value: '10'
 		      }
 		      ]
 		  },
@@ -991,7 +1005,15 @@
 		      {
 		        name: 'Stop',
 		        value: '5'
-		      }
+		      },
+			  {
+   				name: 'Next',
+   				value: '6'
+			  },
+			  {
+			   name: 'Previous',
+			   value: '7'
+			  }
 		    ]
 		  },
 		  {
@@ -4293,6 +4315,7 @@ $(function () {
 
 				document.getElementById("sleepenable").value = data.sleepenable;
 				document.getElementById("sleeptimer").value = data.sleeptimer;
+				document.getElementById("beep").value = data.beep;
 
 			})
 			.catch((err) => {

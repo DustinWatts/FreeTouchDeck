@@ -69,11 +69,24 @@ bool configmode()
     }
     else if (strcmp(wificonfig.wifimode, "WIFI_AP") == 0)
     {
+      
       WiFi.mode(WIFI_AP);
       WiFi.softAP(wificonfig.ssid, wificonfig.password);
       Serial.println("");
       Serial.print("[INFO]: Access Point Started! IP address: ");
       Serial.println(WiFi.softAPIP());
+
+      // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+      bleKeyboard.end();
+    
+      // Stop BLE from interfering with our WIFI signal
+      btStop();
+      esp_bt_controller_disable();
+      esp_bt_controller_deinit();
+      esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+
+      Serial.println("");
+      Serial.println("[INFO]: BLE Stopped"); 
     }
   }
 
@@ -115,6 +128,7 @@ bool saveWifiSSID(String ssid)
   wificonfigobject["wifihostname"] = wificonfig.hostname;
   wificonfigobject["sleepenable"] = wificonfig.sleepenable;
   wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
+  wificonfigobject["beep"] = wificonfig.beep;
 
   if (serializeJsonPretty(doc, file) == 0)
   {
@@ -151,6 +165,7 @@ bool saveWifiPW(String password)
   wificonfigobject["wifihostname"] = wificonfig.hostname;
   wificonfigobject["sleepenable"] = wificonfig.sleepenable;
   wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
+  wificonfigobject["beep"] = wificonfig.beep;
 
   if (serializeJsonPretty(doc, file) == 0)
   {
@@ -176,7 +191,7 @@ bool saveWifiMode(String wifimode)
 
   if (wifimode != "WIFI_STA" && wifimode != "WIFI_AP")
   {
-    Serial.println("[WARNING]: WiFi Mode not supported. Try WIFI_STA of WIFI_AP.");
+    Serial.println("[WARNING]: WiFi Mode not supported. Try WIFI_STA or WIFI_AP.");
     return false;
   }
 
@@ -193,6 +208,7 @@ bool saveWifiMode(String wifimode)
   wificonfigobject["wifihostname"] = wificonfig.hostname;
   wificonfigobject["sleepenable"] = wificonfig.sleepenable;
   wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
+  wificonfigobject["beep"] = wificonfig.beep;
 
   if (serializeJsonPretty(doc, file) == 0)
   {

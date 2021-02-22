@@ -41,6 +41,9 @@ bool loadMainConfig()
   uint16_t sleeptimer = doc["sleeptimer"] | 60 ;
   wificonfig.sleeptimer = sleeptimer;
 
+  bool beep = doc["beep"] | false;
+  wificonfig.beep = beep;
+
   configfile.close();
 
   if (error)
