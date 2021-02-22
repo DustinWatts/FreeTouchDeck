@@ -3,6 +3,10 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
 
+# ESP32 TouchDown users
+
+Make sure to uncomment the line `//#define USECAPTOUCH`!
+
 # Delete the old clone and use the new
 
 ### Mixing files of different versions may cause some unexpected behavior!
