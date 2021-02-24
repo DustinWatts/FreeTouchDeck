@@ -5,7 +5,11 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 # ESP32 TouchDown users
 
-Make sure to uncomment the line `//#define USECAPTOUCH`!
+Make sure to uncomment the line `//#define USECAPTOUCH`!   
+And if you wish to use the speaker uncomment the line `//#define speakerPin 26`
+
+If FreeTouchDeck came pre-installed, you can find how to set up the configurator here:   
+https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-installed
 
 # Delete the old clone and use the new
 
