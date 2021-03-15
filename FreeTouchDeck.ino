@@ -39,6 +39,7 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
+// (THE ESP32 TOUCHDOWN USES THIS!)
 //#define USECAPTOUCH
 
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
@@ -56,26 +57,33 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.10";
+const char *versionnumber = "0.9.11";
 
-    /* Version 0.9.10. 
+    /* Version 0.9.11.
      *  
-     *  Version 0.9.9 is the version that was preloaded on the ESP32 TouchDown
-     *  
-     * Fix: PWM Speaker channel is now channel 2.
-     * Fix: Changed location of startup beep to be after config is loaded.
-     * Fix: Stop BLE also in WIFI_AP mode.
-     * Fix: Typos.
-     * Fix: Added Delete key in action.h and configurator.
+     * Fix: F21 in the configurator was F22 as action and F22 was missing from configurator.
+     * Fix: "[WARNING]: SPIFFS initialisation failed!" is now "[ERROR]: SPIFFS initialisation failed!"
+     * Fix: "Back home" and "Settings" buttons now also draw custom logos correctly.
+     * Fix: Some function descriptions and general typos.
+     * Fix: default.json was ignored by .gitignore and therefore not previously uploaded.
      * 
-     * Improved: ESP32 TouchDown compatibility.
+     * Change: Moved TFT init before SPIFFS init, so we can draw an error message on screen if SPIFFS
+     *         init fails.
+     * Change: Moved to a wificonfig.json just for wifi settings and a general.json for all other general
+     *         config.
      * 
-     * Added: Speaker config to json files, to the configurator and to the "info" page on the screen. 
-     * Added: "previous" and "next" to the configurator (thanks @JonnyBergdahl) 
-     *  
-     * Important! This version changes json structure and HTML files. So an ESP sketch data upload is nescecarry. The only json
-     * file that changes is the wificonfig.json so if you back up your menu configs, you can use them unaltered in the new version 
-     * (provided you come from 0.9.8).
+     * Added: Helpers are configurable so that it only takes 1 action. Case 10 Action.h.
+     *        Settings for this added to "Settings" in the configurator
+     * Added: . (full stop) , (comma) and - (minus) added to the configurator under "Special chars"
+     *        
+     * 
+     * Important! This version changes json structure and HTML files. Config/data files changed:
+     * 
+     * - wificonfig.json (there are some settings added)
+     * - general.json (colors, sleep, and beep are moved here)
+     * - index.html
+     * 
+     * Make sure to check if you use your old config files that they match the structure of the new ones!
     */
 
 #include <pgmspace.h> // PROGMEM support header
@@ -224,6 +232,13 @@ struct Config
   uint16_t functionButtonColour;
   uint16_t backgroundColour;
   uint16_t latchedColour;
+  bool sleepenable;
+  uint16_t sleeptimer;
+  bool beep;
+  uint8_t modifier1;
+  uint8_t modifier2;
+  uint8_t modifier3;
+  uint16_t helperdelay;
 };
 
 struct Wificonfig
@@ -232,9 +247,8 @@ struct Wificonfig
   char password[64];
   char wifimode[9];
   char hostname[64];
-  bool sleepenable;
-  uint16_t sleeptimer;
-  bool beep;
+  uint8_t attempts;
+  uint16_t attemptdelay;
 };
 
 // Array to hold all the latching statuses
@@ -320,9 +334,26 @@ void setup()
 #endif
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
+  // --------------- Init Display -------------------------
+
+  // Initialise the TFT screen
+  tft.init();
+
+  // Set the rotation before we calibrate
+  tft.setRotation(1);
+
+  // Clear the screen
+  tft.fillScreen(TFT_BLACK);
+
+  esp_sleep_wakeup_cause_t wakeup_reason;
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  // -------------- Start filesystem ----------------------
+
   if (!FILESYSTEM.begin())
   {
-    Serial.println("[WARNING]: SPIFFS initialisation failed!");
+    Serial.println("[ERROR]: SPIFFS initialisation failed!");
+    drawErrorMessage("Failed to init SPIFFS! Did you upload the data folder?");
     while (1)
       yield(); // We stop here
   }
@@ -345,23 +376,11 @@ void setup()
     Serial.println("[INFO]: WiFi Credentials Loaded");
   }
 
-  // ---- Load webserver -------------------------------
+  // ----------------- Load webserver ---------------------
 
   handlerSetup();
 
-  //------------------TFT/Touch Initialization ------------------------------------------------------------------------
-
-  // Initialise the TFT screen
-  tft.init();
-
-  // Set the rotation before we calibrate
-  tft.setRotation(1);
-
-  // Clear the screen
-  tft.fillScreen(TFT_BLACK);
-
-  esp_sleep_wakeup_cause_t wakeup_reason;
-  wakeup_reason = esp_sleep_get_wakeup_cause();
+  // ------------------- Splash screen ------------------
 
   // If we are woken up we do not need the splash screen
   if (wakeup_reason > 0)
@@ -389,9 +408,9 @@ void setup()
 #endif
 
   // Let's first check if all the files we need exist
-  if (!checkfile("/config/colors.json"))
+  if (!checkfile("/config/general.json"))
   {
-    Serial.println("[ERROR]: /config/colors.json not found!");
+    Serial.println("[ERROR]: /config/general.json not found!");
     while (1)
       yield(); // Stop!
   }
@@ -438,11 +457,11 @@ void setup()
       yield(); // Stop!
   }
 
-  // Load the all the configuration
-  if(!loadConfig("colors")){
-    Serial.println("[WARNING]: colors.json seems to be corrupted!");
-    Serial.println("[WARNING]: To reset to default type 'reset colors'.");
-    jsonfilefail = "colors";
+  // After checking the config files exist, actually load them
+  if(!loadConfig("general")){
+    Serial.println("[WARNING]: general.json seems to be corrupted!");
+    Serial.println("[WARNING]: To reset to default type 'reset general'.");
+    jsonfilefail = "general";
     pageNum = 10;
   }
 
@@ -451,7 +470,7 @@ void setup()
 #ifdef speakerPin
   ledcSetup(2, 500, 8);
 
-if(wificonfig.beep){
+if(generalconfig.beep){
   ledcAttachPin(speakerPin, 2);
   ledcWriteTone(2, 600);
   delay(150);
@@ -543,13 +562,13 @@ if(wificonfig.beep){
   drawKeypad();
 
 #ifdef touchInterruptPin
-  if (wificonfig.sleepenable)
+  if (generalconfig.sleepenable)
   {
     pinMode(touchInterruptPin, INPUT_PULLUP);
-    Interval = wificonfig.sleeptimer * 60000;
+    Interval = generalconfig.sleeptimer * 60000;
     Serial.println("[INFO]: Sleep enabled.");
     Serial.print("[INFO]: Sleep timer = ");
-    Serial.print(wificonfig.sleeptimer);
+    Serial.print(generalconfig.sleeptimer);
     Serial.println(" minutes");
     islatched[28] = 1;
   }
@@ -750,7 +769,7 @@ void loop(void)
     // Check if sleep is enabled and if our timer has ended.
 
 #ifdef touchInterruptPin
-    if (wificonfig.sleepenable)
+    if (generalconfig.sleepenable)
     {
       if (millis() > previousMillis + Interval)
       {
@@ -759,7 +778,7 @@ void loop(void)
         tft.fillScreen(TFT_BLACK);
         Serial.println("[INFO]: Going to sleep.");
 #ifdef speakerPin
-        if(wificonfig.beep){
+        if(generalconfig.beep){
         ledcAttachPin(speakerPin, 2);
         ledcWriteTone(2, 1200);
         delay(150);
@@ -959,7 +978,7 @@ void loop(void)
         
         // Beep
         #ifdef speakerPin
-        if(wificonfig.beep){
+        if(generalconfig.beep){
           ledcAttachPin(speakerPin, 2);
           ledcWriteTone(2, 600);
           delay(50);

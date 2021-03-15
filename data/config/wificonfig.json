@@ -3,7 +3,6 @@
 	"password": "YOUR_WIFI_PASSWORD",
 	"wifimode": "WIFI_STA",
 	"wifihostname": "freetouchdeck",
-	"sleepenable": true,
-	"sleeptimer": 10,
-	"beep": true
+	"attempts": 10,
+	"attemptdelay": 500
 }

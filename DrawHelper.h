@@ -332,7 +332,14 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      if (transparent == true)
+      {
+        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
   else if (pageNum == 2)
@@ -555,7 +562,14 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      if (transparent == true)
+      {
+        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
   else if (pageNum == 3)
@@ -778,7 +792,14 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      if (transparent == true)
+      {
+        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
   else if (pageNum == 4)
@@ -1001,7 +1022,14 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      if (transparent == true)
+      {
+        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
   else if (pageNum == 5)
@@ -1224,7 +1252,14 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      if (transparent == true)
+      {
+        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
   else if (pageNum == 6)
@@ -1256,7 +1291,14 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
     }
     else if (logonumber == 5)
     {
-      drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      if (transparent == true)
+      {
+        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      }
     }
   }
 }
@@ -1306,53 +1348,7 @@ void drawKeypad()
       }
     }
   }
-  else if (pageNum == 7)
-  {
-    // Config mode...
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0);
-    tft.setTextFont(2);
-    if (SCREEN_WIDTH == 480)
-    {
-      tft.setTextSize(2);
-    }
-    else
-    {
-      tft.setTextSize(1);
-    }
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-    if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
-    {
-      tft.println("Started as STA and in config mode.");
-      tft.println("To configure:");
-      tft.println("http://freetouchdeck.local");
-      tft.print("The IP is: ");
-      tft.println(WiFi.localIP());
-    }
-    else
-    {
-      tft.println("Started as AP and in config mode.");
-      tft.println("To configure:");
-      tft.println("http://freetouchdeck.local");
-      tft.print("The IP is: ");
-      tft.println(WiFi.softAPIP());
-    }
-  }
-
-  else if (pageNum == 9)
-  {
-    // Pagenum 9 means that we were unable to connect to WiFi.
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0);
-    tft.setTextFont(2);
-    tft.setTextSize(1);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-    tft.printf("  Unable to connect to %s\n", wificonfig.ssid);
-    tft.println("  Make sure you have set the correct SSID and password.");
-    tft.println("  Touch the screen to return to the settings page.");
-  }
+  
   else if (pageNum == 10)
   {
     // Pagenum 10 means that a JSON config failed to load completely.
@@ -1379,14 +1375,33 @@ void drawKeypad()
 
         if (row == 1 && col == 2)
         {
-          // If it is the last button ("back home button") create it with the menuButtonColour
+
+          // Check if "home.bmp" is a transparent one
+          
+          uint16_t buttonBG;
+          bool drawTransparent;
+          uint16_t imageBGColor;
+
+          imageBGColor = getImageBG(b);
+
+          if (imageBGColor > 0)
+          {
+            buttonBG = imageBGColor;
+            drawTransparent = false;
+          }
+          else
+          {
+            buttonBG = generalconfig.menuButtonColour;
+            drawTransparent = true;
+          }
+          
           tft.setFreeFont(LABEL_FONT);
           key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
                             KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                            KEY_W, KEY_H, TFT_WHITE, generalconfig.menuButtonColour, TFT_WHITE,
+                            KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE,
                             "", KEY_TEXTSIZE);
           key[b].drawButton();
-          drawlogo(b, col, row, true, false);
+          drawlogo(b, col, row, drawTransparent, false);
         }
         else
         {
@@ -1540,10 +1555,10 @@ void printinfo()
   tft.printf("Version: %s\n", versionnumber);
 
 #ifdef touchInterruptPin
-  if (wificonfig.sleepenable)
+  if (generalconfig.sleepenable)
   {
     tft.println("Sleep: Enabled");
-    tft.printf("Sleep timer: %u minutes\n", wificonfig.sleeptimer);
+    tft.printf("Sleep timer: %u minutes\n", generalconfig.sleeptimer);
   }
   else
   {
@@ -1554,7 +1569,7 @@ void printinfo()
 #endif
 
 #ifdef speakerPin
-  if(wificonfig.beep){
+  if(generalconfig.beep){
     tft.println("Speaker: Enabled");
   }
   else

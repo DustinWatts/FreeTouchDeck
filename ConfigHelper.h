@@ -1,59 +1,29 @@
-/**
-* @brief This function stops Bluetooth and connects to the given 
-         WiFi network. It the starts mDNS and starts the Async
-         Webserver.
-*
-* @param none
-*
-* @return none
-*
-* @note none
-*/
-bool configmode()
-{
+// Start as WiFi station
 
-  Serial.println("[INFO]: Entering Config Mode");
-
-  if (String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
-  {
-    drawErrorMessage("WiFi Config still set to default!");
-    Serial.println("[ERROR]: WiFi Config still set to default!");
-    while (1)
-      yield(); // Stop!
-  }
-
-  if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED" || String(wificonfig.wifimode) == "FAILED") // The wificonfig.json failed to load
-  {
-    drawErrorMessage("WiFi Config Failed to load!");
-    Serial.println("[ERROR]: WiFi Config Failed to load!");
-    while (1)
-      yield(); // Stop!
-  }
-
-  drawErrorMessage("Connecting to Wifi...");
-
+bool startWifiStation(){
+  
   Serial.printf("[INFO]: Connecting to %s", wificonfig.ssid);
   if (String(WiFi.SSID()) != String(wificonfig.ssid))
   {
-    if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
-    {
       WiFi.mode(WIFI_STA);
       WiFi.begin(wificonfig.ssid, wificonfig.password);
-      uint8_t attempts = 10;
+      uint8_t attempts = wificonfig.attempts;
       while (WiFi.status() != WL_CONNECTED)
       {
         if(attempts == 0) {
           WiFi.disconnect();
           Serial.println("");
-          Serial.printf("[WARNING]: Could not connect to: %s\n", wificonfig.ssid);
           return false;
+          
         }
-        delay(500);
+        delay(wificonfig.attemptdelay);
         Serial.print(".");
         attempts--;
-      }
 
-      // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+      }
+    }
+
+    // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
       bleKeyboard.end();
     
       // Stop BLE from interfering with our WIFI signal
@@ -66,31 +36,42 @@ bool configmode()
       Serial.println("[INFO]: BLE Stopped");  
       Serial.print("[INFO]: Connected! IP address: ");
       Serial.println(WiFi.localIP());
-    }
-    else if (strcmp(wificonfig.wifimode, "WIFI_AP") == 0)
-    {
-      
-      WiFi.mode(WIFI_AP);
-      WiFi.softAP(wificonfig.ssid, wificonfig.password);
-      Serial.println("");
-      Serial.print("[INFO]: Access Point Started! IP address: ");
-      Serial.println(WiFi.softAPIP());
 
-      // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
-      bleKeyboard.end();
+      MDNS.begin(wificonfig.hostname);
+      MDNS.addService("http", "tcp", 80);
     
-      // Stop BLE from interfering with our WIFI signal
-      btStop();
-      esp_bt_controller_disable();
-      esp_bt_controller_deinit();
-      esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+      // Set pageNum to 7 so no buttons are displayed and touches are ignored
+      pageNum = 7;
+    
+      // Start the webserver
+      webserver.begin();
+      Serial.println("[INFO]: Webserver started");
+      return true;
+}
 
-      Serial.println("");
-      Serial.println("[INFO]: BLE Stopped"); 
-    }
-  }
+// Start as WiFi AP
 
-  MDNS.begin(wificonfig.hostname);
+void startWifiAP(){
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(wificonfig.ssid, wificonfig.password);
+  Serial.println("");
+  Serial.print("[INFO]: Access Point Started! IP address: ");
+  Serial.println(WiFi.softAPIP());
+
+  // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+  bleKeyboard.end();
+
+  // Stop BLE from interfering with our WIFI signal
+  btStop();
+  esp_bt_controller_disable();
+  esp_bt_controller_deinit();
+  esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+
+  Serial.println("");
+  Serial.println("[INFO]: BLE Stopped");
+
+   MDNS.begin(wificonfig.hostname);
   MDNS.addService("http", "tcp", 80);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
@@ -99,8 +80,124 @@ bool configmode()
   // Start the webserver
   webserver.begin();
   Serial.println("[INFO]: Webserver started");
-  return true;
 }
+
+// Start the default AP
+
+void startDefaultAP(){
+
+  const char* ssid = "FreeTouchDeck";
+  const char* password = "defaultpass";
+
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(ssid, password);
+  Serial.print("[INFO]: Access Point Started! IP address: ");
+  Serial.println(WiFi.softAPIP());
+
+  // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+  bleKeyboard.end();
+
+  // Stop BLE from interfering with our WIFI signal
+  btStop();
+  esp_bt_controller_disable();
+  esp_bt_controller_deinit();
+  esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+
+  Serial.println("[INFO]: BLE Stopped");
+
+  MDNS.begin("freetouchdeck");
+  MDNS.addService("http", "tcp", 80);
+
+  // Set pageNum to 7 so no buttons are displayed and touches are ignored
+  pageNum = 7;
+
+  // Start the webserver
+  webserver.begin();
+  Serial.println("[INFO]: Webserver started");
+          
+}
+
+/**
+* @brief This function stops Bluetooth and connects to the given 
+         WiFi network. It the starts mDNS and starts the Async
+         Webserver.
+*
+* @param none
+*
+* @return none
+*
+* @note none
+*/
+void configmode()
+{
+
+  tft.fillScreen(TFT_BLACK);
+  tft.setCursor(0, 0);
+  tft.setTextFont(2);
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+
+  Serial.println("[INFO]: Entering Config Mode");
+  tft.println("Connecting to Wifi...");
+
+  if (String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
+  {
+    tft.println("WiFi Config still set to default! Starting as AP.");
+    Serial.println("[WARNING]: WiFi Config still set to default! Configurator started as AP.");
+    startDefaultAP();
+    tft.println("Started as AP because WiFi settings are still set to default.");
+    tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
+    tft.println("Then go to http://freetouchdeck.local");
+    tft.print("The IP is: ");
+    tft.println(WiFi.softAPIP());
+    return;
+  }
+
+  if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED" || String(wificonfig.wifimode) == "FAILED") // The wificonfig.json failed to load
+  {
+    tft.println("WiFi Config Failed to load! Starting as AP.");
+    Serial.println("[WARNING]: WiFi Config Failed to load! Configurator started as AP.");
+    startDefaultAP();
+    tft.println("Started as AP because WiFi settings failed to load.");
+    tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
+    tft.println("Then go to http://freetouchdeck.local");
+    tft.print("The IP is: ");
+    tft.println(WiFi.softAPIP());
+    return;
+  }
+
+  if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
+  {
+    if(!startWifiStation()){
+      startDefaultAP();
+      Serial.println("[WARNING]: Could not connect to AP, so started as AP.");
+      tft.println("Started as AP because WiFi connection failed.");
+      tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
+      tft.println("Then go to http://freetouchdeck.local");
+      tft.print("The IP is: ");
+      tft.println(WiFi.softAPIP());
+    }
+    else
+    {
+      tft.println("Started as STA and in config mode.");
+      tft.println("To configure:");
+      tft.println("http://freetouchdeck.local");
+      tft.print("The IP is: ");
+      tft.println(WiFi.localIP());
+    }
+
+  }
+  else if (strcmp(wificonfig.wifimode, "WIFI_AP") == 0)
+  {
+    startWifiAP();
+    tft.println("Started as AP and in config mode.");
+    tft.println("To configure:");
+    tft.println("http://freetouchdeck.local");
+    tft.print("The IP is: ");
+    tft.println(WiFi.softAPIP());
+  }
+}
+
 
 /**
 * @brief This function allows for saving (updating) the WiFi SSID
@@ -118,7 +215,7 @@ bool saveWifiSSID(String ssid)
   FILESYSTEM.remove("/config/wificonfig.json");
   File file = FILESYSTEM.open("/config/wificonfig.json", "w");
 
-  DynamicJsonDocument doc(256);
+  DynamicJsonDocument doc(384);
 
   JsonObject wificonfigobject = doc.to<JsonObject>();
 
@@ -126,9 +223,9 @@ bool saveWifiSSID(String ssid)
   wificonfigobject["password"] = wificonfig.password;
   wificonfigobject["wifimode"] = wificonfig.wifimode;
   wificonfigobject["wifihostname"] = wificonfig.hostname;
-  wificonfigobject["sleepenable"] = wificonfig.sleepenable;
-  wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
-  wificonfigobject["beep"] = wificonfig.beep;
+  wificonfigobject["attempts"] = wificonfig.attempts;
+  wificonfigobject["attemptdelay"] = wificonfig.attemptdelay;
+
 
   if (serializeJsonPretty(doc, file) == 0)
   {
@@ -155,7 +252,7 @@ bool saveWifiPW(String password)
   FILESYSTEM.remove("/config/wificonfig.json");
   File file = FILESYSTEM.open("/config/wificonfig.json", "w");
 
-  DynamicJsonDocument doc(256);
+  DynamicJsonDocument doc(384);
 
   JsonObject wificonfigobject = doc.to<JsonObject>();
 
@@ -163,9 +260,9 @@ bool saveWifiPW(String password)
   wificonfigobject["password"] = password;
   wificonfigobject["wifimode"] = wificonfig.wifimode;
   wificonfigobject["wifihostname"] = wificonfig.hostname;
-  wificonfigobject["sleepenable"] = wificonfig.sleepenable;
-  wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
-  wificonfigobject["beep"] = wificonfig.beep;
+  wificonfigobject["attempts"] = wificonfig.attempts;
+  wificonfigobject["attemptdelay"] = wificonfig.attemptdelay;
+
 
   if (serializeJsonPretty(doc, file) == 0)
   {
@@ -198,7 +295,7 @@ bool saveWifiMode(String wifimode)
   FILESYSTEM.remove("/config/wificonfig.json");
   File file = FILESYSTEM.open("/config/wificonfig.json", "w");
 
-  DynamicJsonDocument doc(256);
+  DynamicJsonDocument doc(384);
 
   JsonObject wificonfigobject = doc.to<JsonObject>();
 
@@ -206,9 +303,9 @@ bool saveWifiMode(String wifimode)
   wificonfigobject["password"] = wificonfig.password;
   wificonfigobject["wifimode"] = wifimode;
   wificonfigobject["wifihostname"] = wificonfig.hostname;
-  wificonfigobject["sleepenable"] = wificonfig.sleepenable;
-  wificonfigobject["sleeptimer"] = wificonfig.sleeptimer;
-  wificonfigobject["beep"] = wificonfig.beep;
+  wificonfigobject["attempts"] = wificonfig.attempts;
+  wificonfigobject["attemptdelay"] = wificonfig.attemptdelay;
+
 
   if (serializeJsonPretty(doc, file) == 0)
   {
@@ -252,9 +349,9 @@ bool checkfile(const char *filename)
 
 bool resetconfig(String file){
 
- if (file != "menu1" && file != "menu2" && file != "menu3" && file != "menu4" && file != "menu5" && file != "homescreen" && file != "colors")
+ if (file != "menu1" && file != "menu2" && file != "menu3" && file != "menu4" && file != "menu5" && file != "homescreen" && file != "general")
   {
-    Serial.println("[WARNING]: Invalid reset option. Choose: menu1, menu2, menu3, menu4, menu5, homescreen, or colors");
+    Serial.println("[WARNING]: Invalid reset option. Choose: menu1, menu2, menu3, menu4, menu5, homescreen, or general");
     return false;
   }
 
@@ -323,10 +420,10 @@ bool resetconfig(String file){
     return true;
       
     }
-    else if(file == "colors")
+    else if(file == "general")
     {
 
-      // Reset the colors
+      // Reset the general config
       // For this we do not need to open a default file because we can easily write it ourselfs
 
       String filetoremove = "/config/" + file;
@@ -341,11 +438,18 @@ bool resetconfig(String file){
     newfile.println("\"menubuttoncolor\": \"#009bf4\",");
     newfile.println("\"functionbuttoncolor\": \"#00efcb\",");
     newfile.println("\"latchcolor\": \"#fe0149\",");
-    newfile.println("\"background\": \"#000000\"");
+    newfile.println("\"background\": \"#000000\",");
+    newfile.println("\"sleepenable\": true,");
+    newfile.println("\"sleeptimer\": 10,");
+    newfile.println("\"beep\": true,");
+    newfile.println("\"modifier1\": 130,");
+    newfile.println("\"modifier2\": 129,");
+    newfile.println("\"modifier3\": 0,");
+    newfile.println("\"helperdelay\": 500");
     newfile.println("}");
 
     newfile.close();
-    Serial.println("[INFO]: Done resetting colors.");
+    Serial.println("[INFO]: Done resetting general config.");
     Serial.println("[INFO]: Type \"restart\" to reload configuration.");
     return true;
       

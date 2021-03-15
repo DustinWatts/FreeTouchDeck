@@ -1,7 +1,8 @@
 /**
-* @brief This function takes an int as an action and value. It uses 
+* @brief This function takes an int as an "action" and "value". It uses 
          a switch statement to determine which type of action to do.
-         e.g. write, print, press.
+         e.g. write, print, press. If an action requires a char, you
+         can pass the pointer to that char through the parameter "symbol"
 *
 * @param action int 
 * @param value int
@@ -16,6 +17,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
 {
 
   Serial.println("[INFO]: BLE Keyboard action received");
+  
   switch (action)
   {
   case 0:
@@ -278,20 +280,172 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 10: // future feature
+  case 10: // Helpers
+  switch (value)
+    {
+      case 1:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F1);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 2:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F2);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 3:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F3);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 4:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F4);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 5:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F5);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 6:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F6);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 7:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F7);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 8:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F8);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 9:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F9);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 10:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F10);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+      case 11:
+        if(generalconfig.modifier1 != 0){
+          bleKeyboard.press(generalconfig.modifier1);
+        }
+        if(generalconfig.modifier2 != 0){
+          bleKeyboard.press(generalconfig.modifier2);
+        }
+        if(generalconfig.modifier3 != 0){
+          bleKeyboard.press(generalconfig.modifier3);
+        }
+        bleKeyboard.press(KEY_F11);
+        bleKeyboard.releaseAll();
+        delay(generalconfig.helperdelay);
+      break;
+    }
     break;
   case 11: // Special functions
     switch (value)
     {
     case 1:        // Enter config mode
       
-      if(configmode()){
-        pageNum = 7; // By setting pageNum to 7
-        drawKeypad(); // and calling drawKeypad() a new keypad is drawn with pageNum 7
-      }else{
-        pageNum = 9; // By setting pageNum to 9
-        drawKeypad(); // and calling drawKeypad() we are drawing an error message that we are not able to connect to WiFi
-      }
+      configmode();
+        
       break;
     case 2: // Display Brightness Down
       if (ledBrightness > 25)
@@ -308,18 +462,18 @@ void bleKeyboardAction(int action, int value, char *symbol)
       }
       break;
     case 4: // Sleep Enabled
-      if (wificonfig.sleepenable)
+      if (generalconfig.sleepenable)
       {
-        wificonfig.sleepenable = false;
+        generalconfig.sleepenable = false;
         Serial.println("[INFO]: Sleep disabled.");
       }
       else
       {
-        wificonfig.sleepenable = true;
-        Interval = wificonfig.sleeptimer * 60000;
+        generalconfig.sleepenable = true;
+        Interval = generalconfig.sleeptimer * 60000;
         Serial.println("[INFO]: Sleep enabled.");
         Serial.print("[INFO]: Timer set to: ");
-        Serial.println(wificonfig.sleeptimer);
+        Serial.println(generalconfig.sleeptimer);
       }
       break;
     }

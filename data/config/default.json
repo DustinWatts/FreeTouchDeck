@@ -1,0 +1,37 @@
+{
+  "logo0": "question.bmp",
+  "logo1": "question.bmp",
+  "logo2": "question.bmp",
+  "logo3": "question.bmp",
+  "logo4": "question.bmp",
+  "button0":{
+    "latch": false,
+    "latchlogo": "",
+    "actionarray": [ "0", "0", "0" ],
+    "valuearray": [ "0", "0", "0" ] 
+  },
+  "button1":{
+    "latch": false,
+    "latchlogo": "",
+    "actionarray": [ "0", "0", "0" ],
+    "valuearray": [ "0", "0", "0" ] 
+  },
+  "button2":{
+    "latch": false,
+    "latchlogo": "",
+    "actionarray": [ "0", "0", "0" ],
+    "valuearray": [ "0", "0", "0" ] 
+  },
+  "button3":{
+    "latch": false,
+    "latchlogo": "",
+    "actionarray": [ "0", "0", "0"],
+    "valuearray": [ "0", "0", "0" ] 
+  },
+  "button4":{
+    "latch": false,
+    "latchlogo": "",
+    "actionarray": [ "0", "0", "0" ],
+    "valuearray": [ "0", "0", "0" ] 
+  }
+}

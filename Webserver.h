@@ -151,11 +151,11 @@ String handleInfo()
   output += "{\"";
   output += "Sleep";
   output += "\":\"";
-  if (wificonfig.sleepenable)
+  if (generalconfig.sleepenable)
   {
     output += String("Enabled. ");
     output += String("Timer: ");
-    output += String(wificonfig.sleeptimer);
+    output += String(generalconfig.sleeptimer);
     output += String(" minutes");
     output += "\"}";
   }
@@ -425,69 +425,43 @@ void handlerSetup()
       AsyncWebParameter *p = request->getParam("save", true);
       String savemode = p->value().c_str();
 
-      if (savemode == "savecolors")
+      if (savemode == "general")
       {
 
-        // --- Saving colours
-        Serial.println("[INFO]: Saving Colours");
+        // --- Saving general config
+        Serial.println("[INFO]: Saving General Config");
 
-        FILESYSTEM.remove("/config/colors.json");
-        File file = FILESYSTEM.open("/config/colors.json", "w");
+        FILESYSTEM.remove("/config/general.json");
+        File file = FILESYSTEM.open("/config/general.json", "w");
         if (!file)
         {
           Serial.println("[WARNING]: Failed to create file");
           return;
         }
 
-        DynamicJsonDocument doc(256);
+        DynamicJsonDocument doc(400);
 
-        JsonObject colors = doc.to<JsonObject>();
+        JsonObject general = doc.to<JsonObject>();
 
         AsyncWebParameter *menubuttoncolor = request->getParam("menubuttoncolor", true);
-        colors["menubuttoncolor"] = menubuttoncolor->value().c_str();
+        general["menubuttoncolor"] = menubuttoncolor->value().c_str();
         AsyncWebParameter *functionbuttoncolor = request->getParam("functionbuttoncolor", true);
-        colors["functionbuttoncolor"] = functionbuttoncolor->value().c_str();
+        general["functionbuttoncolor"] = functionbuttoncolor->value().c_str();
         AsyncWebParameter *latchcolor = request->getParam("latchcolor", true);
-        colors["latchcolor"] = latchcolor->value().c_str();
+        general["latchcolor"] = latchcolor->value().c_str();
         AsyncWebParameter *background = request->getParam("background", true);
-        colors["background"] = background->value().c_str();
-
-        if (serializeJsonPretty(doc, file) == 0)
-        {
-          Serial.println("[WARNING]: Failed to write to file");
-        }
-        file.close();
-
-        // Save sleep settings
-        Serial.println("[INFO]: Saving Sleep Settings");
-
-        FILESYSTEM.remove("/config/wificonfig.json");
-        File sleep = FILESYSTEM.open("/config/wificonfig.json", "w");
-        if (!sleep)
-        {
-          Serial.println("[WARNING]: Failed to create file");
-          return;
-        }
-
-        DynamicJsonDocument doc2(256);
-
-        JsonObject wificonfigobject = doc2.to<JsonObject>();
-
-        wificonfigobject["ssid"] = wificonfig.ssid;
-        wificonfigobject["password"] = wificonfig.password;
-        wificonfigobject["wifihostname"] = wificonfig.hostname;
-        wificonfigobject["wifimode"] = wificonfig.wifimode;
+        general["background"] = background->value().c_str();
 
         AsyncWebParameter *sleepenable = request->getParam("sleepenable", true);
         String sleepEnable = sleepenable->value().c_str();
 
         if (sleepEnable == "true")
         {
-          wificonfigobject["sleepenable"] = true;
+          general["sleepenable"] = true;
         }
         else
         {
-          wificonfigobject["sleepenable"] = false;
+          general["sleepenable"] = false;
         }
 
         AsyncWebParameter *beep = request->getParam("beep", true);
@@ -495,23 +469,84 @@ void handlerSetup()
 
         if (Beep == "true")
         {
-          wificonfigobject["beep"] = true;
+          general["beep"] = true;
         }
         else
         {
-          wificonfigobject["beep"] = false;
+          general["beep"] = false;
         }
 
+        // Sleep timer
         AsyncWebParameter *sleeptimer = request->getParam("sleeptimer", true);
 
         String sleepTimer = sleeptimer->value().c_str();
-        wificonfigobject["sleeptimer"] = sleepTimer.toInt();
+        general["sleeptimer"] = sleepTimer.toInt();
 
-        if (serializeJsonPretty(doc2, sleep) == 0)
+        //Modifiers
+
+        AsyncWebParameter *modifier1 = request->getParam("modifier1", true);
+        String Modifier1 = modifier1->value().c_str();    
+        general["modifier1"] = Modifier1.toInt();
+
+        AsyncWebParameter *modifier2 = request->getParam("modifier2", true);
+        String Modifier2 = modifier2->value().c_str();
+        general["modifier2"] = Modifier2.toInt();
+
+        AsyncWebParameter *modifier3 = request->getParam("modifier3", true);
+        String Modifier3 = modifier3->value().c_str();
+        general["modifier3"] = Modifier3.toInt();
+
+        AsyncWebParameter *helperdelay = request->getParam("helperdelay", true);
+        String Helperdelay = helperdelay->value().c_str();
+        general["helperdelay"] = Helperdelay.toInt();
+
+        if (serializeJsonPretty(doc, file) == 0)
         {
           Serial.println("[WARNING]: Failed to write to file");
         }
         file.close();
+      }
+      else if (savemode == "wifi")
+      {
+
+        // --- Saving wifi config
+        Serial.println("[INFO]: Saving Wifi Config");
+
+        FILESYSTEM.remove("/config/wificonfig.json");
+        File file = FILESYSTEM.open("/config/wificonfig.json", "w");
+        if (!file)
+        {
+          Serial.println("[WARNING]: Failed to create file");
+          return;
+        }
+
+        DynamicJsonDocument doc(384);
+
+        JsonObject wifi = doc.to<JsonObject>();
+
+        AsyncWebParameter *menubuttoncolor = request->getParam("ssid", true);
+        wifi["ssid"] = menubuttoncolor->value().c_str();
+        AsyncWebParameter *functionbuttoncolor = request->getParam("password", true);
+        wifi["password"] = functionbuttoncolor->value().c_str();
+        AsyncWebParameter *latchcolor = request->getParam("wifimode", true);
+        wifi["wifimode"] = latchcolor->value().c_str();
+        AsyncWebParameter *background = request->getParam("wifihostname", true);
+        wifi["wifihostname"] = background->value().c_str();
+
+        AsyncWebParameter *attempts = request->getParam("attempts", true);
+        String Attempts = attempts->value().c_str();
+        wifi["attempts"] = Attempts.toInt();
+
+        AsyncWebParameter *attemptdelay = request->getParam("attemptdelay", true);
+        String Attemptdelay = attemptdelay->value().c_str();
+        wifi["attemptdelay"] = Attemptdelay.toInt();
+
+        if (serializeJsonPretty(doc, file) == 0)
+        {
+          Serial.println("[WARNING]: Failed to write to file");
+        }
+        file.close();
+        
       }
       else if (savemode == "homescreen")
       {

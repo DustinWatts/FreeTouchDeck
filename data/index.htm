@@ -157,7 +157,8 @@
 	
 	<!-- Menu -->
 	<div class="tab">
-		<button class="tablinks" onclick="openMenu(event, 'general')">General</button>
+		<button class="tablinks" onclick="openMenu(event, 'wifi')">WiFi</button>
+		<button class="tablinks" onclick="openMenu(event, 'general')">Settings</button>
 		<button class="tablinks" onclick="openMenu(event, 'home')">Home Menu</button>
 		<button class="tablinks" onclick="openMenu(event, 'menu1')">Menu 1</button>
 		<button class="tablinks" onclick="openMenu(event, 'menu2')">Menu 2</button>
@@ -186,16 +187,68 @@
 			A guide on how to use the configurator can be found here: <a href="https://github.com/DustinWatts/FreeTouchDeck/wiki/3.-The-Configurator" target="_blank"> FreeTouchDeck Wiki</a>
 		</p>
 	</div>
+	<!-- Tab WiFi -->
+	<div id="wifi" class="tabcontent">
+		<div style="float: right; font-size: 11px" ><a href="/download?file=wificonfig.json">download wificonfig.json</a></div><br>
+		<h3>WiFi Settings</h3>
+		<p>
+			<form method='post' id="savewifi" action='/saveconfig'>
+
+
+
+		<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+
+			<label for="ssid">WiFi SSID:</label><br>
+    		<input type="text" id="ssid" name="ssid"><br><br>
+
+    		<label for="password">WiFi Password:</label><br>
+    		<input type="password" id="password" name="password" autocomplete="new-password"><br>
+			<input type="checkbox" onclick="togglepassword()">Show Password <br><br>
+
+			&nbsp;&nbsp;Wifi Mode:&nbsp;
+				<select class="wifimode" id='wifimode' name='wifimode'>
+					<option value="WIFI_STA">Station</option>
+  					<option value="WIFI_AP">Access Point</option>
+				</select><br>
+
+				<label for="wifihostname">Wifi Hostname:</label>
+    			<input type="text" id="wifihostname" name="wifihostname"><br>
+
+				&nbsp;&nbsp;Connection attempts:&nbsp;
+				<select class="attempts" id='attempts' name='attempts'>
+					<option value="5">5</option>
+  					<option value="10">10</option>
+  					<option value="15">15</option>
+  					<option value="20">20</option>
+				</select><br>
+
+				&nbsp;&nbsp;Delay between attempts:&nbsp;
+				<select class="attemptdelay" id='attemptdelay' name='attemptdelay'>
+					<option value="100">100 ms</option>
+  					<option value="500">500 ms</option>
+  					<option value="1000">1000 ms</option>
+  					<option value="2000">2000 ms</option>
+				</select><br>
+		</div>
+
+		<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+				<input type="hidden" id='save' name='save' value="wifi">
+				<br /><button style='cursor: pointer;' form="savewifi" type='save'>Save WiFi Config</button></div>
+		</form>
+	
+	</div>
+	</p>
+	</div>
 	<!-- Tab General -->
 	<div id="general" class="tabcontent">
-		<div style="float: right; font-size: 11px" ><a href="/download?file=colors.json">download colors.json</a></div><br>
+		<div style="float: right; font-size: 11px" ><a href="/download?file=general.json">download general.json</a></div><br>
 		<h3>General Settings</h3>
 		<p>
 		<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
 			<h2>Colors</h2>
 		</div>
 
-		<form method='post' id="savecolors" action='/saveconfig'>
+		<form method='post' id="generalconfig" action='/saveconfig'>
 			<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
 				&nbsp;&nbsp;Menu Button Colour:&nbsp;
 				<input style='width: 100px; height: 30px; padding:1px; border-radius:0.3rem;' id='menubuttoncolor'
@@ -237,9 +290,51 @@
   					<option value="false">Disabled</option>
 				</select>
 
+				<div style="font-family: Arial, Helvetica, Sans-Serif; Color: #000088;">
+					<h2>FreeTouchDeck Helpers</h2>
+				</div>
+				
+				&nbsp;&nbsp;Modifier 1:&nbsp;
+				<select class="modifier1" id='modifier1' name='modifier1'>
+					<option value="0">None</option>
+					<option value="128">CTRL</option>
+  					<option value="129">SHIFT</option>
+  					<option value="130">ALT</option>
+  					<option value="131">GUI</option>
+				</select>
+
+				&nbsp;&nbsp;Modifier 2:&nbsp;
+				<select class="modifier2" id='modifier2' name='modifier2'>
+					<option value="0">None</option>
+					<option value="128">CTRL</option>
+  					<option value="129">SHIFT</option>
+  					<option value="130">ALT</option>
+  					<option value="131">GUI</option>
+				</select>
+
+				&nbsp;&nbsp;Modifier 3:&nbsp;
+				<select class="modifier3" id='modifier3' name='modifier3'>
+					<option value="0">None</option>
+					<option value="128">CTRL</option>
+  					<option value="129">SHIFT</option>
+  					<option value="130">ALT</option>
+  					<option value="131">GUI</option>
+				</select>
+
+				<br>
+
+				&nbsp;&nbsp;Delay after helper (ms):&nbsp;
+				<select class="helperdelay" id='helperdelay' name='helperdelay'>
+					<option value="0">0</option>
+					<option value="100">100</option>
+  					<option value="200">200</option>
+  					<option value="500">500</option>
+  					<option value="1000">1000</option>
+				</select>
+
 			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
-				<input type="hidden" id='save' name='save' value="savecolors">
-				<br /><button style='cursor: pointer;' form="savecolors" type='save'>Save General Config</button></div>
+				<input type="hidden" id='save' name='save' value="general">
+				<br /><button style='cursor: pointer;' form="generalconfig" type='save'>Save General Config</button></div>
 		</form>
 	</div>
 	</p>
@@ -871,6 +966,20 @@
 
 </div>
 
+	<!-- Password toggle -->
+	<script>
+
+		function togglepassword() {
+		  var field = document.getElementById("password");
+		  if (field.type === "password") {
+		    field.type = "text";
+		  } else {
+		    field.type = "password";
+		  }
+		} 
+
+	</script>
+
 	<!-- Menu Handler -->
 	<script>
 
@@ -1255,6 +1364,10 @@
 		      },
 		      {
 		        name: 'F21',
+		        value: '21'
+		      },
+		      {
+		        name: 'F22',
 		        value: '22'
 		      },
 		      {
@@ -1317,6 +1430,14 @@
 		    name: 'Special Chars',
 		    value: '8',
 		    subitems: [{
+		        name: '.',
+		        value: '.'
+		      },
+		      {
+		        name: ',',
+		        value: ','
+		      },
+		      {
 		        name: '!',
 		        value: '!'
 		      },
@@ -1331,6 +1452,10 @@
 		      {
 		        name: '+',
 		        value: '+'
+		      },
+		      {
+		        name: '-',
+		        value: '-'
 		      },
 		      {
 		        name: '&',
@@ -1417,6 +1542,56 @@
 		      {
 		        name: 'RIGHT CTRL+ALT+GUI',
 		        value: '14'
+		      }
+
+		      ]
+		  },
+		  	{
+		    name: 'Helpers',
+		    value: '10',
+		    subitems: [{
+		        name: 'Helper 1',
+		        value: '1'
+		      },
+		      {
+		        name: 'Helper 2',
+		        value: '2'
+		      },
+		      {
+		        name: 'Helper 3',
+		        value: '3'
+		      },
+		      {
+		        name: 'Helper 4',
+		        value: '4'
+		      },
+		      {
+		        name: 'Helper 5',
+		        value: '5'
+		      },
+		      {
+		        name: 'Helper 6',
+		        value: '6'
+		      },
+		      {
+		        name: 'Helper 7',
+		        value: '7'
+		      },
+		      {
+		        name: 'Helper 8',
+		        value: '8'
+		      },
+		      {
+		        name: 'Helper 9',
+		        value: '9'
+		      },
+		      {
+		        name: 'Helper 10',
+		        value: '10'
+		      },
+		      {
+		        name: 'Helper 11',
+		        value: '11'
 		      }
 
 		      ]
@@ -4304,7 +4479,7 @@ $(function () {
 		}
 
 		// Function to get Sleep settings:
-		function getsleepconfig(){
+		function getwificonfig(){
 
 				// Load Menu 5
 		fetch('config/wificonfig.json')
@@ -4313,9 +4488,14 @@ $(function () {
 			})
 			.then((data) => {
 
-				document.getElementById("sleepenable").value = data.sleepenable;
-				document.getElementById("sleeptimer").value = data.sleeptimer;
-				document.getElementById("beep").value = data.beep;
+
+			document.getElementById("ssid").value = data.ssid;
+			document.getElementById("password").value = data.password;
+			document.getElementById("wifimode").value = data.wifimode;
+			document.getElementById("wifihostname").value = data.wifihostname;
+			document.getElementById("attempts").value = data.attempts;
+			document.getElementById("attemptdelay").value = data.attemptdelay;
+			
 
 			})
 			.catch((err) => {
@@ -4324,7 +4504,7 @@ $(function () {
 		}
 
 		// Load Colors and then other configs
-		fetch('config/colors.json')
+		fetch('config/general.json')
 			.then((response) => {
 				return response.json()
 			})
@@ -4334,8 +4514,16 @@ $(function () {
 				document.getElementById("functionbuttoncolor").value = data.functionbuttoncolor;
 				document.getElementById("latchcolor").value = data.latchcolor;
 				document.getElementById("background").value = data.background;
+				document.getElementById("sleepenable").value = data.sleepenable;
+				document.getElementById("sleeptimer").value = data.sleeptimer;
+				document.getElementById("beep").value = data.beep;
+				document.getElementById("modifier1").value = data.modifier1;
+				document.getElementById("modifier2").value = data.modifier2;
+				document.getElementById("modifier3").value = data.modifier3;
+				document.getElementById("helperdelay").value = data.helperdelay;
+
 			}).then(() => {
-				getsleepconfig();
+				getwificonfig();
 			})
 			.then(() => {
 				getconfig1();

@@ -26,23 +26,11 @@ bool loadMainConfig()
   strlcpy(wificonfig.wifimode, doc["wifimode"] | "FAILED", sizeof(wificonfig.wifimode));
   strlcpy(wificonfig.hostname, doc["wifihostname"] | "freetouchdeck", sizeof(wificonfig.hostname));
 
-  bool sleepenable = doc["sleepenable"] | false;
-  if (sleepenable)
-  {
-    wificonfig.sleepenable = true;
-    islatched[28] = 1;
-  }
-  else
-  {
-    wificonfig.sleepenable = false;
-  }
+  uint8_t attempts = doc["attempts"] | 10 ;
+  wificonfig.attempts = attempts;
 
-  //uint16_t sleeptimer = doc["sleeptimer"];
-  uint16_t sleeptimer = doc["sleeptimer"] | 60 ;
-  wificonfig.sleeptimer = sleeptimer;
-
-  bool beep = doc["beep"] | false;
-  wificonfig.beep = beep;
+  uint16_t attemptdelay = doc["attemptdelay"] | 500 ;
+  wificonfig.attemptdelay = attemptdelay;
 
   configfile.close();
 
@@ -69,11 +57,11 @@ bool loadMainConfig()
 bool loadConfig(String value)
 {
 
-  if (value == "colors")
+  if (value == "general")
   {
-    File configfile = FILESYSTEM.open("/config/colors.json", "r");
+    File configfile = FILESYSTEM.open("/config/general.json", "r");
 
-    DynamicJsonDocument doc(256);
+    DynamicJsonDocument doc(384);
 
     DeserializationError error = deserializeJson(doc, configfile);
 
@@ -102,6 +90,38 @@ bool loadConfig(String value)
     strcpy(backgroundcolorchar, bgcolor);
     unsigned long rgb888backgroundcolor = convertHTMLtoRGB888(backgroundcolorchar);
     generalconfig.backgroundColour = convertRGB888ToRGB565(rgb888backgroundcolor);
+
+    // Loading general settings
+
+         bool sleepenable = doc["sleepenable"] | false;
+      if (sleepenable)
+      {
+        generalconfig.sleepenable = true;
+        islatched[28] = 1;
+      }
+      else
+      {
+        generalconfig.sleepenable = false;
+      }
+    
+      //uint16_t sleeptimer = doc["sleeptimer"];
+      uint16_t sleeptimer = doc["sleeptimer"] | 60 ;
+      generalconfig.sleeptimer = sleeptimer;
+    
+      bool beep = doc["beep"] | false;
+      generalconfig.beep = beep;
+    
+      uint8_t modifier1 = doc["modifier1"] | 0 ;
+      generalconfig.modifier1 = modifier1;
+    
+      uint8_t modifier2 = doc["modifier2"] | 0 ;
+      generalconfig.modifier2 = modifier2;
+    
+      uint8_t modifier3 = doc["modifier3"] | 0 ;
+      generalconfig.modifier3 = modifier3;
+    
+      uint16_t helperdelay = doc["helperdelay"] | 250 ;
+      generalconfig.helperdelay = helperdelay;
 
     configfile.close();
 
@@ -214,7 +234,7 @@ bool loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8 || button0_actionarray_0 == 10)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu1.button0.actions.symbol0, button0_symbolarray_0);
@@ -225,7 +245,7 @@ bool loadConfig(String value)
       menu1.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8 || button0_actionarray_1 == 10)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu1.button0.actions.symbol1, button0_symbolarray_1);
@@ -236,7 +256,7 @@ bool loadConfig(String value)
       menu1.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8 || button0_actionarray_2 == 10)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu1.button0.actions.symbol2, button0_symbolarray_2);
@@ -260,7 +280,7 @@ bool loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8 || button1_actionarray_0 == 10)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu1.button1.actions.symbol0, button1_symbolarray_0);
@@ -271,7 +291,7 @@ bool loadConfig(String value)
       menu1.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8 || button1_actionarray_1 == 10)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu1.button1.actions.symbol1, button1_symbolarray_1);
@@ -282,7 +302,7 @@ bool loadConfig(String value)
       menu1.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8 || button1_actionarray_2 == 10)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu1.button1.actions.symbol2, button1_symbolarray_2);
@@ -306,7 +326,7 @@ bool loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8 || button2_actionarray_0 == 10)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu1.button2.actions.symbol0, button2_symbolarray_0);
@@ -317,7 +337,7 @@ bool loadConfig(String value)
       menu1.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8 || button2_actionarray_1 == 10)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu1.button2.actions.symbol1, button2_symbolarray_1);
@@ -328,7 +348,7 @@ bool loadConfig(String value)
       menu1.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8 || button2_actionarray_2 == 10)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu1.button2.actions.symbol2, button2_symbolarray_2);
@@ -352,7 +372,7 @@ bool loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8 || button3_actionarray_0 == 10)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu1.button3.actions.symbol0, button3_symbolarray_0);
@@ -363,7 +383,7 @@ bool loadConfig(String value)
       menu1.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8 || button3_actionarray_1 == 10)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu1.button3.actions.symbol1, button3_symbolarray_1);
@@ -374,7 +394,7 @@ bool loadConfig(String value)
       menu1.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8 || button3_actionarray_2 == 10)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu1.button3.actions.symbol2, button3_symbolarray_2);
@@ -398,7 +418,7 @@ bool loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8 || button4_actionarray_0 == 10)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu1.button4.actions.symbol0, button4_symbolarray_0);
@@ -409,7 +429,7 @@ bool loadConfig(String value)
       menu1.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8 || button4_actionarray_1 == 10)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu1.button4.actions.symbol1, button4_symbolarray_1);
@@ -420,7 +440,7 @@ bool loadConfig(String value)
       menu1.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8 || button4_actionarray_2 == 10)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu1.button4.actions.symbol2, button4_symbolarray_2);
@@ -516,7 +536,7 @@ bool loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8 || button0_actionarray_0 == 10)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu2.button0.actions.symbol0, button0_symbolarray_0);
@@ -527,7 +547,7 @@ bool loadConfig(String value)
       menu2.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8 || button0_actionarray_1 == 10)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu2.button0.actions.symbol1, button0_symbolarray_1);
@@ -538,7 +558,7 @@ bool loadConfig(String value)
       menu2.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8 || button0_actionarray_2 == 10)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu2.button0.actions.symbol2, button0_symbolarray_2);
@@ -562,7 +582,7 @@ bool loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8 || button1_actionarray_0 == 10)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu2.button1.actions.symbol0, button1_symbolarray_0);
@@ -573,7 +593,7 @@ bool loadConfig(String value)
       menu2.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8 || button1_actionarray_1 == 10)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu2.button1.actions.symbol1, button1_symbolarray_1);
@@ -584,7 +604,7 @@ bool loadConfig(String value)
       menu2.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8 || button1_actionarray_2 == 10)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu2.button1.actions.symbol2, button1_symbolarray_2);
@@ -608,7 +628,7 @@ bool loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8 || button2_actionarray_0 == 10)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu2.button2.actions.symbol0, button2_symbolarray_0);
@@ -619,7 +639,7 @@ bool loadConfig(String value)
       menu2.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8 || button2_actionarray_1 == 10)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu2.button2.actions.symbol1, button2_symbolarray_1);
@@ -630,7 +650,7 @@ bool loadConfig(String value)
       menu2.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8 || button2_actionarray_2 == 10)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu2.button2.actions.symbol2, button2_symbolarray_2);
@@ -654,7 +674,7 @@ bool loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8 || button3_actionarray_0 == 10)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu2.button3.actions.symbol0, button3_symbolarray_0);
@@ -665,7 +685,7 @@ bool loadConfig(String value)
       menu2.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8 || button3_actionarray_1 == 10)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu2.button3.actions.symbol1, button3_symbolarray_1);
@@ -676,7 +696,7 @@ bool loadConfig(String value)
       menu2.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8 || button3_actionarray_2 == 10)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu2.button3.actions.symbol2, button3_symbolarray_2);
@@ -700,7 +720,7 @@ bool loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8 || button4_actionarray_0 == 10)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu2.button4.actions.symbol0, button4_symbolarray_0);
@@ -711,7 +731,7 @@ bool loadConfig(String value)
       menu2.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8 || button4_actionarray_1 == 10)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu2.button4.actions.symbol1, button4_symbolarray_1);
@@ -722,7 +742,7 @@ bool loadConfig(String value)
       menu2.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8 || button4_actionarray_2 == 10)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu2.button4.actions.symbol2, button4_symbolarray_2);
@@ -818,7 +838,7 @@ bool loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8 || button0_actionarray_0 == 10)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu3.button0.actions.symbol0, button0_symbolarray_0);
@@ -829,7 +849,7 @@ bool loadConfig(String value)
       menu3.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8 || button0_actionarray_1 == 10)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu3.button0.actions.symbol1, button0_symbolarray_1);
@@ -840,7 +860,7 @@ bool loadConfig(String value)
       menu3.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8 || button0_actionarray_2 == 10)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu3.button0.actions.symbol2, button0_symbolarray_2);
@@ -864,7 +884,7 @@ bool loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8 || button1_actionarray_0 == 10)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu3.button1.actions.symbol0, button1_symbolarray_0);
@@ -875,7 +895,7 @@ bool loadConfig(String value)
       menu3.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8 || button1_actionarray_1 == 10)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu3.button1.actions.symbol1, button1_symbolarray_1);
@@ -886,7 +906,7 @@ bool loadConfig(String value)
       menu3.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8 || button1_actionarray_2 == 10)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu3.button1.actions.symbol2, button1_symbolarray_2);
@@ -910,7 +930,7 @@ bool loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8 || button2_actionarray_0 == 10)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu3.button2.actions.symbol0, button2_symbolarray_0);
@@ -921,7 +941,7 @@ bool loadConfig(String value)
       menu3.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8 || button2_actionarray_1 == 10)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu3.button2.actions.symbol1, button2_symbolarray_1);
@@ -932,7 +952,7 @@ bool loadConfig(String value)
       menu3.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8 || button2_actionarray_2 == 10)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu3.button2.actions.symbol2, button2_symbolarray_2);
@@ -954,7 +974,7 @@ bool loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8 || button3_actionarray_0 == 10)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu3.button3.actions.symbol0, button3_symbolarray_0);
@@ -965,7 +985,7 @@ bool loadConfig(String value)
       menu3.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8 || button3_actionarray_1 == 10)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu3.button3.actions.symbol1, button3_symbolarray_1);
@@ -976,7 +996,7 @@ bool loadConfig(String value)
       menu3.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8 || button3_actionarray_2 == 10)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu3.button3.actions.symbol2, button3_symbolarray_2);
@@ -1000,7 +1020,7 @@ bool loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8 || button4_actionarray_0 == 10)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu3.button4.actions.symbol0, button4_symbolarray_0);
@@ -1011,7 +1031,7 @@ bool loadConfig(String value)
       menu3.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8 || button4_actionarray_1 == 10)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu3.button4.actions.symbol1, button4_symbolarray_1);
@@ -1022,7 +1042,7 @@ bool loadConfig(String value)
       menu3.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8 || button4_actionarray_2 == 10)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu3.button4.actions.symbol2, button4_symbolarray_2);
@@ -1118,7 +1138,7 @@ bool loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8 || button0_actionarray_0 == 10)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu4.button0.actions.symbol0, button0_symbolarray_0);
@@ -1129,7 +1149,7 @@ bool loadConfig(String value)
       menu4.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8 || button0_actionarray_1 == 10)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu4.button0.actions.symbol1, button0_symbolarray_1);
@@ -1140,7 +1160,7 @@ bool loadConfig(String value)
       menu4.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8 || button0_actionarray_2 == 10)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu4.button0.actions.symbol2, button0_symbolarray_2);
@@ -1164,7 +1184,7 @@ bool loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8 || button1_actionarray_0 == 10)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu4.button1.actions.symbol0, button1_symbolarray_0);
@@ -1175,7 +1195,7 @@ bool loadConfig(String value)
       menu4.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8 || button1_actionarray_1 == 10)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu4.button1.actions.symbol1, button1_symbolarray_1);
@@ -1186,7 +1206,7 @@ bool loadConfig(String value)
       menu4.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8 || button1_actionarray_2 == 10)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu4.button1.actions.symbol2, button1_symbolarray_2);
@@ -1210,7 +1230,7 @@ bool loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8 || button2_actionarray_0 == 10)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu4.button2.actions.symbol0, button2_symbolarray_0);
@@ -1221,7 +1241,7 @@ bool loadConfig(String value)
       menu4.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8 || button2_actionarray_1 == 10)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu4.button2.actions.symbol1, button2_symbolarray_1);
@@ -1232,7 +1252,7 @@ bool loadConfig(String value)
       menu4.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8 || button2_actionarray_2 == 10)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu4.button2.actions.symbol2, button2_symbolarray_2);
@@ -1256,7 +1276,7 @@ bool loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8 || button3_actionarray_0 == 10)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu4.button3.actions.symbol0, button3_symbolarray_0);
@@ -1267,7 +1287,7 @@ bool loadConfig(String value)
       menu4.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8 || button3_actionarray_1 == 10)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu4.button3.actions.symbol1, button3_symbolarray_1);
@@ -1278,7 +1298,7 @@ bool loadConfig(String value)
       menu4.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8 || button3_actionarray_2 == 10)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu4.button3.actions.symbol2, button3_symbolarray_2);
@@ -1302,7 +1322,7 @@ bool loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8 || button4_actionarray_0 == 10)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu4.button4.actions.symbol0, button4_symbolarray_0);
@@ -1313,7 +1333,7 @@ bool loadConfig(String value)
       menu4.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8 || button4_actionarray_1 == 10)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu4.button4.actions.symbol1, button4_symbolarray_1);
@@ -1324,7 +1344,7 @@ bool loadConfig(String value)
       menu4.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8 || button4_actionarray_2 == 10)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu4.button4.actions.symbol2, button4_symbolarray_2);
@@ -1420,7 +1440,7 @@ bool loadConfig(String value)
 
     JsonArray button0_valuearray = doc["button0"]["valuearray"];
 
-    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8 || button0_actionarray_0 == 10)
+    if (button0_actionarray_0 == 4 || button0_actionarray_0 == 8)
     {
       const char *button0_symbolarray_0 = button0_valuearray[0];
       strcpy(menu5.button0.actions.symbol0, button0_symbolarray_0);
@@ -1431,7 +1451,7 @@ bool loadConfig(String value)
       menu5.button0.actions.value0 = button0_valuearray_0;
     }
 
-    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8 || button0_actionarray_1 == 10)
+    if (button0_actionarray_1 == 4 || button0_actionarray_1 == 8)
     {
       const char *button0_symbolarray_1 = button0_valuearray[1];
       strcpy(menu5.button0.actions.symbol1, button0_symbolarray_1);
@@ -1442,7 +1462,7 @@ bool loadConfig(String value)
       menu5.button0.actions.value1 = button0_valuearray_1;
     }
 
-    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8 || button0_actionarray_2 == 10)
+    if (button0_actionarray_2 == 4 || button0_actionarray_2 == 8)
     {
       const char *button0_symbolarray_2 = button0_valuearray[2];
       strcpy(menu5.button0.actions.symbol2, button0_symbolarray_2);
@@ -1466,7 +1486,7 @@ bool loadConfig(String value)
 
     JsonArray button1_valuearray = doc["button1"]["valuearray"];
 
-    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8 || button0_actionarray_0 == 10)
+    if (button1_actionarray_0 == 4 || button1_actionarray_0 == 8)
     {
       const char *button1_symbolarray_0 = button1_valuearray[0];
       strcpy(menu5.button1.actions.symbol0, button1_symbolarray_0);
@@ -1477,7 +1497,7 @@ bool loadConfig(String value)
       menu5.button1.actions.value0 = button1_valuearray_0;
     }
 
-    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8 || button1_actionarray_1 == 10)
+    if (button1_actionarray_1 == 4 || button1_actionarray_1 == 8)
     {
       const char *button1_symbolarray_1 = button1_valuearray[1];
       strcpy(menu5.button1.actions.symbol1, button1_symbolarray_1);
@@ -1488,7 +1508,7 @@ bool loadConfig(String value)
       menu5.button1.actions.value1 = button1_valuearray_1;
     }
 
-    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8 || button1_actionarray_2 == 10)
+    if (button1_actionarray_2 == 4 || button1_actionarray_2 == 8)
     {
       const char *button1_symbolarray_2 = button1_valuearray[2];
       strcpy(menu5.button1.actions.symbol2, button1_symbolarray_2);
@@ -1512,7 +1532,7 @@ bool loadConfig(String value)
 
     JsonArray button2_valuearray = doc["button2"]["valuearray"];
 
-    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8 || button2_actionarray_0 == 10)
+    if (button2_actionarray_0 == 4 || button2_actionarray_0 == 8)
     {
       const char *button2_symbolarray_0 = button2_valuearray[0];
       strcpy(menu5.button2.actions.symbol0, button2_symbolarray_0);
@@ -1523,7 +1543,7 @@ bool loadConfig(String value)
       menu5.button2.actions.value0 = button2_valuearray_0;
     }
 
-    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8 || button2_actionarray_1 == 10)
+    if (button2_actionarray_1 == 4 || button2_actionarray_1 == 8)
     {
       const char *button2_symbolarray_1 = button2_valuearray[1];
       strcpy(menu5.button2.actions.symbol1, button2_symbolarray_1);
@@ -1534,7 +1554,7 @@ bool loadConfig(String value)
       menu5.button2.actions.value1 = button2_valuearray_1;
     }
 
-    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8 || button2_actionarray_2 == 10)
+    if (button2_actionarray_2 == 4 || button2_actionarray_2 == 8)
     {
       const char *button2_symbolarray_2 = button2_valuearray[2];
       strcpy(menu5.button2.actions.symbol2, button2_symbolarray_2);
@@ -1558,7 +1578,7 @@ bool loadConfig(String value)
 
     JsonArray button3_valuearray = doc["button3"]["valuearray"];
 
-    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8 || button3_actionarray_0 == 10)
+    if (button3_actionarray_0 == 4 || button3_actionarray_0 == 8)
     {
       const char *button3_symbolarray_0 = button3_valuearray[0];
       strcpy(menu5.button3.actions.symbol0, button3_symbolarray_0);
@@ -1569,7 +1589,7 @@ bool loadConfig(String value)
       menu5.button3.actions.value0 = button3_valuearray_0;
     }
 
-    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8 || button3_actionarray_1 == 10)
+    if (button3_actionarray_1 == 4 || button3_actionarray_1 == 8)
     {
       const char *button3_symbolarray_1 = button3_valuearray[1]; // 1
       strcpy(menu5.button3.actions.symbol1, button3_symbolarray_1);
@@ -1580,7 +1600,7 @@ bool loadConfig(String value)
       menu5.button3.actions.value1 = button3_valuearray_1;
     }
 
-    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8 || button3_actionarray_2 == 10)
+    if (button3_actionarray_2 == 4 || button3_actionarray_2 == 8)
     {
       const char *button3_symbolarray_2 = button3_valuearray[2]; // 1
       strcpy(menu5.button3.actions.symbol2, button3_symbolarray_2);
@@ -1604,7 +1624,7 @@ bool loadConfig(String value)
 
     JsonArray button4_valuearray = doc["button4"]["valuearray"];
 
-    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8 || button4_actionarray_0 == 10)
+    if (button4_actionarray_0 == 4 || button4_actionarray_0 == 8)
     {
       const char *button4_symbolarray_0 = button4_valuearray[0]; // 1
       strcpy(menu5.button4.actions.symbol0, button4_symbolarray_0);
@@ -1615,7 +1635,7 @@ bool loadConfig(String value)
       menu5.button4.actions.value0 = button4_valuearray_0;
     }
 
-    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8 || button4_actionarray_1 == 10)
+    if (button4_actionarray_1 == 4 || button4_actionarray_1 == 8)
     {
       const char *button4_symbolarray_1 = button4_valuearray[1]; // 1
       strcpy(menu5.button4.actions.symbol1, button4_symbolarray_1);
@@ -1626,7 +1646,7 @@ bool loadConfig(String value)
       menu5.button4.actions.value1 = button4_valuearray_1;
     }
 
-    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8 || button4_actionarray_2 == 10)
+    if (button4_actionarray_2 == 4 || button4_actionarray_2 == 8)
     {
       const char *button4_symbolarray_2 = button4_valuearray[2]; // 1
       strcpy(menu5.button4.actions.symbol2, button4_symbolarray_2);

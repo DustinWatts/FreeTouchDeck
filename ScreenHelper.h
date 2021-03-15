@@ -310,175 +310,189 @@ uint16_t getBMPColor(const char *filename)
 uint16_t getImageBG(int logonumber)
 {
 
-  if (pageNum == 0)
-  {
-    if (logonumber == 0)
+  // Logo 5 on each screen is the back home button except on the home screen
+  if (logonumber == 5 && pageNum > 0)
+   {
+      return getBMPColor("/logos/home.bmp");
+   }
+   else
+   {
+
+    if (pageNum == 0)
     {
-      return getBMPColor(screen0.logo0);
+      if (logonumber == 0)
+      {
+        return getBMPColor(screen0.logo0);
+      }
+      else if (logonumber == 1)
+      {
+        return getBMPColor(screen0.logo1);
+      }
+      else if (logonumber == 2)
+      {
+        return getBMPColor(screen0.logo2);
+      }
+      else if (logonumber == 3)
+      {
+        return getBMPColor(screen0.logo3);
+      }
+      else if (logonumber == 4)
+      {
+        return getBMPColor(screen0.logo4);
+      }
+      else if (logonumber == 5)
+      {
+        return getBMPColor(screen0.logo5);
+      }
+      else
+      {
+        return 0x0000;
+      }
     }
-    else if (logonumber == 1)
+    else if (pageNum == 1)
     {
-      return getBMPColor(screen0.logo1);
+      if (logonumber == 0)
+      {
+        return getBMPColor(screen1.logo0);
+      }
+      else if (logonumber == 1)
+      {
+        return getBMPColor(screen1.logo1);
+      }
+      else if (logonumber == 2)
+      {
+        return getBMPColor(screen1.logo2);
+      }
+      else if (logonumber == 3)
+      {
+        return getBMPColor(screen1.logo3);
+      }
+      else if (logonumber == 4)
+      {
+        return getBMPColor(screen1.logo4);
+      }
+      else
+      {
+        return 0x0000;
+      }
     }
-    else if (logonumber == 2)
+    else if (pageNum == 2)
     {
-      return getBMPColor(screen0.logo2);
+      if (logonumber == 0)
+      {
+        return getBMPColor(screen2.logo0);
+      }
+      else if (logonumber == 1)
+      {
+        return getBMPColor(screen2.logo1);
+      }
+      else if (logonumber == 2)
+      {
+        return getBMPColor(screen2.logo2);
+      }
+      else if (logonumber == 3)
+      {
+        return getBMPColor(screen2.logo3);
+      }
+      else if (logonumber == 4)
+      {
+        return getBMPColor(screen2.logo4);
+      }
+      else
+      {
+        return 0x0000;
+      }
     }
-    else if (logonumber == 3)
+    else if (pageNum == 3)
     {
-      return getBMPColor(screen0.logo3);
+      if (logonumber == 0)
+      {
+        return getBMPColor(screen3.logo0);
+      }
+      else if (logonumber == 1)
+      {
+        return getBMPColor(screen3.logo1);
+      }
+      else if (logonumber == 2)
+      {
+        return getBMPColor(screen3.logo2);
+      }
+      else if (logonumber == 3)
+      {
+        return getBMPColor(screen3.logo3);
+      }
+      else if (logonumber == 4)
+      {
+        return getBMPColor(screen3.logo4);
+      }
+      else
+      {
+        return 0x0000;
+      }
     }
-    else if (logonumber == 4)
+    else if (pageNum == 4)
     {
-      return getBMPColor(screen0.logo4);
+      if (logonumber == 0)
+      {
+        return getBMPColor(screen4.logo0);
+      }
+      else if (logonumber == 1)
+      {
+        return getBMPColor(screen4.logo1);
+      }
+      else if (logonumber == 2)
+      {
+        return getBMPColor(screen4.logo2);
+      }
+      else if (logonumber == 3)
+      {
+        return getBMPColor(screen4.logo3);
+      }
+      else if (logonumber == 4)
+      {
+        return getBMPColor(screen4.logo4);
+      }
+      else
+      {
+        return 0x0000;
+      }
+    }
+    else if (pageNum == 5)
+    {
+      if (logonumber == 0)
+      {
+        return getBMPColor(screen5.logo0);
+      }
+      else if (logonumber == 1)
+      {
+        return getBMPColor(screen5.logo1);
+      }
+      else if (logonumber == 2)
+      {
+        return getBMPColor(screen5.logo2);
+      }
+      else if (logonumber == 3)
+      {
+        return getBMPColor(screen5.logo3);
+      }
+      else if (logonumber == 4)
+      {
+        return getBMPColor(screen5.logo4);
+      }
+      else
+      {
+        return 0x0000;
+      }
+    }
+    else if (pageNum == 6)
+    {
+      return 0x0000;
     }
     else
     {
       return 0x0000;
     }
-  }
-  else if (pageNum == 1)
-  {
-    if (logonumber == 0)
-    {
-      return getBMPColor(screen1.logo0);
-    }
-    else if (logonumber == 1)
-    {
-      return getBMPColor(screen1.logo1);
-    }
-    else if (logonumber == 2)
-    {
-      return getBMPColor(screen1.logo2);
-    }
-    else if (logonumber == 3)
-    {
-      return getBMPColor(screen1.logo3);
-    }
-    else if (logonumber == 4)
-    {
-      return getBMPColor(screen1.logo4);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 2)
-  {
-    if (logonumber == 0)
-    {
-      return getBMPColor(screen2.logo0);
-    }
-    else if (logonumber == 1)
-    {
-      return getBMPColor(screen2.logo1);
-    }
-    else if (logonumber == 2)
-    {
-      return getBMPColor(screen2.logo2);
-    }
-    else if (logonumber == 3)
-    {
-      return getBMPColor(screen2.logo3);
-    }
-    else if (logonumber == 4)
-    {
-      return getBMPColor(screen2.logo4);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 3)
-  {
-    if (logonumber == 0)
-    {
-      return getBMPColor(screen3.logo0);
-    }
-    else if (logonumber == 1)
-    {
-      return getBMPColor(screen3.logo1);
-    }
-    else if (logonumber == 2)
-    {
-      return getBMPColor(screen3.logo2);
-    }
-    else if (logonumber == 3)
-    {
-      return getBMPColor(screen3.logo3);
-    }
-    else if (logonumber == 4)
-    {
-      return getBMPColor(screen3.logo4);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 4)
-  {
-    if (logonumber == 0)
-    {
-      return getBMPColor(screen4.logo0);
-    }
-    else if (logonumber == 1)
-    {
-      return getBMPColor(screen4.logo1);
-    }
-    else if (logonumber == 2)
-    {
-      return getBMPColor(screen4.logo2);
-    }
-    else if (logonumber == 3)
-    {
-      return getBMPColor(screen4.logo3);
-    }
-    else if (logonumber == 4)
-    {
-      return getBMPColor(screen4.logo4);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 5)
-  {
-    if (logonumber == 0)
-    {
-      return getBMPColor(screen5.logo0);
-    }
-    else if (logonumber == 1)
-    {
-      return getBMPColor(screen5.logo1);
-    }
-    else if (logonumber == 2)
-    {
-      return getBMPColor(screen5.logo2);
-    }
-    else if (logonumber == 3)
-    {
-      return getBMPColor(screen5.logo3);
-    }
-    else if (logonumber == 4)
-    {
-      return getBMPColor(screen5.logo4);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 6)
-  {
-    return 0x0000;
-  }
-  else
-  {
-    return 0x0000;
+
   }
 }
 
