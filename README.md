@@ -36,12 +36,12 @@ For Capacitive touch:
 - an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and FT6236 capacitive touch controller
 
 # !- Library Dependencies -!
-- Adafruit-GFX-Library (version 1.10.0), available through Library Manager
-- TFT_eSPI (version 2.2.14), available through Library Manager
+- Adafruit-GFX-Library (version 1.10.0 or higher), available through Library Manager
+- TFT_eSPI (version 2.2.14 or higher), available through Library Manager
 - ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
 - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
 - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-- ArduinoJson (version 6.16.1), available through Library Manager
+- ArduinoJson (version 6.16.1 or higher), available through Library Manager
 
 If you use capacitive touch:
 - FT6236 (latest version), download from: https://github.com/DustinWatts/FT6236
