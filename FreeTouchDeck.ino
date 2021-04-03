@@ -42,6 +42,10 @@
 // (THE ESP32 TOUCHDOWN USES THIS!)
 //#define USECAPTOUCH
 
+// ------- Uncomment the next line if you want to monitor the battery voltage -------
+// (THE ESP32 TOUCHDOWN USES THIS!)
+#define MONITORBATTERY
+
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
 //#define CUSTOM_TOUCH_SDA 26
 //#define CUSTOM_TOUCH_SCL 27
@@ -114,6 +118,14 @@ const char *versionnumber = "0.9.11";
 #include <Wire.h>
 #include <FT6236.h>
 FT6236 ts = FT6236();
+#endif
+
+#ifdef MONITORBATTERY
+uint8_t BATT_DIV = 35;
+uint16_t totalReadings = 0;
+uint8_t numReadings = 8;
+float multiplicationFactor = 0.0017782; // Adjust this factor to report correct voltages.
+uint8_t sampleTimeDelay = 250;
 #endif
 
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
