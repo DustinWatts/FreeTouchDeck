@@ -57,33 +57,13 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.11";
+const char *versionnumber = "DEV";
 
-    /* Version 0.9.11.
+    /* Version DEV.
      *  
-     * Fix: F21 in the configurator was F22 as action and F22 was missing from configurator.
-     * Fix: "[WARNING]: SPIFFS initialisation failed!" is now "[ERROR]: SPIFFS initialisation failed!"
-     * Fix: "Back home" and "Settings" buttons now also draw custom logos correctly.
-     * Fix: Some function descriptions and general typos.
-     * Fix: default.json was ignored by .gitignore and therefore not previously uploaded.
+     * Created DEV version on Git. 
      * 
-     * Change: Moved TFT init before SPIFFS init, so we can draw an error message on screen if SPIFFS
-     *         init fails.
-     * Change: Moved to a wificonfig.json just for wifi settings and a general.json for all other general
-     *         config.
-     * 
-     * Added: Helpers are configurable so that it only takes 1 action. Case 10 Action.h.
-     *        Settings for this added to "Settings" in the configurator
-     * Added: . (full stop) , (comma) and - (minus) added to the configurator under "Special chars"
-     *        
-     * 
-     * Important! This version changes json structure and HTML files. Config/data files changed:
-     * 
-     * - wificonfig.json (there are some settings added)
-     * - general.json (colors, sleep, and beep are moved here)
-     * - index.html
-     * 
-     * Make sure to check if you use your old config files that they match the structure of the new ones!
+     * Changed DynamicJsonDocument to size 1500
     */
 
 #include <pgmspace.h> // PROGMEM support header
