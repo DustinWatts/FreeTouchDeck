@@ -1,8 +1,7 @@
 /**
-* @brief This function draws the a "latched" dot. it uses the logonumber, colomn and row to
+* @brief This function draws the a "latched" dot. it uses the logonumber, column and row to
 *        determine where.
 *
-* @param b int 
 * @param col int
 * @param row int
 *
@@ -10,19 +9,17 @@
 *
 * @note none
 */
-void drawlatched(int b, int col, int row)
+void drawlatched(int col, int row)
 {
-  int offset;
-  if(SCREEN_WIDTH < 480)
-  {
-    offset = 2;
-  }
-  else
-  {
-    offset = 12;
-  }
-  tft.fillRoundRect((KEY_X - 37 + col * (KEY_W + KEY_SPACING_X)) - offset, (KEY_Y - 37 + row * (KEY_H + KEY_SPACING_Y)) - offset, 18, 18, 4, generalconfig.latchedColour);
+  int markWidth = 18;
+  int colOffset = col*(keyW()+keySpacingX());
+  int rowOffset = row*(keyH()+keySpacingY());
+  int markOffset = markWidth;
+  int keyHeightOffset = keyH()/2;
+  int keyWidthOffset= keyW()/2;
+  tft.fillRoundRect(keyX()+colOffset-keyWidthOffset+markOffset, keyY()+rowOffset-keyHeightOffset+markOffset, markWidth, markWidth, markWidth/4, generalconfig.latchedColour);
 }
+
 
 /**
 * @brief This function draws the logos according to the page
@@ -42,100 +39,52 @@ void drawlatched(int b, int col, int row)
 void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
 {
 
-  if (pageNum == 0)
+  Screen* s = currentScreen();
+  if (pageNum == HomePage) 
   {
-    //Draw Home screen logo's
-    if (logonumber == 0)
-    {
-      if (transparent == true)
-      {
+    if (logonumber >= s->logo.size()) return;
 
-        drawBmpTransparent(screen0.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(screen0.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-    else if (logonumber == 1)
+    // Draw Home screen logo's
+    if (transparent == true)
     {
-      if (transparent == true)
-      {
-        drawBmpTransparent(screen0.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(screen0.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
+      drawBmpTransparent(s->logo[logonumber], keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
     }
-    else if (logonumber == 2)
+    else
     {
-      if (transparent == true)
-      {
-        drawBmpTransparent(screen0.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(screen0.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-    else if (logonumber == 3)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(screen0.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(screen0.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-    else if (logonumber == 4)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(screen0.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(screen0.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-    else if (logonumber == 5)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(screen0.logo5, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(screen0.logo5, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
+      drawBmp(s->logo[logonumber], keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
     }
   }
-  else if (pageNum == 1)
+  else if (pageNum > HomePage && pageNum < SettingsPage)
   {
-    // --------------------------------- MENU 1 --------------------------------------
-    if (logonumber == 0)
-    {
+    if (logonumber == s->cols * s->rows - 1) { // Home key
       if (transparent == true)
       {
-
+        drawBmpTransparent(generallogo.homebutton, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
+      }
+      else
+      {
+        drawBmp(generallogo.homebutton, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
+      }
+    }
+    else {
+      if (transparent == true)
+      {
+        if (logonumber >= s->logo.size() || logonumber >= s->button.size()) return;
         if (latch == true)
         {
-          if (strcmp(menu1.button0.latchlogo, "/logos/") != 0)
+          if (s->button[logonumber]->latchlogo != logopath)
           {
-            drawBmpTransparent(menu1.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+            drawBmpTransparent(s->button[logonumber]->latchlogo, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
           }
           else
           {
-            drawBmpTransparent(screen1.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
+            drawBmpTransparent(s->logo[logonumber], keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
+            drawlatched(col, row);
           }
         }
         else
         {
-          drawBmpTransparent(screen1.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+         drawBmpTransparent(s->logo[logonumber], keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
         }
       }
       else
@@ -143,1161 +92,60 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
         if (latch == true)
         {
 
-          if (strcmp(menu1.button0.latchlogo, "/logos/") != 0)
+          if (s->button[logonumber]->latchlogo != logopath) 
           {
-            drawBmp(menu1.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+            drawBmp(s->button[logonumber]->latchlogo, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
           }
           else
           {
-            drawBmp(screen1.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
+            drawBmp(s->logo[logonumber], keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
+            drawlatched(col, row);
           }
         }
         else
         {
-          drawBmp(screen1.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+          drawBmp(s->logo[logonumber], keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
         }
       }
     }
-    else if (logonumber == 1)
-    {
-      if (transparent == true)
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu1.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu1.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen1.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen1.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu1.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu1.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen1.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen1.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 2)
-    {
-      if (transparent == true)
-      {
 
-        if (latch == true)
-        {
-          if (strcmp(menu1.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu1.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen1.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen1.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu1.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu1.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen1.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen1.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 3)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu1.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu1.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen1.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen1.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu1.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu1.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen1.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen1.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 4)
-    {
-
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu1.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu1.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen1.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen1.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu1.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu1.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen1.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen1.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 5)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
   }
-  else if (pageNum == 2)
+  else if (pageNum == SettingsPage)
   {
-    // --------------------------------- MENU 2 --------------------------------------
+    // hardcoded logos for settings page
     if (logonumber == 0)
     {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu2.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu2.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen2.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen2.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu2.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu2.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen2.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen2.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
+      drawBmpTransparent(generallogo.configurator, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
     }
     else if (logonumber == 1)
     {
-      if (transparent == true)
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu2.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu2.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-
-            drawBmpTransparent(screen2.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen2.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu2.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu2.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen2.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen2.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
+      drawBmpTransparent("/logos/brightnessdown.bmp", keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
     }
     else if (logonumber == 2)
     {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu2.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu2.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen2.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen2.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu2.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu2.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen2.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen2.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
+      drawBmpTransparent("/logos/brightnessup.bmp", keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
     }
     else if (logonumber == 3)
     {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu2.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu2.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen2.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen2.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu2.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu2.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen2.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen2.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 4)
-    {
-
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu2.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu2.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen2.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen2.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu2.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu2.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen2.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen2.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 5)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-  }
-  else if (pageNum == 3)
-  {
-    // --------------------------------- MENU 3 --------------------------------------
-    if (logonumber == 0)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu3.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu3.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen3.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen3.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu3.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu3.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen3.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen3.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 1)
-    {
-      if (transparent == true)
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu3.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu3.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-
-            drawBmpTransparent(screen3.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen3.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu3.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu3.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen3.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen3.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 2)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu3.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu3.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen3.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen3.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu3.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu3.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen3.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen3.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 3)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu3.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu3.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen3.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen3.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu3.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu3.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen3.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen3.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 4)
-    {
-
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu3.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu3.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen3.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen3.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu3.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu3.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen3.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen3.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 5)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-  }
-  else if (pageNum == 4)
-  {
-    // --------------------------------- MENU 4 --------------------------------------
-    if (logonumber == 0)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu4.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu4.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen4.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen4.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu4.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu4.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen4.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen4.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 1)
-    {
-      if (transparent == true)
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu4.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu4.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-
-            drawBmpTransparent(screen4.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen4.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu4.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu4.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen4.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen4.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 2)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu4.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu4.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen4.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen4.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu4.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu4.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen4.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen4.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 3)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu4.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu4.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen4.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen4.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu4.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu4.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen4.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen4.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 4)
-    {
-
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu4.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu4.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen4.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen4.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu4.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu4.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen4.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen4.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 5)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-  }
-  else if (pageNum == 5)
-  {
-    // --------------------------------- MENU 5 --------------------------------------
-    if (logonumber == 0)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu5.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu5.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen5.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen5.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu5.button0.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu5.button0.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen5.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen5.logo0, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 1)
-    {
-      if (transparent == true)
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu5.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu5.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-
-            drawBmpTransparent(screen5.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen5.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-          if (strcmp(menu5.button1.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu5.button1.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen5.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen5.logo1, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 2)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu5.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu5.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen5.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen5.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu5.button2.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu5.button2.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen5.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen5.logo2, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 3)
-    {
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu5.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu5.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen5.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen5.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu5.button3.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu5.button3.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen5.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen5.logo3, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 4)
-    {
-
-      if (transparent == true)
-      {
-
-        if (latch == true)
-        {
-          if (strcmp(menu5.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmpTransparent(menu5.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmpTransparent(screen5.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmpTransparent(screen5.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-      else
-      {
-        if (latch == true)
-        {
-
-          if (strcmp(menu5.button4.latchlogo, "/logos/") != 0)
-          {
-            drawBmp(menu5.button4.latchlogo, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-          }
-          else
-          {
-            drawBmp(screen5.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-            drawlatched(logonumber, col, row);
-          }
-        }
-        else
-        {
-          drawBmp(screen5.logo4, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-        }
-      }
-    }
-    else if (logonumber == 5)
-    {
-      if (transparent == true)
-      {
-        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-      else
-      {
-        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-      }
-    }
-  }
-  else if (pageNum == 6)
-  {
-    // pageNum6 contains settings logos
-    if (logonumber == 0)
-    {
-      drawBmpTransparent(generallogo.configurator, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-    }
-    else if (logonumber == 1)
-    {
-      drawBmpTransparent("/logos/brightnessdown.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-    }
-    else if (logonumber == 2)
-    {
-      drawBmpTransparent("/logos/brightnessup.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
-    }
-    else if (logonumber == 3)
-    {
-      drawBmpTransparent("/logos/sleep.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/sleep.bmp", keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
       if (latch)
       {
-        drawlatched(logonumber, col, row);
+        drawlatched(col, row);
       }
     }
     else if (logonumber == 4)
     {
-      drawBmpTransparent("/logos/info.bmp", KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+      drawBmpTransparent("/logos/info.bmp", keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
     }
     else if (logonumber == 5)
     {
       if (transparent == true)
       {
-        drawBmpTransparent(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+        drawBmpTransparent(generallogo.homebutton, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
       }
       else
       {
-        drawBmp(generallogo.homebutton, KEY_X - 36 + col * (KEY_W + KEY_SPACING_X), KEY_Y - 36 + row * (KEY_H + KEY_SPACING_Y));
+        drawBmp(generallogo.homebutton, keyX() + col * (keyW() + keySpacingX()), keyY() + row * (keyH() + keySpacingY()));
       }
     }
   }
@@ -1316,15 +164,37 @@ void drawlogo(int logonumber, int col, int row, bool transparent, bool latch)
 */
 void drawKeypad()
 {
-  // Draw the home screen button outlines and fill them with colours
-  if (pageNum == 0)
+  if (pageNum == ConfigErrorPage)
   {
-    for (uint8_t row = 0; row < 2; row++)
-    {
-      for (uint8_t col = 0; col < 3; col++)
-      {
+    // Pagenum 10 means that a JSON config failed to load completely.
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 0);
+    tft.setTextFont(2);
+    tft.setTextSize(1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
-        uint8_t b = col + row * 3;
+    tft.printf("  %s failed to load and might be corrupted.\n", jsonfilefail);
+    tft.println("  You can reset that specific file to default by opening the serial monitor");
+    tft.printf("  and typing \"reset %s\"\n", jsonfilefail);
+    tft.println("  If you don't do this, the configurator will fail to load.");
+    return;
+  } else if (pageNum < HomePage) {
+    // skip different error page
+    return;
+  }
+  // reset background in case the screen uses different layout.
+  tft.fillScreen(generalconfig.backgroundColour);
+  
+  Screen* s = currentScreen();
+  // Draw the home screen button outlines and fill them with colours
+  if (pageNum == HomePage)
+  {
+    uint8_t b = -1;
+    for (uint8_t row = 0; row < s->rows; row++)
+    {
+      for (uint8_t col = 0; col < s->cols; col++)
+      {
+        b++;
         uint16_t buttonBG;
         bool drawTransparent;
         uint16_t imageBGColor = getImageBG(b);
@@ -1339,45 +209,29 @@ void drawKeypad()
           drawTransparent = true;
         }
         tft.setFreeFont(LABEL_FONT);
-        key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                          KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                          KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE,
+        key[b]->initButton(&tft, keyX() + col * (keyW() + keySpacingX()),
+                          keyY() + row * (keyH() + keySpacingY()), // x, y, w, h, outline, fill, text
+                          keyW(), keyH(), TFT_WHITE, buttonBG, TFT_WHITE,
                           "", KEY_TEXTSIZE);
-        key[b].drawButton();
+        key[b]->drawButton();
         drawlogo(b, col, row, drawTransparent, false); // After drawing the button outline we call this to draw a logo.
       }
     }
   }
-  
-  else if (pageNum == 10)
-  {
-    // Pagenum 10 means that a JSON config failed to load completely.
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0);
-    tft.setTextFont(2);
-    tft.setTextSize(1);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-
-    tft.printf("  %s failed to load and might be corrupted.\n", jsonfilefail);
-    tft.println("  You can reset that specific file to default by opening the serial monitor");
-    tft.printf("  and typing \"reset %s\"\n", jsonfilefail);
-    tft.println("  If you don't do this, the configurator will fail to load.");
-  }
   else
   {
+    uint8_t b = -1;
     // Draw the button outlines and fill them with colours
-    for (uint8_t row = 0; row < 2; row++)
+    for (uint8_t row = 0; row < s->rows; row++)
     {
-      for (uint8_t col = 0; col < 3; col++)
+      for (uint8_t col = 0; col < s->cols; col++)
       {
-
-        uint8_t b = col + row * 3;
-
-        if (row == 1 && col == 2)
+        b++;
+        if (b == s->cols * s->rows - 1)
         {
 
           // Check if "home.bmp" is a transparent one
-          
+
           uint16_t buttonBG;
           bool drawTransparent;
           uint16_t imageBGColor;
@@ -1396,48 +250,20 @@ void drawKeypad()
           }
           
           tft.setFreeFont(LABEL_FONT);
-          key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                            KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                            KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE,
+          key[b]->initButton(&tft, keyX() + col * (keyW() + keySpacingX()),
+                            keyY() + row * (keyH() + keySpacingY()), // x, y, w, h, outline, fill, text
+                            keyW(), keyH(), TFT_WHITE, buttonBG, TFT_WHITE,
                             "", KEY_TEXTSIZE);
-          key[b].drawButton();
+          key[b]->drawButton();
           drawlogo(b, col, row, drawTransparent, false);
         }
         else
         {
           // Otherwise use functionButtonColour
-
-          int index;
-
-          if (pageNum == 2)
-          {
-            index = b + 5;
-          }
-          else if (pageNum == 3)
-          {
-            index = b + 10;
-          }
-          else if (pageNum == 4)
-          {
-            index = b + 15;
-          }
-          else if (pageNum == 5)
-          {
-            index = b + 20;
-          }
-          else if (pageNum == 6)
-          {
-            index = b + 25;
-          }
-          else
-          {
-            index = b;
-          }
-
           uint16_t buttonBG;
           bool drawTransparent;
           uint16_t imageBGColor;
-          if (islatched[index] && b < 5)
+          if (b < s->button.size() && s->button[b]->isLatched)
           {
             imageBGColor = getLatchImageBG(b);
           }
@@ -1445,7 +271,7 @@ void drawKeypad()
           {
             imageBGColor = getImageBG(b);
           }
-
+          
           if (imageBGColor > 0)
           {
             buttonBG = imageBGColor;
@@ -1457,13 +283,13 @@ void drawKeypad()
             drawTransparent = true;
           }
           tft.setFreeFont(LABEL_FONT);
-          key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                            KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                            KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE,
+          key[b]->initButton(&tft, keyX() + col * (keyW() + keySpacingX()),
+                            keyY() + row * (keyH() + keySpacingY()), // x, y, w, h, outline, fill, text
+                            keyW(), keyH(), TFT_WHITE, buttonBG, TFT_WHITE,
                             "", KEY_TEXTSIZE);
-          key[b].drawButton();
+          key[b]->drawButton();
           // After drawing the button outline we call this to draw a logo.
-          if (islatched[index] && b < 5)
+          if (b < s->button.size() && s->button[b]->isLatched)
           {
             drawlogo(b, col, row, drawTransparent, true);
           }

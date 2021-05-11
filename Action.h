@@ -16,17 +16,20 @@
 void bleKeyboardAction(int action, int value, char *symbol)
 {
 
-  Serial.println("[INFO]: BLE Keyboard action received");
+  Serial.print("[INFO]: BLE Keyboard action received: ");
   
   switch (action)
   {
-  case 0:
+  case NoAction:
+    Serial.printf("No Action\n");
     // No Action
     break;
-  case 1: // Delay
+  case DelayAction: // Delay
+    Serial.printf("Delay %d\n", value);
     delay(value);
     break;
-  case 2: // Send TAB ARROW etc
+  case TabArrowAction: // Send TAB ARROW etc
+    Serial.printf("Tab/Arrow: %d\n", value);
     switch (value)
     {
     case 1:
@@ -64,7 +67,8 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 3: // Send Media Key
+  case MediaAction: // Send Media Key
+    Serial.printf("Media: %d\n", value);
     switch (value)
     {
     case 1:
@@ -93,10 +97,12 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 4: // Send Character
+  case CharAction: // Send Character
+    Serial.printf("Char: %d\n", value);
     bleKeyboard.print(symbol);
     break;
-  case 5: // Option Keys
+  case OptionAction: // Option Keys
+    Serial.printf("Option: %d\n", value);
     switch (value)
     {
     case 1:
@@ -131,7 +137,8 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 6: // Function Keys
+  case FnAction: // Function Keys
+    Serial.printf("Function: %d\n", value);
     switch (value)
     {
     case 1:
@@ -211,13 +218,16 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 7: // Send Number
+  case NumberAction: // Send Number
+    Serial.printf("Number: %d\n", value);
     bleKeyboard.print(value);
     break;
-  case 8: // Send Special Character
+  case SpecialCharAction: // Send Special Character
+    Serial.printf("Special Character: %d\n", value);
     bleKeyboard.print(symbol);
     break;
-  case 9: // Combos
+  case ComboAction: // Combos
+    Serial.printf("Combos: %d\n", value);
     switch (value)
     {
     case 1:
@@ -280,7 +290,8 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 10: // Helpers
+  case HelperAction: // Helpers
+    Serial.printf("Helper: %d\n", value);
   switch (value)
     {
       case 1:
@@ -439,7 +450,8 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
-  case 11: // Special functions
+  case SpecialFnAction: // Special functions
+    Serial.printf("Special Function: %d\n", value);
     switch (value)
     {
     case 1:        // Enter config mode
@@ -479,6 +491,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
     }
     break;
   default:
+    Serial.printf("Unknown Action: %d Value: %d\n", action, value);
     //If nothing matches do nothing
     break;
   }
