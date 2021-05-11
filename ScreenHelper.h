@@ -79,8 +79,11 @@ unsigned int convertRGB888ToRGB565(unsigned long rgb)
 *
 * @note A completely black pixel is transparent e.g. (0x0000) not drawn.
 */
-void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
+void drawBmpTransparent(String filename, int16_t x, int16_t y)
 {
+  if (filename.isEmpty()) {
+      return;
+  }
 
   if ((x >= tft.width()) || (y >= tft.height()))
     return;
@@ -109,6 +112,10 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
     read32(bmpFS);
     w = read32(bmpFS);
     h = read32(bmpFS);
+
+    // subtract offset for width and height to move image to center of button
+    x -= w/2;
+    y -= h/2;
 
     if ((read16(bmpFS) == 1) && (read16(bmpFS) == 24) && (read32(bmpFS) == 0))
     {
@@ -160,9 +167,11 @@ void drawBmpTransparent(const char *filename, int16_t x, int16_t y)
 *
 * @note In contradiction to drawBmpTransparent() this does draw black pixels.
 */
-void drawBmp(const char *filename, int16_t x, int16_t y)
+void drawBmp(String filename, int16_t x, int16_t y)
 {
-
+  if (filename.isEmpty()) {
+    return;
+  }
   if ((x >= tft.width()) || (y >= tft.height()))
     return;
 
@@ -190,6 +199,10 @@ void drawBmp(const char *filename, int16_t x, int16_t y)
     read32(bmpFS);
     w = read32(bmpFS);
     h = read32(bmpFS);
+  
+    // subtract offset for width and height to move image to center of button
+    x -= w/2;
+    y -= h/2;
 
     if ((read16(bmpFS) == 1) && (read16(bmpFS) == 24) && (read32(bmpFS) == 0))
     {
@@ -268,9 +281,11 @@ int32_t readNbytesInt(File *p_file, int position, byte nBytes)
 *
 * @note Uses readNbytesInt
 */
-uint16_t getBMPColor(const char *filename)
+uint16_t getBMPColor(String filename)
 {
-
+  if (filename.isEmpty()) {
+    return 0x0000;
+  }
   // Open File
   File bmpImage;
   bmpImage = SPIFFS.open(filename, FILE_READ);
@@ -309,191 +324,18 @@ uint16_t getBMPColor(const char *filename)
 */
 uint16_t getImageBG(int logonumber)
 {
-
-  // Logo 5 on each screen is the back home button except on the home screen
-  if (logonumber == 5 && pageNum > 0)
-   {
-      return getBMPColor("/logos/home.bmp");
-   }
-   else
-   {
-
-    if (pageNum == 0)
-    {
-      if (logonumber == 0)
-      {
-        return getBMPColor(screen0.logo0);
-      }
-      else if (logonumber == 1)
-      {
-        return getBMPColor(screen0.logo1);
-      }
-      else if (logonumber == 2)
-      {
-        return getBMPColor(screen0.logo2);
-      }
-      else if (logonumber == 3)
-      {
-        return getBMPColor(screen0.logo3);
-      }
-      else if (logonumber == 4)
-      {
-        return getBMPColor(screen0.logo4);
-      }
-      else if (logonumber == 5)
-      {
-        return getBMPColor(screen0.logo5);
-      }
-      else
-      {
-        return 0x0000;
-      }
-    }
-    else if (pageNum == 1)
-    {
-      if (logonumber == 0)
-      {
-        return getBMPColor(screen1.logo0);
-      }
-      else if (logonumber == 1)
-      {
-        return getBMPColor(screen1.logo1);
-      }
-      else if (logonumber == 2)
-      {
-        return getBMPColor(screen1.logo2);
-      }
-      else if (logonumber == 3)
-      {
-        return getBMPColor(screen1.logo3);
-      }
-      else if (logonumber == 4)
-      {
-        return getBMPColor(screen1.logo4);
-      }
-      else
-      {
-        return 0x0000;
-      }
-    }
-    else if (pageNum == 2)
-    {
-      if (logonumber == 0)
-      {
-        return getBMPColor(screen2.logo0);
-      }
-      else if (logonumber == 1)
-      {
-        return getBMPColor(screen2.logo1);
-      }
-      else if (logonumber == 2)
-      {
-        return getBMPColor(screen2.logo2);
-      }
-      else if (logonumber == 3)
-      {
-        return getBMPColor(screen2.logo3);
-      }
-      else if (logonumber == 4)
-      {
-        return getBMPColor(screen2.logo4);
-      }
-      else
-      {
-        return 0x0000;
-      }
-    }
-    else if (pageNum == 3)
-    {
-      if (logonumber == 0)
-      {
-        return getBMPColor(screen3.logo0);
-      }
-      else if (logonumber == 1)
-      {
-        return getBMPColor(screen3.logo1);
-      }
-      else if (logonumber == 2)
-      {
-        return getBMPColor(screen3.logo2);
-      }
-      else if (logonumber == 3)
-      {
-        return getBMPColor(screen3.logo3);
-      }
-      else if (logonumber == 4)
-      {
-        return getBMPColor(screen3.logo4);
-      }
-      else
-      {
-        return 0x0000;
-      }
-    }
-    else if (pageNum == 4)
-    {
-      if (logonumber == 0)
-      {
-        return getBMPColor(screen4.logo0);
-      }
-      else if (logonumber == 1)
-      {
-        return getBMPColor(screen4.logo1);
-      }
-      else if (logonumber == 2)
-      {
-        return getBMPColor(screen4.logo2);
-      }
-      else if (logonumber == 3)
-      {
-        return getBMPColor(screen4.logo3);
-      }
-      else if (logonumber == 4)
-      {
-        return getBMPColor(screen4.logo4);
-      }
-      else
-      {
-        return 0x0000;
-      }
-    }
-    else if (pageNum == 5)
-    {
-      if (logonumber == 0)
-      {
-        return getBMPColor(screen5.logo0);
-      }
-      else if (logonumber == 1)
-      {
-        return getBMPColor(screen5.logo1);
-      }
-      else if (logonumber == 2)
-      {
-        return getBMPColor(screen5.logo2);
-      }
-      else if (logonumber == 3)
-      {
-        return getBMPColor(screen5.logo3);
-      }
-      else if (logonumber == 4)
-      {
-        return getBMPColor(screen5.logo4);
-      }
-      else
-      {
-        return 0x0000;
-      }
-    }
-    else if (pageNum == 6)
-    {
-      return 0x0000;
-    }
-    else
-    {
-      return 0x0000;
-    }
-
+  if (pageNum < HomePage) {
+    return 0x0000;
   }
+
+  Screen* s = currentScreen();
+  if (logonumber >= s->logo.size()) return 0x0000;
+  // last Logo on each screen is the back home button except on the home screen
+  if (logonumber == (s->rows * s->cols - 1) && pageNum > 0)
+  {
+    return getBMPColor("/logos/home.bmp");
+  }
+  return getBMPColor(s->logo[logonumber]);
 }
 
 /**
@@ -508,248 +350,45 @@ uint16_t getImageBG(int logonumber)
 */
 uint16_t getLatchImageBG(int logonumber)
 {
+  // can only latch custom keys in custom pages
+  if (pageNum <= HomePage) {
+    return 0x0000;
+  }
+  
+  Screen * s = currentScreen();
+  if (logonumber >= s->logo.size() || logonumber >= s->button.size()) {
+    return 0x0000;
+  }
+  if ( s->button[logonumber]->latchlogo == logopath)
+  {
+    return getBMPColor(s->logo[logonumber]); 
+  }
+  return getBMPColor(s->button[logonumber]->latchlogo);
+}
 
-  if (pageNum == 1)
-  {
-    if (logonumber == 0)
-    {
-      if (strcmp(menu1.button0.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen1.logo0);
-      }
-      return getBMPColor(menu1.button0.latchlogo);
-    }
-    else if (logonumber == 1)
-    {
-      if (strcmp(menu1.button1.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen1.logo1);
-      }
-      return getBMPColor(menu1.button1.latchlogo);
-    }
-    else if (logonumber == 2)
-    {
-      if (strcmp(menu1.button2.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen1.logo2);
-      }
-      return getBMPColor(menu1.button2.latchlogo);
-    }
-    else if (logonumber == 3)
-    {
-      if (strcmp(menu1.button3.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen1.logo3);
-      }
-      return getBMPColor(menu1.button3.latchlogo);
-    }
-    else if (logonumber == 4)
-    {
-      if (strcmp(menu1.button4.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen1.logo4);
-      }
-      return getBMPColor(menu1.button4.latchlogo);
-    }
-    else
-    {
-      return 0x0000;
-    }
+/**
+* @brief set current page and ensure new page state is fresh
+* 
+* @param p pageNum to set
+*
+* @return none
+*/
+void setPage(int p) {
+  pageNum = p;
+
+  if (pageNum < HomePage) {
+    return; // error pages don't have keys to setup
   }
-  else if (pageNum == 2)
-  {
-    if (logonumber == 0)
-    {
-      if (strcmp(menu2.button0.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen2.logo0);
-      }
-      return getBMPColor(menu2.button0.latchlogo);
-    }
-    else if (logonumber == 1)
-    {
-      if (strcmp(menu2.button1.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen2.logo1);
-      }
-      return getBMPColor(menu2.button1.latchlogo);
-    }
-    else if (logonumber == 2)
-    {
-      if (strcmp(menu2.button2.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen2.logo2);
-      }
-      return getBMPColor(menu2.button2.latchlogo);
-    }
-    else if (logonumber == 3)
-    {
-      if (strcmp(menu2.button3.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen2.logo3);
-      }
-      return getBMPColor(menu2.button3.latchlogo);
-    }
-    else if (logonumber == 4)
-    {
-      if (strcmp(menu2.button4.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen2.logo4);
-      }
-      return getBMPColor(menu2.button4.latchlogo);
-    }
-    else
-    {
-      return 0x0000;
-    }
+
+  Screen* s = currentScreen();
+  int pageKeyCount = s->rows * s->cols;
+  // fill in any missing tft buttons.
+  for(int i=key.size(); i<pageKeyCount; i++) {
+    key.push_back(new TFT_eSPI_Button());
   }
-  else if (pageNum == 3)
-  {
-    if (logonumber == 0)
-    {
-      if (strcmp(menu3.button0.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen3.logo0);
-      }
-      return getBMPColor(menu3.button0.latchlogo);
-    }
-    else if (logonumber == 1)
-    {
-      if (strcmp(menu3.button1.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen3.logo1);
-      }
-      return getBMPColor(menu3.button1.latchlogo);
-    }
-    else if (logonumber == 2)
-    {
-      if (strcmp(menu3.button2.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen3.logo2);
-      }
-      return getBMPColor(menu3.button2.latchlogo);
-    }
-    else if (logonumber == 3)
-    {
-      if (strcmp(menu3.button3.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen3.logo3);
-      }
-      return getBMPColor(menu3.button3.latchlogo);
-    }
-    else if (logonumber == 4)
-    {
-      if (strcmp(menu3.button4.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen3.logo4);
-      }
-      return getBMPColor(menu3.button4.latchlogo);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 4)
-  {
-    if (logonumber == 0)
-    {
-      if (strcmp(menu4.button0.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen4.logo0);
-      }
-      return getBMPColor(menu4.button0.latchlogo);
-    }
-    else if (logonumber == 1)
-    {
-      if (strcmp(menu4.button1.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen4.logo1);
-      }
-      return getBMPColor(menu4.button1.latchlogo);
-    }
-    else if (logonumber == 2)
-    {
-      if (strcmp(menu4.button2.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen4.logo2);
-      }
-      return getBMPColor(menu4.button2.latchlogo);
-    }
-    else if (logonumber == 3)
-    {
-      if (strcmp(menu4.button3.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen4.logo3);
-      }
-      return getBMPColor(menu4.button3.latchlogo);
-    }
-    else if (logonumber == 4)
-    {
-      if (strcmp(menu4.button4.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen4.logo4);
-      }
-      return getBMPColor(menu4.button4.latchlogo);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 5)
-  {
-    if (logonumber == 0)
-    {
-      if (strcmp(menu5.button0.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen5.logo0);
-      }
-      return getBMPColor(menu5.button0.latchlogo);
-    }
-    else if (logonumber == 1)
-    {
-      if (strcmp(menu5.button1.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen5.logo1);
-      }
-      return getBMPColor(menu5.button1.latchlogo);
-    }
-    else if (logonumber == 2)
-    {
-      if (strcmp(menu5.button2.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen5.logo2);
-      }
-      return getBMPColor(menu5.button2.latchlogo);
-    }
-    else if (logonumber == 3)
-    {
-      if (strcmp(menu5.button3.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen5.logo3);
-      }
-      return getBMPColor(menu5.button3.latchlogo);
-    }
-    else if (logonumber == 4)
-    {
-      if (strcmp(menu5.button4.latchlogo, "/logos/") == 0)
-      {
-        return getBMPColor(screen5.logo4);
-      }
-      return getBMPColor(menu5.button4.latchlogo);
-    }
-    else
-    {
-      return 0x0000;
-    }
-  }
-  else if (pageNum == 6)
-  {
-    return 0x0000;
-  }
-  else
-  {
-    return 0x0000;
+  // reset key state for new page load
+  for (int i=0; i < key.size(); i++) {
+    key[i]->press(false);
+    key[i]->press(false);
   }
 }

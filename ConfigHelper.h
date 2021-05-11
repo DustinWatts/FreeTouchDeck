@@ -41,7 +41,7 @@ bool startWifiStation(){
       MDNS.addService("http", "tcp", 80);
     
       // Set pageNum to 7 so no buttons are displayed and touches are ignored
-      pageNum = 7;
+      setPage(EmptyPage);
     
       // Start the webserver
       webserver.begin();
@@ -75,7 +75,7 @@ void startWifiAP(){
   MDNS.addService("http", "tcp", 80);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
-  pageNum = 7;
+  setPage(EmptyPage);
 
   // Start the webserver
   webserver.begin();
@@ -109,7 +109,7 @@ void startDefaultAP(){
   MDNS.addService("http", "tcp", 80);
 
   // Set pageNum to 7 so no buttons are displayed and touches are ignored
-  pageNum = 7;
+  setPage(EmptyPage);
 
   // Start the webserver
   webserver.begin();
