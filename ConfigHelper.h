@@ -131,7 +131,7 @@ void startDefaultAP(){
 void configmode()
 {
 
-  tft.fillScreen(TFT_BLACK);
+  //tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 0);
   tft.setTextFont(2);
   tft.setTextSize(1);
