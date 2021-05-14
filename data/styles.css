@@ -1,0 +1,121 @@
+body {
+  text-align: center;
+  font-family: verdana;
+  color: #000088;
+  width: 99%;
+}
+
+.pageloading{
+  background-color: #ffffff;
+  color: #1fa3ec;
+  line-height: 2.4rem;
+  font-size: 1.2rem;
+  width: 100%;
+  position: absolute;
+  top: 32%;
+}
+
+a {
+  color: #000088;
+}
+
+a:hover {
+    color: #1fa3ec;
+}
+
+.form button {
+  border: 0;
+  border-radius: 0.3rem;
+  background-color: #1fa3ec;
+  color: #fff;
+  line-height: 2.4rem;
+  font-size: 1.2rem;
+  width: 100%;
+}
+
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #8cd7ff;
+  width: 100%;
+}
+
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  font-family: verdana;
+  color: #000000;
+}
+
+.tab button:hover {
+  background-color: #1fa3ec;
+}
+
+.tab button.active {
+  background-color: #1fa3ec;
+}
+
+.tabcontent {
+  display: none;
+  padding: 6px 12px;
+  border: 1px solid #1fa3ec;
+  border-top: none;
+}
+
+.ball-loader {
+  width: 80px;
+  height: 16.6666666667px;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  -webkit-transform: translateX(-50%) translateY(-50%);
+  transform: translateX(-50%) translateY(-50%);
+}
+
+.ball-loader-ball {
+  will-change: transform;
+  height: 16.6666666667px;
+  width: 16.6666666667px;
+  border-radius: 50%;
+  background-color: #1fa3ec;
+  position: absolute;
+  -webkit-animation: grow .7s ease-in-out infinite alternate;
+  animation: grow .7s ease-in-out infinite alternate;
+}
+
+.ball-loader-ball.ball1 {
+  left: 0;
+  -webkit-transform-origin: 100% 50%;
+  transform-origin: 100% 50%;
+}
+.ball-loader-ball.ball2 {
+  left: 50%;
+  -webkit-transform: translateX(-50%) scale(1);
+  transform: translateX(-50%) scale(1);
+  -webkit-animation-delay: 0.33s;
+  animation-delay: 0.33s;
+}
+.ball-loader-ball.ball3 {
+  right: 0;
+  -webkit-animation-delay: 0.66s;
+  animation-delay: 0.66s;
+}
+
+@-webkit-keyframes grow {
+  to {
+    -webkit-transform: translateX(-50%) scale(0);
+    transform: translateX(-50%) scale(0);
+  }
+}
+
+@keyframes grow {
+  to {
+    -webkit-transform: translateX(-50%) scale(0);
+    transform: translateX(-50%) scale(0);
+  }
+}
