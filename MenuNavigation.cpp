@@ -4,7 +4,54 @@
 #include "FTAction.h"
 #include <vector>
 #include <TFT_eSPI.h>
+#include <FS.h>
 
+static const char *configMenu = R"(
+    {
+      "logo0": "wifi.bmp",
+      "logo1": "brightnessdown.bmp",
+      "logo2": "brightnessup.bmp",
+      "logo3": "sleep.bmp",
+      "logo4": "info.bmp",
+      "button0":{
+        "latch": false,
+        "latchlogo": "",
+        "actionarray": ["12", "11" ],
+        "valuearray": ["config", "1"] 
+      },
+      "button1":{
+        "latch": false,
+        "latchlogo": "",
+        "actionarray": [ "11"],
+        "valuearray": [ "2"] 
+      },
+      "button2":{
+        "latch": false,
+        "latchlogo": "",
+        "actionarray": [ "11"],
+        "valuearray": [ "3"] 
+      },
+      "button3":{
+        "latch": true,
+        "latchlogo": "",
+        "actionarray": [ "11"],
+        "valuearray": [ "4"] 
+      },
+      "button4":{
+        "latch": false,
+        "latchlogo": "",
+        "actionarray": [ "12","11"],
+        "valuearray": [ "info","5"] 
+      }   
+    }    
+  )";
+const char *configInfo = R"(
+    {}
+  )";
+const char *configScreen = R"(
+    {}
+  )";
+static const char *module = "MenuNavigation";
 using namespace std;
 std::vector<FreeTouchDeck::Menu *> Menus;
 SemaphoreHandle_t xScreenSemaphore = xSemaphoreCreateMutex();
@@ -18,7 +65,7 @@ bool ScreenLock(TickType_t xTicksToWait)
     }
     else
     {
-        Serial.println("[ERROR]: Unable to lock the Screen object");
+        ESP_LOGE(module,"Unable to lock the Screen object");
         return false;
     }
 }
@@ -58,7 +105,7 @@ FreeTouchDeck::Menu *GetScreen(const char *name)
         }
         if (!Match)
         {
-            Serial.printf("[ERROR]: Screen %s not found", name);
+            ESP_LOGE(module,"Screen %s not found", name);
         }
         ScreenUnlock();
     }
@@ -82,66 +129,29 @@ void SetActiveScreen(const char *name)
         }
         else
         {
-            Serial.printf("[ERROR]: Menu %s was not found\n", name);
+            ESP_LOGE(module,"Menu %s was not found", name);
         }
     }
 }
-void LoadSystemMenus(TFT_eSPI &tft)
+void LoadSystemMenus()
 {
-    const char *configMenu = R"(
+    if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
     {
-      "logo0": "wifi.bmp",
-      "logo1": "brightnessdown.bmp",
-      "logo2": "brightnessup.bmp",
-      "logo3": "sleep.bmp",
-      "logo4": "info.bmp",
-      "button0":{
-        "latch": false,
-        "latchlogo": "",
-        "actionarray": ["12", "11" ],
-        "valuearray": ["config", "1"] 
-      },
-      "button1":{
-        "latch": false,
-        "latchlogo": "",
-        "actionarray": [ "11"],
-        "valuearray": [ "2"] 
-      },
-      "button2":{
-        "latch": false,
-        "latchlogo": "",
-        "actionarray": [ "11"],
-        "valuearray": [ "3"] 
-      },
-      "button3":{
-        "latch": true,
-        "latchlogo": "",
-        "actionarray": [ "11"],
-        "valuearray": [ "4"] 
-      },
-      "button4":{
-        "latch": false,
-        "latchlogo": "",
-        "actionarray": [ "12","11"],
-        "valuearray": [ "info","5"] 
-      }   
-    }    
-  )";
-    Serial.printf("Adding settings menu\n");
-    Menus.push_back(new FreeTouchDeck::Menu("menu6", configMenu, tft));
-
-    const char *configInfo = R"(
-    {}
-  )";
-    Serial.printf("Adding info  menu\n");
-    Menus.push_back(new FreeTouchDeck::Menu("info", configInfo, tft));
-    const char *configScreen = R"(
-    {}
-  )";
-    Serial.printf("Adding config menu\n");
-    Menus.push_back(new FreeTouchDeck::Menu("config", configInfo, tft));
+        ESP_LOGD(module,"Adding settings menu");
+        Menus.push_back(new FreeTouchDeck::Menu("menu6", configMenu));
+        ESP_LOGD(module,"Adding info  menu");
+        Menus.push_back(new FreeTouchDeck::Menu("info", configInfo));
+        ESP_LOGD(module,"Adding config menu");
+        Menus.push_back(new FreeTouchDeck::Menu("config", configScreen));
+        ScreenUnlock();
+    }
+    else
+    {
+        Serial.printf("[ERROR]: Unable to add menus   \n");
+    }
 }
-void LoadAllMenus(TFT_eSPI &tft)
+
+void LoadAllMenus()
 {
     if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
     {
@@ -150,13 +160,17 @@ void LoadAllMenus(TFT_eSPI &tft)
         while (file)
         {
             String FileName = file.name();
-            if (FileName.startsWith("/config/menu") || FileName.startsWith("/config/homescreen"))
+            if (FileName.startsWith("/config/menu"))
             {
-                Menus.push_back(new FreeTouchDeck::Menu(file, tft));
-                Serial.printf("Added menu from file %s\n",file.name());
+                ESP_LOGD(module, "Adding menu from file %s", file.name());
+                Menus.push_back(new FreeTouchDeck::Menu(&file));
+                ESP_LOGD(module, "Adding menu completed. Getting next file");
             }
             file = root.openNextFile();
         }
+        ESP_LOGD(module, "Adding home screen menu from file name /config/homescreen.json");
+        Menus.push_back(new FreeTouchDeck::Menu("/config/homescreen.json"));
+        root.close();
         ScreenUnlock();
     }
     else

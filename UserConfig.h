@@ -78,3 +78,6 @@ extern bool QueueAction(FreeTouchDeck::FTAction* action );
 extern FreeTouchDeck::FTAction * PopQueue();
 extern bool QueueLock(TickType_t xTicksToWait) ;
 extern void QueueUnlock() ;
+extern void drawErrorMessage(String message);
+extern void drawErrorMessageChar(String message);
+void drawErrorMessage(bool stop, const char * module, const char * fmt,...);

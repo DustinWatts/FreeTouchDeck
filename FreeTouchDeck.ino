@@ -56,7 +56,7 @@
 #ifdef ARDUINO_TWATCH_BASE
 AXP20X_Class *power = new AXP20X_Class();
 #endif
-
+static const char * module="FreeTouchDeck";
 const char *versionnumber = "0.9.11";
 
 /* Version 0.9.11.
@@ -119,7 +119,8 @@ const char *versionnumber = "0.9.11";
 FT6236 ts = FT6236();
 #endif
 #include "Menu.h"
-
+#include "cJSON.h"
+#include "BMPImage.h"
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 AsyncWebServer webserver(80);
@@ -203,8 +204,60 @@ bool QueueAction(FreeTouchDeck::FTAction *action)
   QueueUnlock();
   return true;
 }
+IRAM_ATTR char* ps_strdup(const char * fmt){
+  const char * s=NULL;
+  if(fmt && strlen(fmt)>0)
+  {
+    s=fmt;
+  }
+  else
+  {
+    s="";
+  }
+  char * o = (char *)malloc_fn(strlen(fmt)+1);
+  if(o) memset(o,0x00,strlen(fmt)+1);
+  return o;
+}
+IRAM_ATTR void * malloc_fn(size_t sz){
+  //void * ptr =NULL;
+//#if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
+#if defined (ESP32)
+  return heap_caps_malloc(sz, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); 
+#else
+  return malloc(sz)
+#endif
+//     bool psramSupported=psramInit()&&psramFound();
+// #else 
+//   bool psramSupported=false;
+// #endif
+
+//   if (psramSupported)
+//   {
+//     ptr = ps_malloc(sz);
+//     if(!ptr)
+//     {
+//       ESP_LOGE("FreeTouchDeck","malloc_fn: PSRAM alloc failed. Allocating RAM instead");
+//       ptr=malloc(sz);
+//     }
+
+//   }
+//   else 
+//   {
+//     ptr=malloc(sz);
+//   }
+	
+// 	if(ptr==NULL){
+// 		ESP_LOGE("FreeTouchDeck","malloc_fn:  unable to allocate memory!");
+// 	}
+//	return ptr;
+}
 
 
+void init_cJSON(){
+	static cJSON_Hooks hooks;
+	hooks.malloc_fn=&malloc_fn;
+	cJSON_InitHooks(&hooks);
+}
 
 // Checking for BLE Keyboard version
 #ifndef BLE_KEYBOARD_VERSION
@@ -229,16 +282,47 @@ bool QueueAction(FreeTouchDeck::FTAction *action)
 
 void DrawSplash()
 {
+  ESP_LOGD(module, "Loading splash screen bitmap.");
   FreeTouchDeck::BMPImage* splash=FreeTouchDeck::GetImage("freetouchdeck_logo.bmp");
   if(splash)
   {
-//    splash->Draw(&tft,0,0,false);
+    ESP_LOGD(module, "splash screen bitmap loaded. Drawing");
+    splash->Draw(0,0,false);
   }
   else 
   {
-    Serial.println("[ERROR]: Unable to draw the splash screen.");
+    ESP_LOGW(module,"Unable to draw the splash screen.");
   }
   
+}
+void CacheBitmaps()
+{
+  // Preload all bitmaps
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    PrintMemInfo();
+    while (file)
+    {
+        String FileName = file.name();
+        if (FileName.endsWith(".bmp") )
+        {
+          int start = FileName.lastIndexOf("/") + 1;
+          FileName = FileName.substring(start);
+          ESP_LOGD(module,"Caching bitmap from file %s, with name %s",file.name(),FileName.c_str());
+          FreeTouchDeck::BMPImage * image=FreeTouchDeck::GetImage(FileName.c_str());
+          ESP_LOGD(module,"Adding menu completed. Getting next file");
+        }
+        file = root.openNextFile();
+    }
+    PrintMemInfo();
+}
+void PrintMemInfo()
+{
+  ESP_LOGD(module,"free_iram: %d",heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+	ESP_LOGD(module,"min_free_iram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+	ESP_LOGD(module,"free_spiram: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+	ESP_LOGD(module,"min_free_spiram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM));
+
 }
 
 //-------------------------------- SETUP --------------------------------------------------------------
@@ -247,6 +331,7 @@ void setup()
 {
 
   // Use serial port
+
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.printf("Main Task size is %d\r", CONFIG_ARDUINO_LOOP_STACK_SIZE);
@@ -299,7 +384,7 @@ void setup()
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // --------------- Init Display -------------------------
-
+  ESP_LOGD(module,"Initializing display");
   // Initialise the TFT screen
   tft.init();
 
@@ -310,7 +395,7 @@ void setup()
   tft.fillScreen(TFT_BLACK);
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
-
+  init_cJSON();
   // -------------- Start filesystem ----------------------
 
   if (!FILESYSTEM.begin())
@@ -326,7 +411,9 @@ void setup()
 
   Serial.print("[INFO]: Free Space: ");
   Serial.println(SPIFFS.totalBytes() - SPIFFS.usedBytes());
-
+  // if(psramFound())
+  // ESP_LOGI(module,"Available PSRAM: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+  
   // ------------------- Splash screen ------------------
 
   // If we are woken up we do not need the splash screen
@@ -340,7 +427,8 @@ void setup()
   {
 
     // Draw a splash screen
-    DrawSplash();
+    //DrawSplash();
+    ESP_LOGD(module,"Displaying version details");
     tft.setCursor(1, 3);
     tft.setTextFont(2);
     tft.setTextSize(1);
@@ -362,7 +450,6 @@ void setup()
   }
 
   // ----------------- Load webserver ---------------------
-
   handlerSetup();
 
 
@@ -394,9 +481,9 @@ void setup()
 
   ledcSetup(2, 500, 8);
   HandleAudio(Sounds::STARTUP);
-  // Load menu definitions
-  LoadAllMenus(tft);
-
+  CacheBitmaps();
+  LoadSystemMenus();
+  LoadAllMenus();
   Serial.println("[INFO]: All configs loaded");
   // Now add the system config menu
   
@@ -415,7 +502,8 @@ void setup()
   Serial.println(ARDUINOJSON_VERSION);
   Serial.print("[INFO]: TFT_eSPI version: ");
   Serial.println(TFT_ESPI_VERSION);
-
+  Serial.println("[INFO]: SPI Flash frequency: ");
+  Serial.println(CONFIG_ESPTOOLPY_FLASHFREQ);
   // ---------------- Start the first keypad -------------
 
   // Draw background
@@ -434,7 +522,7 @@ void setup()
     // islatched[28] = 1;
   }
 
-  xTaskCreate(ScreenHandleTask, "Screen", 4096, NULL, tskIDLE_PRIORITY + 5, &xScreenTask);
+  xTaskCreate(ScreenHandleTask, "Screen", 4096*5, NULL, tskIDLE_PRIORITY + 5, &xScreenTask);
   xTaskCreate(ActionTask, "Action", 4096, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
 }
 
@@ -668,6 +756,9 @@ void ScreenHandleTask(void *pvParameters)
 {
   uint16_t t_x = 0;
   uint16_t t_y = 0;
+
+  // Load menu definitions
+
   for (;;)
   {
     bool pressed = getTouch(&t_x, &t_y);

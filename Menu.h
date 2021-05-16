@@ -9,6 +9,8 @@
 #include <SPIFFS.h>   // Filesystem support header
 #include "FTButton.h"
 #include "UserConfig.h"
+#include "globals.hpp"
+#define MAX_NUM_BUTTONS 20
 namespace FreeTouchDeck {
 typedef struct 
 {
@@ -26,10 +28,11 @@ class Menu
     char * FileName=NULL;
     bool Active = false;
     bool Loaded = true;
-    std::vector<FTButton *> buttons;
-    Menu(const char * name,TFT_eSPI &gfx);
-    Menu(File &config,TFT_eSPI &gfx);
-    Menu(const char *name, const char * config, TFT_eSPI &gfx);
+    FTButton * buttons[MAX_NUM_BUTTONS]={0};
+    uint8_t ButtonsCount=0;
+    Menu(const char * name);
+    Menu(File *config);
+    Menu(const char *name, const char * config);
     void Draw(bool force=false);
     ~Menu();
     void Touch(uint16_t x, uint16_t y);
@@ -37,19 +40,24 @@ class Menu
     void ReleaseAll();
     void Activate();
     void Deactivate();
+             void* operator new(size_t sz) {
+               ESP_LOGD("Menu","class operator new : %d",sz);    
+                 return malloc_fn(sz);
+            }   
+
   private:
     uint16_t _margin = 8; // 8 pixels
     uint16_t _outline = TFT_WHITE;
     uint8_t _textSize = KEY_TEXTSIZE;
     uint16_t _textColor = TFT_WHITE;
     void SetFileName();
-    bool LoadConfig(File config);
+    bool LoadConfig(File *config);
     bool LoadConfig(const char * config);
-    TFT_eSPI &GFX;
     std::vector<row_t *> _rows;
-    void Init(TFT_eSPI &gfx);
+    std::list<FTAction *> actions;
+    void Init();
     void AddHomeButton(uint8_t * position);
-    FTAction homeMenu=FTAction(ActionTypes::MENU,"homescreen");
+    FTAction * homeMenu;
 
 
 };

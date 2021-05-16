@@ -1,8 +1,6 @@
 #pragma once
-#include "stdint.h"
-#include <vector>
 #include "BleKeyboard.h"
-#include "cJSON.h"
+#include "globals.hpp"
 namespace FreeTouchDeck {
 
 enum class ActionTypes{
@@ -20,6 +18,8 @@ enum class ActionTypes{
     LOCAL,
     MENU
 } ;
+const char *enum_to_string(ActionTypes type);
+
 enum class LocalActionTypes {
     NONE=0,
     ENTER_CONFIG,
@@ -29,6 +29,8 @@ enum class LocalActionTypes {
     INFO,
     
 };
+const char *enum_to_string(LocalActionTypes type);
+
     class FTAction 
     {
         public:
@@ -40,6 +42,10 @@ enum class LocalActionTypes {
             void Execute();
             void Init();
             static ActionTypes GetType(cJSON * jsonActionType);
+            void* operator new(size_t sz) {
+                ESP_LOGD("FTAction","operator new : %d",sz);
+                 return malloc_fn(sz);
+            }   
         protected:
             char * symbol;
         private: 

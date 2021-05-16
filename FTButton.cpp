@@ -1,28 +1,42 @@
 #include "FTButton.h"
 
-
+static const char * module="FTButton";
 namespace FreeTouchDeck 
 {
-
-    FTButton::FTButton(TFT_eSPI &gfx,String label, uint8_t index, 
-                ButtonTypes buttonType, const char * logoParm, const char * latchLogoParm, 
-                uint16_t outline, uint8_t textSize, uint16_t textColor) : GFX(gfx)
+    const char *enum_to_string(ButtonTypes type)
     {
-        Index = index;
+        switch (type)
+        {
+        case ButtonTypes::STANDARD:
+            return "STANDARD";
+        case ButtonTypes::LATCH:
+            return "LATCH";
+        case ButtonTypes::MENU:
+            return "MENU";
+        default:
+            return "Unknown button type";
+        }
+    }
+    FTButton::FTButton(const char * label, uint8_t index, 
+                ButtonTypes buttonType, const char * logoParm, const char * latchLogoParm, 
+                uint16_t outline, uint8_t textSize, uint16_t textColor)
+    {
 
+        Index = index;
         ButtonType = buttonType;
         TextColor = textColor;
-        Label = strdup(label.isEmpty()?"":label.c_str());
+        Label = ps_strdup(label?label:"");
 
-
+        ESP_LOGD(module,"Instantiating button #%d, type %s ", index, enum_to_string(buttonType));
         if(logoParm && strlen(logoParm)>0)
         {
+            ESP_LOGD(module, "Attempting to get logo %s", logoParm);
             Logo=GetImage(logoParm);
         }
         
         if(!Logo || !Logo->valid)
         {
-            Serial.printf("[ERROR]: Invalid logo %s\n",logoParm);
+            ESP_LOGE(module, "Invalid logo %s",logoParm);
         }
         if(latchLogoParm && strlen(latchLogoParm)>0)
         {
@@ -46,26 +60,26 @@ namespace FreeTouchDeck
         if(!NeedsDraw && !force)  return;
 
         NeedsDraw=false;
-        //Serial.printf("Drawing button at [%d,%d] with margin %d\n", x, y, margin );
-        GFX.setFreeFont(LABEL_FONT);
+        ESP_LOGD(module, "Drawing button at [%d,%d] with margin %d\n", x, y, margin );
+        tft.setFreeFont(LABEL_FONT);
         BMPImage * image = ((Latched && LatchedLogo->valid)? LatchedLogo : Logo);
         if(!image)
         {
-            Serial.println("[ERROR]: No image found");
+            ESP_LOGE(module, "No image found");
             return;
         }
         bool transparent=false;
-        uint16_t BGColor = GFX.color565(image->R, image->G, image->B);
-        initButton(&GFX, x, y, image->w+margin, image->h+margin, Outline, BGColor, TextColor, Label, TextSize);
+        uint16_t BGColor = tft.color565(image->R, image->G, image->B);
+        initButton(&tft, x, y, image->w+margin, image->h+margin, Outline, BGColor, TextColor, Label, TextSize);
         
         if(Latched && !LatchedLogo->valid)
         {
-            GFX.fillRoundRect(x,y,18,18,4,generalconfig.latchedColour);
+            tft.fillRoundRect(x,y,18,18,4,generalconfig.latchedColour);
             transparent=true;
         }
         drawButton();
         
-        image->Draw(&GFX,x, y, transparent);
+        image->Draw(x, y, transparent);
     }
     uint16_t FTButton::Width()
     {
@@ -80,22 +94,23 @@ namespace FreeTouchDeck
     {
         if(IsPressed) 
         {
+            ESP_LOGV(module,"Button already pressed. Ignoring");
             return;
         }
         // Beep
         HandleAudio(Sounds::BEEP);
-        //Serial.printf("%sButton Press detected with %d actions\n", ButtonType == LATCH?"LATCH ":"", actions.size());
+        ESP_LOGD(module,"%s Button Press detected with %d actions",  enum_to_string(ButtonType), actions.size());
         for(FTAction * action : actions)
         {
             if(!QueueAction(action))
             {
-                Serial.println("Button action could not be executed");
+                ESP_LOGW(module,"Button action type %s could not be queued for execution.",enum_to_string(action->Type));
             }
         }
-        if(ButtonType == LATCH)
+        if(ButtonType == ButtonTypes::LATCH)
         {
             Latched=!Latched;
-            //Serial.printf("Toggling LATCH to %s\n",Latched?"ACTIVE":"INACTIVE");
+            ESP_LOGD(module,"Toggling LATCH to %s",Latched?"ACTIVE":"INACTIVE");
         }                    
         IsPressed=true;
         NeedsDraw=true;
@@ -104,8 +119,7 @@ namespace FreeTouchDeck
     {
         if(IsPressed) 
         {
-            Serial.println("Releasing button");
-
+            ESP_LOGD(module,"Releasing button");
             IsPressed = false;
             NeedsDraw = true;
         }

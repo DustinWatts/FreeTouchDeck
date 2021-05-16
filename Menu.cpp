@@ -1,77 +1,127 @@
 #include "Menu.h"
-
+#include <cstdlib>
+static const char * module="Menu";
+static const char *nameTemplate = "/config/%s.json";
+  // Overloading CLass specific new operator
+  void* operator new(size_t sz)
+  {
+    //ESP_LOGD("Menu","operator new : %d",sz);    
+    void* m = malloc_fn(sz);
+    return m;
+  }
 namespace FreeTouchDeck
 {
-    Menu::Menu(const char *name, const char * config, TFT_eSPI &gfx): GFX(gfx)
+    static char configBuffer[3001]={0}; // used to load config files in memory for parsing 
+    Menu::Menu(const char *name, const char * config)
     {
-        Serial.printf("Instantiating menu name %s\n",name);
-        Name = strdup(name);
-        FileName = strdup("");
+        ESP_LOGD(module,"Instantiating menu name %s",name);
+        Name = ps_strdup(name);
+        FileName = ps_strdup("");
+        PrintMemInfo();
         LoadConfig(config);
-        Init(gfx);
-        Serial.printf("DONE Instantiating menu name %s\n",name);
+        ESP_LOGD(module,"Done loading config for menu name %s",name);
+        PrintMemInfo();
+        Init();
+        ESP_LOGD(module,"DONE Instantiating menu name %s",name);
+        PrintMemInfo();
     }
-    Menu::Menu(const char *name, TFT_eSPI &gfx): GFX(gfx)
+    Menu::Menu(const char *name)
     {
-        Serial.printf("Instantiating menu from file name %s\n",name);
-        Name = strdup(name);
+        ESP_LOGD(module,"Instantiating menu from file name %s",name);
+        Name = ps_strdup(name);
         SetFileName();
+        if(!FileName)
+        {
+            drawErrorMessage(true,module,"Unable to assign file name for menu %s",name);
+            return; 
+        }
+        ESP_LOGD(module,"menu File name is %s", FileName);
         File configfile = FILESYSTEM.open(FileName, "r");
-        LoadConfig(configfile);
-        Init(gfx);
-        Serial.printf("DONE Instantiating menu from file name %s\n",name);
-
+        PrintMemInfo();
+        LoadConfig(&configfile);
+        ESP_LOGD(module,"Done loading configuration file %s", FileName);
+        configfile.close();
+        PrintMemInfo();
+        Init();
+        ESP_LOGD(module,"Done loading instantiating menu file %s", FileName);
+        PrintMemInfo();
     }
-    Menu::Menu(File &config, TFT_eSPI &gfx) : GFX(gfx)
+    Menu::Menu(File *config)
     {
-        Serial.printf("Instantiating menu from file  %s\n",config.name());
-        String fullName = config.name();
+        ESP_LOGD(module,"Instantiating menu from file  %s",config->name());
+        String fullName = config->name();
         int start = fullName.lastIndexOf("/") + 1;
         int end = fullName.lastIndexOf(".");
         if (end > start)
         {
             fullName = fullName.substring(start, end);
         }
-        Name = strdup(fullName.c_str());
-        FileName = strdup(config.name());
+        Name = ps_strdup(fullName.c_str());
+        FileName = ps_strdup(config->name());
+        ESP_LOGD(module,"Menu name is %s, file name is %s",Name, FileName);
+        PrintMemInfo();
         LoadConfig(config);
-        Init(gfx);
-        Serial.printf("DONE Instantiating menu from file  %s\n",config.name());
+        ESP_LOGD(module,"Done loading config from file %s",FileName);
+        PrintMemInfo();
+        Init();
+        ESP_LOGD(module,"DONE Instantiating menu from file  %s",FileName);
+        PrintMemInfo();
+
     }
-    void Menu::Init(TFT_eSPI &gfx)
+
+    void Menu::Init()
     {
-        auto newRow = new row_t();
         uint32_t TotalHeight = 0;
-        for (auto button : buttons)
+        auto newRow = new row_t();
+        FTButton * button=NULL;
+        if(!newRow)
         {
-            // Serial.print("Processing button ");
-            // Serial.printf("width= %d. ", button->Width());
-            // Serial.printf("Total row width is %d, LCD width is %d\r",  newRow->TotalWidth, GFX.width());
-            if (newRow->TotalWidth + button->Width() > gfx.width())
+            drawErrorMessage(true,module,"Unable to allocate new row!");
+        }
+        ESP_LOGD(module,"Start of buttons init loop for %d buttons.",ButtonsCount);
+        if(ButtonsCount==0)
+        {
+            ESP_LOGW(module,"No buttons in this screen");
+            _rows.push_back( newRow);
+            return;
+        }
+        for(int i=0;i<ButtonsCount && buttons[i];i++)
+        {
+            ESP_LOGD(module,"Button index: %s",i);
+            button=buttons[i];
+            ESP_LOGD(module,"Processing button width= %d. Total row width is %d, LCD width is %d ", button->Width(),  newRow->TotalWidth, tft.width());
+            yield();            
+            if (newRow->TotalWidth + button->Width() > tft.width())
             {
-                //Serial.printf("Overflowing LCD Width %d \n", gfx.width());
+                ESP_LOGD(module,"Overflowing LCD Width %d", tft.width());
                 TotalHeight += newRow->Height;
-                //Serial.printf("Row has %d buttons, spacing = %d \n",newRow->Count, newRow->Spacing );
-                _rows.push_back(newRow);
+                ESP_LOGD(module,"Row has %d buttons, spacing = %d",newRow->Count, newRow->Spacing );
+                ESP_LOGD(module,"Row has %d buttons. Pushing to rows list",newRow->Count );
+                _rows.push_back( newRow);
+                ESP_LOGD(module,"row was added successfully. Creating new row");
                 newRow = new row_t();
+                if(!newRow)
+                {
+                    drawErrorMessage(true,module,"Unable to allocate new row!");
+                }                
             }
             newRow->Count++;
             newRow->Height = max(newRow->Height, button->Height());
-            newRow->ButtonCenterWidth = gfx.width() / (newRow->Count *2);
+            newRow->ButtonCenterWidth = tft.width() / (newRow->Count *2);
             newRow->TotalWidth += button->Width();
-            
-
         }
-        //Serial.printf("Row has %d buttons \n",newRow->Count );
+        ESP_LOGD(module,"Last Row has %d buttons. Pushing to rows list",newRow->Count );
         _rows.push_back( newRow);
-        for(auto row : _rows)
-        {
-            row->ButtonCenterHeight = gfx.height()/((_rows.size()+1)*2);
-            uint16_t wSpacing = (gfx.width() - newRow->TotalWidth) / (newRow->Count + 1); // Spread remaining space
-            uint16_t hSpacing = (gfx.height() -TotalHeight ) / (_rows.size()+1); // Spread remaining space            
+        ESP_LOGD(module,"last row was added successfully");
+        for(int z=0;z<_rows.size();z++)
+        { 
+            auto row=_rows[z];
+            ESP_LOGD(module,"evaluating row");
+            uint16_t wSpacing = (tft.width() - newRow->TotalWidth) / (newRow->Count + 1); // Spread remaining space
+            uint16_t hSpacing = (tft.height() -TotalHeight ) / (_rows.size()+1); // Spread remaining space            
             row->Spacing = min(hSpacing,wSpacing)/2;
         }
-        //Serial.printf("Menu has %d buttons spread over %d rows \n",buttons.size(),_rows.size() );
+        ESP_LOGD(module,"Menu has %d buttons spread over %d rows",ButtonsCount,_rows.size() );
     }
 
     void Menu::Draw(bool force)
@@ -83,6 +133,10 @@ namespace FreeTouchDeck
         {
             for (int col = 0; col < _rows[row]->Count; col++)
             {
+                if(col+buttonIndex >= ButtonsCount || !buttons[col + buttonIndex])
+                {
+                    ESP_LOGW(module,"Button count in rows %d exceeds total button count %d for screen ", col+buttonIndex, ButtonsCount);
+                }
                 buttons[col + buttonIndex]->Draw( _rows[row]->ButtonCenterWidth * (col*2+1) ,
                                                 _rows[row]->ButtonCenterHeight * (row*2+1),
                                                 1,force);
@@ -93,7 +147,14 @@ namespace FreeTouchDeck
     }
     Menu::~Menu()
     {
-        buttons.clear();
+        ESP_LOGD(module,"Freeing memory for menu %s",Name?Name:"UNKNOWN");
+        for (int button = 0; button < ButtonsCount; ButtonsCount++)
+        {
+            if(buttons[button])
+            {
+                delete(buttons[button]);
+            }
+        }
         if (FileName)
             free(FileName);
         if (Name)
@@ -102,16 +163,14 @@ namespace FreeTouchDeck
 
     void Menu::SetFileName()
     {
-        char *fullName = NULL;
-        const char *nameTemplate = "/config/%s.json";
         size_t nameSize = printf(NULL, nameTemplate, Name);
-        fullName = (char *)malloc(nameSize + 1);
-        memset(fullName, 0x00, nameSize + 1);
-        printf(fullName, nameTemplate, Name);
+        FileName = (char *)malloc(nameSize + 1);
+        memset(FileName, 0x00, nameSize + 1);
+        printf(FileName, nameTemplate, Name);
     }
     void Menu::ReleaseAll()
     {
-        for(uint8_t b=0;b<buttons.size();b++)
+        for(uint8_t b=0;b<ButtonsCount && buttons[b];b++)
         {
             buttons[b]->Release();
         }
@@ -130,11 +189,13 @@ namespace FreeTouchDeck
         if(!Active)
         {
             Active=true;
-            //Serial.printf("Activating menu %s\n",Name);
-            for(int i=0;i<buttons.size();i++)
+            ESP_LOGD(module,"Activating menu %s",Name);
+            for(int i=0;i<ButtonsCount && buttons[i];i++)
             {
+
                 buttons[i]->Invalidate();
             }
+            ESP_LOGD(module,"Drawing Menu");
             Draw(); 
         }
     }
@@ -142,44 +203,65 @@ namespace FreeTouchDeck
     {
         if(Active)
         {
-            GFX.fillScreen(generalconfig.backgroundColour);
+            tft.fillScreen(generalconfig.backgroundColour);
             Active=false;
             ReleaseAll();
         }
     }
-    bool Menu::LoadConfig(File config)
+    bool Menu::LoadConfig(File *config)
     {
-        char * configBuffer = (char *)malloc(config.size()+1) ;
-        memset(configBuffer, 0x00, config.size()+1);
-        size_t read_size = config.readBytes(configBuffer, config.size()+1);
-        if(read_size!=config.size())
+        ESP_LOGD(module,"Loading config from file. Loading %s in memory.",config->name());
+//        char * configBuffer = (char *)malloc_fn(config->size()+1) ;
+        // if(!configBuffer)
+        // {
+        //     drawErrorMessage(true,module,"Memory allocation failed ");
+        // }
+        memset(configBuffer, 0x00, sizeof(configBuffer));
+        size_t read_size = config->readBytes(configBuffer, sizeof(configBuffer));
+        if(read_size!=config->size())
         {
-            Serial.printf("[ERROR]: File size is %d bytes, file read was %d bytes", config.size(), read_size);
+            drawErrorMessage(true,module,"Could not read config file %s. Read %d/%d bytes",config->name(), config->size(), read_size);
+            // the line above will typicaly stop processing, but let's add a return here just in case
             return false;
         }
         LoadConfig(configBuffer);
-        free(configBuffer);        
+        ESP_LOGD(module,"Done Loading config from file.");
     }
     void Menu::AddHomeButton(uint8_t * position)
     {
-        FTButton * newButton = new FTButton(GFX, "", *position++, MENU, "home.bmp", "question.bmp", _outline, _textSize, _textColor);
-        newButton->actions.push_back( &homeMenu);
-        buttons.push_back( newButton);
+        FTButton * newButton = new FTButton( "", *position++, ButtonTypes::MENU, "home.bmp", "question.bmp", _outline, _textSize, _textColor);
+        if(!newButton)
+        {
+            drawErrorMessage(true,module,"Failed to allocate memory for new button");
+        }
+        newButton->actions.push_back( homeMenu);
+        buttons[ButtonsCount++]=newButton;
     }
 
     bool Menu::LoadConfig(const char * config)
     {
+        ESP_LOGD(module,"Parsing json configuration: \n%s", config);
+        homeMenu=new FTAction(ActionTypes::MENU,"homescreen");
+        if(!homeMenu)
+        {
+            drawErrorMessage(true,module,"Failed to allocate memory for home menu action");
+        }
         cJSON * doc = cJSON_Parse(config);
         if (!doc)
         {
             const char * error=cJSON_GetErrorPtr();
-            Serial.println("[ERROR]: Unable to parse json file : ");
-            Serial.println(error);
+            drawErrorMessage(true,module,"Unable to parse json string : %s",error);
             return false;
         }
         else
         {
-            
+            ESP_LOGD(module,"Parsing success. Processing entries");
+            // char * jsonstr=cJSON_Print(doc);
+            // if(jsonstr)
+            // {
+            //     ESP_LOGD(module,"Parsed json: \n%s",jsonstr);
+            //     free(jsonstr);
+            // }
             char logoName[31] = {0};
             char buttonName[31] = {0};
             uint8_t position = 0;
@@ -199,17 +281,21 @@ namespace FreeTouchDeck
                 jsonButton=cJSON_GetObjectItem(doc,buttonName);
                 if(jsonButton)
                 {
+                    ESP_LOGD(module,"Found button %s", buttonName);
                     CJSON_STRING_OR_DEFAULT(logoValue,cJSON_GetObjectItem(doc,logoName),"question.bmp" );
                     CJSON_STRING_OR_DEFAULT(latchLogoValue,cJSON_GetObjectItem(jsonButton,logoName),"" );
-
                     jsonLatchedLogo=cJSON_GetObjectItem(jsonButton,"latchlogo");
                     jsonLatch=cJSON_GetObjectItem(jsonButton, "latch");
-                    ButtonTypes Latched=(jsonLatch && cJSON_IsBool(jsonLatch) && cJSON_IsTrue(jsonLatch))?LATCH : STANDARD;
+                    ButtonTypes Latched=(jsonLatch && cJSON_IsBool(jsonLatch) && cJSON_IsTrue(jsonLatch))?ButtonTypes::LATCH : ButtonTypes::STANDARD;
 
-                    FTButton * newButton = new FTButton(GFX, "", position,
+                    FTButton * newButton = new FTButton( "", position,
                                               Latched ,
                                               logoValue,
                                               latchLogoValue, _outline, _textSize, _textColor);
+                    if(!newButton)
+                    {
+                        drawErrorMessage(true,module,"Failed to allocate memory for new button");
+                    }                                              
                     jsonActions =  cJSON_GetObjectItem(jsonButton, "actionarray");
                     if(!jsonActions)
                     {
@@ -223,7 +309,7 @@ namespace FreeTouchDeck
                         jsonAction=cJSON_GetArrayItem(jsonActions,valuePos++);
                         if(!jsonAction)
                         {
-                            Serial.println("[ERROR]: Current value does not match an action");
+                            ESP_LOGE(module,"Current value does not have a matching action!");
                             return false;
                         }
                         if(FTAction::GetType(jsonAction)!= ActionTypes::NONE)
@@ -232,19 +318,20 @@ namespace FreeTouchDeck
                             newButton->actions.push_back(new FTAction(jsonAction,jsonActionValue));
                         }
                     }
-                    buttons.push_back( newButton);
+                    buttons[ButtonsCount++]=newButton;
                     position++;
                 }
                 
                 /* code */
             } while (jsonButton);
             
-            //Serial.println("Done processing json structure");
-            if (buttons.empty())
+            ESP_LOGD(module,"Done processing json structure, with %d buttons",ButtonsCount);
+            if (ButtonsCount==0)
             {
                 // this only contains menus
                 position = 0;
                 char menuName[31] = {0};
+                ESP_LOGD(module,"No buttons were found.  Trying to load as menu");
                 do
                 {
                     snprintf(logoName, sizeof(logoName), "logo%d", position);
@@ -253,36 +340,61 @@ namespace FreeTouchDeck
                     if(jsonLogo)
                     {
                         CJSON_STRING_OR_DEFAULT(logoValue,cJSON_GetObjectItem(doc,logoName),"question.bmp" );
-                        auto newButton = new FTButton(GFX, "", position, MENU,logoValue, "question.bmp", _outline, _textSize, _textColor);
+                        FTButton *  newButton = new FTButton( "", position, ButtonTypes::MENU,logoValue, "question.bmp", _outline, _textSize, _textColor);
+                        if(!newButton)
+                        {
+                            drawErrorMessage(true,module,"Failed to allocate memory for new button");
+                        }
                         newButton->actions.push_back(new FTAction(ActionTypes::MENU,menuName));
-                        buttons.push_back(newButton);
+                        buttons[ButtonsCount++]=newButton;
                     }   
                     position++;     
 
                 } while (jsonLogo);
             }
-            if(strcmp(Name, "homescreen")!=0 && !buttons.empty())
+            if(strcmp(Name, "homescreen")!=0 && ButtonsCount>0)
             {
                 AddHomeButton(&position);
             }
-
+            else if(ButtonsCount==0)
+            {
+                ESP_LOGD(module,"No buttons were found on screen %s. Adding default action as home screen", Name);
+                actions.push_back(homeMenu);
+            }
+            ESP_LOGD(module,"Freeing up the json structure.");
             cJSON_Delete(doc);
         }
         return true;
     }
     void Menu::Touch(uint16_t x, uint16_t y)
     {
-        for(uint8_t b = 0;b<buttons.size();b++)
+        for(uint8_t b = 0;b<ButtonsCount && buttons[b];b++)
         {
             if(buttons[b]->contains(x,y))
             {
                 buttons[b]->Press();
             }
         }
-        if(buttons.size()==0 && strcmp("config",Name))
+        
+        if(ButtonsCount ==0)
         {
-            QueueAction(&homeMenu);
+            if(actions.size()>0)
+            {
+                // Some empty screens might be defined with a default
+                // action. e.g. go back to previous menu, home screen, etc.
+                for(auto action : actions)
+                {
+                    QueueAction(action);
+                }
+            }
+            else if(strcmp("config",Name))
+            {
+                // in config mode, default to going back to home screen
+                // when pressed
+                QueueAction(homeMenu);
+            }
         }
+
     }
     void Menu::SetMargin(uint16_t value)
     {

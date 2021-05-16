@@ -1,5 +1,4 @@
-#define FREE_AND_NULL(x) if(x!=NULL) {free(x); x=NULL;}
-
+#include "globals.hpp"
 /**
 * @brief This function opens wificonfig.json and fills the wificonfig
 *        struct accordingly.
@@ -27,10 +26,10 @@ bool loadMainConfig()
   FREE_AND_NULL(wificonfig.wifimode);
   FREE_AND_NULL(wificonfig.hostname);
 
-  wificonfig.ssid = strdup( doc["ssid"] | "FAILED");
-  wificonfig.password = strdup( doc["password"] | "FAILED");
-  wificonfig.wifimode = strdup( doc["wifimode"] | "FAILED");
-  wificonfig.hostname=strdup(doc["wifihostname"] | "freetouchdeck");
+  wificonfig.ssid = ps_strdup( doc["ssid"] | "FAILED");
+  wificonfig.password = ps_strdup( doc["password"] | "FAILED");
+  wificonfig.wifimode = ps_strdup( doc["wifimode"] | "FAILED");
+  wificonfig.hostname=ps_strdup(doc["wifihostname"] | "freetouchdeck");
   wificonfig.attempts = (uint8_t)doc["attempts"] | 10 ;
   wificonfig.attemptdelay = (uint16_t)doc["attemptdelay"] | 500 ;
   configfile.close();

@@ -1,70 +1,78 @@
 #include "BMPImage.h"
-#include <SPIFFS.h>
-#include <FS.h>
+
 #include "UserConfig.h"
+
+static const char *module = "BMPImage";
 namespace FreeTouchDeck
 {
-    
-    BMPImage::BMPImage() 
+    BMPImage * ImageList[100]={0}; // reserve room for 100 
+    uint8_t ImageCount=0;
+    BMPImage::BMPImage()
     {
         valid = false;
     }
-    BMPImage::BMPImage(const char *imageName) 
+    void BMPImage::ResetData()
     {
-        if (imageName != NULL && strlen(imageName) > 0 && SetLogoPath(imageName))
+        MEMSET_SIZEOF(LogoName);
+    }
+    char *BMPImage::FileName(char * buffer, size_t buffSize)
+    {
+        const char *logoPathTemplate = "/logos/%s";
+        size_t len = strlen(logoPathTemplate) + strlen((const char *)LogoName);
+        memset(buffer, 0x00, buffSize);
+        snprintf(buffer,buffSize, logoPathTemplate, LogoName);
+        return buffer;
+    }
+    BMPImage::BMPImage(const char *imageName)
+    {
+        if (SetNameAndPath(imageName))
         {
-            LogoName=strdup(imageName);
-            GetBMPDetails();
-            if (!valid)
+            if (!GetBMPDetails())
             {
-                free(FileName);
-                SetLogoPath("question.bmp");
-                GetBMPDetails();
+                ESP_LOGE(module, "Unable to load bitmap file %s. ", LogoName);
             }
         }
         else
         {
-            LogoName=strdup("Unknown");
+            ESP_LOGE(module, "Unknown image.");
+            strncpy(LogoName,"Unknown",sizeof(LogoName));
             valid = false;
         }
     }
     BMPImage::~BMPImage()
     {
-        if (FileName)
-        {
-            free(FileName);
-        }
-        if(LogoName)
-        {
-            free(LogoName);
-        }
-        if(ImageData)
-        {
-            free(ImageData);
-        }
+        BMPImage::ResetData();
     }
-    bool BMPImage::SetLogoPath(const char *imageName)
+    bool BMPImage::SetNameAndPath(const char *imageName)
     {
-        const char *logoPathTemplate = "/logos/%s";
-        size_t len = strlen(logoPathTemplate) + strlen(imageName);
-        FileName = (char *)malloc(len);
-        memset(FileName, 0x00, len);
-        snprintf(FileName, len, logoPathTemplate, imageName);
-        return FileName;
+        if(!imageName && strlen(imageName)==0)
+        {
+            return false;
+        }
+        strncpy(LogoName,imageName,sizeof(LogoName));
+        return true;
     }
-    void BMPImage::GetBMPDetails()
+    bool BMPImage::GetBMPDetails()
     {
+#if defined(ESP32) && defined(CONFIG_SPIRAM_SUPPORT)
+        char FileNameBuffer[31]={0};
+        bool psramSupported = psramFound();
+#else
+        bool psramSupported = false;
+#endif
         // Open File
-        fs::File bmpImage = SPIFFS.open(FileName, FILE_READ);
+        ESP_LOGD(module, "Loading details from file %s", FileName(FileNameBuffer, sizeof(FileNameBuffer)));
+        fs::File bmpImage = SPIFFS.open(FileNameBuffer, FILE_READ);
         valid = true;
         if (!bmpImage)
         {
-            Serial.print("[ERROR] Invalid image file ");
-            Serial.println(FileName);
+            ESP_LOGE(module, "Could not open file %s", FileNameBuffer);
             valid = false;
+            return valid;
         }
         if (valid && read16(bmpImage) == 0x4D42)
         {
+            ESP_LOGD(module, "Valid bitmap header signature found");
             read32(bmpImage);
             read32(bmpImage);
             Offset = read32(bmpImage);              // start of image data
@@ -84,24 +92,22 @@ namespace FreeTouchDeck
             if (Depth != 24)
             {
                 valid = false;
-                Serial.printf("[ERROR]: GetBMPDetails: Image %s is not 24 bpp\r\n", FileName);
+                ESP_LOGE(module, "Unsupported bit depth %d for image %s. Image should be 24bpp.", Depth, bmpImage.name());
             }
             if (Compression != 0)
             {
-                Serial.printf("[ERROR]: GetBMPDetails: Image %s is compressed\r\n", FileName);
+                ESP_LOGE(module, "Compression not supported for %s. Image should be uncompressed.", bmpImage.name());
                 valid = false;
             }
             if (Planes != 1)
             {
-                Serial.printf("[ERROR]: GetBMPDetails: Image %s has %d planes.  Expected 1. \r\n", FileName, Planes);
+                ESP_LOGE(module, "Unsupported number of planes %d for image %s.", Planes, bmpImage.name());
                 valid = false;
             }
             if (valid)
             {
                 padding = (4 - ((w * 3) & 3)) & 3;
                 bmpImage.seek(Offset); //skip bitmap header
-
-                byte R, G, B;
 
                 B = bmpImage.read();
                 G = bmpImage.read();
@@ -110,79 +116,50 @@ namespace FreeTouchDeck
         }
         else
         {
-            Serial.printf("Invalid BMP file %s\r", FileName);
+            ESP_LOGE(module, "Invalid bitmap file %s. Signature 0x4D42 not found in header", bmpImage.name());
             valid = false;
         }
-#if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
-        // if (psramFound())
-        // {
-        //     Serial.println("Loading image into PSRAM");
-        //     ImageData= (uint8_t *)heap_caps_malloc(bmpImage.size(), MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT);
-        //     if(!ImageData)
-        //     {
-        //         Serial.printf("[ERROR]: Unable to allocate %d bytes of PSRAM for the image file ", bmpImage.size());
-        //         return;
-        //     }
-        //     Serial.println("Seeking to start of file");
-        //     bmpImage.seek(0);
-        //     Serial.println("Reading bytes into the buffer");
-        //     size_t read_size = bmpImage.readBytes((char *)ImageData, bmpImage.size());
-        //     Serial.printf("Loaded %d/%d bytes from image file\n",read_size, bmpImage.size() );
-        // }
-
-#else   
-        ImageData=NULL;
-#endif              
-        Serial.println("Closing file.");
+        ESP_LOGD(module, "Closing file %s", bmpImage.name());
         bmpImage.close();
-        Serial.println("Done");
+        ESP_LOGD(module, "Done parsing file");
+        return valid;
     }
 
-    void BMPImage::Draw(TFT_eSPI* GFX, int16_t x, int16_t y, bool transparent)
+    void BMPImage::Draw( int16_t x, int16_t y, bool transparent)
     {
-
-        Serial.printf("Drawing file %s\n", LogoName);
-        if ((x >= GFX->width()) || (y >= GFX->height()))
+        char FileNameBuffer[100]={0};
+        ESP_LOGD(module,"Drawing file %s", LogoName);
+        if ((x >= tft.width()) || (y >= tft.height()))
         {
-            Serial.printf("Coordinates [%d,%d] overflow screen size\r", x, y);
+            ESP_LOGE(module,"Coordinates [%d,%d] overflow screen size", x, y);
             return;
         }
         if (!valid)
         {
             // won't draw an invalid image
-            Serial.println("Not drawing an invalid image");
+            ESP_LOGW(module,"Not drawing an invalid image");
             return;
         }
-        Serial.println("Getting background color");
-        uint16_t BGColor = GFX->color565(R, G, B);
-        bool Transparent = (BGColor == 0);        
-        fs::File bmpFS;
-        uint8_t * position=NULL;
-        Serial.println("Checking if draw is from memory  or File");
-        if(!ImageData){
-            Serial.println("From File");
-            fs::File bmpFS = FILESYSTEM.open(FileName, "r");
-            if (!bmpFS)
-            {
-                Serial.print("File not found:");
-                Serial.println(FileName);
-                return;
-            }
-            bmpFS.seek(Offset);
-        }
-        else 
+        ESP_LOGD(module,"Getting background color");
+        uint16_t BGColor = tft.color565(R, G, B);
+        bool Transparent = (BGColor == 0);
+        Serial.println("From File");
+        fs::File bmpFS = FILESYSTEM.open(FileName(FileNameBuffer, sizeof(FileNameBuffer)), "r");
+        if (!bmpFS)
         {
-            Serial.println("From PSRAM");
-            position=ImageData+Offset;
+            Serial.print("File not found:");
+            Serial.println(FileNameBuffer);
+            return;
         }
+        bmpFS.seek(Offset);
 
         uint16_t row;
         uint8_t r, g, b;
 
         //y += h - 1;
-        bool oldSwapBytes = GFX->getSwapBytes();
-        GFX->setSwapBytes(true);
-        
+        bool oldSwapBytes = tft.getSwapBytes();
+        tft.setSwapBytes(true);
+
         uint8_t lineBuffer[w * 3 + padding];
         uint16_t lx = x - w / 2;
         uint16_t ly = y + h / 2 - 1;
@@ -190,20 +167,9 @@ namespace FreeTouchDeck
         uint16_t *tptr = NULL;
         for (row = 0; row < h; row++)
         {
-            if(!ImageData)
-            {
-                Serial.println("Loading image line");
-                bmpFS.read(lineBuffer, sizeof(lineBuffer));
-                bptr = lineBuffer;
-                tptr = (uint16_t *)lineBuffer;
-                position=lineBuffer;
-            }
-            else
-            {
-                Serial.println("Setting position in buffer");
-                bptr=position;
-                tptr = (uint16_t *)position;
-            }
+            bmpFS.read(lineBuffer, sizeof(lineBuffer));
+            bptr = lineBuffer;
+            tptr = (uint16_t *)lineBuffer;
 
             // Convert 24 to 16 bit colours
             for (uint16_t col = 0; col < w; col++)
@@ -214,26 +180,21 @@ namespace FreeTouchDeck
                 *tptr++ = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
             }
 
-            Serial.println("Pushing line to screen");
+            //Serial.println("Pushing line to screen");
             if (Transparent || transparent)
             {
                 // Push the pixel row to screen, pushImage will crop the line if needed
                 // y is decremented as the BMP image is drawn bottom up
-                GFX->pushImage(lx, ly--, w, 1, (uint16_t *)position, BGColor);
+                tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer, BGColor);
             }
             else
             {
                 // Push the pixel row to screen, pushImage will crop the line if needed
                 // y is decremented as the BMP image is drawn bottom up
-                GFX->pushImage(lx, ly--, w, 1, (uint16_t *)position);
-            }
-            if(ImageData)
-            {
-                Serial.println("Advancing buffer");
-                position+=sizeof(lineBuffer);
+                tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer);
             }
         }
-        GFX->setSwapBytes(oldSwapBytes);
+        tft.setSwapBytes(oldSwapBytes);
         bmpFS.close();
     }
 
@@ -254,30 +215,35 @@ namespace FreeTouchDeck
         ((uint8_t *)&result)[3] = f.read(); // MSB
         return result;
     }
-    BMPImage * GetImage(const char *imageName)
+    BMPImage *GetImage(const char *imageName)
     {
-        BMPImage * image=NULL;
-        if(!imageName || strlen(imageName)==0)
+        BMPImage *image = NULL;
+        if (!imageName || strlen(imageName) == 0)
         {
+            ESP_LOGD(module, "No image name passed");
             return NULL;
         }
-        for(int i=0;i<ImageList.size();i++)
+        ESP_LOGD(module, "Looking for image %s", imageName);
+        for (int i = 0; i < ImageCount && ImageList[i]; i++)
         {
-            if(strcmp(ImageList[i]->LogoName,imageName)==0)
+            if (strcmp(ImageList[i]->LogoName, imageName) == 0)
             {
-                Serial.printf("Found image cache entry for %s\n",imageName);
-                image=ImageList[i];
+                ESP_LOGD(module, "Returning cache entry for image %s", imageName);
+                image = ImageList[i];
                 break;
             }
+            else 
+            {
+                ESP_LOGV(module,"Cache image %s != %s", ImageList[i]->LogoName, imageName);
+            }
         }
-        if(!image)
+        if (!image)
         {
-            Serial.printf("Image cache entry not found for %s. Adding.\n",imageName);
-            image=new BMPImage(imageName);
-            ImageList.push_back(image);
+            ESP_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
+            image = new BMPImage(imageName);
+            ImageList[ImageCount++]=image;
         }
         return image;
-
     }
-    std::vector<BMPImage *> ImageList;
+    
 }

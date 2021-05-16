@@ -1,5 +1,5 @@
 #include "Menu.h"
-
+#include <stdarg.h>
 // /**
 // * @brief This function draws the logos according to the page
 //          we are currently on. The pagenumber is a global variable
@@ -1458,7 +1458,38 @@
 //     }
 //   }
 // }
+/* ------------- Print an error message the TFT screen  ---------------- 
+Purpose: This function prints an message to the TFT screen on a black 
+         background. 
+Input  : const char * message
+         const char * module
+Output : none
+Note   : none
+*/
 
+void drawErrorMessage(bool stop, const char * module, const char * fmt,...)
+{
+  char * message=NULL;
+	size_t msg_size=0;
+  va_list args;
+  va_start(args, fmt);  
+  Serial.printf(fmt,args);
+  msg_size = vsnprintf(NULL, 0, fmt, args)+1;
+  message = (char *)ps_malloc(msg_size);
+	vsprintf(message, fmt, args);
+	va_end(args);
+  ESP_LOGE(module,"%s", message );
+  tft.fillScreen(TFT_BLACK);
+  tft.setCursor(20, 20);
+  tft.setTextFont(2);
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.println(message);
+  while(stop)
+  {
+    yield();
+  }
+}
 /* ------------- Print an error message the TFT screen  ---------------- 
 Purpose: This function prints an message to the TFT screen on a black 
          background. 
