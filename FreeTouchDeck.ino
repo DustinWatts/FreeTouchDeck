@@ -306,7 +306,7 @@ void setup()
 {
 
   // Use serial port
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println("");
 
