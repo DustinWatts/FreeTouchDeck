@@ -121,6 +121,7 @@ FT6236 ts = FT6236();
 #include "Menu.h"
 #include "cJSON.h"
 #include "BMPImage.h"
+
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 AsyncWebServer webserver(80);
@@ -160,7 +161,7 @@ Wificonfig wificonfig = {.ssid = NULL, .password = NULL, .wifimode = NULL, .host
 
 Config generalconfig;
 
-unsigned long previousMillis = 0;
+volatile unsigned long previousMillis = 0;
 unsigned long Interval = 0;
 bool displayinginfo;
 char *jsonfilefail = "";
@@ -174,23 +175,25 @@ void ActionTask(void *pvParameters);
 
 SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
 std::queue<FreeTouchDeck::FTAction *> Queue;
+std::queue<FreeTouchDeck::FTAction *> ScreenQueue;
 bool QueueLock(TickType_t xTicksToWait)
 {
-  //    ESP_LOGV(TAG, "Locking config json object");
+  ESP_LOGV(TAG, "Locking Action Queue object");
   if (xSemaphoreTake(xQueueSemaphore, xTicksToWait) == pdTRUE)
   {
-    //      ESP_LOGV(TAG, "config Json object locked!");
+    ESP_LOGV(TAG, "Action Queue object  locked!");
     return true;
   }
   else
   {
-    Serial.println("[ERROR]: Unable to lock the Action queue object");
+    ESP_LOGE(TAG, "Unable to lock the Action queue object");
     return false;
   }
 }
 
 void QueueUnlock()
 {
+  ESP_LOGV(TAG, "Unlocking the Action queue object");
   xSemaphoreGive(xQueueSemaphore);
 }
 bool QueueAction(FreeTouchDeck::FTAction *action)
@@ -200,11 +203,24 @@ bool QueueAction(FreeTouchDeck::FTAction *action)
     Serial.println("[ERROR]: Unable to queue new action ");
     return false;
   }
-  Queue.push(action);
+  if(action->Type == FreeTouchDeck::ActionTypes::MENU || action->Type == FreeTouchDeck::ActionTypes::LOCAL)
+  {
+    ESP_LOGD(module,"Pushing action type %s to screen queue", FreeTouchDeck::enum_to_string(action->Type));
+    ScreenQueue.push(action);
+  }
+  else 
+  {
+    ESP_LOGD(module,"Pushing action type %s to regular queue", FreeTouchDeck::enum_to_string(action->Type));
+    Queue.push(action);
+  }
+  
   QueueUnlock();
   return true;
 }
 IRAM_ATTR char* ps_strdup(const char * fmt){
+  // Duplicate string values, calling our own
+  // memory allocation so we can decide to use
+  // PSRAM or not
   const char * s=NULL;
   if(fmt && strlen(fmt)>0)
   {
@@ -215,16 +231,20 @@ IRAM_ATTR char* ps_strdup(const char * fmt){
     s="";
   }
   char * o = (char *)malloc_fn(strlen(fmt)+1);
-  if(o) memset(o,0x00,strlen(fmt)+1);
+  if(o) 
+  {
+    memset(o,0x00,strlen(fmt)+1);
+    memcpy(o,fmt,strlen(fmt));
+  }
   return o;
 }
 IRAM_ATTR void * malloc_fn(size_t sz){
-  //void * ptr =NULL;
+  void * ptr =NULL;
 //#if defined (ESP32) && defined (CONFIG_SPIRAM_SUPPORT)
 #if defined (ESP32)
-  return heap_caps_malloc(sz, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); 
+  ptr =heap_caps_malloc(sz, MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT); 
 #else
-  return malloc(sz)
+  ptr= malloc(sz)
 #endif
 //     bool psramSupported=psramInit()&&psramFound();
 // #else 
@@ -246,10 +266,13 @@ IRAM_ATTR void * malloc_fn(size_t sz){
 //     ptr=malloc(sz);
 //   }
 	
-// 	if(ptr==NULL){
-// 		ESP_LOGE("FreeTouchDeck","malloc_fn:  unable to allocate memory!");
-// 	}
-//	return ptr;
+ 	if(!ptr)
+  {
+    drawErrorMessage(true,module,"Memory allocation failed");
+  }
+ 	
+
+	return ptr;
 }
 
 
@@ -308,9 +331,9 @@ void CacheBitmaps()
         {
           int start = FileName.lastIndexOf("/") + 1;
           FileName = FileName.substring(start);
-          ESP_LOGD(module,"Caching bitmap from file %s, with name %s",file.name(),FileName.c_str());
+          ESP_LOGV(module,"Caching bitmap from file %s, with name %s",file.name(),FileName.c_str());
           FreeTouchDeck::BMPImage * image=FreeTouchDeck::GetImage(FileName.c_str());
-          ESP_LOGD(module,"Adding menu completed. Getting next file");
+          ESP_LOGV(module,"Adding menu completed. Getting next file");
         }
         file = root.openNextFile();
     }
@@ -318,10 +341,10 @@ void CacheBitmaps()
 }
 void PrintMemInfo()
 {
-  ESP_LOGD(module,"free_iram: %d",heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-	ESP_LOGD(module,"min_free_iram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
-	ESP_LOGD(module,"free_spiram: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
-	ESP_LOGD(module,"min_free_spiram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM));
+  ESP_LOGV(module,"free_iram: %d",heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+	ESP_LOGV(module,"min_free_iram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+	ESP_LOGV(module,"free_spiram: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+	ESP_LOGV(module,"min_free_spiram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM));
 
 }
 
@@ -484,6 +507,7 @@ void setup()
   CacheBitmaps();
   LoadSystemMenus();
   LoadAllMenus();
+  InitAllMenus();
   Serial.println("[INFO]: All configs loaded");
   // Now add the system config menu
   
@@ -751,7 +775,25 @@ void loop(void)
 
   delay(10);
 }
+FreeTouchDeck::FTAction *PopScreenQueue()
+{
+  FreeTouchDeck::FTAction *Action = NULL;
 
+  if (QueueLock(portMAX_DELAY / portTICK_PERIOD_MS))
+  {
+    if (!ScreenQueue.empty())
+    {
+      Action = ScreenQueue.front();
+      ScreenQueue.pop();
+    }
+    QueueUnlock();
+  }
+  else
+  {
+    Serial.println("[ERROR]: Unable to screen lock Action queue");
+  }
+  return Action;
+}
 void ScreenHandleTask(void *pvParameters)
 {
   uint16_t t_x = 0;
@@ -763,7 +805,17 @@ void ScreenHandleTask(void *pvParameters)
   {
     bool pressed = getTouch(&t_x, &t_y);
     handleDisplay(pressed, t_x, t_y);
-    delay(10);
+    auto Action = PopScreenQueue();
+    if (Action)
+    {
+      ResetSleep();
+      Action->Execute();
+    }
+    else 
+    {
+      delay(10);
+    }
+    
   }
 }
 
@@ -786,6 +838,7 @@ FreeTouchDeck::FTAction *PopQueue()
   }
   return Action;
 }
+
 void ActionTask(void *pvParameters)
 {
   for (;;)

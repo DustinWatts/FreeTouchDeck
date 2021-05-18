@@ -36,6 +36,7 @@ const char *enum_to_string(LocalActionTypes type);
         public:
             ActionTypes Type;
             uint8_t value;
+            char * symbol;
             FTAction(ActionTypes actionParm,char * jsonString);
             FTAction(char * jsonActionType, char * jsonValueStr);
             FTAction(cJSON * jsonActionType, cJSON * jsonValue);
@@ -43,11 +44,11 @@ const char *enum_to_string(LocalActionTypes type);
             void Init();
             static ActionTypes GetType(cJSON * jsonActionType);
             void* operator new(size_t sz) {
-                ESP_LOGD("FTAction","operator new : %d",sz);
+                ESP_LOGV("FTAction","operator new : %d",sz);
                  return malloc_fn(sz);
             }   
         protected:
-            char * symbol;
+            
         private: 
             void SetType(const char * jsonTypeStr);
             void SetValue(char * jsonValue);

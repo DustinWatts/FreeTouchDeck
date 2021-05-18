@@ -53,14 +53,14 @@ const char *configScreen = R"(
   )";
 static const char *module = "MenuNavigation";
 using namespace std;
-std::vector<FreeTouchDeck::Menu *> Menus;
+std::list<FreeTouchDeck::Menu *> Menus;
 SemaphoreHandle_t xScreenSemaphore = xSemaphoreCreateMutex();
 bool ScreenLock(TickType_t xTicksToWait)
 {
     //    ESP_LOGV(TAG, "Locking config json object");
     if (xSemaphoreTake(xScreenSemaphore, xTicksToWait) == pdTRUE)
     {
-        //      ESP_LOGV(TAG, "config Json object locked!");
+        //ESP_LOGD(TAG, "Screen Lock object locked!");
         return true;
     }
     else
@@ -72,28 +72,38 @@ bool ScreenLock(TickType_t xTicksToWait)
 
 void ScreenUnlock()
 {
+    //ESP_LOGD(TAG, "Screen object unlocked!");
     xSemaphoreGive(xScreenSemaphore);
 }
 FreeTouchDeck::Menu *GetActiveScreen()
 {
     FreeTouchDeck::Menu *ActiveScreen = NULL;
+    ESP_LOGV(TAG, "Getting active screen");
     if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
     {
         for (auto m : Menus)
         {
             if (m->Active)
             {
-
                 ActiveScreen = m;
             }
         }
         ScreenUnlock();
+    }
+    if(ActiveScreen)
+    {
+        ESP_LOGV(module, "Found active screen %s",ActiveScreen->Name);
+    }
+    else 
+    {
+        ESP_LOGV(module,"No active screen found");
     }
     return ActiveScreen;
 }
 FreeTouchDeck::Menu *GetScreen(const char *name)
 {
     FreeTouchDeck::Menu *Match = NULL;
+    ESP_LOGD(TAG, "Getting screen object for %s",name);
     if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
     {
         for (auto m : Menus)
@@ -106,6 +116,10 @@ FreeTouchDeck::Menu *GetScreen(const char *name)
         if (!Match)
         {
             ESP_LOGE(module,"Screen %s not found", name);
+        }
+        else 
+        {
+            ESP_LOGD(module,"Screen was found");
         }
         ScreenUnlock();
     }
@@ -121,16 +135,15 @@ void SetActiveScreen(const char *name)
         {
             if (Active)
             {
-                Serial.println(Active->Name);
                 Active->Deactivate();
             }
             Match->Activate();
             ScreenUnlock();
         }
-        else
-        {
-            ESP_LOGE(module,"Menu %s was not found", name);
-        }
+    }
+    else
+    {
+        ESP_LOGE(module,"Menu %s was not found", name);
     }
 }
 void LoadSystemMenus()
@@ -168,13 +181,40 @@ void LoadAllMenus()
             }
             file = root.openNextFile();
         }
-        ESP_LOGD(module, "Adding home screen menu from file name /config/homescreen.json");
-        Menus.push_back(new FreeTouchDeck::Menu("/config/homescreen.json"));
+        ESP_LOGD(module, "Adding home screen menu from file name homescreen");
+        Menus.push_back(new FreeTouchDeck::Menu("homescreen"));
         root.close();
         ScreenUnlock();
     }
     else
     {
         Serial.printf("[ERROR]: Unable to add menus   \n");
+    }
+}
+
+void InitAllMenus()
+{
+    if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
+    {
+        ESP_LOGD(module,"Initializing %d menus", Menus.size());
+        for (auto m : Menus)
+        {
+            if(!m)
+            {
+                drawErrorMessage(true,module,"Null pointer for menu!");
+            }
+            else 
+            {
+                ESP_LOGD(module,"Initializing %s with %d buttons", m->Name, m->ButtonsCount);
+                (m)->Init();
+                ESP_LOGD(module,"Done Initializing %s", m->Name);
+            }
+           
+        }
+        ScreenUnlock();
+    }
+    else
+    {
+        Serial.printf("[ERROR]: Unable to init menus   \n");
     }
 }

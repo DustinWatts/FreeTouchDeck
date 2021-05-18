@@ -72,7 +72,7 @@ namespace FreeTouchDeck
         }
         if (valid && read16(bmpImage) == 0x4D42)
         {
-            ESP_LOGD(module, "Valid bitmap header signature found");
+            ESP_LOGV(module, "Valid bitmap header signature found");
             read32(bmpImage);
             read32(bmpImage);
             Offset = read32(bmpImage);              // start of image data
@@ -119,16 +119,16 @@ namespace FreeTouchDeck
             ESP_LOGE(module, "Invalid bitmap file %s. Signature 0x4D42 not found in header", bmpImage.name());
             valid = false;
         }
-        ESP_LOGD(module, "Closing file %s", bmpImage.name());
+        ESP_LOGV(module, "Closing file %s", bmpImage.name());
         bmpImage.close();
-        ESP_LOGD(module, "Done parsing file");
+        ESP_LOGV(module, "Done parsing file");
         return valid;
     }
 
     void BMPImage::Draw( int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100]={0};
-        ESP_LOGD(module,"Drawing file %s", LogoName);
+        ESP_LOGD(module,"Drawing bitmap file %s", LogoName);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
             ESP_LOGE(module,"Coordinates [%d,%d] overflow screen size", x, y);
@@ -143,14 +143,15 @@ namespace FreeTouchDeck
         ESP_LOGD(module,"Getting background color");
         uint16_t BGColor = tft.color565(R, G, B);
         bool Transparent = (BGColor == 0);
-        Serial.println("From File");
-        fs::File bmpFS = FILESYSTEM.open(FileName(FileNameBuffer, sizeof(FileNameBuffer)), "r");
+        FileName(FileNameBuffer, sizeof(FileNameBuffer));
+        ESP_LOGD(module,"Opening file %s", FileNameBuffer);
+        fs::File bmpFS = FILESYSTEM.open(FileNameBuffer, "r");
         if (!bmpFS)
         {
-            Serial.print("File not found:");
-            Serial.println(FileNameBuffer);
+            ESP_LOGD(module,"File not found: %s",FileNameBuffer);
             return;
         }
+        ESP_LOGD(module,"Seeking offset: %d",Offset);
         bmpFS.seek(Offset);
 
         uint16_t row;
@@ -195,6 +196,7 @@ namespace FreeTouchDeck
             }
         }
         tft.setSwapBytes(oldSwapBytes);
+        ESP_LOGD(module,"Closing bitmap file %s", LogoName);
         bmpFS.close();
     }
 
@@ -220,15 +222,15 @@ namespace FreeTouchDeck
         BMPImage *image = NULL;
         if (!imageName || strlen(imageName) == 0)
         {
-            ESP_LOGD(module, "No image name passed");
+            ESP_LOGE(module, "No image name passed");
             return NULL;
         }
-        ESP_LOGD(module, "Looking for image %s", imageName);
+        ESP_LOGV(module, "Looking for image %s", imageName);
         for (int i = 0; i < ImageCount && ImageList[i]; i++)
         {
             if (strcmp(ImageList[i]->LogoName, imageName) == 0)
             {
-                ESP_LOGD(module, "Returning cache entry for image %s", imageName);
+                ESP_LOGV(module, "Returning cache entry for image %s", imageName);
                 image = ImageList[i];
                 break;
             }

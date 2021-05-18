@@ -7,4 +7,5 @@ extern void LoadSystemMenus();
 extern void SetActiveScreen(const char * name);
 extern bool ScreenLock(TickType_t xTicksToWait) ;
 extern void ScreenUnlock() ;
+extern void InitAllMenus();
 extern FreeTouchDeck::Menu *GetActiveScreen();

@@ -101,11 +101,20 @@ namespace FreeTouchDeck
     {
         if (Type == ActionTypes::LETTERS || Type == ActionTypes::SPECIAL_CHARS || Type == ActionTypes::MENU)
         {
+            if(!jsonValue || strlen(jsonValue)==0)
+            {
+                ESP_LOGW(module,"Empty string value for action type %s",enum_to_string(Type));
+            }
+            else 
+            {
+                ESP_LOGD(module,"Assigning string value %s for action type %s",jsonValue,enum_to_string(Type));
+            }
             symbol = ps_strdup(jsonValue);
         }
         else
         {
             value = atol(jsonValue);
+            ESP_LOGD(module,"Converting value %s to number %d for action type %s",jsonValue,value,enum_to_string(Type));
         }
     }
     void FTAction::SetValue(int jsonValue)
@@ -114,9 +123,11 @@ namespace FreeTouchDeck
         if (Type == ActionTypes::LETTERS || Type == ActionTypes::SPECIAL_CHARS)
         {
             symbol = ps_strdup(itoa(jsonValue, buffer, sizeof(buffer) - 1));
+            ESP_LOGD(module,"Assigning string value %s from number %d for action type %s",symbol,jsonValue,enum_to_string(Type));
         }
         else
         {
+            ESP_LOGD(module,"Assigning number %d for action type %s",value,enum_to_string(Type));
             value = jsonValue;
         }
     }
