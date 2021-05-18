@@ -5,7 +5,7 @@ body {
   width: 99%;
 }
 
-.pageloading{
+#contentloading {
   background-color: #ffffff;
   color: #1fa3ec;
   line-height: 2.4rem;

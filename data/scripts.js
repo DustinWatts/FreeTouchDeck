@@ -10,28 +10,55 @@ function togglepassword() {
 
 //Menu Handler
 function openMenu(evt, menuitem) {
-  // Declare all variables
-  var i, tabcontent, tablinks;
+  $(".tabcontent").map((index, element) => $(element).hide());
+  $(".tablinks").map((index, element) => $(element).removeClass("active"));
 
-  // Get all elements with class="tabcontent" and hide them
-  tabcontent = document.getElementsByClassName("tabcontent");
-  for (var i = 0; i < tabcontent.length; i++) {
-    tabcontent[i].style.display = "none";
-  }
-
-  // Get all elements with class="tablinks" and remove the class "active"
-  tablinks = document.getElementsByClassName("tablinks");
-  for (var i = 0; i < tablinks.length; i++) {
-    tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-
-  // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(menuitem).style.display = "block";
+  $("#" + menuitem).show();
   if (evt && evt.currentTarget) {
-    evt.currentTarget.className += " active";
+    $(evt.currentTarget).addClass("active");
   }
 }
 
+function populateSelectList($selectElement, items) {
+  if (!$selectElement) {
+    return;
+  }
+
+  $selectElement.empty();
+
+  items.map(function(item) {
+    let data = {
+      'value' : typeof item == 'object' ? item.value : item,
+      'text' : typeof item == 'object' ? item.text : item,
+    };
+    appendToSelectList($selectElement, data)
+  });
+}
+
+function addToSelectList(prepend, $selectElement, item) {
+  var text = item;
+  var value = item;
+
+  if (typeof item == 'object') {
+    text = item.text;
+    value = (typeof item.value == 'undefined') ? text : item.value;
+  }
+
+  let $option = $('<option>', {value:value, text:text});
+  if (prepend === true) {
+    $selectElement.prepend($option);
+  } else {
+    $selectElement.append($option);
+  }
+}
+
+function appendToSelectList($selectElement, item) {
+  addToSelectList(false, $selectElement, item);
+}
+
+function prependToSelectList($selectElement, item) {
+  addToSelectList(true, $selectElement, item);
+}
 
 //Load the array with all the dropdown menu items
 var actionSelectItemData = [{
@@ -624,7 +651,7 @@ function populateActionSelects($el, i) {
   $.each(actionSelectItemData, function () {
     for (var a = 0; a < 3; a++) {
       var $actionSelect = $('[name="screenButton' + i + 'Action' + a + '"]', $el);
-      $actionSelect.append($('<option>', {value:this.value, text:this.text}));
+      appendToSelectList($actionSelect, this);
     }
 
     for (var a = 0; a < 3; a++) {
@@ -633,27 +660,15 @@ function populateActionSelects($el, i) {
           var action = $(this).val();
           var $valueSelect = $('[name="screenButton' + i + 'Value' + a + '"]', $el);
 
-          $valueSelect.empty();
-          $.each(actionSelectItemData[action].subitems, function () {
-            $valueSelect.append($('<option>', {value:this.value, text:this.text}));
-          });
+          populateSelectList($valueSelect, actionSelectItemData[action].subitems);
         }).change();
       })(jQuery, i, a, $el);
     }
   });
 }
 
-
 function createCheck(filename) {
     return `<input form="delete" type="checkbox" id="${filename}" name="${filename}" value="${filename}"><label for="${filename}"> ${filename}</label><br>`;
-}
-
-function fillvaluelist(targetNode, srcArray) {
-
-  targetNode.innerHTML = srcArray.reduce((options, { value, text }) =>
-    options += `<option value="${value}">${text}</option>`,
-    '');
-
 }
 
 /**
@@ -665,18 +680,18 @@ Fetch the menu config from a given url, and populate the relevant forms
 function getMenuConfig(url, $el){
   // Load Menu
   fetch(url)
-  .then((response) => {
-    return response.json()
-  })
-  .then((data) => {
+    .then((response) => {
+      return response.json()
+    })
 
-      console.log('menu data returned', url, $el);
-      console.log('data', data);
+    .then((data) => {
+//      console.log('menu data returned', url, $el);
+//      console.log('data', data);
 
       for (var i = 0; i < 5; i++) {
         var $screenLogo = $('[name="screenLogo' + i + '"]', $el);
-        var screenLogoData = data['logo' + i];
-        $screenLogo.append(new Option(screenLogoData));
+//        appendToSelectList($screenLogo, data['logo' + i]);
+        $screenLogo.val(data['logo' + i]);
 
         if(data['button' + i].latch) {
           var $latchButton = $('[name="screenButton' + i + 'Latch"]', $el);
@@ -684,12 +699,8 @@ function getMenuConfig(url, $el){
         }
 
         var $latchLogo = $('[name="screenLatchLogo' + i + '"]', $el);
-        if(data['button' + i].latchlogo == "") {
-          $latchLogo.append(new Option("---"));
-        } else {
-          $latchLogo.append(data['button' + i].latchlogo);
-          $latchLogo.append(new Option("---"));
-        }
+        prependToSelectList($latchLogo, "---");
+        $latchLogo.val(data['button' + i].latchlogo == "" ? "---" : data['button' + i].latchlogo);
 
         for (var a = 0; a < 3; a++) {
           var $actionSelect = $('[name="screenButton' + i + 'Action' + a + '"]', $el);
@@ -697,64 +708,33 @@ function getMenuConfig(url, $el){
           $actionSelect.change();
 
           var $valueSelect = $('[name="screenButton' + i + 'Value' + a + '"]', $el);
-//          fillvaluelist($valueSelect, actionSelectItemData[data['button' + i].actionarray[a]].subitems);
           $valueSelect.val(data['button' + i].valuearray[a]);
         }
       }
 
+      //finally set the last icon to 'home' - this button is always 'home'
       $('[name="screenLogo5"]', $el).append(new Option("home.bmp"));
     })
     .catch((err) => {
-    console.log(err)
+      console.log(err)
     })
 }
 
 function getlogoconfig(){
-
-  var logolist = []; // Array holding the logos (empty to start)
-
-  var selects = document.getElementsByClassName('images');
-
   // Loading all the logo's
-  fetch('config/homescreen.json')
-    .then((response) => {
+  return fetch('config/homescreen.json')
+  .then((response) => {
     return response.json()
   })
   .then((data) => {
-
     document.getElementById("homescreenlogo0").add(new Option(data.logo0));
     document.getElementById("homescreenlogo1").add(new Option(data.logo1));
     document.getElementById("homescreenlogo2").add(new Option(data.logo2));
     document.getElementById("homescreenlogo3").add(new Option(data.logo3));
     document.getElementById("homescreenlogo4").add(new Option(data.logo4));
     document.getElementById("homescreenlogo5").add(new Option(data.logo5));
-
   })
-  .then((data) => {
-    fetch('/list?dir=/logos')
-      .then((response3) => {
-        return response3.json()
-      })
-      .then((data3) => {
-        var checkboxlist = '<form method="post" id="delete" action="/editor">';
-        data3.forEach(obj => {
-          Object.entries(obj).forEach(([key, value]) => {
-            
-            var input = createCheck(value); // Creates the html for the checkbox
-                checkboxlist += input;
 
-          });
-
-        });
-        checkboxlist += '<br><button style="cursor: pointer;"" type="save">Delete files</button></form>';
-        document.getElementById("deletefilelist").innerHTML = checkboxlist;
-
-      })
-      .catch((err) => {
-        console.log(err)
-      })
-
-  })
   .then((data) => {
     fetch('/info')
       .then((response4) => {
@@ -775,7 +755,6 @@ function getlogoconfig(){
       .catch((err) => {
         console.log(err)
       })
-
   })
 
   .then((data) => {
@@ -784,59 +763,52 @@ function getlogoconfig(){
         return response2.json()
       })
       .then((data2) => {
-        data2.forEach(obj => {
-          Object.entries(obj).forEach(([key, value]) => {
-            logolist.push(`${value}`);
-            var i = selects.length;
-            while (i--) {
-              var select = selects[i];
-              select.add(new Option(`${value}`, `${value}`));
-            }
+        let $selectLists = $('.images');
+        var checkboxlist = '<form method="post" id="delete" action="/editor">';
+        data2.forEach(value => {
+          // create the delete checkbox
+          var input = createCheck(value); // Creates the html for the checkbox
+          checkboxlist += input;
 
+          // populate the various images lists
+          $selectLists.map(function(index, element) {
+            appendToSelectList($(element), value);
           });
         });
-
+        checkboxlist += '<br><button style="cursor: pointer;"" type="save">Delete files</button></form>';
+        document.getElementById("deletefilelist").innerHTML = checkboxlist;
       })
       .then(() => {
-        document.getElementById("contentloading").style.display = "none";
-        document.getElementById('ball-loader').style.display = "none";
-        document.getElementById("maincontent").style.display = "block";
+        $('#loading').hide();
+        $('#maincontent').show();
       })
       .catch((err) => {
         console.log(err)
       })
-
   })
   .catch((err) => {
     console.log(err)
   })
-
-
 }
 
 // Function to get Sleep settings:
 function getwificonfig(){
-
-    // Load Menu 5
-fetch('config/wificonfig.json')
-  .then((response) => {
-    return response.json()
-  })
-  .then((data) => {
-
-
-  document.getElementById("ssid").value = data.ssid;
-  document.getElementById("password").value = data.password;
-  document.getElementById("wifimode").value = data.wifimode;
-  document.getElementById("wifihostname").value = data.wifihostname;
-  document.getElementById("attempts").value = data.attempts;
-  document.getElementById("attemptdelay").value = data.attemptdelay;
-  
-
-  })
-  .catch((err) => {
-    console.log(err)
-  })
+  // Load Menu 5
+  fetch('config/wificonfig.json')
+    .then((response) => {
+      return response.json()
+    })
+    .then((data) => {
+      document.getElementById("ssid").value = data.ssid;
+      document.getElementById("password").value = data.password;
+      document.getElementById("wifimode").value = data.wifimode;
+      document.getElementById("wifihostname").value = data.wifihostname;
+      document.getElementById("attempts").value = data.attempts;
+      document.getElementById("attemptdelay").value = data.attemptdelay;
+    })
+    .catch((err) => {
+      console.log(err)
+    })
 }
 
 $(document).ready(function() {
@@ -872,6 +844,9 @@ $(document).ready(function() {
       getwificonfig();
     })
     .then(() => {
+      return getlogoconfig();
+    })
+    .then(() => {
       getMenuConfig('config/menu1.json', $('#savemenu1'));
     })
     .then(() => {
@@ -885,9 +860,6 @@ $(document).ready(function() {
     })
     .then(() => {
       getMenuConfig('config/menu5.json', $('#savemenu5'));
-    })
-    .then(() => {
-      getlogoconfig();
     })
     .catch((err) => {
       console.log(err)

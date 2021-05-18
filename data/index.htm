@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
 	<link rel="shortcut icon" href="">
 	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 	<meta content="utf-8" http-equiv="encoding">
-	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, user-scalable=no\" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 	<title>FreeTouchDeck Configurator</title>
 	<link rel="stylesheet" href="/styles.css" />
 
@@ -13,22 +12,18 @@
 	<script src="/scripts.js"></script>
 
 </head>
-
 <body>
-	<!-- <div id="contentloading" class="pageloading"> Loading the configurator.</div> -->
+<div id="loading">
+	<div id="contentloading">Loading Configurator</div>
 
-	<div id="contentloading" class="pageloading">
-		Loading Configurator
-	</div>
-
-	<div id="ball-loader" class="ball-loader">
-
+	<div class="ball-loader">
 		<div class="ball-loader-ball ball1"></div>
 		<div class="ball-loader-ball ball2"></div>
 		<div class="ball-loader-ball ball3"></div>
 	</div>
+</div>
 
-	<div id="maincontent" style="display: none;">
+<div id="maincontent" style="display: none;">
 	<h1>FreeTouchDeck Configurator</h1>
 	<form class="form" method="post" action='/upload' id="uploadfile" enctype="multipart/form-data"></form>
 	<form class="form" method="post" action='/uploadJSON' id="uploadjsonfile" enctype="multipart/form-data"></form>
@@ -49,11 +44,8 @@
 		<button style="float: right;" onclick="return confirm('Are you sure? Unsaved configuration will be lost!')" class="tablinks"> Restart </button></form>
 
 		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'info')">Info</button>
-
 		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'editor')">File editor</button>
-
 		<button style="float: right;" class="tablinks" onclick="openMenu(event, 'uploadjson')">Upload Menu Config</button>
-
 	</div>
 
 	<!-- Tab Intro -->
@@ -109,7 +101,7 @@
 				</select><br>
 		</div>
 
-		<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+		<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="wifi">
 				<br /><button style='cursor: pointer;' form="savewifi" type='save'>Save WiFi Config</button></div>
 		</form>
@@ -210,7 +202,7 @@
   					<option value="1000">1000</option>
 				</select>
 
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="general">
 				<br /><button style='cursor: pointer;' form="generalconfig" type='save'>Save General Config</button></div>
 		</form>
@@ -262,7 +254,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="homescreen">
 				<br /><button style='cursor: pointer;' form="savehomescreen" type='save'>Save Home Screen
 					Config</button>
@@ -370,7 +362,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu1">
 				<br /><button style='cursor: pointer;' form="savemenu1" type='save'>Save Menu 1 Config</button>
 		</form>
@@ -474,7 +466,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu2">
 				<br /><button style='cursor: pointer;' form="savemenu2" type='save'>Save Menu 2 Config</button>
 		</form>
@@ -578,7 +570,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu3">
 				<br /><button style='cursor: pointer;' form="savemenu3" type='save'>Save Menu 3 Config</button>
 		</form>
@@ -682,7 +674,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu4">
 				<br /><button style='cursor: pointer;' form="savemenu4" type='save'>Save Menu 4 Config</button>
 		</form>
@@ -786,7 +778,7 @@
 					</tr>
 				</tbody>
 			</table>
-			<div class="form" style="width: 50%; text-align: : center; margin: auto;">
+			<div class="form" style="width: 50%; text-align: center; margin: auto;">
 				<input type="hidden" id='save' name='save' value="menu5">
 				<br /><button style='cursor: pointer;' form="savemenu5" type='save'>Save Menu 5 Config</button>
 		</form>
@@ -803,7 +795,7 @@
 		FreeTouchDeck will check the colour of the first pixel in the image. If that pixel is black (#000000), all black pixels will be rendered as transparent and the button colour chosen in the "General" tab will be used. If that pixel has a colour, the button will have that colour so that the image blends in nicely.
 	</div>
 		<p>
-		<div class="form" style="width: 10%; text-align: : center; margin: auto;">
+		<div class="form" style="width: 10%; text-align: center; margin: auto;">
 			<input form="uploadfile" type="file" name="name" accept=".bmp"><br /><br />
 			<button style='cursor: pointer;' form="uploadfile" type="save">Upload</button>
 		</div>

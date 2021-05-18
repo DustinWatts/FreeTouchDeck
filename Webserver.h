@@ -26,11 +26,7 @@ String handleFileList(String path)
         output += ',';
       }
 
-      output += "{\"";
-      output += filecount;
-      output += "\":\"";
-      output += String(file.name()).substring(7);
-      output += "\"}";
+      output += "\"" + String(file.name()).substring(7) + "\"";
       file = root.openNextFile();
       filecount++;
     }
