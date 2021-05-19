@@ -121,7 +121,7 @@ FT6236 ts = FT6236();
 #include "Menu.h"
 #include "cJSON.h"
 #include "BMPImage.h"
-
+using namespace FreeTouchDeck;
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 
 AsyncWebServer webserver(80);
@@ -137,9 +137,6 @@ TFT_eSPI tft = TFT_eSPI();
 // again, otherwise it will only be done once.
 // Repeat calibration if you change the screen rotation.
 #define REPEAT_CAL false
-
-// placeholder for the pagenumber we are on (0 indicates home)
-int pageNum = 0;
 
 // Initial LED brightness
 int ledBrightness = 255;
@@ -164,59 +161,12 @@ Config generalconfig;
 volatile unsigned long previousMillis = 0;
 unsigned long Interval = 0;
 bool displayinginfo;
-char *jsonfilefail = "";
-
-
 
 TaskHandle_t xScreenTask = NULL;
 void ScreenHandleTask(void *pvParameters);
 TaskHandle_t xActionTask = NULL;
 void ActionTask(void *pvParameters);
 
-SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
-std::queue<FreeTouchDeck::FTAction *> Queue;
-std::queue<FreeTouchDeck::FTAction *> ScreenQueue;
-bool QueueLock(TickType_t xTicksToWait)
-{
-  ESP_LOGV(TAG, "Locking Action Queue object");
-  if (xSemaphoreTake(xQueueSemaphore, xTicksToWait) == pdTRUE)
-  {
-    ESP_LOGV(TAG, "Action Queue object  locked!");
-    return true;
-  }
-  else
-  {
-    ESP_LOGE(TAG, "Unable to lock the Action queue object");
-    return false;
-  }
-}
-
-void QueueUnlock()
-{
-  ESP_LOGV(TAG, "Unlocking the Action queue object");
-  xSemaphoreGive(xQueueSemaphore);
-}
-bool QueueAction(FreeTouchDeck::FTAction *action)
-{
-  if (!QueueLock(100 / portTICK_PERIOD_MS))
-  {
-    Serial.println("[ERROR]: Unable to queue new action ");
-    return false;
-  }
-  if(action->Type == FreeTouchDeck::ActionTypes::MENU || action->Type == FreeTouchDeck::ActionTypes::LOCAL)
-  {
-    ESP_LOGD(module,"Pushing action type %s to screen queue", FreeTouchDeck::enum_to_string(action->Type));
-    ScreenQueue.push(action);
-  }
-  else 
-  {
-    ESP_LOGD(module,"Pushing action type %s to regular queue", FreeTouchDeck::enum_to_string(action->Type));
-    Queue.push(action);
-  }
-  
-  QueueUnlock();
-  return true;
-}
 IRAM_ATTR char* ps_strdup(const char * fmt){
   // Duplicate string values, calling our own
   // memory allocation so we can decide to use
@@ -357,14 +307,14 @@ void setup()
 
   Serial.begin(115200);
   Serial.setDebugOutput(true);
-  Serial.printf("Main Task size is %d\r", CONFIG_ARDUINO_LOOP_STACK_SIZE);
-#ifdef ARDUINO_TWATCH_BASE
-  Serial.println("[INFO]: Enabling power ");
+  ESP_LOGI(module,"Starting system.");
+  #ifdef ARDUINO_TWATCH_BASE
+  ESP_LOGI(module,"Enabling AXP power management chip.");
   Wire1.begin(21, 22);
   int ret = power->begin(Wire1, AXP202_SLAVE_ADDRESS, false);
   if (ret == AXP_FAIL)
   {
-    Serial.println("[ERROR]: AXP Power begin failed");
+    ESP_LOGE(module,"AXP Power begin failed");
   }
   else
   {
@@ -380,7 +330,7 @@ void setup()
     power->setChargeControlCur(300);
   }
   power->setPowerOutPut(AXP202_LDO2, AXP202_ON);
-  Serial.println("[INFO]: Setting up Display Back light");
+  ESP_LOGI(module,"Setting up Display Back light");
 #endif
 #ifdef USECAPTOUCH
 #ifdef CUSTOM_TOUCH_SDA
@@ -389,11 +339,11 @@ void setup()
   if (!ts.begin(40))
 #endif
   {
-    Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
+    ESP_LOGE(module,"Unable to start the capacitive touchscreen.");
   }
   else
   {
-    Serial.println("[INFO]: Capacitive touch started!");
+    ESP_LOGI(module,"Capacitive touch started");
   }
 #endif
 
@@ -407,7 +357,7 @@ void setup()
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // --------------- Init Display -------------------------
-  ESP_LOGD(module,"Initializing display");
+  ESP_LOGI(module,"Initializing display");
   // Initialise the TFT screen
   tft.init();
 
@@ -423,24 +373,19 @@ void setup()
 
   if (!FILESYSTEM.begin())
   {
-    Serial.println("[ERROR]: SPIFFS initialisation failed!");
-    drawErrorMessage("Failed to init SPIFFS! Did you upload the data folder?");
-    while (1)
-      yield(); // We stop here
+    ESP_LOGE(module,"SPIFFS initialisation failed!");
+    drawErrorMessage(true,module,"Failed to init SPIFFS! Did you upload the data folder?");
+
   }
-  Serial.println("[INFO]: SPIFFS initialised.");
-
-  // Check for free space
-
-  Serial.print("[INFO]: Free Space: ");
-  Serial.println(SPIFFS.totalBytes() - SPIFFS.usedBytes());
+  ESP_LOGI(module,"SPIFFS initialised. Free Space: %d",SPIFFS.totalBytes() - SPIFFS.usedBytes());
+  
   // if(psramFound())
   // ESP_LOGI(module,"Available PSRAM: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
   
   // ------------------- Splash screen ------------------
 
   // If we are woken up we do not need the splash screen
-  if (wakeup_reason > 0)
+  if (wakeup_reason > ESP_SLEEP_WAKEUP_UNDEFINED)
   {
     // But we do draw something to indicate we are waking up
     tft.setTextFont(2);
@@ -450,33 +395,33 @@ void setup()
   {
 
     // Draw a splash screen
-    //DrawSplash();
+    DrawSplash();
     ESP_LOGD(module,"Displaying version details");
     tft.setCursor(1, 3);
     tft.setTextFont(2);
     tft.setTextSize(1);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.printf("Loading version %s\n", versionnumber);
-    Serial.printf("[INFO]: Loading version %s\n", versionnumber);
+    ESP_LOGI(module,"Loading version %s", versionnumber);
   }
 
   //------------------ Load Wifi Config ----------------------------------------------
 
-  Serial.println("[INFO]: Loading Wifi Config");
+  ESP_LOGI(module,"Loading Wifi Config");
   if (!loadMainConfig())
   {
-    Serial.println("[WARNING]: Failed to load WiFi Credentials!");
+    ESP_LOGW(module,"Failed to load WiFi Credentials!");
   }
   else
   {
-    Serial.println("[INFO]: WiFi Credentials Loaded");
+   ESP_LOGI(module,"WiFi Credentials Loaded");
   }
 
   // ----------------- Load webserver ---------------------
   handlerSetup();
 
 
-  Serial.printf("[INFO]: Screen size is %dx%d\n", tft.width(), tft.height());
+  ESP_LOGI(module,"Screen size is %dx%d", tft.width(), tft.height());
 
 // Calibrate the touch screen and retrieve the scaling factors
 #ifndef USECAPTOUCH
@@ -486,48 +431,35 @@ void setup()
   // Let's first check if all the files we need exist
   if (!checkfile("/config/general.json"))
   {
-    Serial.println("[ERROR]: /config/general.json not found!");
-    while (1)
-      yield(); // Stop!
+    // draw an error message and stop
+    drawErrorMessage(true,module,"/config/general.json not found. Make sure the data partition was uploaded");
   }
-
-  // After checking the config files exist, actually load them
-  if (!loadConfig())
-  {
-    Serial.println("[WARNING]: general.json seems to be corrupted!");
-    Serial.println("[WARNING]: To reset to default type 'reset general'.");
-    jsonfilefail = "general";
-    pageNum = 10;
-  }
-
-  // Setup PWM channel for Piezo speaker
-
-  ledcSetup(2, 500, 8);
+ 
   HandleAudio(Sounds::STARTUP);
   CacheBitmaps();
   LoadSystemMenus();
   LoadAllMenus();
   InitAllMenus();
-  Serial.println("[INFO]: All configs loaded");
-  // Now add the system config menu
+// After checking the config files exist, actually load them
+  if (!loadConfig())
+  {
+    ESP_LOGW(module,"general.json seems to be corrupted. To reset to default type 'reset general'.");
+  }
+  ESP_LOGI(module,"All config files loaded");
   
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
 
   //------------------BLE Initialization ------------------------------------------------------------------------
-
-  Serial.println("[INFO]: Starting BLE");
+  ESP_LOGI(module,"Starting BLE Keyboard");
   bleKeyboard.begin();
 
   // ---------------- Printing version numbers -----------------------------------------------
-  Serial.print("[INFO]: BLE Keyboard version: ");
-  Serial.println(BLE_KEYBOARD_VERSION);
-  Serial.print("[INFO]: ArduinoJson version: ");
-  Serial.println(ARDUINOJSON_VERSION);
-  Serial.print("[INFO]: TFT_eSPI version: ");
-  Serial.println(TFT_ESPI_VERSION);
-  Serial.println("[INFO]: SPI Flash frequency: ");
-  Serial.println(CONFIG_ESPTOOLPY_FLASHFREQ);
+  ESP_LOGI(module,"BLE Keyboard version: %s",BLE_KEYBOARD_VERSION);
+  ESP_LOGI(module,"ArduinoJson version: %s", ARDUINOJSON_VERSION);
+  ESP_LOGI(module,"TFT_eSPI version: %s",TFT_ESPI_VERSION);
+  ESP_LOGI(module,"SPI Flash frequency: %s",CONFIG_ESPTOOLPY_FLASHFREQ);
+  
   // ---------------- Start the first keypad -------------
 
   // Draw background
@@ -539,11 +471,8 @@ void setup()
     // todo: implement sleep logic
     pinMode(touchInterruptPin, INPUT_PULLUP);
     Interval = generalconfig.sleeptimer * 60000;
-    Serial.println("[INFO]: Sleep enabled.");
-    Serial.print("[INFO]: Sleep timer = ");
-    Serial.print(generalconfig.sleeptimer);
-    Serial.println(" minutes");
-    // islatched[28] = 1;
+    QueueAction(sleepSetLatchAction);
+    ESP_LOGI(module,"Sleep enabled. Timer = %d minutes",generalconfig.sleeptimer);
   }
 
   xTaskCreate(ScreenHandleTask, "Screen", 4096*5, NULL, tskIDLE_PRIORITY + 5, &xScreenTask);
@@ -570,9 +499,9 @@ void processSerial()
       String value = Serial.readString();
       if (saveWifiSSID(value))
       {
-        Serial.printf("[INFO]: Saved new SSID: %s\n", value.c_str());
+        ESP_LOGI(module,"Saved new SSID: %s\n", value.c_str());
         loadMainConfig();
-        Serial.println("[INFO]: New configuration loaded");
+        ESP_LOGI(module,"New configuration loaded");
       }
     }
     else if (command == "setpassword")
@@ -580,9 +509,9 @@ void processSerial()
       String value = Serial.readString();
       if (saveWifiPW(value))
       {
-        Serial.printf("[INFO]: Saved new Password: %s\n", value.c_str());
+        ESP_LOGI(module,"Saved new Password: %s\n", value.c_str());
         loadMainConfig();
-        Serial.println("[INFO]: New configuration loaded");
+        ESP_LOGI(module,"New configuration loaded");
       }
     }
     else if (command == "setwifimode")
@@ -590,21 +519,21 @@ void processSerial()
       String value = Serial.readString();
       if (saveWifiMode(value))
       {
-        Serial.printf("[INFO]: Saved new WiFi Mode: %s\n", value.c_str());
+        ESP_LOGI(module,"Saved new WiFi Mode: %s\n", value.c_str());
         loadMainConfig();
-        Serial.println("[INFO]: New configuration loaded");
+        ESP_LOGI(module,"New configuration loaded");
       }
     }
     else if (command == "restart")
     {
-      Serial.println("[WARNING]: Restarting");
+      ESP_LOGD(module,"Restarting");
       ESP.restart();
     }
 
     else if (command == "reset")
     {
       String file = Serial.readString();
-      Serial.printf("[INFO]: Resetting %s.json now\n", file.c_str());
+      ESP_LOGI(module,"Resetting %s.json now\n", file.c_str());
       resetconfig(file);
     }
   }
@@ -675,6 +604,14 @@ void HandleAudio(Sounds sound)
 {
   if (speakerPin >= 0)
   {
+    static bool isInit=false;
+    
+    if(!isInit)
+    {
+      // Setup PWM channel for Piezo speaker
+      ledcSetup(2, 500, 8);
+      isInit=true;
+    }
     AudioChipTune(sound);
   }
   // todo:  add support for i2s audio
@@ -730,7 +667,24 @@ bool getTouch(uint16_t *t_x, uint16_t *t_y)
   return false;
 }
 #endif
+void processSleep()
+{
+  if (generalconfig.sleepenable && touchInterruptPin >= 0)
+  {
+    if (millis() > previousMillis + Interval)
+    {
+      // The timer has ended and we are going to sleep  .
+      tft.fillScreen(TFT_BLACK);
+      ESP_LOGD(module,"Going to sleep.");
+      HandleAudio(Sounds::GOING_TO_SLEEP);
+      //todo better power management for TWATCH
+      //       power->setPowerOutPut(AXP202_LDO2, AXP202_OFF);
+      esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
+      esp_deep_sleep_start();
+    }
+  }
 
+}
 void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
 {
   auto Active = GetActiveScreen();
@@ -748,7 +702,7 @@ void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
   }
   else
   {
-    Serial.println("No active display!");
+    ESP_LOGD(module,"No active display");
   }
 }
 
@@ -756,44 +710,11 @@ void loop(void)
 {
 
   processSerial();
-
-  if (generalconfig.sleepenable && touchInterruptPin >= 0)
-  {
-    if (millis() > previousMillis + Interval)
-    {
-
-      // The timer has ended and we are going to sleep  .
-      tft.fillScreen(TFT_BLACK);
-      Serial.println("[INFO]: Going to sleep.");
-      HandleAudio(Sounds::GOING_TO_SLEEP);
-      //todo better power management for TWATCH
-      //       power->setPowerOutPut(AXP202_LDO2, AXP202_OFF);
-      esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
-      esp_deep_sleep_start();
-    }
-  }
+  processSleep();
 
   delay(10);
 }
-FreeTouchDeck::FTAction *PopScreenQueue()
-{
-  FreeTouchDeck::FTAction *Action = NULL;
 
-  if (QueueLock(portMAX_DELAY / portTICK_PERIOD_MS))
-  {
-    if (!ScreenQueue.empty())
-    {
-      Action = ScreenQueue.front();
-      ScreenQueue.pop();
-    }
-    QueueUnlock();
-  }
-  else
-  {
-    Serial.println("[ERROR]: Unable to screen lock Action queue");
-  }
-  return Action;
-}
 void ScreenHandleTask(void *pvParameters)
 {
   uint16_t t_x = 0;
@@ -817,26 +738,6 @@ void ScreenHandleTask(void *pvParameters)
     }
     
   }
-}
-
-FreeTouchDeck::FTAction *PopQueue()
-{
-  FreeTouchDeck::FTAction *Action = NULL;
-
-  if (QueueLock(portMAX_DELAY / portTICK_PERIOD_MS))
-  {
-    if (!Queue.empty())
-    {
-      Action = Queue.front();
-      Queue.pop();
-    }
-    QueueUnlock();
-  }
-  else
-  {
-    Serial.println("[ERROR]: Unable to lock Action queue");
-  }
-  return Action;
 }
 
 void ActionTask(void *pvParameters)

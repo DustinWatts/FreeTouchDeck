@@ -33,23 +33,59 @@ namespace FreeTouchDeck
         }
         return GetImage("question.bmp");
     }
-    FTButton::FTButton(uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor)
+    bool FTButton::Latch(FTAction *action)
+    {
+        if(ButtonType == ButtonTypes::LATCH && action->IsLatch())
+        {
+            switch (action->Type)
+            {
+            case ActionTypes::SETLATCH:
+                if(!Latched)
+                {
+                    Latched = true;
+                    Invalidate();
+                }
+                break;
+            case ActionTypes::CLEARLATCH :
+                if(Latched)
+                {
+                    Latched = false;
+                    Invalidate();
+                }
+                break;                
+            case ActionTypes::TOGGLELATCH:
+                Latched=!Latched;
+                Invalidate();
+                break;
+            default:
+                break;
+            }
+        }
+        else
+        {
+            ESP_LOGW(module, "Cannot latch button. Not a latch type button.");
+            return false;
+        }
+        return true;
+    }
+    FTButton::FTButton(uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
     {
         char menuName[31] = {0};
-
+        
         _jsonLogo = button;
         cJSON *jsonActionValue = NULL;
         ButtonType = ButtonTypes::MENU;
         snprintf(menuName, sizeof(menuName), "menu%d", index + 1);
         actions.push_back(new FTAction(ActionTypes::MENU, menuName));
     }
-    FTButton::FTButton(uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor)
+    FTButton::FTButton(uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
     {
         char logoName[31] = {0};
         cJSON *jsonActionValue = NULL;
         cJSON *_jsonLatch = NULL;
         snprintf(logoName, sizeof(logoName), "logo%d", index);
         _jsonLogo = cJSON_GetObjectItem(document, logoName);
+        
         strncpy(Label,logoName,sizeof(Label));
         _jsonLatchedLogo = cJSON_GetObjectItem(button, "latchlogo");
         _jsonLatch = cJSON_GetObjectItem(button, "latch");
@@ -98,34 +134,33 @@ namespace FreeTouchDeck
     {
         NeedsDraw = true;
     }
-    void FTButton::Draw(int16_t x, int16_t y, uint16_t margin, bool force)
+    void FTButton::Draw(int16_t x, int16_t y,uint16_t width,uint16_t height, uint16_t margin, bool force)
     {
         if (!NeedsDraw && !force)
             return;
 
         NeedsDraw = false;
-        ESP_LOGD(module, "Drawing button at [%d,%d] with margin %d\n", x, y, margin);
-        tft.setFreeFont(LABEL_FONT);
-        BMPImage *image = ((Latched && LatchedLogo()->valid) ? LatchedLogo() : Logo());
+        BMPImage *image = ((Latched && LatchedLogo()&& LatchedLogo()->valid) ? LatchedLogo() : Logo());
         if (!image)
         {
             ESP_LOGE(module, "No image found");
             return;
         }
-        ESP_LOGD(module,"Found image structure, bitmap is %s",image->LogoName);
-        bool transparent = false;
-        
-        uint16_t BGColor = tft.color565(image->R, image->G, image->B);
-        ESP_LOGD(module,"Background color is 0X%x",BGColor);
-        initButton(&tft, x, y, image->w + margin, image->h + margin, Outline, BGColor, TextColor, Label, TextSize);
+        ESP_LOGV(module,"Found image structure, bitmap is %s",image->LogoName);
 
-        if (Latched && !LatchedLogo()->valid)
+        uint16_t BGColor = tft.color565(image->R, image->G, image->B);
+        ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  with margin %d, outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", x, y, image->w + margin, image->h + margin,margin,Outline,BGColor,TextColor, TextSize);
+        tft.setFreeFont(LABEL_FONT);
+        bool transparent = false;
+        initButton(&tft, x+margin, y+margin, width + margin, height + margin, Outline, BGColor, TextColor, "", TextSize);
+
+        if (Latched && (!LatchedLogo() || !LatchedLogo()->valid))
         {
             ESP_LOGD(module,"Latched without a latched logo.  Drawing round rectangle");
             tft.fillRoundRect(x, y, 18, 18, 4, generalconfig.latchedColour);
             transparent = true;
         }
-        ESP_LOGD(module,"Drawing button");
+
         drawButton();
         image->Draw(x, y, transparent);
     }
@@ -150,10 +185,10 @@ namespace FreeTouchDeck
         ESP_LOGD(module, "%s Button Press detected with %d actions", enum_to_string(ButtonType), actions.size());
         for (FTAction *action : actions)
         {
-            ESP_LOGD(module,"Queuing action type %s, value %s, num value %d",enum_to_string(action->Type), action->symbol?action->symbol:"",action->value);
+            ESP_LOGD(module,"Queuing action %s",enum_to_string(action->Type), action->toString());
             if (!QueueAction(action))
             {
-                ESP_LOGW(module, "Button action type %s could not be queued for execution.", enum_to_string(action->Type));
+                ESP_LOGW(module, "Button action %s could not be queued for execution.", action->toString());
             }
         }
         if (ButtonType == ButtonTypes::LATCH)

@@ -55,7 +55,7 @@ namespace FreeTouchDeck
     bool BMPImage::GetBMPDetails()
     {
 #if defined(ESP32) && defined(CONFIG_SPIRAM_SUPPORT)
-        char FileNameBuffer[31]={0};
+        char FileNameBuffer[101]={0};
         bool psramSupported = psramFound();
 #else
         bool psramSupported = false;
@@ -64,7 +64,7 @@ namespace FreeTouchDeck
         ESP_LOGD(module, "Loading details from file %s", FileName(FileNameBuffer, sizeof(FileNameBuffer)));
         fs::File bmpImage = SPIFFS.open(FileNameBuffer, FILE_READ);
         valid = true;
-        if (!bmpImage)
+        if (!bmpImage || bmpImage.size()==0)
         {
             ESP_LOGE(module, "Could not open file %s", FileNameBuffer);
             valid = false;
@@ -148,10 +148,10 @@ namespace FreeTouchDeck
         fs::File bmpFS = FILESYSTEM.open(FileNameBuffer, "r");
         if (!bmpFS)
         {
-            ESP_LOGD(module,"File not found: %s",FileNameBuffer);
+            ESP_LOGE(module,"File not found: %s",FileNameBuffer);
             return;
         }
-        ESP_LOGD(module,"Seeking offset: %d",Offset);
+        ESP_LOGV(module,"Seeking offset: %d",Offset);
         bmpFS.seek(Offset);
 
         uint16_t row;
@@ -222,7 +222,7 @@ namespace FreeTouchDeck
         BMPImage *image = NULL;
         if (!imageName || strlen(imageName) == 0)
         {
-            ESP_LOGE(module, "No image name passed");
+            //ESP_LOGE(module, "No image name passed");
             return NULL;
         }
         ESP_LOGV(module, "Looking for image %s", imageName);

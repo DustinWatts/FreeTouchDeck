@@ -8,7 +8,7 @@ namespace FreeTouchDeck
     public:
         bool valid = false;
         char *FileName(char *buffer, size_t buffSize);
-        char LogoName[21] = {0};
+        char LogoName[31] = {0};
         uint16_t w = 0;
         uint16_t h = 0;
         uint32_t Offset = 0;

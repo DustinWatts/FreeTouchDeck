@@ -1,4 +1,5 @@
 #include "globals.hpp"
+#include "FTAction.h"
 /**
 * @brief This function opens wificonfig.json and fills the wificonfig
 *        struct accordingly.
@@ -13,7 +14,7 @@ bool loadMainConfig()
 {
   if (!FILESYSTEM.exists("/config/wificonfig.json"))
   {
-    Serial.println("[WARNING]: Config file not found!");
+    ESP_LOGD(module,"Config file not found!");
     return false;
   }
   File configfile = FILESYSTEM.open("/config/wificonfig.json");
@@ -36,8 +37,7 @@ bool loadMainConfig()
 
   if (error)
   {
-    Serial.println("[ERROR]: deserializeJson() error");
-    Serial.println(error.c_str());
+    ESP_LOGE(module,"deserializeJson() error: %s",error.c_str());
     return false;
   }
   return true;
@@ -78,12 +78,12 @@ bool loadConfig()
   if (sleepenable)
   {
     generalconfig.sleepenable = true;
-    // todo:latch the sleep button
-    //islatched[28] = 1;
+    QueueAction(FreeTouchDeck::sleepSetLatchAction);
   }
   else
   {
     generalconfig.sleepenable = false;
+    QueueAction(FreeTouchDeck::sleepClearLatchAction);
   }
   generalconfig.sleeptimer = (uint16_t)doc["sleeptimer"] | 60;
   generalconfig.beep = (bool)doc["beep"] | false;
@@ -96,8 +96,7 @@ bool loadConfig()
 
   if (error)
   {
-    Serial.println("[ERROR]: deserializeJson() error");
-    Serial.println(error.c_str());
+    ESP_LOGE(module,"deserializeJson() error: %s",error.c_str());
     return false;
   }
   return true;
