@@ -188,7 +188,7 @@ bool loadConfig(String value)
   {
     File configfile = FILESYSTEM.open("/config/menu1.json", "r");
 
-    DynamicJsonDocument doc(1200);
+    DynamicJsonDocument doc(1500);
 
     DeserializationError error = deserializeJson(doc, configfile);
 
@@ -490,7 +490,7 @@ bool loadConfig(String value)
   {
     File configfile = FILESYSTEM.open("/config/menu2.json", "r");
 
-    DynamicJsonDocument doc(1200);
+    DynamicJsonDocument doc(1500);
 
     DeserializationError error = deserializeJson(doc, configfile);
 
@@ -792,7 +792,7 @@ bool loadConfig(String value)
   {
     File configfile = FILESYSTEM.open("/config/menu3.json", "r");
 
-    DynamicJsonDocument doc(1200);
+    DynamicJsonDocument doc(1500);
 
     DeserializationError error = deserializeJson(doc, configfile);
 
@@ -1092,7 +1092,7 @@ bool loadConfig(String value)
   {
     File configfile = FILESYSTEM.open("/config/menu4.json", "r");
 
-    DynamicJsonDocument doc(1200);
+    DynamicJsonDocument doc(1500);
 
     DeserializationError error = deserializeJson(doc, configfile);
 
@@ -1394,7 +1394,7 @@ bool loadConfig(String value)
   {
     File configfile = FILESYSTEM.open("/config/menu5.json", "r");
 
-    DynamicJsonDocument doc(1200);
+    DynamicJsonDocument doc(1500);
 
     DeserializationError error = deserializeJson(doc, configfile);
 

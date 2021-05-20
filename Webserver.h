@@ -220,13 +220,13 @@ String processor(const String &var)
 */
 void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-  if (filename != "menu1.json" && filename != "menu2.json" && filename != "menu3.json" && filename != "menu4.json" && filename != "menu5.json" && filename != "colors.json" && filename != "homescreen.json")
+  if (filename != "menu1.json" && filename != "menu2.json" && filename != "menu3.json" && filename != "menu4.json" && filename != "menu5.json" && filename != "general.json" && filename != "homescreen.json" && filename != "wificonfig.json")
   {
     Serial.printf("[INFO]: JSON has invalid name: %s\n", filename.c_str());
     errorCode = "102";
     errorText = "JSON file has an invalid name. You can only upload JSON files with the following file names:";
     errorText += "<ul><li>menu1.json</li><li>menu2.json</li><li>menu3.json</li><li>menu4.json</li><li>menu5.json</li>";
-    errorText += "<li>colors.json</li><li>homescreen.json</li></ul>";
+    errorText += "<li>general.json</li><li>homescreen.json</li><li>wificonfig.json</li></ul>";
     request->send(FILESYSTEM, "/error.htm", String(), false, processor);
     return;
   }

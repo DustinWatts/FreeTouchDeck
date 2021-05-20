@@ -40,7 +40,7 @@
 
 // ------- Uncomment the next line if you use capacitive touch -------
 // (THE ESP32 TOUCHDOWN USES THIS!)
-//#define USECAPTOUCH
+#define USECAPTOUCH
 
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
 //#define CUSTOM_TOUCH_SDA 26
@@ -55,35 +55,21 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define speakerPin 26
 
-const char *versionnumber = "0.9.11";
+const char *versionnumber = "0.9.13";
 
-    /* Version 0.9.11.
+    /* Version 0.9.13.
      *  
-     * Fix: F21 in the configurator was F22 as action and F22 was missing from configurator.
-     * Fix: "[WARNING]: SPIFFS initialisation failed!" is now "[ERROR]: SPIFFS initialisation failed!"
-     * Fix: "Back home" and "Settings" buttons now also draw custom logos correctly.
-     * Fix: Some function descriptions and general typos.
-     * Fix: default.json was ignored by .gitignore and therefore not previously uploaded.
+     * Fix: Issue #54 Not all filenames are allowed for uploading.
+     * Fix: Increase the size of DynamicJsonDocument to 1500 to support larger configs
+     * Fix in ESP32-BLE-Keyboard: Changed to 115 keys (for F13-F24), added NUMPAD keys
      * 
-     * Change: Moved TFT init before SPIFFS init, so we can draw an error message on screen if SPIFFS
-     *         init fails.
-     * Change: Moved to a wificonfig.json just for wifi settings and a general.json for all other general
-     *         config.
+     * Added: NUMPAD keys to configurator and Action.h (action 12)
+     * Added: PrintScreen, HOME, END, and ESCAPE to Action.h and configurator
+     *
      * 
-     * Added: Helpers are configurable so that it only takes 1 action. Case 10 Action.h.
-     *        Settings for this added to "Settings" in the configurator
-     * Added: . (full stop) , (comma) and - (minus) added to the configurator under "Special chars"
-     *        
      * 
-     * Important! This version changes json structure and HTML files. Config/data files changed:
-     * 
-     * - wificonfig.json (there are some settings added)
-     * - general.json (colors, sleep, and beep are moved here)
-     * - index.html
-     * 
-     * Make sure to check if you use your old config files that they match the structure of the new ones!
     */
 
 #include <pgmspace.h> // PROGMEM support header

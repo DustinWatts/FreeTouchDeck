@@ -59,6 +59,19 @@ void bleKeyboardAction(int action, int value, char *symbol)
     case 10:
       bleKeyboard.write(KEY_DELETE);
       break;
+    case 11:
+      bleKeyboard.write(KEY_PRTSC);
+      break;
+    case 12:
+      bleKeyboard.write(KEY_ESC);
+      break;
+    case 13:
+      bleKeyboard.write(KEY_HOME);
+      break; 
+    case 14:
+      bleKeyboard.write(KEY_END);
+      break; 
+    
     default:
       //if nothing matches do nothing
       break;
@@ -476,6 +489,59 @@ void bleKeyboardAction(int action, int value, char *symbol)
         Serial.println(generalconfig.sleeptimer);
       }
       break;
+    }
+    break;
+  case 12: // Numpad
+    switch (value)
+    {
+      case 0:
+        bleKeyboard.write(NUM_0);
+        break;
+      case 1:
+        bleKeyboard.write(NUM_1);
+        break;
+      case 2:
+        bleKeyboard.write(NUM_2);
+        break;
+      case 3:
+        bleKeyboard.write(NUM_3);
+        break;
+      case 4:
+        bleKeyboard.write(NUM_4);
+        break;
+      case 5:
+        bleKeyboard.write(NUM_5);
+        break;
+      case 6:
+        bleKeyboard.write(NUM_6);
+        break;
+      case 7:
+        bleKeyboard.write(NUM_7);
+        break;
+      case 8:
+        bleKeyboard.write(NUM_8);
+        break;
+      case 9:
+        bleKeyboard.write(NUM_9);
+        break;
+      case 10:
+        bleKeyboard.write(NUM_SLASH);
+        break;
+      case 11:
+        bleKeyboard.write(NUM_ASTERIX);
+        break;
+      case 12:
+        bleKeyboard.write(NUM_MINUS);
+        break;
+      case 13:
+        bleKeyboard.write(NUM_PLUS);
+        break;
+      case 14:
+        bleKeyboard.write(NUM_ENTER);
+        break;
+      case 15:
+        bleKeyboard.write(NUM_PERIOD);
+        break;
     }
     break;
   default:
