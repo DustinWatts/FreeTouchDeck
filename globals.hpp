@@ -24,3 +24,5 @@ extern void PrintMemInfo();
 extern TFT_eSPI tft;
 #define FREE_AND_NULL(x) if(x!=NULL) {free(x); x=NULL;}
 #define MEMSET_SIZEOF(x)  memset(x,0x00,sizeof(x))
+#define EXECUTE_IF_EXISTS(x,y) if(x) { x(y); } else {ESP_LOGW(module,"Function %s not implemented", QUOTE(x));}
+

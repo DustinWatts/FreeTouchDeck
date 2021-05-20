@@ -54,14 +54,16 @@ namespace FreeTouchDeck
     }
     bool BMPImage::GetBMPDetails()
     {
-#if defined(ESP32) && defined(CONFIG_SPIRAM_SUPPORT)
         char FileNameBuffer[101]={0};
+#if defined(ESP32) && defined(CONFIG_SPIRAM_SUPPORT)
+
         bool psramSupported = psramFound();
 #else
         bool psramSupported = false;
 #endif
         // Open File
-        ESP_LOGD(module, "Loading details from file %s", FileName(FileNameBuffer, sizeof(FileNameBuffer)));
+        FileName(FileNameBuffer, sizeof(FileNameBuffer));
+        ESP_LOGD(module, "Loading details from file %s", FileNameBuffer);
         fs::File bmpImage = SPIFFS.open(FileNameBuffer, FILE_READ);
         valid = true;
         if (!bmpImage || bmpImage.size()==0)
@@ -243,7 +245,16 @@ namespace FreeTouchDeck
         {
             ESP_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
             image = new BMPImage(imageName);
-            ImageList[ImageCount++]=image;
+            if(image->valid)
+            {
+                ImageList[ImageCount++]=image;
+            }
+            else 
+            {
+                ESP_LOGE(module,"Invalid image %s",imageName);
+                FREE_AND_NULL(image);
+            }
+            
         }
         return image;
     }

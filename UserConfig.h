@@ -63,17 +63,11 @@ enum class Sounds
   BEEP,
   STARTUP
 };
-enum class Direction
-{
-    UP,
-    DOWN
-};
+
 #define LED_BRIGHTNESS_INCREMENT 25
-extern void printinfo();
-extern void ChangeBrightness(Direction direction);
+
 extern void HandleAudio(Sounds sound);
 extern Config generalconfig;
-extern void configmode();
 extern void drawErrorMessage(String message);
 extern void drawErrorMessageChar(String message);
 void drawErrorMessage(bool stop, const char * module, const char * fmt,...);

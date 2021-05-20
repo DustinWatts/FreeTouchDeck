@@ -3,12 +3,12 @@
 #include "UserConfig.h"
 #include "MenuNavigation.h"
 #include "Menu.h"
+
 static const char *module = "FTAction";
 extern BleKeyboard bleKeyboard;
 extern Config generalconfig;
 extern int ledBrightness;
 extern unsigned long Interval;
-
 
 using namespace std;
 #define MEDIA_2_VECTOR(m) \
@@ -20,10 +20,11 @@ static char printBuffer[101] = {0};
 
 namespace FreeTouchDeck
 {
-    extern bool RunLatchAction(FTAction *action);
     SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
     std::queue<FTAction *> Queue;
     std::queue<FTAction *> ScreenQueue;
+    const char *unknown = "Unknown";
+    ActionCallbacks_t callbacks = {0};
     const char *enum_to_string(ActionTypes type)
     {
         switch (type)
@@ -45,7 +46,7 @@ namespace FreeTouchDeck
             ENUM_TO_STRING_HELPER(ActionTypes::CLEARLATCH);
             ENUM_TO_STRING_HELPER(ActionTypes::TOGGLELATCH);
         default:
-            return "Unknown Action Type";
+            return unknown;
         }
     }
     const char *enum_to_string(LocalActionTypes type)
@@ -59,9 +60,29 @@ namespace FreeTouchDeck
             ENUM_TO_STRING_HELPER(LocalActionTypes::SLEEP);
             ENUM_TO_STRING_HELPER(LocalActionTypes::INFO);
         default:
-            return "Unknown Local Action Type";
+            return unknown;
         }
     }
+
+    ActionTypes parse_action_type(const char *action)
+    {
+        ActionTypes Result = ActionTypes::NONE;
+        do
+        {
+            Result++; // Start after NONE
+        } while (strcmp(action, enum_to_string(Result)) != 0 && Result != ActionTypes::NONE);
+        return Result;
+    }
+    LocalActionTypes parse_local_actions_type(const char *action)
+    {
+        LocalActionTypes Result = LocalActionTypes::NONE;
+        do
+        {
+            Result++; // Start after NONE
+        } while (strcmp(action, enum_to_string(Result)) != 0 && Result != LocalActionTypes::NONE);
+        return Result;
+    }
+
     static const uint8_t ArrowsAndTab[] = {KEY_UP_ARROW, KEY_DOWN_ARROW, KEY_LEFT_ARROW, KEY_RIGHT_ARROW, KEY_BACKSPACE, KEY_TAB, KEY_RETURN, KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_DELETE};
     static const vector<vector<uint8_t>> Keys = {{{0, 0},
                                                   MEDIA_2_VECTOR(KEY_MEDIA_NEXT_TRACK),
@@ -114,6 +135,7 @@ namespace FreeTouchDeck
     {
         Type = (ActionTypes)jsonType;
     }
+
     bool FTAction::GetLatchButton(char *screen, size_t screenSize, char *button, size_t buttonSize)
     {
         char buffer[101] = {0};
@@ -137,7 +159,7 @@ namespace FreeTouchDeck
     }
     void FTAction::SetValue(char *jsonValue)
     {
-        if (Type == ActionTypes::LETTERS || Type == ActionTypes::SPECIAL_CHARS || Type == ActionTypes::MENU)
+        if (IsString())
         {
             if (!jsonValue || strlen(jsonValue) == 0)
             {
@@ -158,7 +180,7 @@ namespace FreeTouchDeck
     void FTAction::SetValue(int jsonValue)
     {
         char buffer[33];
-        if (Type == ActionTypes::LETTERS || Type == ActionTypes::SPECIAL_CHARS)
+        if (IsString())
         {
             symbol = ps_strdup(itoa(jsonValue, buffer, sizeof(buffer) - 1));
             ESP_LOGD(module, "Assigning string value %s from number %d for action type %s", symbol, jsonValue, enum_to_string(Type));
@@ -178,7 +200,11 @@ namespace FreeTouchDeck
     {
         if (cJSON_IsString(jsonActionType))
         {
-            return (ActionTypes)atol(cJSON_GetStringValue(jsonActionType));
+            char *charValue = cJSON_GetStringValue(jsonActionType);
+            if (charValue[0] >= '0' && charValue[0] <= '9')
+            {
+                return (ActionTypes)atol(cJSON_GetStringValue(jsonActionType));
+            }
         }
         else
         {
@@ -205,7 +231,8 @@ namespace FreeTouchDeck
     void FTAction::Execute()
     {
         Menu *menu = NULL;
-        ESP_LOGD(module, "Executing Action type: %s, value: %d, symbol: %s", enum_to_string(Type), value, symbol);
+        ESP_LOGD(module, "Executing Action: %s", toString());
+        
         switch (Type)
         {
         case ActionTypes::NONE:
@@ -281,16 +308,12 @@ namespace FreeTouchDeck
             bleKeyboard.releaseAll();
             break;
         case ActionTypes::MENU:
-            if (SetActiveScreen)
-            {
-                ESP_LOGD(module, "Selecting menu %s\n", symbol);
-                SetActiveScreen(symbol);
-            }
+            EXECUTE_IF_EXISTS(callbacks.SetActiveScreen,this);
             break;
         case ActionTypes::SETLATCH:
         case ActionTypes::CLEARLATCH:
         case ActionTypes::TOGGLELATCH:
-            RunLatchAction(this);
+            EXECUTE_IF_EXISTS(callbacks.RunLatchAction,this);
             break;
         case ActionTypes::LOCAL:
             ESP_LOGD(module, "Executing local action %s", enum_to_string((LocalActionTypes)value));
@@ -298,13 +321,13 @@ namespace FreeTouchDeck
             {
             case LocalActionTypes::ENTER_CONFIG:
                 /* code */
-                configmode();
+                EXECUTE_IF_EXISTS(callbacks.ConfigMode,this);
                 break;
             case LocalActionTypes::BRIGHTNESS_DOWN:
-                ChangeBrightness(Direction::DOWN);
+                EXECUTE_IF_EXISTS(callbacks.ChangeBrightness,this);
                 break;
             case LocalActionTypes::BRIGHTNESS_UP:
-                ChangeBrightness(Direction::UP);
+                EXECUTE_IF_EXISTS(callbacks.ChangeBrightness,this);
                 break;
             case LocalActionTypes::SLEEP:
                 if (generalconfig.sleepenable)
@@ -320,7 +343,7 @@ namespace FreeTouchDeck
                 }
                 break;
             case LocalActionTypes::INFO:
-                printinfo();
+                EXECUTE_IF_EXISTS(callbacks.PrintInfo,NULL);
                 break;
             default:
                 break;
@@ -331,9 +354,7 @@ namespace FreeTouchDeck
             break;
         }
     }
-    void FTAction::Init()
-    {
-    }
+
     const char *FTAction::toString()
     {
 
@@ -361,6 +382,9 @@ namespace FreeTouchDeck
         case ActionTypes::LETTERS:
         case ActionTypes::SPECIAL_CHARS:
         case ActionTypes::MENU:
+        case ActionTypes::SETLATCH:
+        case ActionTypes::CLEARLATCH:
+        case ActionTypes::TOGGLELATCH:
             snprintf(printBuffer, sizeof(printBuffer), "Type: %s, value: %s", enum_to_string(Type), symbol);
             break;
         case ActionTypes::OPTIONKEYS:
@@ -422,8 +446,10 @@ namespace FreeTouchDeck
         {
             if (!ScreenQueue.empty())
             {
+                ESP_LOGD(module,"Screen Action Queue Length : %d", ScreenQueue.size());
                 Action = ScreenQueue.front();
                 ScreenQueue.pop();
+                ESP_LOGD(module,"Screen Action Queue Length : %d", ScreenQueue.size());
             }
             QueueUnlock();
         }
@@ -441,8 +467,10 @@ namespace FreeTouchDeck
         {
             if (!Queue.empty())
             {
+                ESP_LOGD(module,"Action Queue Length : %d", Queue.size());
                 Action = Queue.front();
                 Queue.pop();
+                ESP_LOGD(module,"Action Queue Length : %d", Queue.size());
             }
             QueueUnlock();
         }
@@ -479,22 +507,22 @@ namespace FreeTouchDeck
             ESP_LOGE(module, "Unable to queue new action ");
             return false;
         }
-        if (action->Type == ActionTypes::MENU ||
-            action->Type == ActionTypes::LOCAL ||
-            action->Type == ActionTypes::SETLATCH ||
-            action->Type == ActionTypes::CLEARLATCH ||
-            action->Type == ActionTypes::TOGGLELATCH)
+        if (action->IsScreen())
         {
-            ESP_LOGD(module, "Pushing action type %s to screen queue", enum_to_string(action->Type));
+            ESP_LOGD(module, "Pushing action %s to screen queue", action->toString());
             ScreenQueue.push(action);
         }
         else
         {
-            ESP_LOGD(module, "Pushing action type %s to regular queue", enum_to_string(action->Type));
+            ESP_LOGD(module, "Pushing action %s to regular queue", action->toString());
             Queue.push(action);
         }
 
         QueueUnlock();
         return true;
+    }
+    ActionCallbacks_t *ActionsCallbacks()
+    {
+        return &callbacks;
     }
 }

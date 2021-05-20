@@ -78,12 +78,10 @@ bool loadConfig()
   if (sleepenable)
   {
     generalconfig.sleepenable = true;
-    QueueAction(FreeTouchDeck::sleepSetLatchAction);
   }
   else
   {
     generalconfig.sleepenable = false;
-    QueueAction(FreeTouchDeck::sleepClearLatchAction);
   }
   generalconfig.sleeptimer = (uint16_t)doc["sleeptimer"] | 60;
   generalconfig.beep = (bool)doc["beep"] | false;

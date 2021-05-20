@@ -19,7 +19,6 @@ namespace FreeTouchDeck
     class FTButton : public TFT_eSPI_Button
     {
     protected:
-        char Label[21] = {0};
         bool Latched = false;
         ButtonTypes ButtonType;
         bool NeedsDraw = true;
@@ -39,6 +38,9 @@ namespace FreeTouchDeck
         ~FTButton();
         bool Latch(FTAction *action);
         BMPImage *LatchedLogo();
+        BMPImage *GetActiveImage();
+        char Label[21] = {0};        
+        bool IsLabelDraw();
         BMPImage *Logo();
         uint16_t Width();
         uint16_t Height();

@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include <stdarg.h>
+
 // /**
 // * @brief This function draws the logos according to the page
 //          we are currently on. The pagenumber is a global variable
@@ -1551,7 +1552,7 @@ void printDeviceAddress()
 *
 * @note none
 */
-void printinfo()
+bool printinfo(FTAction * dummy)
 {
   tft.setCursor(1, 3);
   tft.setTextFont(2);
@@ -1604,5 +1605,5 @@ void printinfo()
   tft.println(TFT_ESPI_VERSION);
   tft.println("ESP-IDF: ");
   tft.println(esp_get_idf_version());
-
+  return true;
 }

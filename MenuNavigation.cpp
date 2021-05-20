@@ -8,9 +8,9 @@
 #include "FTAction.h"
 namespace FreeTouchDeck
 {
-    FTAction *sleepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "menu6,sleep.bmp");
-    FTAction *sleepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "menu6,sleep.bmp");
-    FTAction *sleepToggleLatchAction = new FTAction(ActionTypes::TOGGLELATCH, "menu6,sleep.bmp");
+    FTAction *sleepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "menu6,logo3");
+    FTAction *sleepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "menu6,logo3");
+    FTAction *sleepToggleLatchAction = new FTAction(ActionTypes::TOGGLELATCH, "menu6,logo3");
     std::list<Menu *> PrevScreen;
     static const char *configMenu = R"(
     {
@@ -153,8 +153,9 @@ namespace FreeTouchDeck
         }
         return Match;
     }
-    void SetActiveScreen(const char *name)
+    bool SetActiveScreen(const char * name)
     {
+        bool result=false;
         Menu *Active = GetActiveScreen();
         Menu *Match = GetScreen(name);
         if (Match )
@@ -168,12 +169,18 @@ namespace FreeTouchDeck
                 }
                 Match->Activate();
                 ScreenUnlock();
+                result=true;
             }
         }
         else
         {
             ESP_LOGE(module, "Menu %s was not found", name);
         }
+        return result;
+    }
+    bool RunActiveScreenAction(FTAction * action)
+    {
+        return SetActiveScreen(action->symbol);
     }
     void LoadSystemMenus()
     {

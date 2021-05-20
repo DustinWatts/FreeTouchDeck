@@ -304,7 +304,12 @@ void setup()
 {
 
   // Use serial port
-
+  ActionsCallbacks()->PrintInfo=printinfo;
+  ActionsCallbacks()->ChangeBrightness=ChangeBrightness;
+  ActionsCallbacks()->ConfigMode=ConfigMode;
+  ActionsCallbacks()->RunLatchAction = RunLatchAction;
+  ActionsCallbacks()->SetActiveScreen=RunActiveScreenAction;
+  
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   ESP_LOGI(module,"Starting system.");
@@ -436,7 +441,7 @@ void setup()
   }
  
   HandleAudio(Sounds::STARTUP);
-  CacheBitmaps();
+  //CacheBitmaps();
   LoadSystemMenus();
   LoadAllMenus();
   InitAllMenus();
@@ -471,11 +476,15 @@ void setup()
     // todo: implement sleep logic
     pinMode(touchInterruptPin, INPUT_PULLUP);
     Interval = generalconfig.sleeptimer * 60000;
-    QueueAction(sleepSetLatchAction);
+    QueueAction(FreeTouchDeck::sleepSetLatchAction);
     ESP_LOGI(module,"Sleep enabled. Timer = %d minutes",generalconfig.sleeptimer);
   }
+  else
+  {
+    QueueAction(FreeTouchDeck::sleepClearLatchAction);
+  }
 
-  xTaskCreate(ScreenHandleTask, "Screen", 4096*5, NULL, tskIDLE_PRIORITY + 5, &xScreenTask);
+  xTaskCreate(ScreenHandleTask, "Screen", 4096, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
   xTaskCreate(ActionTask, "Action", 4096, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
 }
 
@@ -617,9 +626,9 @@ void HandleAudio(Sounds sound)
   // todo:  add support for i2s audio
 }
 
-void ChangeBrightness(Direction direction)
+bool ChangeBrightness(FTAction * action)
 {
-  if (direction == Direction::UP)
+  if ( (LocalActionTypes)action->value == LocalActionTypes::BRIGHTNESS_UP)
   {
     ledBrightness = min(ledBrightness + LED_BRIGHTNESS_INCREMENT, 255);
   }
@@ -628,6 +637,7 @@ void ChangeBrightness(Direction direction)
     ledBrightness = max(ledBrightness - LED_BRIGHTNESS_INCREMENT, 0);
   }
   ledcWrite(0, ledBrightness);
+  return true;
 }
 
 void ResetSleep()
@@ -726,7 +736,8 @@ void ScreenHandleTask(void *pvParameters)
   {
     bool pressed = getTouch(&t_x, &t_y);
     handleDisplay(pressed, t_x, t_y);
-    auto Action = PopScreenQueue();
+    ESP_LOGV(module,"Checking for screen actions");
+    FTAction * Action = PopScreenQueue();
     if (Action)
     {
       ResetSleep();
@@ -744,7 +755,8 @@ void ActionTask(void *pvParameters)
 {
   for (;;)
   {
-    auto Action = PopQueue();
+    ESP_LOGV(module,"Checking for regular actions");
+    FTAction * Action = PopQueue();
     if (Action)
     {
       ResetSleep();

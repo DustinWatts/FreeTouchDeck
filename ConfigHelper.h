@@ -99,9 +99,10 @@ bool startWifiAP()
 *
 * @note none
 */
-void configmode()
+bool ConfigMode(FTAction *action)
 {
 
+  bool result = false;
   //tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 0);
   tft.setTextFont(2);
@@ -117,46 +118,54 @@ void configmode()
     ESP_LOGW(module, "WiFi Config still set to default! Configurator started as AP.");
     if (!startDefaultAP())
     {
-      drawErrorMessage(true, module, "Unale to start config Access Point");
+      drawErrorMessage(false, module, "Unale to start config Access Point");
     }
-    tft.println("Started as AP because WiFi settings are still set to default.");
-    tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
-    tft.println("Then go to http://freetouchdeck.local");
-    tft.print("The IP is: ");
-    tft.println(WiFi.softAPIP());
-    return;
+    else
+    {
+      tft.println("Started as AP because WiFi settings are still set to default.");
+      tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
+      tft.println("Then go to http://freetouchdeck.local");
+      tft.print("The IP is: ");
+      tft.println(WiFi.softAPIP());
+      result = true;
+    }
   }
-
-  if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED" || String(wificonfig.wifimode) == "FAILED") // The wificonfig.json failed to load
+  else if (String(wificonfig.ssid) == "FAILED" || String(wificonfig.password) == "FAILED" || String(wificonfig.wifimode) == "FAILED") // The wificonfig.json failed to load
   {
     tft.println("WiFi Config Failed to load! Starting as AP.");
     ESP_LOGW(module, "WiFi Config Failed to load! Configurator started as AP.");
     if (!startDefaultAP())
     {
-      drawErrorMessage(true, module, "Unale to start config Access Point");
+      drawErrorMessage(false, module, "Unale to start config Access Point");
     }
-    tft.println("Started as AP because WiFi settings failed to load.");
-    tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
-    tft.println("Then go to http://freetouchdeck.local");
-    tft.print("The IP is: ");
-    tft.println(WiFi.softAPIP());
-    return;
+    else
+    {
+      tft.println("Started as AP because WiFi settings failed to load.");
+      tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
+      tft.println("Then go to http://freetouchdeck.local");
+      tft.print("The IP is: ");
+      tft.println(WiFi.softAPIP());
+      result = true;
+    }
   }
-
-  if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
+  else if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
   {
     if (!startWifiStation())
     {
       if (!startDefaultAP())
       {
-        drawErrorMessage(true, module, "Unale to fallback to Access Point mode");
+        drawErrorMessage(false, module, "Unale to fallback to Access Point mode");
       }
-      ESP_LOGW(module, "Could not connect to AP, so started as AP.");
-      tft.println("Started as AP because WiFi connection failed.");
-      tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
-      tft.println("Then go to http://freetouchdeck.local");
-      tft.print("The IP is: ");
-      tft.println(WiFi.softAPIP());
+      else
+      {
+        ESP_LOGW(module, "Could not connect to AP, so started as AP.");
+        tft.println("Started as AP because WiFi connection failed.");
+        tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
+        tft.println("Then go to http://freetouchdeck.local");
+        tft.print("The IP is: ");
+        tft.println(WiFi.softAPIP());
+        result = true;
+      }
     }
     else
     {
@@ -165,17 +174,22 @@ void configmode()
       tft.println("http://freetouchdeck.local");
       tft.print("The IP is: ");
       tft.println(WiFi.localIP());
+      result = true;
     }
   }
   else if (strcmp(wificonfig.wifimode, "WIFI_AP") == 0)
   {
-    startWifiAP();
-    tft.println("Started as AP and in config mode.");
-    tft.println("To configure:");
-    tft.println("http://freetouchdeck.local");
-    tft.print("The IP is: ");
-    tft.println(WiFi.softAPIP());
+    if (startWifiAP())
+    {
+      tft.println("Started as AP and in config mode.");
+      tft.println("To configure:");
+      tft.println("http://freetouchdeck.local");
+      tft.print("The IP is: ");
+      tft.println(WiFi.softAPIP());
+      result = true;
+    }
   }
+  return result;
 }
 
 /**

@@ -3,7 +3,7 @@
 static const char *module = "Menu";
 static const char *nameTemplate = "/config/%s.json";
 static const char *homeButtonTemplate = R"({"logo0": "home.bmp","button0":{"latch": false,"latchlogo": "","actionarray": [ "12"],"valuearray": [ "homescreen"]   }})";
-static const char *backButtonTemplate = R"({"logo0": "question.bmp","button0":{"latch": false,"latchlogo": "","actionarray": [ "12"],"valuearray": [ "~BACK"]   }})";
+static const char *backButtonTemplate = R"({"logo0": "arrow_back.bmp","button0":{"latch": false,"latchlogo": "","actionarray": [ "12"],"valuearray": [ "~BACK"]   }})";
 // Overloading global new operator
 void *operator new(size_t sz)
 {
@@ -71,7 +71,7 @@ namespace FreeTouchDeck
             _rows.push_back(newRow);
             return;
         }
-        for (auto button : buttons)
+        for (FTButton * button : buttons)
         {
             ESP_LOGD(module, "Processing button %s width= %d. Total row width is %d, LCD width is %d ",button->Logo()->LogoName, button->Width(), newRow->TotalWidth, tft.width());
             if (newRow->TotalWidth + button->Width() > tft.width())
@@ -115,12 +115,12 @@ namespace FreeTouchDeck
         {
             if ((button = GetButton(buttonName)) != NULL)
             {
-                ESP_LOGD(module, "Found button %s to run action type %s", buttonName, enum_to_string(action->Type));
+                ESP_LOGD(module, "Found button %s to run action %s", buttonName, action->toString());
                 return button->Latch(action);
             }
             else
             {
-                ESP_LOGE(module, "Could not find button %s to run action type %s", buttonName, enum_to_string(action->Type));
+                ESP_LOGE(module, "Could not find button %s to run action %s", buttonName, action->toString());
             }
         }
         return false;
@@ -129,7 +129,11 @@ namespace FreeTouchDeck
     {
         for (auto button : buttons)
         {
-            return button;
+            if(strcmp(button->Label,buttonName)==0)
+            {
+                return button;
+            }
+            ESP_LOGD(module,"Ignoring button %s", button->Label);
         }
         return NULL;
     }
@@ -232,7 +236,7 @@ namespace FreeTouchDeck
             drawErrorMessage(true, module, "Unable to parse json string for back menu button: %s", error);
             return;
         }
-        ESP_LOGD(module, "Adding home button to screen %s", Name);
+        ESP_LOGD(module, "Adding back button to screen %s", Name);
         FTButton *newButton = new FTButton(0, menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
         if (!newButton)
         {
@@ -308,7 +312,7 @@ namespace FreeTouchDeck
 
             if (strcmp(Name, "homescreen") != 0 && buttons.size() > 0)
             {
-                AddHomeButton();
+                AddBackButton();
             }
             else if (buttons.size() == 0)
             {
