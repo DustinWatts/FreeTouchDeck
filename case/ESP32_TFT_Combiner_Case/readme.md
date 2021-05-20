@@ -47,4 +47,4 @@ Setting the Support Overhang Angle to 70 ensures that the hole for the USB cable
 
 You can also download the case from Thingiverse: [FreeTouchDeck Case](https://www.thingiverse.com/thing:4661069)
 
-Or any of the awesome cases other people have designed! [FreeTouchDeck Cases on Thingeverse](https://www.thingiverse.com/search?q=freetouchdeck&type=things&sort=relevant)
+Or any of the awesome cases other people have designed! [FreeTouchDeck Cases on Thingiverse](https://www.thingiverse.com/search?q=freetouchdeck&type=things&sort=relevant)
