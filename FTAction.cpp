@@ -1,0 +1,533 @@
+#include "FTAction.h"
+#include "BleKeyboard.h"
+#include "UserConfig.h"
+#include "MenuNavigation.h"
+#include "Menu.h"
+
+static const char *module = "FTAction";
+extern BleKeyboard bleKeyboard;
+extern Config generalconfig;
+extern int ledBrightness;
+extern unsigned long Interval;
+
+using namespace std;
+#define MEDIA_2_VECTOR(m) \
+    {                     \
+        m[0], m[1]        \
+    }
+
+static char printBuffer[101] = {0};
+
+namespace FreeTouchDeck
+{
+    SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
+    std::queue<FTAction *> Queue;
+    std::queue<FTAction *> ScreenQueue;
+    const char *unknown = "Unknown";
+    ActionCallbacks_t callbacks = {0};
+    const char *enum_to_string(ActionTypes type)
+    {
+        switch (type)
+        {
+            ENUM_TO_STRING_HELPER(ActionTypes::NONE);
+            ENUM_TO_STRING_HELPER(ActionTypes::DELAY);
+            ENUM_TO_STRING_HELPER(ActionTypes::ARROWS_AND_TAB);
+            ENUM_TO_STRING_HELPER(ActionTypes::MEDIAKEY);
+            ENUM_TO_STRING_HELPER(ActionTypes::LETTERS);
+            ENUM_TO_STRING_HELPER(ActionTypes::OPTIONKEYS);
+            ENUM_TO_STRING_HELPER(ActionTypes::FUNCTIONKEYS);
+            ENUM_TO_STRING_HELPER(ActionTypes::NUMBERS);
+            ENUM_TO_STRING_HELPER(ActionTypes::SPECIAL_CHARS);
+            ENUM_TO_STRING_HELPER(ActionTypes::COMBOS);
+            ENUM_TO_STRING_HELPER(ActionTypes::HELPERS);
+            ENUM_TO_STRING_HELPER(ActionTypes::LOCAL);
+            ENUM_TO_STRING_HELPER(ActionTypes::MENU);
+            ENUM_TO_STRING_HELPER(ActionTypes::SETLATCH);
+            ENUM_TO_STRING_HELPER(ActionTypes::CLEARLATCH);
+            ENUM_TO_STRING_HELPER(ActionTypes::TOGGLELATCH);
+        default:
+            return unknown;
+        }
+    }
+    const char *enum_to_string(LocalActionTypes type)
+    {
+        switch (type)
+        {
+            ENUM_TO_STRING_HELPER(LocalActionTypes::NONE);
+            ENUM_TO_STRING_HELPER(LocalActionTypes::ENTER_CONFIG);
+            ENUM_TO_STRING_HELPER(LocalActionTypes::BRIGHTNESS_DOWN);
+            ENUM_TO_STRING_HELPER(LocalActionTypes::BRIGHTNESS_UP);
+            ENUM_TO_STRING_HELPER(LocalActionTypes::SLEEP);
+            ENUM_TO_STRING_HELPER(LocalActionTypes::INFO);
+        default:
+            return unknown;
+        }
+    }
+
+    ActionTypes parse_action_type(const char *action)
+    {
+        ActionTypes Result = ActionTypes::NONE;
+        do
+        {
+            Result++; // Start after NONE
+        } while (strcmp(action, enum_to_string(Result)) != 0 && Result != ActionTypes::NONE);
+        return Result;
+    }
+    LocalActionTypes parse_local_actions_type(const char *action)
+    {
+        LocalActionTypes Result = LocalActionTypes::NONE;
+        do
+        {
+            Result++; // Start after NONE
+        } while (strcmp(action, enum_to_string(Result)) != 0 && Result != LocalActionTypes::NONE);
+        return Result;
+    }
+
+    static const uint8_t ArrowsAndTab[] = {KEY_UP_ARROW, KEY_DOWN_ARROW, KEY_LEFT_ARROW, KEY_RIGHT_ARROW, KEY_BACKSPACE, KEY_TAB, KEY_RETURN, KEY_PAGE_UP, KEY_PAGE_DOWN, KEY_DELETE};
+    static const vector<vector<uint8_t>> Keys = {{{0, 0},
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_NEXT_TRACK),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_PREVIOUS_TRACK),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_STOP),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_PLAY_PAUSE),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_MUTE),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_VOLUME_UP),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_VOLUME_DOWN),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_WWW_HOME),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_LOCAL_MACHINE_BROWSER),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_CALCULATOR),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_WWW_BOOKMARKS),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_WWW_SEARCH),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_WWW_STOP),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_WWW_BACK),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_CONSUMER_CONTROL_CONFIGURATION),
+                                                  MEDIA_2_VECTOR(KEY_MEDIA_EMAIL_READER)}};
+
+    static const uint8_t OptionKeys[] = {0, KEY_LEFT_CTRL, KEY_LEFT_SHIFT, KEY_LEFT_ALT, KEY_LEFT_GUI, KEY_RIGHT_CTRL, KEY_RIGHT_SHIFT, KEY_RIGHT_ALT, KEY_RIGHT_GUI};
+    static uint8_t FunctionKeys[] = {0, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_F13, KEY_F14, KEY_F15, KEY_F16, KEY_F17, KEY_F18, KEY_F19, KEY_F20, KEY_F21, KEY_F22, KEY_F23, KEY_F24};
+    static uint8_t Helpers[] = {0, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11};
+    static const vector<vector<uint8_t>> Combos = {{{0},
+                                                    {KEY_LEFT_CTRL, KEY_LEFT_SHIFT},
+                                                    {KEY_LEFT_ALT, KEY_LEFT_SHIFT},
+                                                    {KEY_LEFT_GUI, KEY_LEFT_SHIFT},
+                                                    {KEY_LEFT_CTRL, KEY_LEFT_GUI},
+                                                    {KEY_LEFT_ALT, KEY_LEFT_GUI},
+                                                    {KEY_LEFT_CTRL, KEY_LEFT_ALT},
+                                                    {KEY_LEFT_CTRL, KEY_LEFT_ALT, KEY_LEFT_GUI},
+                                                    {KEY_RIGHT_CTRL, KEY_RIGHT_SHIFT},
+                                                    {KEY_RIGHT_ALT, KEY_RIGHT_SHIFT},
+                                                    {KEY_RIGHT_GUI, KEY_RIGHT_SHIFT},
+                                                    {KEY_RIGHT_CTRL, KEY_RIGHT_GUI},
+                                                    {KEY_RIGHT_ALT, KEY_RIGHT_GUI},
+                                                    {KEY_RIGHT_CTRL, KEY_RIGHT_ALT},
+                                                    {KEY_RIGHT_CTRL, KEY_RIGHT_ALT, KEY_RIGHT_GUI}}};
+    bool FTAction::IsLatch()
+    {
+        return Type == ActionTypes::SETLATCH ||
+               Type == ActionTypes::CLEARLATCH ||
+               Type == ActionTypes::TOGGLELATCH;
+    }
+    void FTAction::SetType(const char *jsonTypeStr)
+    {
+        Type = (ActionTypes)atol(jsonTypeStr);
+    }
+
+    void FTAction::SetType(int jsonType)
+    {
+        Type = (ActionTypes)jsonType;
+    }
+
+    bool FTAction::GetLatchButton(char *screen, size_t screenSize, char *button, size_t buttonSize)
+    {
+        char buffer[101] = {0};
+        if (!IsLatch())
+            return false;
+        if (!screen || !button || screenSize == 0 || buttonSize == 0)
+        {
+            return false;
+        }
+        strncpy(buffer, symbol, sizeof(buffer));
+        char *pch;
+        pch = strtok(buffer, " ,-");
+        if (!pch)
+            return false;
+        strncpy(screen, pch, screenSize);
+        pch = strtok(NULL, " ,-");
+        if (!pch)
+            return false;
+        strncpy(button, pch, buttonSize);
+        return true;
+    }
+    void FTAction::SetValue(char *jsonValue)
+    {
+        if (IsString())
+        {
+            if (!jsonValue || strlen(jsonValue) == 0)
+            {
+                ESP_LOGW(module, "Empty string value for action type %s", enum_to_string(Type));
+            }
+            else
+            {
+                ESP_LOGD(module, "Assigning string value %s for action type %s", jsonValue, enum_to_string(Type));
+            }
+            symbol = ps_strdup(jsonValue);
+        }
+        else
+        {
+            value = atol(jsonValue);
+            ESP_LOGD(module, "Converting value %s to number %d for action type %s", jsonValue, value, enum_to_string(Type));
+        }
+    }
+    void FTAction::SetValue(int jsonValue)
+    {
+        char buffer[33];
+        if (IsString())
+        {
+            symbol = ps_strdup(itoa(jsonValue, buffer, sizeof(buffer) - 1));
+            ESP_LOGD(module, "Assigning string value %s from number %d for action type %s", symbol, jsonValue, enum_to_string(Type));
+        }
+        else
+        {
+            ESP_LOGD(module, "Assigning number %d for action type %s", value, enum_to_string(Type));
+            value = jsonValue;
+        }
+    }
+    FTAction::FTAction(char *jsonActionType, char *jsonValueStr)
+    {
+        SetType(jsonActionType);
+        SetValue(jsonValueStr);
+    }
+    ActionTypes FTAction::GetType(cJSON *jsonActionType)
+    {
+        if (cJSON_IsString(jsonActionType))
+        {
+            char *charValue = cJSON_GetStringValue(jsonActionType);
+            if (charValue[0] >= '0' && charValue[0] <= '9')
+            {
+                return (ActionTypes)atol(cJSON_GetStringValue(jsonActionType));
+            }
+        }
+        else
+        {
+            return (ActionTypes)jsonActionType->valueint;
+        }
+    }
+    FTAction::FTAction(cJSON *jsonActionType, cJSON *jsonValue)
+    {
+        Type = GetType(jsonActionType);
+        if (cJSON_IsString(jsonValue))
+        {
+            SetValue(cJSON_GetStringValue(jsonValue));
+        }
+        else
+        {
+            SetValue(jsonValue->valueint);
+        }
+    }
+    FTAction::FTAction(ActionTypes actionParm, char *jsonString)
+    {
+        Type = actionParm;
+        SetValue(jsonString);
+    }
+    void FTAction::Execute()
+    {
+        Menu *menu = NULL;
+        ESP_LOGD(module, "Executing Action: %s", toString());
+        
+        switch (Type)
+        {
+        case ActionTypes::NONE:
+            break;
+
+        case ActionTypes::DELAY:
+            delay(value);
+            break;
+        case ActionTypes::ARROWS_AND_TAB:
+            bleKeyboard.write(ArrowsAndTab[value]);
+            bleKeyboard.releaseAll();
+            break;
+        case ActionTypes::MEDIAKEY:
+            if (value >= 0)
+            {
+                for (auto kp : Keys[value])
+                {
+                    ESP_LOGD(module, "Sending Media Key 0X%02X", (kp));
+                    bleKeyboard.write(kp);
+                }
+            }
+            break;
+        case ActionTypes::LETTERS:
+        case ActionTypes::SPECIAL_CHARS:
+            bleKeyboard.print(symbol);
+            break;
+        case ActionTypes::OPTIONKEYS:
+            if (value < sizeof(OptionKeys) / sizeof(uint8_t) && value >= 0)
+            {
+                ESP_LOGD(module, "Pressing key 0X%04X", OptionKeys[value]);
+                bleKeyboard.press(OptionKeys[value]);
+            }
+            else
+            {
+                ESP_LOGD(module, "Releasing all keys");
+                bleKeyboard.releaseAll();
+            }
+            break;
+        case ActionTypes::FUNCTIONKEYS:
+            ESP_LOGD(module, "Pressing key 0X%04X", FunctionKeys[value]);
+            bleKeyboard.press(FunctionKeys[value]);
+            bleKeyboard.releaseAll();
+            break;
+        case ActionTypes::NUMBERS:
+            ESP_LOGD(module, "printing ", value);
+            bleKeyboard.print(value);
+            bleKeyboard.releaseAll();
+            break;
+
+        case ActionTypes::COMBOS:
+            for (auto k : Combos[value])
+            {
+                ESP_LOGD(module, "Pressing key 0X%04X", k);
+                bleKeyboard.press(k);
+            }
+            bleKeyboard.releaseAll();
+            break;
+        case ActionTypes::HELPERS:
+            if (generalconfig.modifier1 != 0)
+            {
+                ESP_LOGD(module, "Pressing modifier 0X%04X", generalconfig.modifier1);
+                bleKeyboard.press(generalconfig.modifier1);
+            }
+            if (generalconfig.modifier2 != 0)
+            {
+                ESP_LOGD(module, "Pressing modifier 0X%04X", generalconfig.modifier2);
+                bleKeyboard.press(generalconfig.modifier2);
+            }
+            if (generalconfig.modifier3 != 0)
+            {
+                ESP_LOGD(module, "Pressing modifier 0X%04X", generalconfig.modifier3);
+                bleKeyboard.press(generalconfig.modifier3);
+            }
+            ESP_LOGD(module, "Pressing helpers 0X%04X", Helpers[value]);
+            bleKeyboard.press(Helpers[value]);
+            ESP_LOGD(module, "Releasing all", Helpers[value]);
+            bleKeyboard.releaseAll();
+            break;
+        case ActionTypes::MENU:
+            EXECUTE_IF_EXISTS(callbacks.SetActiveScreen,this);
+            break;
+        case ActionTypes::SETLATCH:
+        case ActionTypes::CLEARLATCH:
+        case ActionTypes::TOGGLELATCH:
+            EXECUTE_IF_EXISTS(callbacks.RunLatchAction,this);
+            break;
+        case ActionTypes::LOCAL:
+            ESP_LOGD(module, "Executing local action %s", enum_to_string((LocalActionTypes)value));
+            switch ((LocalActionTypes)value)
+            {
+            case LocalActionTypes::ENTER_CONFIG:
+                /* code */
+                EXECUTE_IF_EXISTS(callbacks.ConfigMode,this);
+                break;
+            case LocalActionTypes::BRIGHTNESS_DOWN:
+                EXECUTE_IF_EXISTS(callbacks.ChangeBrightness,this);
+                break;
+            case LocalActionTypes::BRIGHTNESS_UP:
+                EXECUTE_IF_EXISTS(callbacks.ChangeBrightness,this);
+                break;
+            case LocalActionTypes::SLEEP:
+                if (generalconfig.sleepenable)
+                {
+                    generalconfig.sleepenable = false;
+                    ESP_LOGI(module, "Sleep disabled.");
+                }
+                else
+                {
+                    generalconfig.sleepenable = true;
+                    Interval = generalconfig.sleeptimer * 60000;
+                    ESP_LOGI(module, "Sleep Enabled. Timer set to %d", generalconfig.sleeptimer);
+                }
+                break;
+            case LocalActionTypes::INFO:
+                EXECUTE_IF_EXISTS(callbacks.PrintInfo,NULL);
+                break;
+            default:
+                break;
+            }
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    const char *FTAction::toString()
+    {
+
+        switch (Type)
+        {
+        case ActionTypes::NONE:
+            break;
+
+        case ActionTypes::DELAY:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, delay: %d", enum_to_string(Type), value);
+            break;
+        case ActionTypes::ARROWS_AND_TAB:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: 0X%04X", enum_to_string(Type), ArrowsAndTab[value]);
+            break;
+        case ActionTypes::MEDIAKEY:
+            if (value >= 0)
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: ", enum_to_string(Type));
+                for (auto kp : Keys[value])
+                {
+                    snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, kp);
+                }
+                bleKeyboard.releaseAll();
+            }
+            break;
+        case ActionTypes::LETTERS:
+        case ActionTypes::SPECIAL_CHARS:
+        case ActionTypes::MENU:
+        case ActionTypes::SETLATCH:
+        case ActionTypes::CLEARLATCH:
+        case ActionTypes::TOGGLELATCH:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, value: %s", enum_to_string(Type), symbol);
+            break;
+        case ActionTypes::OPTIONKEYS:
+            if (value < sizeof(OptionKeys) / sizeof(uint8_t) && value >= 0)
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key 0X%04X", enum_to_string(Type), OptionKeys[value]);
+            }
+            else
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "Type: %s, Release all", enum_to_string(Type));
+            }
+            break;
+        case ActionTypes::FUNCTIONKEYS:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key 0X%04X", enum_to_string(Type), FunctionKeys[value]);
+            break;
+        case ActionTypes::NUMBERS:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, Number: %d", enum_to_string(Type), value);
+            break;
+
+        case ActionTypes::COMBOS:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, ", enum_to_string(Type));
+            for (auto k : Combos[value])
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, k);
+            }
+            break;
+        case ActionTypes::HELPERS:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: ", enum_to_string(Type));
+            if (generalconfig.modifier1 != 0)
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier1);
+            }
+            if (generalconfig.modifier2 != 0)
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier2);
+            }
+            if (generalconfig.modifier3 != 0)
+            {
+                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier3);
+            }
+            snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, Helpers[value]);
+            break;
+        case ActionTypes::LOCAL:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, local action: %s", enum_to_string(Type), enum_to_string((LocalActionTypes)value));
+            break;
+
+        default:
+            break;
+        }
+
+        return printBuffer;
+    }
+
+    FTAction *PopScreenQueue()
+    {
+        FTAction *Action = NULL;
+
+        if (QueueLock(portMAX_DELAY / portTICK_PERIOD_MS))
+        {
+            if (!ScreenQueue.empty())
+            {
+                ESP_LOGD(module,"Screen Action Queue Length : %d", ScreenQueue.size());
+                Action = ScreenQueue.front();
+                ScreenQueue.pop();
+                ESP_LOGD(module,"Screen Action Queue Length : %d", ScreenQueue.size());
+            }
+            QueueUnlock();
+        }
+        else
+        {
+            ESP_LOGE(module, "Unable to screen lock Action queue");
+        }
+        return Action;
+    }
+    FTAction *PopQueue()
+    {
+        FTAction *Action = NULL;
+
+        if (QueueLock(portMAX_DELAY / portTICK_PERIOD_MS))
+        {
+            if (!Queue.empty())
+            {
+                ESP_LOGD(module,"Action Queue Length : %d", Queue.size());
+                Action = Queue.front();
+                Queue.pop();
+                ESP_LOGD(module,"Action Queue Length : %d", Queue.size());
+            }
+            QueueUnlock();
+        }
+        else
+        {
+            ESP_LOGE(module, "Unable to lock Action queue");
+        }
+        return Action;
+    }
+    bool QueueLock(TickType_t xTicksToWait)
+    {
+        ESP_LOGV(module, "Locking Action Queue object");
+        if (xSemaphoreTake(xQueueSemaphore, xTicksToWait) == pdTRUE)
+        {
+            ESP_LOGV(module, "Action Queue object  locked!");
+            return true;
+        }
+        else
+        {
+            ESP_LOGE(module, "Unable to lock the Action queue object");
+            return false;
+        }
+    }
+
+    void QueueUnlock()
+    {
+        ESP_LOGV(module, "Unlocking the Action queue object");
+        xSemaphoreGive(xQueueSemaphore);
+    }
+    bool QueueAction(FTAction *action)
+    {
+        if (!QueueLock(100 / portTICK_PERIOD_MS))
+        {
+            ESP_LOGE(module, "Unable to queue new action ");
+            return false;
+        }
+        if (action->IsScreen())
+        {
+            ESP_LOGD(module, "Pushing action %s to screen queue", action->toString());
+            ScreenQueue.push(action);
+        }
+        else
+        {
+            ESP_LOGD(module, "Pushing action %s to regular queue", action->toString());
+            Queue.push(action);
+        }
+
+        QueueUnlock();
+        return true;
+    }
+    ActionCallbacks_t *ActionsCallbacks()
+    {
+        return &callbacks;
+    }
+}
