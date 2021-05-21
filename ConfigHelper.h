@@ -61,6 +61,7 @@ bool startWifiStation()
   }
 
   startWebServer();
+  ESP_LOGD(module, "Web server started");
   return true;
 }
 
