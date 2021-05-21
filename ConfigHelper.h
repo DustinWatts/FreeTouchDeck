@@ -1,26 +1,32 @@
 // Start as WiFi station
 
-static const char *ssid = "FreeTouchDeck";
-static const char *password = "defaultpass";
-#include "globals.hpp"
-bool startWebServer()
-{
-  // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
-  bleKeyboard.end();
 
+#include "globals.hpp"
+void stopBT()
+{
+  PrintMemInfo();
+  ESP_LOGD(module,"Terminating BLE Keyboard");
+    // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+  bleKeyboard.end();
+  PrintMemInfo();
+  ESP_LOGD(module,"Terminating BT");
   // Stop BLE from interfering with our WIFI signal
   btStop();
-  esp_bt_controller_disable();
-  esp_bt_controller_deinit();
-  esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+  // esp_bt_controller_disable();
+  // esp_bt_controller_deinit();
+  // esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
   ESP_LOGI(module, "BLE Stopped");
+}
+bool startWebServer()
+{
+
   if (WiFi.getMode() == WIFI_MODE_STA && WiFi.isConnected())
   {
-    ESP_LOGI(module, "Connected to Access point! IP address: %s", WiFi.localIP());
+    ESP_LOGI(module, "Connected to Access point! IP address: %s", WiFi.localIP().toString().c_str());
   }
   else if (WiFi.getMode() == WIFI_MODE_AP)
   {
-    ESP_LOGI(module, "Access point ready. Address is : %s", WiFi.softAPIP());
+    ESP_LOGI(module, "Access point ready. Address is : %s", WiFi.softAPIP().toString().c_str());
   }
   MDNS.begin(STRING_OR_DEFAULT(wificonfig.hostname, "freetouchdeck"));
   MDNS.addService("http", "tcp", 80);
@@ -32,6 +38,7 @@ bool startWebServer()
 }
 bool startWifiStation()
 {
+  stopBT();
   ESP_LOGI(module, "Connecting to %s", wificonfig.ssid);
   if (String(WiFi.SSID()) != String(wificonfig.ssid))
   {
@@ -63,7 +70,7 @@ bool startWifiStation()
 bool startAP(const char *SSID, const char *PASSWORD)
 {
   bool bStarted = false;
-
+  stopBT();
   if (!(bStarted == WiFi.mode(WIFI_AP)))
   {
     ESP_LOGE(module, "Unable to set WiFi mode to access point");
@@ -82,6 +89,9 @@ bool startAP(const char *SSID, const char *PASSWORD)
 
 bool startDefaultAP()
 {
+  static const char *ssid = "FreeTouchDeck";
+  static const char *password = "defaultpass";
+  ESP_LOGD(module,"Starting default AP");
   return startAP(ssid, password);
 }
 bool startWifiAP()
@@ -111,22 +121,25 @@ bool ConfigMode(FTAction *action)
 
   ESP_LOGI(module, "Entering Config Mode");
   tft.println("Connecting to Wifi...");
+  PrintMemInfo();
 
   if (String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
   {
+    
     tft.println("WiFi Config still set to default! Starting as AP.");
     ESP_LOGW(module, "WiFi Config still set to default! Configurator started as AP.");
     if (!startDefaultAP())
     {
-      drawErrorMessage(false, module, "Unale to start config Access Point");
+      drawErrorMessage(true, module, "Unale to start config Access Point");
     }
     else
     {
+      ESP_LOGD(module,"Default AP Started. Printing instructions to screen");
       tft.println("Started as AP because WiFi settings are still set to default.");
       tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
       tft.println("Then go to http://freetouchdeck.local");
       tft.print("The IP is: ");
-      tft.println(WiFi.softAPIP());
+      tft.println(WiFi.softAPIP().toString().c_str());
       result = true;
     }
   }
@@ -136,15 +149,16 @@ bool ConfigMode(FTAction *action)
     ESP_LOGW(module, "WiFi Config Failed to load! Configurator started as AP.");
     if (!startDefaultAP())
     {
-      drawErrorMessage(false, module, "Unale to start config Access Point");
+      drawErrorMessage(true, module, "Unale to start config Access Point");
     }
     else
     {
+      ESP_LOGD(module,"Default AP Started. Printing instructions to screen");
       tft.println("Started as AP because WiFi settings failed to load.");
       tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
       tft.println("Then go to http://freetouchdeck.local");
       tft.print("The IP is: ");
-      tft.println(WiFi.softAPIP());
+      tft.println(WiFi.softAPIP().toString().c_str());
       result = true;
     }
   }
@@ -154,7 +168,7 @@ bool ConfigMode(FTAction *action)
     {
       if (!startDefaultAP())
       {
-        drawErrorMessage(false, module, "Unale to fallback to Access Point mode");
+        drawErrorMessage(true, module, "Unale to fallback to Access Point mode");
       }
       else
       {
@@ -163,12 +177,13 @@ bool ConfigMode(FTAction *action)
         tft.println("To configure, connect to 'FreeTouchDeck' with password 'defaultpass'");
         tft.println("Then go to http://freetouchdeck.local");
         tft.print("The IP is: ");
-        tft.println(WiFi.softAPIP());
+        tft.println(WiFi.softAPIP().toString().c_str());
         result = true;
       }
     }
     else
     {
+      ESP_LOGD(module,"Connected to Wifi. Printing instructions to screen");
       tft.println("Started as STA and in config mode.");
       tft.println("To configure:");
       tft.println("http://freetouchdeck.local");
@@ -185,7 +200,7 @@ bool ConfigMode(FTAction *action)
       tft.println("To configure:");
       tft.println("http://freetouchdeck.local");
       tft.print("The IP is: ");
-      tft.println(WiFi.softAPIP());
+      tft.println(WiFi.softAPIP().toString().c_str());
       result = true;
     }
   }

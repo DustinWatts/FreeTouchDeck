@@ -18,12 +18,11 @@
 // The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
 #define touchInterruptPin GPIO_NUM_27
 #define SCREEN_ROTATION 1
-
+#define INVERSE_X_TOUCH    
+#define FLIP_TOUCH_AXIS
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
-
-
 #endif
 #ifndef touchInterruptPin
 #define touchInterruptPin -1
@@ -31,6 +30,12 @@
 #ifndef speakerPin
 #define speakerPin -1
 #endif
+
+// the following can be uncommented in case the coordinates of the 
+// X or Y axis touch panel are reversed 
+// #define INVERSE_X_TOUCH    
+// #define INVERSE_Y_TOUCH
+
 //Struct to hold the general config like colours.
 struct Config
 {

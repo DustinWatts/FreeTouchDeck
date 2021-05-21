@@ -156,21 +156,28 @@ namespace FreeTouchDeck
     bool SetActiveScreen(const char * name)
     {
         bool result=false;
+        PrintMemInfo();        
         Menu *Active = GetActiveScreen();
+        PrintMemInfo();        
         Menu *Match = GetScreen(name);
+        PrintMemInfo();        
         if (Match )
         {
             if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
             {
                 if (Active)
                 {
-                    PrevScreen.push_back(Active);
+                    if(strcmp(name,"~BACK")!=0)
+                    {
+                        PrevScreen.push_back(Active);
+                    }
                     Active->Deactivate();
                 }
                 Match->Activate();
                 ScreenUnlock();
                 result=true;
             }
+            PrintMemInfo();
         }
         else
         {
@@ -186,12 +193,16 @@ namespace FreeTouchDeck
     {
         if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
         {
+
             ESP_LOGD(module, "Adding settings menu");
             Menus.push_back(new FreeTouchDeck::Menu("menu6", configMenu));
+            PrintMemInfo();
             ESP_LOGD(module, "Adding info  menu");
             Menus.push_back(new FreeTouchDeck::Menu("info", configInfo));
+            PrintMemInfo();
             ESP_LOGD(module, "Adding config menu");
             Menus.push_back(new FreeTouchDeck::Menu("config", configScreen));
+            PrintMemInfo();
             ScreenUnlock();
         }
         else
@@ -213,12 +224,16 @@ namespace FreeTouchDeck
                 {
                     ESP_LOGD(module, "Adding menu from file %s", file.name());
                     Menus.push_back(new FreeTouchDeck::Menu(&file));
+                    PrintMemInfo();
                     ESP_LOGD(module, "Adding menu completed. Getting next file");
+
                 }
                 file = root.openNextFile();
             }
             ESP_LOGD(module, "Adding home screen menu from file name homescreen");
             Menus.push_back(new FreeTouchDeck::Menu("homescreen"));
+            PrintMemInfo();
+            ESP_LOGD(module, "Done Adding home screen menu from file name homescreen");
             root.close();
             ScreenUnlock();
         }
@@ -243,6 +258,7 @@ namespace FreeTouchDeck
                 {
                     ESP_LOGD(module, "Initializing %s with %d buttons", m->Name, m->buttons.size());
                     (m)->Init();
+                    PrintMemInfo();
                     ESP_LOGD(module, "Done Initializing %s", m->Name);
                 }
             }

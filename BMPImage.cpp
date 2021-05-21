@@ -5,8 +5,8 @@
 static const char *module = "BMPImage";
 namespace FreeTouchDeck
 {
-    BMPImage * ImageList[100]={0}; // reserve room for 100 
-    uint8_t ImageCount=0;
+    std::list<BMPImage *>ImageList; // reserve room for 100
+    uint8_t ImageCount = 0;
     BMPImage::BMPImage()
     {
         valid = false;
@@ -15,12 +15,12 @@ namespace FreeTouchDeck
     {
         MEMSET_SIZEOF(LogoName);
     }
-    char *BMPImage::FileName(char * buffer, size_t buffSize)
+    char *BMPImage::FileName(char *buffer, size_t buffSize)
     {
         const char *logoPathTemplate = "/logos/%s";
         size_t len = strlen(logoPathTemplate) + strlen((const char *)LogoName);
         memset(buffer, 0x00, buffSize);
-        snprintf(buffer,buffSize, logoPathTemplate, LogoName);
+        snprintf(buffer, buffSize, logoPathTemplate, LogoName);
         return buffer;
     }
     BMPImage::BMPImage(const char *imageName)
@@ -35,7 +35,7 @@ namespace FreeTouchDeck
         else
         {
             ESP_LOGE(module, "Unknown image.");
-            strncpy(LogoName,"Unknown",sizeof(LogoName));
+            strncpy(LogoName, "Unknown", sizeof(LogoName));
             valid = false;
         }
     }
@@ -45,16 +45,16 @@ namespace FreeTouchDeck
     }
     bool BMPImage::SetNameAndPath(const char *imageName)
     {
-        if(!imageName && strlen(imageName)==0)
+        if (!imageName && strlen(imageName) == 0)
         {
             return false;
         }
-        strncpy(LogoName,imageName,sizeof(LogoName));
+        strncpy(LogoName, imageName, sizeof(LogoName));
         return true;
     }
     bool BMPImage::GetBMPDetails()
     {
-        char FileNameBuffer[101]={0};
+        char FileNameBuffer[101] = {0};
 #if defined(ESP32) && defined(CONFIG_SPIRAM_SUPPORT)
 
         bool psramSupported = psramFound();
@@ -66,7 +66,7 @@ namespace FreeTouchDeck
         ESP_LOGD(module, "Loading details from file %s", FileNameBuffer);
         fs::File bmpImage = SPIFFS.open(FileNameBuffer, FILE_READ);
         valid = true;
-        if (!bmpImage || bmpImage.size()==0)
+        if (!bmpImage || bmpImage.size() == 0)
         {
             ESP_LOGE(module, "Could not open file %s", FileNameBuffer);
             valid = false;
@@ -127,33 +127,33 @@ namespace FreeTouchDeck
         return valid;
     }
 
-    void BMPImage::Draw( int16_t x, int16_t y, bool transparent)
+    void BMPImage::Draw(int16_t x, int16_t y, bool transparent)
     {
-        char FileNameBuffer[100]={0};
-        ESP_LOGD(module,"Drawing bitmap file %s", LogoName);
+        char FileNameBuffer[100] = {0};
+        ESP_LOGD(module, "Drawing bitmap file %s", LogoName);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
-            ESP_LOGE(module,"Coordinates [%d,%d] overflow screen size", x, y);
+            ESP_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);
             return;
         }
         if (!valid)
         {
             // won't draw an invalid image
-            ESP_LOGW(module,"Not drawing an invalid image");
+            ESP_LOGW(module, "Not drawing an invalid image");
             return;
         }
-        ESP_LOGD(module,"Getting background color");
+        ESP_LOGD(module, "Getting background color");
         uint16_t BGColor = tft.color565(R, G, B);
-        bool Transparent = (BGColor == 0);
+        bool Transparent = ((BGColor == 0) || transparent);
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
-        ESP_LOGD(module,"Opening file %s", FileNameBuffer);
+        ESP_LOGD(module, "Opening file %s", FileNameBuffer);
         fs::File bmpFS = FILESYSTEM.open(FileNameBuffer, "r");
         if (!bmpFS)
         {
-            ESP_LOGE(module,"File not found: %s",FileNameBuffer);
+            ESP_LOGE(module, "File not found: %s", FileNameBuffer);
             return;
         }
-        ESP_LOGV(module,"Seeking offset: %d",Offset);
+        ESP_LOGV(module, "Seeking offset: %d", Offset);
         bmpFS.seek(Offset);
 
         uint16_t row;
@@ -168,6 +168,17 @@ namespace FreeTouchDeck
         uint16_t ly = y + h / 2 - 1;
         uint8_t *bptr = NULL;
         uint16_t *tptr = NULL;
+        if (Transparent || transparent)
+        {
+            // Push the pixel row to screen, pushImage will crop the line if needed
+            // y is decremented as the BMP image is drawn bottom up
+            ESP_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
+        }
+        else
+        {
+            ESP_LOGV(module, "Drawing bitmap line opaque");
+        }
+
         for (row = 0; row < h; row++)
         {
             bmpFS.read(lineBuffer, sizeof(lineBuffer));
@@ -198,7 +209,7 @@ namespace FreeTouchDeck
             }
         }
         tft.setSwapBytes(oldSwapBytes);
-        ESP_LOGD(module,"Closing bitmap file %s", LogoName);
+        ESP_LOGD(module, "Closing bitmap file %s", LogoName);
         bmpFS.close();
     }
 
@@ -228,35 +239,38 @@ namespace FreeTouchDeck
             return NULL;
         }
         ESP_LOGV(module, "Looking for image %s", imageName);
-        for (int i = 0; i < ImageCount && ImageList[i]; i++)
+        for (auto i: ImageList )
         {
-            if (strcmp(ImageList[i]->LogoName, imageName) == 0)
+            if (strcmp(i->LogoName, imageName) == 0)
             {
                 ESP_LOGV(module, "Returning cache entry for image %s", imageName);
-                image = ImageList[i];
+                image = i;
                 break;
             }
-            else 
+            else
             {
-                ESP_LOGV(module,"Cache image %s != %s", ImageList[i]->LogoName, imageName);
+                ESP_LOGV(module, "Cache image %s != %s", i->LogoName, imageName);
             }
         }
         if (!image)
         {
             ESP_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
+            PrintMemInfo();
+
             image = new BMPImage(imageName);
-            if(image->valid)
+            if (image->valid)
             {
-                ImageList[ImageCount++]=image;
+                ImageList.push_back(image);
             }
-            else 
+            else
             {
-                ESP_LOGE(module,"Invalid image %s",imageName);
+                ESP_LOGE(module, "Invalid image %s", imageName);
                 FREE_AND_NULL(image);
             }
-            
+            ESP_LOGD(module,"Done caching image");
+            PrintMemInfo();
         }
         return image;
     }
-    
+
 }

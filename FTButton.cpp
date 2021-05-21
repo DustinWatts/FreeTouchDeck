@@ -20,17 +20,14 @@ namespace FreeTouchDeck
     BMPImage *FTButton::LatchedLogo()
     {
         BMPImage *image = NULL;
-        if (_jsonLatchedLogo && cJSON_IsString(_jsonLatchedLogo))
+        if (_jsonLatchedLogo && strlen(_jsonLatchedLogo) > 0)
         {
-            if(strlen(cJSON_GetStringValue(_jsonLatchedLogo))>0 )
+            ESP_LOGV(module, "Latched Logo file name is %s", _jsonLatchedLogo);
+            image = GetImage(_jsonLatchedLogo);
+            if (image && !image->valid)
             {
-                ESP_LOGV(module,"Latched Logo file name is %s",cJSON_GetStringValue(_jsonLatchedLogo));
-                image = GetImage(cJSON_GetStringValue(_jsonLatchedLogo));
-                if (image && !image->valid)
-                {
-                    ESP_LOGD(module,"Latched Logo file %s is invalid.",cJSON_GetStringValue(_jsonLatchedLogo));
-                    image = NULL;
-                }
+                ESP_LOGD(module, "Latched Logo file %s is invalid.", _jsonLatchedLogo);
+                image = NULL;
             }
         }
         return image;
@@ -38,16 +35,13 @@ namespace FreeTouchDeck
     bool FTButton::IsLabelDraw()
     {
         BMPImage *image = NULL;
-        if (_jsonLogo && cJSON_IsString(_jsonLogo))
+        if (_jsonLogo && strlen(_jsonLogo) > 0)
         {
-            if(strlen(cJSON_GetStringValue(_jsonLogo))>0)
-            {
-                image = GetImage(cJSON_GetStringValue(_jsonLogo));
-            }
-            else
-            {
-                ESP_LOGD(module,"Empty logo value");
-            }
+            image = GetImage(_jsonLogo);
+        }
+        else
+        {
+            ESP_LOGD(module, "Empty logo value");
         }
         if (!image || !image->valid)
         {
@@ -59,22 +53,19 @@ namespace FreeTouchDeck
     {
         BMPImage *image = NULL;
 
-        if (_jsonLogo && cJSON_IsString(_jsonLogo))
+        if (_jsonLogo && strlen(_jsonLogo) > 0)
         {
-            if(strlen(cJSON_GetStringValue(_jsonLogo))>0)
-            {
-                ESP_LOGV(module,"Logo file name is %s",cJSON_GetStringValue(_jsonLogo));
-                image = GetImage(cJSON_GetStringValue(_jsonLogo));
-            }
-            else
-            {
-                ESP_LOGD(module, "empty logo file name");
-            }
-
+            ESP_LOGV(module, "Logo file name is %s", _jsonLogo);
+            image = GetImage(_jsonLogo);
         }
+        else
+        {
+            ESP_LOGD(module, "empty logo file name");
+        }
+
         if (!image || !image->valid)
         {
-            ESP_LOGD(module,"Logo file name %s was not found. Defaulting to label.bmp",cJSON_GetStringValue(_jsonLogo));
+            ESP_LOGD(module, "Logo file name %s was not found. Defaulting to label.bmp", _jsonLogo ? _jsonLogo : "");
             image = GetImage("label.bmp");
         }
         return image;
@@ -109,7 +100,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            ESP_LOGW(module, "Cannot latch button. Button %s has type %s.", Label,enum_to_string(ButtonType));
+            ESP_LOGW(module, "Cannot latch button. Button %s has type %s.", Label, enum_to_string(ButtonType));
             return false;
         }
         return true;
@@ -118,7 +109,14 @@ namespace FreeTouchDeck
     {
         char menuName[31] = {0};
 
-        _jsonLogo = button;
+        if (button && cJSON_IsString(button))
+        {
+            _jsonLogo = strdup(cJSON_GetStringValue(button));
+        }
+        else
+        {
+            ESP_LOGW(module,"Menu button does not have a logo!");
+        }
         cJSON *jsonActionValue = NULL;
         ButtonType = ButtonTypes::MENU;
         snprintf(menuName, sizeof(menuName), "menu%d", index + 1);
@@ -130,10 +128,22 @@ namespace FreeTouchDeck
         cJSON *jsonActionValue = NULL;
         cJSON *_jsonLatch = NULL;
         snprintf(logoName, sizeof(logoName), "logo%d", index);
-        _jsonLogo = cJSON_GetObjectItem(document, logoName);
+        cJSON *jsonLogo = cJSON_GetObjectItem(document, logoName);
+        if (jsonLogo && cJSON_IsString(jsonLogo))
+        {
+            _jsonLogo = strdup(cJSON_GetStringValue(jsonLogo));
+        }
+        else 
+        {
+            ESP_LOGW(module, "No logo file was found for %s", jsonLogo);
+        }
 
         strncpy(Label, logoName, sizeof(Label));
-        _jsonLatchedLogo = cJSON_GetObjectItem(button, "latchlogo");
+        cJSON *jsonLatchedLogo = cJSON_GetObjectItem(button, "latchlogo");
+        if (jsonLatchedLogo && cJSON_IsString(jsonLatchedLogo))
+        {
+            _jsonLatchedLogo = strdup(cJSON_GetStringValue(jsonLatchedLogo));
+        }
         _jsonLatch = cJSON_GetObjectItem(button, "latch");
         ButtonType = (_jsonLatch && cJSON_IsBool(_jsonLatch) && cJSON_IsTrue(_jsonLatch)) ? ButtonTypes::LATCH : ButtonTypes::STANDARD;
         cJSON *jsonActions = cJSON_GetObjectItem(button, "actionarray");
@@ -156,12 +166,17 @@ namespace FreeTouchDeck
                 {
                     ESP_LOGD(module, "Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
                     // only push valid actions
+                    PrintMemInfo();
+
                     auto action = new FTAction(jsonAction, jsonActionValue);
                     if (!action)
                     {
                         ESP_LOGE(module, "Could not allocate memory for action");
                     }
                     actions.push_back(action);
+                    ESP_LOGD(module, "DONE Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
+                    // only push valid actions
+                    PrintMemInfo();
                 }
                 else
                 {
@@ -193,15 +208,20 @@ namespace FreeTouchDeck
         }
         return image;
     }
-    void FTButton::Draw(int16_t x, int16_t y, uint16_t width, uint16_t height, uint16_t margin, bool force)
+    void FTButton::Draw(int16_t centerX, int16_t centerY, uint16_t width, uint16_t height, uint16_t margin, bool force)
     {
         bool transparent = false;
+        int32_t radius = 4;
+        uint16_t adjustedWidth = width - (2 * margin);
+        uint16_t adjustedHeight = height - (2 * margin);
 
         if (!NeedsDraw && !force)
             return;
 
         NeedsDraw = false;
+        bool LatchNeedsRoundRect = !LatchedLogo();
         BMPImage *image = GetActiveImage();
+
         if (!image || !image->valid)
         {
             ESP_LOGE(module, "No image found, or image invalid!");
@@ -210,27 +230,41 @@ namespace FreeTouchDeck
         ESP_LOGV(module, "Found image structure, bitmap is %s", image->LogoName);
 
         uint16_t BGColor = tft.color565(image->R, image->G, image->B);
-        ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  with margin %d, outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", x, y, image->w + margin, image->h + margin, margin, Outline, BGColor, TextColor, TextSize);
+        ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  with margin %d, outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", centerX, centerY, image->w + margin, image->h + margin, margin, Outline, BGColor, TextColor, TextSize);
+        PrintMemInfo();
         tft.setFreeFont(LABEL_FONT);
-        initButton(&tft, x, y, width, height, Outline, BGColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
-
-        if (Latched && !LatchedLogo())
+        initButton(&tft, centerX, centerY, adjustedWidth, adjustedHeight, Outline, BGColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
+        drawButton();
+        if (ButtonType == ButtonTypes::LATCH && LatchNeedsRoundRect)
         {
-            ESP_LOGD(module, "Latched without a latched logo.  Drawing round rectangle");
-            tft.fillRoundRect(x-width/2, y-height/2, width, height, 4, generalconfig.latchedColour);
-            transparent = true;
+            uint32_t roundRectWidth = width / 4;
+            uint32_t roundRectHeight = height / 4;
+            uint32_t cornerX = centerX - (adjustedWidth/2)+roundRectWidth/2;
+            uint32_t cornerY = centerY - (adjustedHeight/2)+roundRectHeight/2;
+            if (Latched)
+            {
+                ESP_LOGD(module, "Latched without a latched logo.  Drawing round rectangle");
+                tft.fillRoundRect(cornerX, cornerY, roundRectWidth, roundRectHeight, radius, generalconfig.latchedColour);
+                transparent = true;
+            }
+            else
+            {
+                ESP_LOGD(module, "Latched deactivated without a latched logo.  Erasing round rectangle");
+                tft.fillRoundRect(cornerX, cornerY, roundRectWidth, roundRectHeight, radius, generalconfig.backgroundColour);
+                // draw button one more time
+                drawButton();
+            }
         }
 
-        drawButton();
-        image->Draw(x, y, transparent);
+        image->Draw(centerX, centerY, transparent);
     }
     uint16_t FTButton::Width()
     {
-        return LatchedLogo()?max(Logo()->w, LatchedLogo()->w):Logo()->w;
+        return LatchedLogo() ? max(Logo()->w, LatchedLogo()->w) : Logo()->w;
     }
     uint16_t FTButton::Height()
     {
-        return LatchedLogo()?max(Logo()->h, LatchedLogo()->h):Logo()->h;
+        return LatchedLogo() ? max(Logo()->h, LatchedLogo()->h) : Logo()->h;
     }
 
     void FTButton::Press()

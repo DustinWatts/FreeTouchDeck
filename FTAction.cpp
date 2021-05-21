@@ -243,13 +243,14 @@ namespace FreeTouchDeck
             break;
         case ActionTypes::ARROWS_AND_TAB:
             bleKeyboard.write(ArrowsAndTab[value]);
+            bleKeyboard.releaseAll();
             break;
         case ActionTypes::MEDIAKEY:
             if (value >= 0)
             {
                 for (auto kp : Keys[value])
                 {
-                    ESP_LOGD(module, "Sending Media Key 0X%04X", (kp));
+                    ESP_LOGD(module, "Sending Media Key 0X%02X", (kp));
                     bleKeyboard.write(kp);
                 }
             }
@@ -273,10 +274,12 @@ namespace FreeTouchDeck
         case ActionTypes::FUNCTIONKEYS:
             ESP_LOGD(module, "Pressing key 0X%04X", FunctionKeys[value]);
             bleKeyboard.press(FunctionKeys[value]);
+            bleKeyboard.releaseAll();
             break;
         case ActionTypes::NUMBERS:
             ESP_LOGD(module, "printing ", value);
             bleKeyboard.print(value);
+            bleKeyboard.releaseAll();
             break;
 
         case ActionTypes::COMBOS:
@@ -285,6 +288,7 @@ namespace FreeTouchDeck
                 ESP_LOGD(module, "Pressing key 0X%04X", k);
                 bleKeyboard.press(k);
             }
+            bleKeyboard.releaseAll();
             break;
         case ActionTypes::HELPERS:
             if (generalconfig.modifier1 != 0)
@@ -377,6 +381,7 @@ namespace FreeTouchDeck
                 {
                     snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, kp);
                 }
+                bleKeyboard.releaseAll();
             }
             break;
         case ActionTypes::LETTERS:

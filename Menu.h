@@ -64,7 +64,7 @@ namespace FreeTouchDeck
 
     void AddHomeButton();
     void AddBackButton();
-    FTAction *homeMenu;
-    FTAction *backButton;
+    static FTAction *homeMenu;
+    static FTAction *backButton;
   };
 }

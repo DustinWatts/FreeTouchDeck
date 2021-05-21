@@ -13,7 +13,8 @@ void *operator new(size_t sz)
 }
 namespace FreeTouchDeck
 {
-    static char configBuffer[3001] = {0}; // used to load config files in memory for parsing
+    FTAction * Menu::homeMenu = new FTAction(ActionTypes::MENU, "homescreen");
+    FTAction * Menu::backButton = new FTAction(ActionTypes::MENU, "~BACK");
     Menu::Menu(const char *name, const char *config)
     {
         ESP_LOGD(module, "Instantiating menu name %s", name);
@@ -170,6 +171,7 @@ namespace FreeTouchDeck
     {
         if (!Pressed)
             return;
+            
         Pressed = false;
         ESP_LOGV(module, "Releasing all %d button ", buttons.size());
         for (auto button : buttons)
@@ -199,6 +201,7 @@ namespace FreeTouchDeck
     bool Menu::LoadConfig(File *config)
     {
         ESP_LOGD(module, "Loading config from file. Loading %s in memory.", config->name());
+        char configBuffer[3001] = {0}; // used to load config files in memory for parsing
         memset(configBuffer, 0x00, sizeof(configBuffer));
         size_t read_size = config->readBytes(configBuffer, sizeof(configBuffer));
         if (read_size != config->size())
@@ -225,6 +228,7 @@ namespace FreeTouchDeck
         {
             drawErrorMessage(true, module, "Failed to allocate memory for new button");
         }
+        cJSON_Delete(menubutton);
         buttons.push_back(newButton);
     }
     void Menu::AddBackButton()
@@ -242,22 +246,15 @@ namespace FreeTouchDeck
         {
             drawErrorMessage(true, module, "Failed to allocate memory for new button");
         }
+        cJSON_Delete(menubutton);
         buttons.push_back(newButton);
     }
     bool Menu::LoadConfig(const char *config)
     {
         char logoName[31] = {0};
         char buttonName[31] = {0};
-        homeMenu = new FTAction(ActionTypes::MENU, "homescreen");
-        if (!homeMenu)
-        {
-            drawErrorMessage(true, module, "Failed to allocate memory for home menu action");
-        }
-        backButton = new FTAction(ActionTypes::MENU, "~BACK");
-        if (!backButton)
-        {
-            drawErrorMessage(true, module, "Failed to allocate memory for back action");
-        }        
+
+        PrintMemInfo();
         ESP_LOGD(module, "Parsing json configuration");
         ESP_LOGV(module, "%s", config);
         cJSON *doc = cJSON_Parse(config);
@@ -269,6 +266,7 @@ namespace FreeTouchDeck
         }
         else
         {
+            PrintMemInfo();
             ESP_LOGV(module, "Parsing success. Processing entries");
 
             cJSON *jsonButton = NULL;
@@ -282,6 +280,8 @@ namespace FreeTouchDeck
                 jsonButton = cJSON_GetObjectItem(doc, buttonName);
                 if (jsonButton)
                 {
+                    ESP_LOGD(module,"Creating new button");
+                    PrintMemInfo();
                     ESP_LOGD(module, "Found button %s", buttonName);
                     FTButton *newButton = new FTButton(ButtonsCount, doc, jsonButton, _outline, _textSize, _textColor);
                     if (!newButton)
@@ -290,12 +290,16 @@ namespace FreeTouchDeck
                     }
                     buttons.push_back( newButton);
                     ButtonsCount++;
+                    ESP_LOGD(module,"Created new logo button");
+                    PrintMemInfo();
+
                 }
                 else if (jsonLogo)
                 {
                     // Most likely processing a stand alone menu logo.
                     // Add button with corresponding action
-
+                    ESP_LOGD(module,"Creating new logo button");
+                    PrintMemInfo();
                     FTButton *newButton = new FTButton(ButtonsCount, jsonLogo, _outline, _textSize, _textColor);
                     if (!newButton)
                     {
@@ -303,6 +307,8 @@ namespace FreeTouchDeck
                     }
                     buttons.push_back(newButton);
                     ButtonsCount++;
+                    ESP_LOGD(module,"Created new logo button");
+                    PrintMemInfo();
                 }
 
                 /* code */
@@ -317,8 +323,12 @@ namespace FreeTouchDeck
             else if (buttons.size() == 0)
             {
                 ESP_LOGD(module, "No buttons were found on screen %s. Adding default action as back to prev screen", Name);
-                actions.push_back(backButton);
+                actions.push_back(Menu::backButton);
             }
+            cJSON_Delete(doc);
+            ESP_LOGD(module,"Deleted json document ");
+            PrintMemInfo();
+
         }
         return true;
     }
@@ -348,7 +358,7 @@ namespace FreeTouchDeck
             {
                 // in config mode, default to going back to home screen
                 // when pressed
-                QueueAction(homeMenu);
+                QueueAction(Menu::homeMenu);
             }
         }
     }

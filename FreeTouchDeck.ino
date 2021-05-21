@@ -291,11 +291,16 @@ void CacheBitmaps()
 }
 void PrintMemInfo()
 {
-  ESP_LOGV(module,"free_iram: %d",heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-	ESP_LOGV(module,"min_free_iram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
-	ESP_LOGV(module,"free_spiram: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
-	ESP_LOGV(module,"min_free_spiram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM));
+  static size_t prev_free = 0;
+  static size_t prev_min_free = 0;
+  
+  ESP_LOGD(module,"free_iram: %d, delta: %d",heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free>0?prev_free-heap_caps_get_free_size(MALLOC_CAP_INTERNAL):0);
+	ESP_LOGD(module,"min_free_iram: %d, delta: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free>0?prev_min_free-heap_caps_get_free_size(MALLOC_CAP_INTERNAL):0);
+  prev_free= heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+  prev_min_free=heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
 
+//	ESP_LOGD(module,"free_spiram: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+//	ESP_LOGD(module,"min_free_spiram: %d",heap_caps_get_minimum_free_size(MALLOC_CAP_SPIRAM));
 }
 
 //-------------------------------- SETUP --------------------------------------------------------------
@@ -313,7 +318,18 @@ void setup()
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   ESP_LOGI(module,"Starting system.");
-  #ifdef ARDUINO_TWATCH_BASE
+
+  // --------------- Init Display -------------------------
+  ESP_LOGI(module,"Initializing display");
+  // Initialise the TFT screen
+  tft.init();
+
+  // Set the rotation before we calibrate
+  tft.setRotation(SCREEN_ROTATION);
+
+  // Clear the screen
+  tft.fillScreen(TFT_BLACK);
+#ifdef ARDUINO_TWATCH_BASE
   ESP_LOGI(module,"Enabling AXP power management chip.");
   Wire1.begin(21, 22);
   int ret = power->begin(Wire1, AXP202_SLAVE_ADDRESS, false);
@@ -337,6 +353,7 @@ void setup()
   power->setPowerOutPut(AXP202_LDO2, AXP202_ON);
   ESP_LOGI(module,"Setting up Display Back light");
 #endif
+
 #ifdef USECAPTOUCH
 #ifdef CUSTOM_TOUCH_SDA
   if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
@@ -351,7 +368,7 @@ void setup()
     ESP_LOGI(module,"Capacitive touch started");
   }
 #endif
-
+PrintMemInfo();
   // Setup PWM channel and attach pin 32
   ledcSetup(0, 5000, 8);
 #ifdef TFT_BL
@@ -361,16 +378,6 @@ void setup()
 #endif
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
-  // --------------- Init Display -------------------------
-  ESP_LOGI(module,"Initializing display");
-  // Initialise the TFT screen
-  tft.init();
-
-  // Set the rotation before we calibrate
-  tft.setRotation(SCREEN_ROTATION);
-
-  // Clear the screen
-  tft.fillScreen(TFT_BLACK);
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
   init_cJSON();
@@ -411,7 +418,7 @@ void setup()
   }
 
   //------------------ Load Wifi Config ----------------------------------------------
-
+  PrintMemInfo();
   ESP_LOGI(module,"Loading Wifi Config");
   if (!loadMainConfig())
   {
@@ -421,10 +428,11 @@ void setup()
   {
    ESP_LOGI(module,"WiFi Credentials Loaded");
   }
-
+  PrintMemInfo();
+  ESP_LOGD(module,"Setting up web server");
   // ----------------- Load webserver ---------------------
   handlerSetup();
-
+  PrintMemInfo();
 
   ESP_LOGI(module,"Screen size is %dx%d", tft.width(), tft.height());
 
@@ -450,6 +458,7 @@ void setup()
   {
     ESP_LOGW(module,"general.json seems to be corrupted. To reset to default type 'reset general'.");
   }
+  PrintMemInfo();
   ESP_LOGI(module,"All config files loaded");
   
   // Setup the Font used for plain text
@@ -458,6 +467,8 @@ void setup()
   //------------------BLE Initialization ------------------------------------------------------------------------
   ESP_LOGI(module,"Starting BLE Keyboard");
   bleKeyboard.begin();
+
+  PrintMemInfo();
 
   // ---------------- Printing version numbers -----------------------------------------------
   ESP_LOGI(module,"BLE Keyboard version: %s",BLE_KEYBOARD_VERSION);
@@ -470,6 +481,7 @@ void setup()
   // Draw background
   tft.fillScreen(generalconfig.backgroundColour);
   SetActiveScreen("homescreen");
+  PrintMemInfo();
 
   if (generalconfig.sleepenable && touchInterruptPin >= 0)
   {
@@ -484,8 +496,13 @@ void setup()
     QueueAction(FreeTouchDeck::sleepClearLatchAction);
   }
 
-  xTaskCreate(ScreenHandleTask, "Screen", 4096, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
-  xTaskCreate(ActionTask, "Action", 4096, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
+  xTaskCreate(ScreenHandleTask, "Screen", 1024*3, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
+  PrintMemInfo();
+  ESP_LOGD(module,"Screen task created");
+  xTaskCreate(ActionTask, "Action", 1024*4, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
+  PrintMemInfo();
+  ESP_LOGD(module,"Action task created");
+
 }
 
 void processSerial()
@@ -652,15 +669,22 @@ bool getTouch(uint16_t *t_x, uint16_t *t_y)
   {
     // Retrieve a point
     TS_Point p = ts.getPoint();
-#ifndef ARDUINO_TWATCH_BASE
+    #ifdef INVERSE_X_TOUCH
+    p.x = map(p.x, 0, tft.width(), tft.width(), 0);
+    #endif   
+    #ifdef INVERSE_Y_TOUCH
+    p.y = map(p.y, 0, tft.height(), tft.height(), 0);    
+    #endif
+
+#ifdef FLIP_TOUCH_AXIS
     //Flip things around so it matches our screen rotation
-    p.x = map(p.x, 0, 320, 320, 0);
     *t_y = p.x;
     *t_x = p.y;
 #else
     *t_y = p.y;
     *t_x = p.x;
 #endif
+
     ResetSleep();
     return true;
   }

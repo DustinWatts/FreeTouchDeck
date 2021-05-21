@@ -28,8 +28,8 @@ namespace FreeTouchDeck
         uint16_t Outline = 0;
         uint8_t TextSize = 0;
         uint16_t TextColor = 0;
-        cJSON * _jsonLogo=NULL;
-        cJSON * _jsonLatchedLogo=NULL;
+        char * _jsonLogo=NULL;
+        char * _jsonLatchedLogo=NULL;
 
     public:
         std::list<FTAction *> actions;
