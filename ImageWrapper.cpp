@@ -1,21 +1,20 @@
-#include "BMPImage.h"
+#include "ImageWrapper.h"
 
 #include "UserConfig.h"
 
-static const char *module = "BMPImage";
+static const char *module = "ImageWrapper";
 namespace FreeTouchDeck
 {
-    std::list<BMPImage *>ImageList; // reserve room for 100
-    uint8_t ImageCount = 0;
-    BMPImage::BMPImage()
+    std::list<ImageWrapper *>ImageList; // reserve room for 100
+    ImageWrapper::ImageWrapper()
     {
         valid = false;
     }
-    void BMPImage::ResetData()
+    void ImageWrapper::ResetData()
     {
         MEMSET_SIZEOF(LogoName);
     }
-    char *BMPImage::FileName(char *buffer, size_t buffSize)
+    char *ImageWrapper::FileName(char *buffer, size_t buffSize)
     {
         const char *logoPathTemplate = "/logos/%s";
         size_t len = strlen(logoPathTemplate) + strlen((const char *)LogoName);
@@ -23,7 +22,7 @@ namespace FreeTouchDeck
         snprintf(buffer, buffSize, logoPathTemplate, LogoName);
         return buffer;
     }
-    BMPImage::BMPImage(const char *imageName)
+    ImageWrapper::ImageWrapper(const char *imageName)
     {
         if (SetNameAndPath(imageName))
         {
@@ -39,11 +38,11 @@ namespace FreeTouchDeck
             valid = false;
         }
     }
-    BMPImage::~BMPImage()
+    ImageWrapper::~ImageWrapper()
     {
-        BMPImage::ResetData();
+        ImageWrapper::ResetData();
     }
-    bool BMPImage::SetNameAndPath(const char *imageName)
+    bool ImageWrapper::SetNameAndPath(const char *imageName)
     {
         if (!imageName && strlen(imageName) == 0)
         {
@@ -52,7 +51,7 @@ namespace FreeTouchDeck
         strncpy(LogoName, imageName, sizeof(LogoName));
         return true;
     }
-    bool BMPImage::GetBMPDetails()
+    bool ImageWrapper::GetBMPDetails()
     {
         char FileNameBuffer[101] = {0};
 #if defined(ESP32) && defined(CONFIG_SPIRAM_SUPPORT)
@@ -64,70 +63,70 @@ namespace FreeTouchDeck
         // Open File
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
         ESP_LOGD(module, "Loading details from file %s", FileNameBuffer);
-        fs::File bmpImage = SPIFFS.open(FileNameBuffer, FILE_READ);
+        fs::File imageWrapper = SPIFFS.open(FileNameBuffer, FILE_READ);
         valid = true;
-        if (!bmpImage || bmpImage.size() == 0)
+        if (!imageWrapper || imageWrapper.size() == 0)
         {
             ESP_LOGE(module, "Could not open file %s", FileNameBuffer);
             valid = false;
             return valid;
         }
-        if (valid && read16(bmpImage) == 0x4D42)
+        if (valid && read16(imageWrapper) == 0x4D42)
         {
             ESP_LOGV(module, "Valid bitmap header signature found");
-            read32(bmpImage);
-            read32(bmpImage);
-            Offset = read32(bmpImage);              // start of image data
-            uint32_t headerSize = read32(bmpImage); // header size
-            w = read32(bmpImage);
-            h = read32(bmpImage);
-            Planes = read16(bmpImage);
-            Depth = read16(bmpImage); // Bits per pixel
+            read32(imageWrapper);
+            read32(imageWrapper);
+            Offset = read32(imageWrapper);              // start of image data
+            uint32_t headerSize = read32(imageWrapper); // header size
+            w = read32(imageWrapper);
+            h = read32(imageWrapper);
+            Planes = read16(imageWrapper);
+            Depth = read16(imageWrapper); // Bits per pixel
             if (headerSize > 12)
             {
-                Compression = read32(bmpImage);
-                (void)read32(bmpImage);    // Raw bitmap data size; ignore
-                (void)read32(bmpImage);    // Horizontal resolution, ignore
-                (void)read32(bmpImage);    // Vertical resolution, ignore
-                Colors = read32(bmpImage); // Number of colors in palette, or 0 for 2^depth
+                Compression = read32(imageWrapper);
+                (void)read32(imageWrapper);    // Raw bitmap data size; ignore
+                (void)read32(imageWrapper);    // Horizontal resolution, ignore
+                (void)read32(imageWrapper);    // Vertical resolution, ignore
+                Colors = read32(imageWrapper); // Number of colors in palette, or 0 for 2^depth
             }
             if (Depth != 24)
             {
                 valid = false;
-                ESP_LOGE(module, "Unsupported bit depth %d for image %s. Image should be 24bpp.", Depth, bmpImage.name());
+                ESP_LOGE(module, "Unsupported bit depth %d for image %s. Image should be 24bpp.", Depth, imageWrapper.name());
             }
             if (Compression != 0)
             {
-                ESP_LOGE(module, "Compression not supported for %s. Image should be uncompressed.", bmpImage.name());
+                ESP_LOGE(module, "Compression not supported for %s. Image should be uncompressed.", imageWrapper.name());
                 valid = false;
             }
             if (Planes != 1)
             {
-                ESP_LOGE(module, "Unsupported number of planes %d for image %s.", Planes, bmpImage.name());
+                ESP_LOGE(module, "Unsupported number of planes %d for image %s.", Planes, imageWrapper.name());
                 valid = false;
             }
             if (valid)
             {
                 padding = (4 - ((w * 3) & 3)) & 3;
-                bmpImage.seek(Offset); //skip bitmap header
+                imageWrapper.seek(Offset); //skip bitmap header
 
-                B = bmpImage.read();
-                G = bmpImage.read();
-                R = bmpImage.read();
+                B = imageWrapper.read();
+                G = imageWrapper.read();
+                R = imageWrapper.read();
             }
         }
         else
         {
-            ESP_LOGE(module, "Invalid bitmap file %s. Signature 0x4D42 not found in header", bmpImage.name());
+            ESP_LOGE(module, "Invalid bitmap file %s. Signature 0x4D42 not found in header", imageWrapper.name());
             valid = false;
         }
-        ESP_LOGV(module, "Closing file %s", bmpImage.name());
-        bmpImage.close();
+        ESP_LOGV(module, "Closing file %s", imageWrapper.name());
+        imageWrapper.close();
         ESP_LOGV(module, "Done parsing file");
         return valid;
     }
 
-    void BMPImage::Draw(int16_t x, int16_t y, bool transparent)
+    void ImageWrapper::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
         ESP_LOGD(module, "Drawing bitmap file %s", LogoName);
@@ -213,7 +212,7 @@ namespace FreeTouchDeck
         bmpFS.close();
     }
 
-    uint16_t BMPImage::read16(fs::File &f)
+    uint16_t ImageWrapper::read16(fs::File &f)
     {
         uint16_t result;
         ((uint8_t *)&result)[0] = f.read(); // LSB
@@ -221,7 +220,7 @@ namespace FreeTouchDeck
         return result;
     }
 
-    uint32_t BMPImage::read32(fs::File &f)
+    uint32_t ImageWrapper::read32(fs::File &f)
     {
         uint32_t result;
         ((uint8_t *)&result)[0] = f.read(); // LSB
@@ -230,9 +229,9 @@ namespace FreeTouchDeck
         ((uint8_t *)&result)[3] = f.read(); // MSB
         return result;
     }
-    BMPImage *GetImage(const char *imageName)
+    ImageWrapper *GetImage(const char *imageName)
     {
-        BMPImage *image = NULL;
+        ImageWrapper *image = NULL;
         if (!imageName || strlen(imageName) == 0)
         {
             //ESP_LOGE(module, "No image name passed");
@@ -257,7 +256,7 @@ namespace FreeTouchDeck
             ESP_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
             PrintMemInfo();
 
-            image = new BMPImage(imageName);
+            image = new ImageWrapper(imageName);
             if (image->valid)
             {
                 ImageList.push_back(image);

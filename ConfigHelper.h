@@ -2,6 +2,7 @@
 
 
 #include "globals.hpp"
+#include "Webserver.h"
 void stopBT()
 {
   PrintMemInfo();
@@ -28,17 +29,27 @@ bool startWebServer()
   {
     ESP_LOGI(module, "Access point ready. Address is : %s", WiFi.softAPIP().toString().c_str());
   }
-  MDNS.begin(STRING_OR_DEFAULT(wificonfig.hostname, "freetouchdeck"));
-  MDNS.addService("http", "tcp", 80);
+  if(!MDNS.begin(STRING_OR_DEFAULT(wificonfig.hostname, "freetouchdeck")) || !MDNS.addService("http", "tcp", 80))
+  {
+    PrintMemInfo();
+    drawErrorMessage(true,module,"Unable to start MDNS server");
 
+  }
+  PrintMemInfo();
+  ESP_LOGD(module,"MDNS started");
+
+  // ----------------- Load webserver ---------------------
+  handlerSetup();
+  PrintMemInfo();
+  ESP_LOGD(module,"Http handlers configured, starting web server");
   // Start the webserver
   webserver.begin();
+  
   ESP_LOGI(module, "Webserver started");
   return true;
 }
 bool startWifiStation()
 {
-  stopBT();
   ESP_LOGI(module, "Connecting to %s", wificonfig.ssid);
   if (String(WiFi.SSID()) != String(wificonfig.ssid))
   {
@@ -61,7 +72,7 @@ bool startWifiStation()
   }
 
   startWebServer();
-  ESP_LOGD(module, "Web server started");
+  ESP_LOGD(module, "Done Starting server in STA mode");
   return true;
 }
 
@@ -70,22 +81,21 @@ bool startWifiStation()
 // Start the default AP
 bool startAP(const char *SSID, const char *PASSWORD)
 {
-  bool bStarted = false;
-  stopBT();
-  if (!(bStarted == WiFi.mode(WIFI_AP)))
+  if (!WiFi.mode(WIFI_AP))
   {
     ESP_LOGE(module, "Unable to set WiFi mode to access point");
-  }
-
-  if (bStarted && !(bStarted = WiFi.softAP(SSID, PASSWORD)))
+  }else if (!WiFi.softAP(SSID, PASSWORD))
   {
     ESP_LOGE(module, "Unable to start Wifi Access Point");
   }
   else
   {
     startWebServer();
+    ESP_LOGD(module, "Done Starting Wifi in Access Point mode");
+    return true;
   }
-  return bStarted;
+  
+  return false;
 }
 
 bool startDefaultAP()
@@ -99,6 +109,7 @@ bool startWifiAP()
 {
   return startAP(wificonfig.ssid, wificonfig.password);
 }
+
 /**
 * @brief This function stops Bluetooth and connects to the given 
          WiFi network. It the starts mDNS and starts the Async
@@ -110,7 +121,7 @@ bool startWifiAP()
 *
 * @note none
 */
-bool ConfigMode(FTAction *action)
+bool ConfigMode()
 {
 
   bool result = false;
@@ -197,6 +208,7 @@ bool ConfigMode(FTAction *action)
   {
     if (startWifiAP())
     {
+      ESP_LOGD(module,"Done starting wifi in AP mode. Printing instructions to screen");
       tft.println("Started as AP and in config mode.");
       tft.println("To configure:");
       tft.println("http://freetouchdeck.local");

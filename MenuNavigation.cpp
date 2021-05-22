@@ -173,6 +173,7 @@ namespace FreeTouchDeck
                     }
                     Active->Deactivate();
                 }
+                tft.fillScreen(generalconfig.backgroundColour);
                 Match->Activate();
                 ScreenUnlock();
                 result=true;

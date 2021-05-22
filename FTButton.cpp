@@ -17,9 +17,9 @@ namespace FreeTouchDeck
             return "Unknown button type";
         }
     }
-    BMPImage *FTButton::LatchedLogo()
+    ImageWrapper *FTButton::LatchedLogo()
     {
-        BMPImage *image = NULL;
+        ImageWrapper *image = NULL;
         if (_jsonLatchedLogo && strlen(_jsonLatchedLogo) > 0)
         {
             ESP_LOGV(module, "Latched Logo file name is %s", _jsonLatchedLogo);
@@ -34,7 +34,7 @@ namespace FreeTouchDeck
     }
     bool FTButton::IsLabelDraw()
     {
-        BMPImage *image = NULL;
+        ImageWrapper *image = NULL;
         if (_jsonLogo && strlen(_jsonLogo) > 0)
         {
             image = GetImage(_jsonLogo);
@@ -49,9 +49,9 @@ namespace FreeTouchDeck
         }
         return false;
     }
-    BMPImage *FTButton::Logo()
+    ImageWrapper *FTButton::Logo()
     {
-        BMPImage *image = NULL;
+        ImageWrapper *image = NULL;
 
         if (_jsonLogo && strlen(_jsonLogo) > 0)
         {
@@ -195,9 +195,9 @@ namespace FreeTouchDeck
     {
         NeedsDraw = true;
     }
-    BMPImage *FTButton::GetActiveImage()
+    ImageWrapper *FTButton::GetActiveImage()
     {
-        BMPImage *image = NULL;
+        ImageWrapper *image = NULL;
         if (Latched)
         {
             image = LatchedLogo();
@@ -220,7 +220,7 @@ namespace FreeTouchDeck
 
         NeedsDraw = false;
         bool LatchNeedsRoundRect = !LatchedLogo();
-        BMPImage *image = GetActiveImage();
+        ImageWrapper *image = GetActiveImage();
 
         if (!image || !image->valid)
         {

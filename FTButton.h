@@ -3,7 +3,7 @@
 #include "globals.hpp"
 #include "FTAction.h"
 #include "UserConfig.h"
-#include "BMPImage.h"
+#include "ImageWrapper.h""
 namespace FreeTouchDeck
 {
     enum class ButtonTypes
@@ -37,11 +37,11 @@ namespace FreeTouchDeck
         FTButton(uint8_t index,cJSON * button, uint16_t outline, uint8_t textSize, uint16_t textColor);
         ~FTButton();
         bool Latch(FTAction *action);
-        BMPImage *LatchedLogo();
-        BMPImage *GetActiveImage();
+        ImageWrapper *LatchedLogo();
+        ImageWrapper *GetActiveImage();
         char Label[21] = {0};        
         bool IsLabelDraw();
-        BMPImage *Logo();
+        ImageWrapper *Logo();
         uint16_t Width();
         uint16_t Height();
         void Draw(int16_t x, int16_t y,uint16_t width,uint16_t height, uint16_t margin, bool force);

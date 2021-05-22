@@ -2,7 +2,7 @@
 #include "globals.hpp"
 namespace FreeTouchDeck
 {
-    class BMPImage
+    class ImageWrapper
     {
 
     public:
@@ -18,15 +18,15 @@ namespace FreeTouchDeck
         uint32_t Colors = 0;
         byte R, G, B;
         uint16_t padding = 0;
-        BMPImage(const char *imageName);
-        BMPImage();
+        ImageWrapper(const char *imageName);
+        ImageWrapper();
         void Draw(int16_t x, int16_t y, bool transparent);
-        ~BMPImage();
+        ~ImageWrapper();
         void *operator new(size_t sz)
         {
             void *p = malloc_fn(sz);
             if (!p)
-                ESP_LOGE("BMPImage", "operator new %d returned null pointer! ", sz);
+                ESP_LOGE("ImageWrapper", "operator new %d returned null pointer! ", sz);
             return p;
         }
 
@@ -37,5 +37,5 @@ namespace FreeTouchDeck
         uint32_t read32(fs::File &f);
         void ResetData();
     };
-    extern BMPImage *GetImage(const char *imageName);
+    extern ImageWrapper *GetImage(const char *imageName);
 }
