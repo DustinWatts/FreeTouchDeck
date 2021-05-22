@@ -119,6 +119,7 @@ namespace FreeTouchDeck
         }
         cJSON *jsonActionValue = NULL;
         ButtonType = ButtonTypes::MENU;
+        BackgroundColor=generalconfig.menuButtonColour;
         snprintf(menuName, sizeof(menuName), "menu%d", index + 1);
         actions.push_back(new FTAction(ActionTypes::MENU, menuName));
     }
@@ -146,6 +147,7 @@ namespace FreeTouchDeck
         }
         _jsonLatch = cJSON_GetObjectItem(button, "latch");
         ButtonType = (_jsonLatch && cJSON_IsBool(_jsonLatch) && cJSON_IsTrue(_jsonLatch)) ? ButtonTypes::LATCH : ButtonTypes::STANDARD;
+        BackgroundColor=(ButtonType==ButtonTypes::MENU?generalconfig.menuButtonColour: generalconfig.backgroundColour);
         cJSON *jsonActions = cJSON_GetObjectItem(button, "actionarray");
         if (!jsonActions)
         {
@@ -165,16 +167,21 @@ namespace FreeTouchDeck
                 else if (FTAction::GetType(jsonAction) != ActionTypes::NONE)
                 {
                     ESP_LOGD(module, "Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
-                    // only push valid actions
-                    PrintMemInfo();
-
                     auto action = new FTAction(jsonAction, jsonActionValue);
                     if (!action)
                     {
                         ESP_LOGE(module, "Could not allocate memory for action");
                     }
-                    actions.push_back(action);
-                    ESP_LOGD(module, "DONE Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
+                    else 
+                    {
+                        if(action->Type == ActionTypes::FUNCTIONKEYS)
+                        {
+                            BackgroundColor=generalconfig.functionButtonColour;
+                        }
+                        actions.push_back(action);
+                        ESP_LOGD(module, "DONE Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));                        
+                    }
+
                     // only push valid actions
                     PrintMemInfo();
                 }
@@ -233,7 +240,7 @@ namespace FreeTouchDeck
         ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  with margin %d, outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", centerX, centerY, image->w + margin, image->h + margin, margin, Outline, BGColor, TextColor, TextSize);
         PrintMemInfo();
         tft.setFreeFont(LABEL_FONT);
-        initButton(&tft, centerX, centerY, adjustedWidth, adjustedHeight, Outline, BGColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
+        initButton(&tft, centerX, centerY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
         drawButton();
         if (ButtonType == ButtonTypes::LATCH && LatchNeedsRoundRect)
         {
@@ -250,7 +257,7 @@ namespace FreeTouchDeck
             else
             {
                 ESP_LOGD(module, "Latched deactivated without a latched logo.  Erasing round rectangle");
-                tft.fillRoundRect(cornerX, cornerY, roundRectWidth, roundRectHeight, radius, generalconfig.backgroundColour);
+                tft.fillRoundRect(cornerX, cornerY, roundRectWidth, roundRectHeight, radius, BackgroundColor);
                 // draw button one more time
                 drawButton();
             }

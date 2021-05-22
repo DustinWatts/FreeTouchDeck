@@ -28,6 +28,7 @@ namespace FreeTouchDeck
         uint16_t Outline = 0;
         uint8_t TextSize = 0;
         uint16_t TextColor = 0;
+        uint16_t BackgroundColor=0;
         char * _jsonLogo=NULL;
         char * _jsonLatchedLogo=NULL;
 
