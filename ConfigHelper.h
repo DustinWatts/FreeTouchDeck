@@ -125,10 +125,10 @@ bool ConfigMode()
 {
 
   bool result = false;
-  //tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 0);
   tft.setTextFont(2);
   tft.setTextSize(1);
+  tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
 
   ESP_LOGI(module, "Entering Config Mode");

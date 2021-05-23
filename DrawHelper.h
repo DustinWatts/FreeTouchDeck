@@ -1564,6 +1564,7 @@ bool printinfo(FTAction * dummy)
   {
     tft.setTextSize(2);
   }
+  tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.printf("Version: %s\n", versionnumber);
 

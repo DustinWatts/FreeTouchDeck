@@ -163,7 +163,6 @@ SystemMode RunMode = SystemMode::STANDARD;
 
 volatile unsigned long previousMillis = 0;
 unsigned long Interval = 0;
-bool displayinginfo;
 #ifdef ACTIONS_IN_TASKS
 TaskHandle_t xScreenTask = NULL;
 void ScreenHandleTask(void *pvParameters);
@@ -501,6 +500,7 @@ void setup()
     tft.setCursor(1, 3);
     tft.setTextFont(2);
     tft.setTextSize(1);
+    tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.printf("Loading version %s\n", versionnumber);
     ESP_LOGI(module, "Loading version %s", versionnumber);
@@ -782,12 +782,16 @@ void HandleScreen()
 {
   uint16_t t_x = 0;
   uint16_t t_y = 0;
+  bool pressed = getTouch(&t_x, &t_y);
   if (RunMode == SystemMode::CONFIG)
   {
     delay(100);
+    if(pressed)
+    {
+      ESP.restart();
+    }
     return;
   }
-  bool pressed = getTouch(&t_x, &t_y);
   handleDisplay(pressed, t_x, t_y);
   ESP_LOGV(module, "Checking for screen actions");
   FTAction *Action = PopScreenQueue();
