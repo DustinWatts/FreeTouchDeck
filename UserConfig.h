@@ -2,24 +2,36 @@
 #include <queue>
 #include "FTAction.h"
 #include <freertos/task.h>
+#define ESP32TOUCHCAM
+#ifdef ESP32TOUCHCAM
 
-#ifdef ARDUINO_TWATCH_BASE
+#define CUSTOM_TOUCH_SDA 26
+#define CUSTOM_TOUCH_SCL 27
+#define USECAPTOUCH
+#define touchInterruptPin GPIO_NUM_0
+#define SCREEN_ROTATION 1
+#define INVERSE_Y_TOUCH
+#define FLIP_TOUCH_AXIS
+
+#elif defined(ARDUINO_TWATCH_BASE)
 #include "axp20x.h"
-    #define CUSTOM_TOUCH_SDA 23
-    #define CUSTOM_TOUCH_SCL 32
-    #define USECAPTOUCH
-    #define touchInterruptPin GPIO_NUM_38
-    #define TFT_BL   12
-    #define SCREEN_WIDTH 240
-    #define SCREEN_HEIGHT 240
-    #define SCREEN_ROTATION 2
-#else 
+#define CUSTOM_TOUCH_SDA 23
+#define CUSTOM_TOUCH_SCL 32
+#define USECAPTOUCH
+#define touchInterruptPin GPIO_NUM_38
+#define TFT_BL 12
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 240
+#define SCREEN_ROTATION 2
+#define ILI9341_DRIVER
+#else
 // ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
 // The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
 #define touchInterruptPin GPIO_NUM_27
 #define SCREEN_ROTATION 1
-#define INVERSE_X_TOUCH    
-#define FLIP_TOUCH_AXIS
+
+#define ILI9341_DRIVER
+
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
@@ -30,10 +42,39 @@
 #ifndef speakerPin
 #define speakerPin -1
 #endif
+#if defined(ST7789_DRIVER) || defined(ST7735_DRIVER) || defined(ILI9163_DRIVER)
+#define TFT_HEIGHT SCREEN_HEIGHT
+#define TFT_WIDTH SCREEN_WIDTH
+#endif
+#ifndef SCREEN_ROTATION 
+#define SCREEN_ROTATION 1
+#endif
+#ifndef INVERSE_Y_TOUCH
+#define INVERSE_Y_TOUCH false
+#else 
+#undef INVERSE_Y_TOUCH
+#define INVERSE_Y_TOUCH true
+#endif
 
-// the following can be uncommented in case the coordinates of the 
-// X or Y axis touch panel are reversed 
-// #define INVERSE_X_TOUCH    
+#ifndef INVERSE_X_TOUCH
+#define INVERSE_X_TOUCH false
+#else 
+#undef INVERSE_X_TOUCH
+#define INVERSE_X_TOUCH true
+#endif
+
+#ifndef FLIP_TOUCH_AXIS
+#define FLIP_TOUCH_AXIS false
+#else 
+#undef FLIP_TOUCH_AXIS
+#define FLIP_TOUCH_AXIS true
+#endif
+
+
+
+// the following can be uncommented in case the coordinates of the
+// X or Y axis touch panel are reversed
+// #define INVERSE_X_TOUCH
 // #define INVERSE_Y_TOUCH
 
 //Struct to hold the general config like colours.
@@ -43,15 +84,20 @@ struct Config
   uint16_t functionButtonColour;
   uint16_t backgroundColour;
   uint16_t latchedColour;
+  uint8_t ButtonsPerRow;
+  uint8_t RowCount;
   bool sleepenable;
   uint16_t sleeptimer;
   bool beep;
+  bool flip_touch_axis;
+  bool reverse_x_touch;
+  bool reverse_y_touch;
+  uint8_t screen_rotation;
   uint8_t modifier1;
   uint8_t modifier2;
   uint8_t modifier3;
   uint16_t helperdelay;
 };
-
 
 // Define the storage to be used. For now just SPIFFS.
 #define FILESYSTEM SPIFFS
@@ -62,7 +108,7 @@ struct Config
 // Font size multiplier
 #define KEY_TEXTSIZE 1
 
-enum class Sounds 
+enum class Sounds
 {
   GOING_TO_SLEEP,
   BEEP,
@@ -75,4 +121,4 @@ extern void HandleAudio(Sounds sound);
 extern Config generalconfig;
 extern void drawErrorMessage(String message);
 extern void drawErrorMessageChar(String message);
-void drawErrorMessage(bool stop, const char * module, const char * fmt,...);
+void drawErrorMessage(bool stop, const char *module, const char *fmt, ...);

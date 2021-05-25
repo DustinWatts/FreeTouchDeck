@@ -243,33 +243,6 @@ namespace FreeTouchDeck
             ESP_LOGE(module, "Unable to add menus");
         }
     }
-
-    void InitAllMenus()
-    {
-        if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
-        {
-            ESP_LOGD(module, "Initializing %d menus", Menus.size());
-            for (auto m : Menus)
-            {
-                if (!m)
-                {
-                    drawErrorMessage(true, module, "Null pointer for menu!");
-                }
-                else
-                {
-                    ESP_LOGD(module, "Initializing %s with %d buttons", m->Name, m->buttons.size());
-                    (m)->Init();
-                    PrintMemInfo();
-                    ESP_LOGD(module, "Done Initializing %s", m->Name);
-                }
-            }
-            ScreenUnlock();
-        }
-        else
-        {
-            ESP_LOGE(module, "Unable to init menus");
-        }
-    }
     Menu *GetLatchScreen(FTAction *action)
     {
         char screenName[51] = {0};

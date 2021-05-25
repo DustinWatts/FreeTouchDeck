@@ -253,7 +253,7 @@ void init_cJSON()
 #ifndef USECAPTOUCH
 #include "Touch.h"
 #endif
-
+bool generalConfigLoaded=false;
 void DrawSplash()
 {
   ESP_LOGD(module, "Loading splash screen bitmap.");
@@ -290,13 +290,17 @@ void CacheBitmaps()
 }
 void PrintMemInfo()
 {
+  #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
   static size_t prev_free = 0;
   static size_t prev_min_free = 0;
 
-  ESP_LOGD(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-  ESP_LOGD(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+  ESP_LOGV(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+  ESP_LOGV(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
   prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
   prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+  #else 
+  return;
+  #endif
 }
 bool RestartConfigMode(FTAction *action)
 {
@@ -354,6 +358,11 @@ void powerInit()
 #endif
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 }
+void EnterSleep()
+{
+  // esp_deep_sleep does not shut down WiFi, BT, and higher level protocol connections gracefully. Make sure relevant WiFi and BT stack functions are called to close any connections and deinitialize the peripherals. These include:
+
+}
 void HandleSleepConfig()
 {
 
@@ -391,12 +400,26 @@ void touchInit()
 
 void displayInit()
 {
+  static bool initialized=false;
+  if(initialized) return;
+  initialized=true;
   // --------------- Init Display -------------------------
   ESP_LOGI(module, "Initializing display");
   // Initialise the TFT screen
   tft.init();
-  // Set the rotation before we calibrate
-  tft.setRotation(SCREEN_ROTATION);
+  // Set the rotation 
+  if(generalConfigLoaded)
+  {
+    tft.setRotation(generalconfig.screen_rotation);
+  }
+  else 
+  {
+    // if we are initializing the display before 
+    // loading the config (for example when displaying )
+    // an error while loading the config, fallback on 
+    // the hard coded rotation
+    tft.setRotation(SCREEN_ROTATION);
+  }
   // Clear the screen
   tft.fillScreen(TFT_BLACK);
   // Setup the Font used for plain text
@@ -433,11 +456,13 @@ void LoadSystemConfig()
     // draw an error message and stop
     drawErrorMessage(true, module, "/config/general.json not found. Make sure the data partition was uploaded");
   }
+  
   // After checking the config files exist, actually load them
   if (!loadConfig())
   {
     ESP_LOGW(module, "general.json seems to be corrupted. To reset to default type 'reset general'.");
   }
+  generalConfigLoaded=true;
 }
 
 //-------------------------------- SETUP --------------------------------------------------------------
@@ -452,7 +477,8 @@ void setup()
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   ESP_LOGI(module, "Starting system.");
-
+  init_cJSON();
+  LoadSystemConfig();
   displayInit();
   powerInit();
   touchInit();
@@ -461,8 +487,8 @@ void setup()
   ActionsCallbacks()->ConfigMode = RestartConfigMode;
   ActionsCallbacks()->RunLatchAction = RunLatchAction;
   ActionsCallbacks()->SetActiveScreen = RunActiveScreenAction;
-  init_cJSON();
-  LoadSystemConfig();
+  
+  
 
   // ------------------- Startup actions ------------------
   ESP_LOGI(module, "Found Reset reason: %d",resetReason);
@@ -515,7 +541,6 @@ void setup()
   //CacheBitmaps();
   LoadSystemMenus();
   LoadAllMenus();
-  InitAllMenus();
 
   ESP_LOGI(module, "All config files loaded");
 
@@ -559,6 +584,36 @@ void processSerial()
       FILESYSTEM.remove(CALIBRATION_FILE);
       ESP.restart();
     }
+    else if (command == "rot")
+    {
+      String value = Serial.readString();
+      uint8_t rot = value.toInt();
+      if(rot<=3 && rot >=0)
+      {
+        generalconfig.screen_rotation = rot;
+        saveConfig(false);
+        ESP_LOGI(module, "Screen rotation was updated to %d", generalconfig.screen_rotation);
+      }
+      
+    }
+    else if (command == "revx")
+    {
+      generalconfig.reverse_x_touch= !generalconfig.reverse_x_touch;
+      ESP_LOGI(module,"X axis touch reverse set to %s",generalconfig.reverse_x_touch?"YES":"NO" );
+      saveConfig(false);
+    }
+    else if (command == "revy")
+    {
+      generalconfig.reverse_y_touch= !generalconfig.reverse_y_touch;
+      ESP_LOGI(module,"Y axis touch reverse set to %s",generalconfig.reverse_y_touch?"YES":"NO" );
+      saveConfig(false);
+    }    
+    else if (command == "invaxis")
+    {
+      generalconfig.flip_touch_axis= !generalconfig.flip_touch_axis;
+      ESP_LOGI(module,"Touch axis flip set to %s",generalconfig.flip_touch_axis?"YES":"NO" );
+      saveConfig(false);
+    }        
     else if (command == "setssid")
     {
 
@@ -601,6 +656,26 @@ void processSerial()
       String file = Serial.readString();
       ESP_LOGI(module, "Resetting %s.json now\n", file.c_str());
       resetconfig(file);
+    }
+    else if (command == "conf")
+    {
+      saveConfig(true);
+    }    
+    else if(command == "help")
+    {
+      ESP_LOGI(module,
+      R"(conf: dumps the configuration details
+cal : Restarts in screen calibration mode (resistive screens only)
+revx : reverse X touch axis
+revy : reverse Y touch axis
+rot (0-3) : sets the rotation of the screen
+invaxis: Flip the X and Y axis
+setssid YOURSSID: Sets the WiFi SSID access point to connect to
+setpassword YOURPASWORD: Sets the WiFi password 
+setwifimode (WIFI_STA|WIFI_AP)
+restart : Restarts the system
+reset : reset configuration and reboot )");
+
     }
   }
 }
@@ -691,29 +766,42 @@ void ResetSleep()
 #ifdef USECAPTOUCH
 bool getTouch(uint16_t *t_x, uint16_t *t_y)
 {
+  static bool prev=false;
   if (ts.touched())
   {
     // Retrieve a point
     TS_Point p = ts.getPoint();
-#ifdef INVERSE_X_TOUCH
-    p.x = map(p.x, 0, tft.width(), tft.width(), 0);
-#endif
-#ifdef INVERSE_Y_TOUCH
-    p.y = map(p.y, 0, tft.height(), tft.height(), 0);
-#endif
+    if(generalconfig.flip_touch_axis)
+    {
+      //Flip things around so it matches our screen rotation
+      *t_y = p.x;
+      *t_x = p.y;
+    }
+    else
+    {
+      *t_y = p.y;
+      *t_x = p.x;
+    }
+        
+    if(generalconfig.reverse_x_touch)
+    {
+      *t_x = map(*t_x, 0, tft.width(), tft.width(), 0);
+    }
+    if(generalconfig.reverse_y_touch)
+    {
+      *t_y = map(*t_y, 0, tft.height(), tft.height(), 0);
+    }
 
-#ifdef FLIP_TOUCH_AXIS
-    //Flip things around so it matches our screen rotation
-    *t_y = p.x;
-    *t_x = p.y;
-#else
-    *t_y = p.y;
-    *t_x = p.x;
-#endif
+    if(!prev)
+    {
+      ESP_LOGD(module,"Input touch (%dx%d)=>(%dx%d) - Screen is %dx%d", p.x,p.y,*t_x,*t_y, tft.width(),tft.height());
+      prev=true;
+    }
 
     ResetSleep();
     return true;
   }
+  prev=false;
   return false;
 }
 #else

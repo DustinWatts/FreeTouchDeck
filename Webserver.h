@@ -452,6 +452,12 @@ void handlerSetup()
         AsyncWebParameter *background = request->getParam("background", true);
         general["background"] = background->value().c_str();
 
+        // todo: implement flip control here as needed.
+        general["flip_touch_axis"] = generalconfig.flip_touch_axis;
+        general["rotation"] = generalconfig.screen_rotation;
+        general["reverse_x_touch"] = generalconfig.reverse_x_touch;
+        general["reverse_y_touch"] = generalconfig.reverse_y_touch;
+
         AsyncWebParameter *sleepenable = request->getParam("sleepenable", true);
         String sleepEnable = sleepenable->value().c_str();
 

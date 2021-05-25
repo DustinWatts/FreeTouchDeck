@@ -13,8 +13,8 @@ void *operator new(size_t sz)
 }
 namespace FreeTouchDeck
 {
-    FTAction * Menu::homeMenu = new FTAction(ActionTypes::MENU, "homescreen");
-    FTAction * Menu::backButton = new FTAction(ActionTypes::MENU, "~BACK");
+    FTAction *Menu::homeMenu = new FTAction(ActionTypes::MENU, "homescreen");
+    FTAction *Menu::backButton = new FTAction(ActionTypes::MENU, "~BACK");
     Menu::Menu(const char *name, const char *config)
     {
         ESP_LOGD(module, "Instantiating menu name %s", name);
@@ -57,56 +57,6 @@ namespace FreeTouchDeck
         PrintMemInfo();
     }
 
-    void Menu::Init()
-    {
-        uint32_t TotalHeight = 0;
-        MenuRow *newRow = new MenuRow();
-        if (!newRow)
-        {
-            drawErrorMessage(true, module, "Unable to allocate new row!");
-        }
-        ESP_LOGD(module, "Start of buttons init loop for %d buttons.", buttons.size());
-        if (buttons.size()==0)
-        {
-            ESP_LOGW(module, "No buttons in this screen");
-            _rows.push_back(newRow);
-            return;
-        }
-        for (FTButton * button : buttons)
-        {
-            ESP_LOGD(module, "Processing button %s width= %d. Total row width is %d, LCD width is %d ",button->Logo()->LogoName, button->Width(), newRow->TotalWidth, tft.width());
-            if (newRow->TotalWidth + button->Width() > tft.width())
-            {
-                ESP_LOGD(module, "Overflowing LCD Width %d", tft.width());
-                TotalHeight += newRow->Height;
-                ESP_LOGD(module, "Row has %d buttons, spacing = %d", newRow->buttons.size(), newRow->Spacing);
-                _rows.push_back(newRow);
-                ESP_LOGD(module, "row was added successfully. Creating new row");
-                newRow = new MenuRow();
-                if (!newRow)
-                {
-                    drawErrorMessage(true, module, "Unable to allocate new row!");
-                }
-            }
-            newRow->buttons.push_back(button);
-            newRow->Height = max(newRow->Height, button->Height());
-            newRow->Width = max(newRow->Width, button->Width());
-            newRow->ButtonCenterHeight = newRow->Height / 2;
-            newRow->ButtonCenterWidth = tft.width() / (newRow->buttons.size() * 2);
-            newRow->TotalWidth += button->Width();
-        }
-        ESP_LOGD(module, "Last Row has %d buttons. Pushing to rows list", newRow->buttons.size());
-        _rows.push_back(newRow);
-        ESP_LOGD(module, "last row was added successfully");
-        for (auto row : _rows)
-        {
-            ESP_LOGD(module, "evaluating row");
-            uint16_t wSpacing = (tft.width() - newRow->TotalWidth) / (newRow->buttons.size() + 1); // Spread remaining space
-            uint16_t hSpacing = (tft.height() - TotalHeight) / (_rows.size() + 1);                 // Spread remaining space
-            row->Spacing = min(hSpacing, wSpacing) / 2;
-        }
-        ESP_LOGD(module, "Menu has %d buttons spread over %d rows", buttons.size(), _rows.size());
-    }
     bool Menu::Button(FTAction *action)
     {
         char screenName[51] = {0};
@@ -130,29 +80,19 @@ namespace FreeTouchDeck
     {
         for (auto button : buttons)
         {
-            if(strcmp(button->Label,buttonName)==0)
+            if (strcmp(button->Label, buttonName) == 0)
             {
                 return button;
             }
-            ESP_LOGD(module,"Ignoring button %s", button->Label);
+            ESP_LOGD(module, "Ignoring button %s", button->Label);
         }
         return NULL;
     }
     void Menu::Draw(bool force)
     {
-        uint8_t rowIndex = 0;
-        for (auto row : _rows)
+        for (auto button : buttons)
         {
-            uint8_t colIndex = 0;
-            for (auto button : row->buttons)
-            {
-                button->Draw(row->ButtonCenterWidth * (colIndex * 2 + 1),
-                             row->ButtonCenterHeight * (rowIndex * 2 + 1),
-                             row->Width, row->Height,
-                             row->Spacing, force);
-                colIndex++;
-            }
-            rowIndex++;
+            button->Draw( force);
         }
     }
     Menu::~Menu()
@@ -171,7 +111,7 @@ namespace FreeTouchDeck
     {
         if (!Pressed)
             return;
-            
+
         Pressed = false;
         ESP_LOGV(module, "Releasing all %d button ", buttons.size());
         for (auto button : buttons)
@@ -223,11 +163,12 @@ namespace FreeTouchDeck
             return;
         }
         ESP_LOGD(module, "Adding home button to screen %s", Name);
-        FTButton *newButton = new FTButton(0, menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
+        FTButton *newButton = new FTButton((uint8_t)0,menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
         if (!newButton)
         {
             drawErrorMessage(true, module, "Failed to allocate memory for new button");
         }
+        newButton->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
         cJSON_Delete(menubutton);
         buttons.push_back(newButton);
     }
@@ -241,11 +182,12 @@ namespace FreeTouchDeck
             return;
         }
         ESP_LOGD(module, "Adding back button to screen %s", Name);
-        FTButton *newButton = new FTButton(0, menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
+        FTButton *newButton = new FTButton((uint8_t)0,menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
         if (!newButton)
         {
             drawErrorMessage(true, module, "Failed to allocate memory for new button");
         }
+        newButton->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
         cJSON_Delete(menubutton);
         buttons.push_back(newButton);
     }
@@ -253,7 +195,12 @@ namespace FreeTouchDeck
     {
         char logoName[31] = {0};
         char buttonName[31] = {0};
+        uint16_t row;
+        uint16_t col;
+        ESP_LOGD(module, "Menu is organized in a %dx%d matrix", ColsCount, RowsCount);
 
+        ButtonWidth = (tft.width() - ((ColsCount + 1) * Spacing)) / ColsCount;
+        ButtonHeight = (tft.height() - ((RowsCount + 1) * Spacing)) / RowsCount;
         PrintMemInfo();
         ESP_LOGD(module, "Parsing json configuration");
         ESP_LOGV(module, "%s", config);
@@ -266,12 +213,11 @@ namespace FreeTouchDeck
         }
         else
         {
-            PrintMemInfo();
             ESP_LOGV(module, "Parsing success. Processing entries");
 
             cJSON *jsonButton = NULL;
             cJSON *jsonLogo = NULL;
-            uint8_t ButtonsCount=0;
+            uint8_t ButtonsCount = 0;
             do
             {
                 snprintf(buttonName, sizeof(buttonName), "button%d", ButtonsCount);
@@ -280,37 +226,35 @@ namespace FreeTouchDeck
                 jsonButton = cJSON_GetObjectItem(doc, buttonName);
                 if (jsonButton)
                 {
-                    ESP_LOGD(module,"Creating new button");
-                    PrintMemInfo();
-                    ESP_LOGD(module, "Found button %s", buttonName);
-                    FTButton *newButton = new FTButton(ButtonsCount, doc, jsonButton, _outline, _textSize, _textColor);
+                    ESP_LOGD(module, "Found button index %d (%s), size %dx%d, row %d, col %d ", ButtonsCount, buttonName, ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount));
+                    ESP_LOGD(module,"Creating new instance");
+                    FTButton *newButton = new FTButton(ButtonsCount,doc, jsonButton, _outline, _textSize, _textColor);
                     if (!newButton)
                     {
                         drawErrorMessage(true, module, "Failed to allocate memory for new button");
                     }
-                    buttons.push_back( newButton);
+                    newButton->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
+                    buttons.push_back(newButton);
                     ButtonsCount++;
-                    ESP_LOGD(module,"Created new logo button");
-                    PrintMemInfo();
-
+                    ESP_LOGD(module, "Created new logo button");
                 }
                 else if (jsonLogo)
                 {
                     // Most likely processing a stand alone menu logo.
                     // Add button with corresponding action
-                    ESP_LOGD(module,"Creating new logo button");
-                    PrintMemInfo();
+                    ESP_LOGD(module, "Creating new logo button, size %dx%d, row %d, col %d  ", ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount));
+
                     FTButton *newButton = new FTButton(ButtonsCount, jsonLogo, _outline, _textSize, _textColor);
                     if (!newButton)
                     {
                         drawErrorMessage(true, module, "Failed to allocate memory for new button");
                     }
+                    newButton->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
                     buttons.push_back(newButton);
                     ButtonsCount++;
-                    ESP_LOGD(module,"Created new logo button");
-                    PrintMemInfo();
+                    ESP_LOGD(module, "Created new logo button");
                 }
-
+                PrintMemInfo();
                 /* code */
             } while (jsonButton || jsonLogo);
 
@@ -326,9 +270,8 @@ namespace FreeTouchDeck
                 actions.push_back(Menu::backButton);
             }
             cJSON_Delete(doc);
-            ESP_LOGD(module,"Deleted json document ");
+            ESP_LOGD(module, "Deleted json document ");
             PrintMemInfo();
-
         }
         return true;
     }
@@ -361,9 +304,5 @@ namespace FreeTouchDeck
                 QueueAction(Menu::homeMenu);
             }
         }
-    }
-    void Menu::SetMargin(uint16_t value)
-    {
-        _margin = value;
     }
 }

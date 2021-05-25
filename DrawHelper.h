@@ -1470,6 +1470,7 @@ Note   : none
 
 void drawErrorMessage(bool stop, const char * module, const char * fmt,...)
 {
+  displayInit();
   char * message=NULL;
 	size_t msg_size=0;
   va_list args;

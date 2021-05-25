@@ -23,11 +23,16 @@ namespace FreeTouchDeck
     uint16_t Width = 0;
     uint8_t Spacing = 0;
     std::list<FTButton *> buttons;
+
+
   };
   class Menu
   {
   public:
     char Name[21] = {0};
+    uint8_t ColsCount=4;
+    uint8_t RowsCount=3;    
+    uint8_t Spacing=3;
     //char * FileName=NULL;
     bool Active = false;
     bool Loaded = true;
@@ -39,10 +44,9 @@ namespace FreeTouchDeck
     void Draw(bool force = false);
     ~Menu();
     void Touch(uint16_t x, uint16_t y);
-    void SetMargin(uint16_t value);
     void ReleaseAll();
     void Activate();
-    void Init();
+//    void Init(uint8_t rowsCount, uint8_t colsCount);
     bool Button(FTAction *action);
     FTButton *GetButton(const char *buttonName);
     void Deactivate();
@@ -53,8 +57,7 @@ namespace FreeTouchDeck
     }
 
   private:
-    uint16_t _margin = 8; // 8 pixels
-    uint16_t _outline = TFT_WHITE;
+        uint16_t _outline = TFT_WHITE;
     uint8_t _textSize = KEY_TEXTSIZE;
     uint16_t _textColor = TFT_WHITE;
     bool LoadConfig(File *config);
@@ -66,5 +69,7 @@ namespace FreeTouchDeck
     void AddBackButton();
     static FTAction *homeMenu;
     static FTAction *backButton;
+    uint16_t ButtonWidth = 0;
+    uint16_t ButtonHeight = 0;
   };
 }

@@ -105,10 +105,20 @@ namespace FreeTouchDeck
         }
         return true;
     }
+    void FTButton::SetCoordinates(uint16_t width,uint16_t height,uint16_t row, uint16_t col, uint8_t spacing)
+    {
+        ESP_LOGD(module, "Button size %dx%d, row %d, col %d  ",width,height,row,col);
+        ButtonWidth=width;
+        ButtonHeight=height;
+        Spacing = spacing;
+        CenterX = (col*2+1)*ButtonWidth/2+(col+1)*spacing;
+        CenterY = (row*2+1)*ButtonHeight/2+(row+1)*spacing;
+
+    }
     FTButton::FTButton(uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
     {
         char menuName[31] = {0};
-
+        ESP_LOGD(module,"Button Constructor for menu button");
         if (button && cJSON_IsString(button))
         {
             _jsonLogo = strdup(cJSON_GetStringValue(button));
@@ -117,17 +127,19 @@ namespace FreeTouchDeck
         {
             ESP_LOGW(module,"Menu button does not have a logo!");
         }
+
         cJSON *jsonActionValue = NULL;
         ButtonType = ButtonTypes::MENU;
         BackgroundColor=generalconfig.menuButtonColour;
         snprintf(menuName, sizeof(menuName), "menu%d", index + 1);
         actions.push_back(new FTAction(ActionTypes::MENU, menuName));
     }
-    FTButton::FTButton(uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
+    FTButton::FTButton(uint8_t index,cJSON * document, cJSON * button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
     {
         char logoName[31] = {0};
         cJSON *jsonActionValue = NULL;
         cJSON *_jsonLatch = NULL;
+        ESP_LOGD(module,"Button Constructor for action button");
         snprintf(logoName, sizeof(logoName), "logo%d", index);
         cJSON *jsonLogo = cJSON_GetObjectItem(document, logoName);
         if (jsonLogo && cJSON_IsString(jsonLogo))
@@ -138,7 +150,6 @@ namespace FreeTouchDeck
         {
             ESP_LOGW(module, "No logo file was found for %s", jsonLogo);
         }
-
         strncpy(Label, logoName, sizeof(Label));
         cJSON *jsonLatchedLogo = cJSON_GetObjectItem(button, "latchlogo");
         if (jsonLatchedLogo && cJSON_IsString(jsonLatchedLogo))
@@ -215,12 +226,12 @@ namespace FreeTouchDeck
         }
         return image;
     }
-    void FTButton::Draw(int16_t centerX, int16_t centerY, uint16_t width, uint16_t height, uint16_t margin, bool force)
+    void FTButton::Draw(bool force)
     {
         bool transparent = false;
         int32_t radius = 4;
-        uint16_t adjustedWidth = width - (2 * margin);
-        uint16_t adjustedHeight = height - (2 * margin);
+        uint16_t adjustedWidth = ButtonWidth - (2 * Spacing);
+        uint16_t adjustedHeight = ButtonHeight - (2 * Spacing);
 
         if (!NeedsDraw && !force)
             return;
@@ -237,17 +248,17 @@ namespace FreeTouchDeck
         ESP_LOGV(module, "Found image structure, bitmap is %s", image->LogoName);
 
         uint16_t BGColor = tft.color565(image->R, image->G, image->B);
-        ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  with margin %d, outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", centerX, centerY, image->w + margin, image->h + margin, margin, Outline, BGColor, TextColor, TextSize);
+//        ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  with margin %d, outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", centerX, centerY, image->w + margin, image->h + margin, margin, Outline, BGColor, TextColor, TextSize);
         PrintMemInfo();
         tft.setFreeFont(LABEL_FONT);
-        initButton(&tft, centerX, centerY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
+        initButton(&tft, CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
         drawButton();
         if (ButtonType == ButtonTypes::LATCH && LatchNeedsRoundRect)
         {
-            uint32_t roundRectWidth = width / 4;
-            uint32_t roundRectHeight = height / 4;
-            uint32_t cornerX = centerX - (adjustedWidth/2)+roundRectWidth/2;
-            uint32_t cornerY = centerY - (adjustedHeight/2)+roundRectHeight/2;
+            uint32_t roundRectWidth = ButtonWidth / 4;
+            uint32_t roundRectHeight = ButtonHeight / 4;
+            uint32_t cornerX = CenterX - (adjustedWidth/2)+roundRectWidth/2;
+            uint32_t cornerY = CenterY - (adjustedHeight/2)+roundRectHeight/2;
             if (Latched)
             {
                 ESP_LOGD(module, "Latched without a latched logo.  Drawing round rectangle");
@@ -263,7 +274,7 @@ namespace FreeTouchDeck
             }
         }
 
-        image->Draw(centerX, centerY, transparent);
+        image->Draw(CenterX, CenterY, transparent);
     }
     uint16_t FTButton::Width()
     {

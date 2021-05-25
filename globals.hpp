@@ -10,6 +10,7 @@
 #include <array>
 #include <iostream>
 #include <new>
+
 #ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
 #if ESP_IDF_VERSION_MAJOR > 3
 #if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4
@@ -47,7 +48,9 @@ extern void * malloc_fn(size_t sz);
 IRAM_ATTR char* ps_strdup(const char * fmt);
 extern void PrintMemInfo();
 extern TFT_eSPI tft;
+extern void displayInit();
 extern SystemMode restartReason;
+extern bool saveConfig(bool serial);
 #define FREE_AND_NULL(x) if(x!=NULL) {free(x); x=NULL;}
 #define MEMSET_SIZEOF(x)  memset(x,0x00,sizeof(x))
 #define EXECUTE_IF_EXISTS(x,y) if(x) { x(y); } else {ESP_LOGW(module,"Function %s not implemented", QUOTE(x));}

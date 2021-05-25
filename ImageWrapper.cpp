@@ -141,11 +141,11 @@ namespace FreeTouchDeck
             ESP_LOGW(module, "Not drawing an invalid image");
             return;
         }
-        ESP_LOGD(module, "Getting background color");
+        ESP_LOGV(module, "Getting background color");
         uint16_t BGColor = tft.color565(R, G, B);
         bool Transparent = ((BGColor == 0) || transparent);
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
-        ESP_LOGD(module, "Opening file %s", FileNameBuffer);
+        ESP_LOGV(module, "Opening file %s", FileNameBuffer);
         fs::File bmpFS = FILESYSTEM.open(FileNameBuffer, "r");
         if (!bmpFS)
         {
@@ -208,7 +208,7 @@ namespace FreeTouchDeck
             }
         }
         tft.setSwapBytes(oldSwapBytes);
-        ESP_LOGD(module, "Closing bitmap file %s", LogoName);
+        ESP_LOGV(module, "Closing bitmap file %s", LogoName);
         bmpFS.close();
     }
 
