@@ -1529,6 +1529,39 @@ void printDeviceAddress()
 }
 
 /**
+* @brief This function returns the battery voltage on the ESP32 Touchdown 
+*
+* @param none
+*
+* @return float voltage
+*
+* @note none
+*/
+
+#ifdef MONITORBATTERY
+float batteryVoltage()
+{
+  // Measure battery voltage
+  for(int i=0; i < numReadings; i++)
+  {
+    uint16_t adcReading = analogRead(BATT_DIV);
+    totalReadings = totalReadings + adcReading;
+    delay(sampleTimeDelay);
+  }
+
+  // Average and convert to Volts
+  float voltage = (totalReadings/numReadings) * multiplicationFactor;
+  Serial.print("Average ADC reading = ");
+  Serial.println(totalReadings/numReadings);
+  Serial.print("Battery Voltage = ");
+  Serial.print(voltage);
+  Serial.println("V");
+  totalReadings = 0;
+  return voltage;
+}
+#endif
+
+/**
 * @brief This function prints some information about the current version 
          and setup of FreetouchDeck to the TFT screen.
 *
@@ -1590,8 +1623,12 @@ void printinfo()
   tft.println(ARDUINOJSON_VERSION);
   tft.print("TFT_eSPI version: ");
   tft.println(TFT_ESPI_VERSION);
-  tft.println("ESP-IDF: ");
+  tft.print("ESP-IDF: ");
   tft.println(esp_get_idf_version());
-
+  #ifdef MONITORBATTERY
+    tft.print("Battery Voltage: ");
+    tft.print(batteryVoltage());
+    tft.println("V");
+  #endif
   displayinginfo = true;
 }
