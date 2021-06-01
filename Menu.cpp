@@ -2,8 +2,28 @@
 #include <cstdlib>
 static const char *module = "Menu";
 static const char *nameTemplate = "/config/%s.json";
-static const char *homeButtonTemplate = R"({"logo0": "home.bmp","button0":{"latch": false,"latchlogo": "","actionarray": [ "12"],"valuearray": [ "homescreen"]   }})";
-static const char *backButtonTemplate = R"({"logo0": "arrow_back.bmp","button0":{"latch": false,"latchlogo": "","actionarray": [ "12"],"valuearray": [ "~BACK"]   }})";
+static const char *homeButtonTemplate = R"(
+{ "logo":	"home.bmp",
+    "type":	"STANDARD",
+    "actions":	[{
+            "type":	"MENU",
+            "symbol":	"home"
+        }]
+    }    
+)";
+static const char *backButtonTemplate = R"(			{
+				"label": "Back",
+				"logo": "arrow_back.bmp",
+				"latchedlogo": "",
+				"type": "STANDARD",
+				"actions": [
+					{
+						"type": "MENU",
+						"symbol": "~BACK"
+					}
+				]
+			})";
+
 // Overloading global new operator
 void *operator new(size_t sz)
 {
@@ -13,12 +33,13 @@ void *operator new(size_t sz)
 }
 namespace FreeTouchDeck
 {
-    FTAction *Menu::homeMenu = new FTAction(ActionTypes::MENU, "homescreen");
+
+    FTAction *Menu::homeMenu = new FTAction(ActionTypes::MENU, "home");
     FTAction *Menu::backButton = new FTAction(ActionTypes::MENU, "~BACK");
     Menu::Menu(const char *name, const char *config)
     {
         ESP_LOGD(module, "Instantiating menu name %s", name);
-        strncpy(Name, name, sizeof(Name));
+        Name = ps_strdup(STRING_OR_DEFAULT(name, ""));
         LoadConfig(config);
         ESP_LOGD(module, "Done loading config for menu name %s", name);
     }
@@ -26,7 +47,7 @@ namespace FreeTouchDeck
     {
         char FileName[31] = {0};
         ESP_LOGD(module, "Instantiating menu from file name %s", name);
-        strncpy(Name, name, sizeof(Name));
+        Name = ps_strdup(STRING_OR_DEFAULT(name, ""));
         snprintf(FileName, sizeof(FileName), nameTemplate, name);
         ESP_LOGD(module, "menu File name is %s", FileName);
         File configfile = FILESYSTEM.open(FileName, "r");
@@ -49,7 +70,7 @@ namespace FreeTouchDeck
         {
             fullName = fullName.substring(start, end);
         }
-        strncpy(Name, fullName.c_str(), sizeof(Name));
+        Name = ps_strdup(STRING_OR_DEFAULT(fullName.c_str(), ""));
         ESP_LOGD(module, "Menu name is %s, file name is %s", Name, config->name());
         PrintMemInfo();
         LoadConfig(config);
@@ -61,20 +82,29 @@ namespace FreeTouchDeck
     {
         char screenName[51] = {0};
         char buttonName[51] = {0};
+        bool success = false;
         FTButton *button = NULL;
         if (action->GetLatchButton(screenName, sizeof(screenName), buttonName, sizeof(buttonName)) && strcmp(screenName, Name) == 0)
         {
             if ((button = GetButton(buttonName)) != NULL)
             {
                 ESP_LOGD(module, "Found button %s to run action %s", buttonName, action->toString());
-                return button->Latch(action);
+                success = button->Latch(action);
+                if (!success)
+                {
+                    ESP_LOGE(module, "Running %s failed", action->toString());
+                }
             }
             else
             {
                 ESP_LOGE(module, "Could not find button %s to run action %s", buttonName, action->toString());
             }
         }
-        return false;
+        else
+        {
+            ESP_LOGE(module, "Button name was not found.  Action string is %s", action->symbol);
+        }
+        return success;
     }
     FTButton *Menu::GetButton(const char *buttonName)
     {
@@ -88,11 +118,30 @@ namespace FreeTouchDeck
         }
         return NULL;
     }
+    FTButton *Menu::GetButtonForMenuName(const char *menuName)
+    {
+        for (auto button : buttons)
+        {
+            ESP_LOGV(module, "Checking button %s", button->Label);
+            for (auto a : button->actions)
+            {
+                if (strcmp(a->symbol, menuName) == 0)
+                {
+                    return button;
+                }
+                else
+                {
+                    ESP_LOGV(module, "Ignoring action %s", a->toString());
+                }
+            }
+        }
+        return NULL;
+    }
     void Menu::Draw(bool force)
     {
         for (auto button : buttons)
         {
-            button->Draw( force);
+            button->Draw(force);
         }
     }
     Menu::~Menu()
@@ -102,9 +151,7 @@ namespace FreeTouchDeck
         {
             delete (button);
         }
-
-        if (Name)
-            free(Name);
+        FREE_AND_NULL(Name);
     }
 
     void Menu::ReleaseAll()
@@ -163,7 +210,7 @@ namespace FreeTouchDeck
             return;
         }
         ESP_LOGD(module, "Adding home button to screen %s", Name);
-        FTButton *newButton = new FTButton((uint8_t)0,menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
+        FTButton *newButton = new FTButton("home", (uint8_t)0, menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
         if (!newButton)
         {
             drawErrorMessage(true, module, "Failed to allocate memory for new button");
@@ -182,7 +229,7 @@ namespace FreeTouchDeck
             return;
         }
         ESP_LOGD(module, "Adding back button to screen %s", Name);
-        FTButton *newButton = new FTButton((uint8_t)0,menubutton, cJSON_GetObjectItem(menubutton, "button0"), _outline, _textSize, _textColor);
+        FTButton *newButton = new FTButton(menubutton);
         if (!newButton)
         {
             drawErrorMessage(true, module, "Failed to allocate memory for new button");
@@ -191,17 +238,27 @@ namespace FreeTouchDeck
         cJSON_Delete(menubutton);
         buttons.push_back(newButton);
     }
+    void Menu::SetButtonWidth()
+    {
+        if(ColsCount==0)
+        {
+            ColsCount=generalconfig.colscount;
+        }
+        if(RowsCount==0)
+        {
+            RowsCount= generalconfig.rowscount;
+        }
+        ESP_LOGD(module, "Menu is organized in a %dx%d matrix", ColsCount, RowsCount);
+        ButtonWidth = (tft.width() - ((ColsCount + 1) * Spacing)) / ColsCount;
+        ButtonHeight = (tft.height() - ((RowsCount + 1) * Spacing)) / RowsCount;
+    }
     bool Menu::LoadConfig(const char *config)
     {
         char logoName[31] = {0};
         char buttonName[31] = {0};
         uint16_t row;
         uint16_t col;
-        ESP_LOGD(module, "Menu is organized in a %dx%d matrix", ColsCount, RowsCount);
-
-        ButtonWidth = (tft.width() - ((ColsCount + 1) * Spacing)) / ColsCount;
-        ButtonHeight = (tft.height() - ((RowsCount + 1) * Spacing)) / RowsCount;
-        PrintMemInfo();
+        SetButtonWidth();
         ESP_LOGD(module, "Parsing json configuration");
         ESP_LOGV(module, "%s", config);
         cJSON *doc = cJSON_Parse(config);
@@ -226,9 +283,12 @@ namespace FreeTouchDeck
                 jsonButton = cJSON_GetObjectItem(doc, buttonName);
                 if (jsonButton)
                 {
+                    // when importing older menu structures, assume all
+                    // menus need to show on the home screen
+                    Type = MenuTypes::HOME;
                     ESP_LOGD(module, "Found button index %d (%s), size %dx%d, row %d, col %d ", ButtonsCount, buttonName, ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount));
-                    ESP_LOGD(module,"Creating new instance");
-                    FTButton *newButton = new FTButton(ButtonsCount,doc, jsonButton, _outline, _textSize, _textColor);
+                    ESP_LOGD(module, "Creating new instance");
+                    FTButton *newButton = new FTButton("", ButtonsCount, doc, jsonButton, _outline, _textSize, _textColor);
                     if (!newButton)
                     {
                         drawErrorMessage(true, module, "Failed to allocate memory for new button");
@@ -240,11 +300,13 @@ namespace FreeTouchDeck
                 }
                 else if (jsonLogo)
                 {
+
+                    Type = MenuTypes::OLDHOME;
                     // Most likely processing a stand alone menu logo.
                     // Add button with corresponding action
                     ESP_LOGD(module, "Creating new logo button, size %dx%d, row %d, col %d  ", ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount));
 
-                    FTButton *newButton = new FTButton(ButtonsCount, jsonLogo, _outline, _textSize, _textColor);
+                    FTButton *newButton = new FTButton("", ButtonsCount, jsonLogo, _outline, _textSize, _textColor);
                     if (!newButton)
                     {
                         drawErrorMessage(true, module, "Failed to allocate memory for new button");
@@ -260,7 +322,7 @@ namespace FreeTouchDeck
 
             ESP_LOGD(module, "Done processing json structure, with %d buttons", ButtonsCount);
 
-            if (strcmp(Name, "homescreen") != 0 && buttons.size() > 0)
+            if (Type!=MenuTypes::OLDHOME && buttons.size() > 0)
             {
                 AddBackButton();
             }
@@ -278,10 +340,12 @@ namespace FreeTouchDeck
     void Menu::Touch(uint16_t x, uint16_t y)
     {
         Pressed = true;
+        bool foundPressedButton = false;
         for (auto button : buttons)
         {
             if (button->contains(x, y))
             {
+                foundPressedButton = true;
                 button->Press();
             }
         }
@@ -295,6 +359,7 @@ namespace FreeTouchDeck
                 for (auto action : actions)
                 {
                     QueueAction(action);
+                    foundPressedButton=true;
                 }
             }
             else if (strcmp("config", Name))
@@ -302,7 +367,214 @@ namespace FreeTouchDeck
                 // in config mode, default to going back to home screen
                 // when pressed
                 QueueAction(Menu::homeMenu);
+                foundPressedButton=true;
             }
+        }
+        else if (!foundPressedButton)
+        {
+            ESP_LOGD(module, "No button was found under touch coordinates");
+        }
+    }
+    const char *Menu::JsonLabelName = "name";
+    const char *Menu::JsonLabelIcon = "icon";
+    const char *Menu::JsonLabelRowsCount = "rowscount";
+    const char *Menu::JsonLabelColsCount = "colscount";
+    const char *Menu::JsonLabelButtons = "buttons";
+    const char *Menu::JsonLabelActions = "actions";
+    const char *Menu::JsonLabelType = "type";
+    cJSON *Menu::ToJSON()
+    {
+        cJSON *menu = cJSON_CreateObject();
+        if (!menu)
+        {
+            drawErrorMessage(true, module, "Memory allocation failed when rendering JSON menu");
+            return NULL;
+        }
+        ESP_LOGD(module, "Adding members to Json");
+        cJSON_AddStringToObject(menu, Menu::JsonLabelName, STRING_OR_DEFAULT(Name, ""));
+        cJSON_AddNumberToObject(menu, Menu::JsonLabelColsCount, ColsCount);
+        cJSON_AddNumberToObject(menu, Menu::JsonLabelRowsCount, RowsCount);
+        cJSON_AddStringToObject(menu, Menu::JsonLabelType, enum_to_string(Type));
+        if (buttons.size() > 0)
+        {
+            ESP_LOGD(module, "Adding buttons to Json");
+            cJSON *buttonsJson = cJSON_CreateArray();
+            for (auto button : buttons)
+            {
+                if (button->ButtonType != ButtonTypes::NONE)
+                {
+                    cJSON *buttonJson = button->ToJSON();
+                    if (buttonJson)
+                    {
+                        cJSON_AddItemToArray(buttonsJson, buttonJson);
+                    }
+                }
+            }
+            cJSON_AddItemToObject(menu, Menu::JsonLabelButtons, buttonsJson);
+        }
+
+        if (actions.size() > 0)
+        {
+            ESP_LOGD(module, "Adding %d actions to Json", actions.size());
+            cJSON *actionsJson = cJSON_CreateArray();
+            if (!actionsJson)
+            {
+                drawErrorMessage(true, module, "Unable to allocate memory for actions");
+            }
+            for (auto action : actions)
+            {
+                if (action->Type != ActionTypes::NONE)
+                {
+                    cJSON *actionJson = action->ToJson();
+                    if (actionJson)
+                    {
+                        cJSON_AddItemToArray(actionsJson, actionJson);
+                    }
+                    else
+                    {
+                        drawErrorMessage(true, module, "Could not retrieve json representation of action");
+                    }
+                }
+            }
+            ESP_LOGD(module, "Converting actions is complete. Adding to menu object");
+            cJSON_AddItemToObject(menu, Menu::JsonLabelActions, actionsJson);
+        }
+        return menu;
+    }
+    Menu *Menu::FromJson(const char *jsonString)
+    {
+        cJSON *doc = cJSON_Parse(jsonString);
+        if (!doc)
+        {
+            
+            const char *error = cJSON_GetErrorPtr();
+            ESP_LOGE(module,"Menu parsing failed: %s", error);
+            drawErrorMessage(true, module, "Unable to parse json string : %s", error);
+            return NULL;
+        }
+        else
+        {
+            ESP_LOGD(module, "Json string parsed successfully");
+        }
+        return new Menu(doc);
+    }
+    Menu::Menu(cJSON *menuJson)
+    {
+        char *value = NULL;
+        GetValueOrDefault(menuJson, Menu::JsonLabelName, &Name, "");
+        ESP_LOGD(module, "Label name: %s", Name);
+        GetValueOrDefault(menuJson, Menu::JsonLabelColsCount, &ColsCount, generalconfig.colscount);
+        GetValueOrDefault(menuJson, Menu::JsonLabelRowsCount, &RowsCount, generalconfig.rowscount);
+        ESP_LOGD(module, "Menu is a %dx%d matrix", RowsCount, ColsCount);
+        // now that the rows and cols count are known, we can calculate the width of buttons
+        SetButtonWidth();
+        GetValueOrDefault(menuJson, Menu::JsonLabelType, &value, enum_to_string(MenuTypes::STANDARD));
+        if (value)
+        {
+            ESP_LOGD(module, "Parsing menu type %s", value);
+            parse(value, &Type);
+            if (Type == MenuTypes::NONE)
+            {
+                drawErrorMessage(true, module, "Invalid menu type %s for menu %s.", value, STRING_OR_DEFAULT(Name, "unknown"));
+                Type = MenuTypes::STANDARD;
+            }
+            FREE_AND_NULL(value);
+        }
+        if (Type != MenuTypes::SYSTEM && Type != MenuTypes::HOMESYSTEM)
+        {
+            ESP_LOGD(module, "Adding back button");
+            AddBackButton();
+        }
+        if (Type == MenuTypes::HOME || Type==MenuTypes::HOMESYSTEM)
+        {
+            GetValueOrDefault(menuJson, Menu::JsonLabelIcon, &Icon, "question.bmp");
+            ESP_LOGD(module, "Icon is %s", Icon);
+        }
+        cJSON *buttonsJson = cJSON_GetObjectItem(menuJson, Menu::JsonLabelButtons);
+        if (buttonsJson)
+        {
+            if (!cJSON_IsArray(buttonsJson))
+            {
+                drawErrorMessage(true, module, "Buttons under menu %s should be an array.", STRING_OR_DEFAULT(Name, "unknown"));
+                return;
+            }
+            else
+            {
+                ESP_LOGD(module, "Menu has %d buttons to create", cJSON_GetArraySize(buttonsJson));
+            }
+            cJSON *buttonJson = NULL;
+            cJSON_ArrayForEach(buttonJson, buttonsJson)
+            {
+                auto button = new FTButton(buttonJson);
+                if (button->ButtonType != ButtonTypes::NONE)
+                {
+                    button->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
+                    buttons.push_back(button);
+                }
+                else
+                {
+                    ESP_LOGE(module, "Invalid button type.");
+                    delete (button);
+                }
+            }
+        }
+        else
+        {
+            ESP_LOGD(module, "No buttons were found ");
+        }
+        cJSON *actionsJson = cJSON_GetObjectItem(menuJson, Menu::JsonLabelActions);
+        if (actionsJson)
+        {
+            if (!cJSON_IsArray(actionsJson))
+            {
+                drawErrorMessage(true, module, "Actions under menu %s should be an array.", STRING_OR_DEFAULT(Name, "unknown"));
+                return;
+            }
+            cJSON *actionJson = NULL;
+            cJSON_ArrayForEach(actionJson, actionsJson)
+            {
+                auto action = new FTAction(actionJson);
+                if (action->Type != ActionTypes::NONE)
+                {
+                    actions.push_back(action);
+                }
+            }
+        }
+        if(Type!=MenuTypes::HOME && Type!=MenuTypes::HOMESYSTEM && buttons.size()==0)
+        {
+            AddBackButton();
+        }
+    }
+    bool parse(const char *value, MenuTypes *result)
+    {
+        MenuTypes outType = MenuTypes::NONE;
+        bool ret = false;
+        do
+        {
+            outType++; // Start after NONE
+            ESP_LOGV(module, "%s =? MenuTypes[%d] (%s)", value, (int)(outType), enum_to_string(outType));
+        } while (strcmp(value, enum_to_string(outType)) != 0 && outType != MenuTypes::NONE);
+        if (strcmp(value, enum_to_string(outType)) == 0)
+        {
+            ESP_LOGV(module, "Found: %s==%s ", value, enum_to_string(outType));
+            ret = true;
+        }
+        *result = outType;
+        return ret;
+    }
+    const char *enum_to_string(MenuTypes type)
+    {
+        switch (type)
+        {
+            ENUM_TO_STRING_HELPER(MenuTypes, NONE);
+            ENUM_TO_STRING_HELPER(MenuTypes, STANDARD);
+            ENUM_TO_STRING_HELPER(MenuTypes, SYSTEM);
+            ENUM_TO_STRING_HELPER(MenuTypes, HOME);
+            ENUM_TO_STRING_HELPER(MenuTypes, OLDHOME);
+            ENUM_TO_STRING_HELPER(MenuTypes, HOMESYSTEM);
+            ENUM_TO_STRING_HELPER(MenuTypes, ENDLIST);
+        default:
+            return "UNKNOWN";
         }
     }
 }

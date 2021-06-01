@@ -3,24 +3,24 @@
 #include "globals.hpp"
 #include "FTAction.h"
 #include "UserConfig.h"
-#include "ImageWrapper.h""
+#include "ImageWrapper.h"
+
 namespace FreeTouchDeck
 {
     enum class ButtonTypes
     {
+        NONE,
         STANDARD,
         LATCH,
-        MENU
-
+        MENU,
+        ENDLIST
     };
     const char *enum_to_string(ButtonTypes type);
-    
 
-    class FTButton : public TFT_eSPI_Button
+    class FTButton 
     {
     protected:
         bool Latched = false;
-        ButtonTypes ButtonType;
         bool NeedsDraw = true;
         bool IsPressed = false;
 
@@ -31,24 +31,36 @@ namespace FreeTouchDeck
         uint16_t CenterX = 0;
         uint16_t CenterY = 0;
         uint16_t ButtonWidth = 0;
-        uint8_t Spacing=0;
+        uint8_t Spacing = 0;
         uint16_t ButtonHeight = 0;
-        uint16_t BackgroundColor=0;
-        char * _jsonLogo=NULL;
-        char * _jsonLatchedLogo=NULL;
-
-        
+        uint16_t BackgroundColor = 0;
+        char *_jsonLogo = NULL;
+        char *_jsonLatchedLogo = NULL;
+        TFT_eSPI_Button _button;
 
     public:
+        bool contains(uint16_t x, uint16_t y);
+
+        ButtonTypes ButtonType;
+        static const char *JsonLabelLogo;
+        static const char *JsonLabelLatchedLogo;
+        static const char *JsonLabelType;
+        static const char *JsonLabelLabel;
+        static const char *JsonLabelActions;
+        static const char *JsonLabelOutline;
+        static const char *JsonLabelBackground;
+        static const char *JsonLabelTextColor;
+        static const char *JsonLabelTextSize;
+        char *Label = NULL;
         std::list<FTAction *> actions;
-        FTButton(uint8_t index,cJSON * document, cJSON * button, uint16_t outline, uint8_t textSize, uint16_t textColor);
-        FTButton(uint8_t index,cJSON * button, uint16_t outline, uint8_t textSize, uint16_t textColor);
-        void SetCoordinates(uint16_t width,uint16_t height,uint16_t row, uint16_t col, uint8_t spacing);
+        FTButton(const char *label, uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor);
+        FTButton(const char *label, uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor);
+        FTButton(cJSON *button);
+        void SetCoordinates(uint16_t width, uint16_t height, uint16_t row, uint16_t col, uint8_t spacing);
         ~FTButton();
         bool Latch(FTAction *action);
         ImageWrapper *LatchedLogo();
         ImageWrapper *GetActiveImage();
-        char Label[21] = {0};        
         bool IsLabelDraw();
         ImageWrapper *Logo();
         uint16_t Width();
@@ -57,7 +69,10 @@ namespace FreeTouchDeck
         void Invalidate();
         void Press();
         void Release();
-
+        cJSON *ToJSON();
     };
+    static ButtonTypes &operator++(ButtonTypes &state, int);
+
+    ButtonTypes parse_button_types(const char *buttonType);
 
 }

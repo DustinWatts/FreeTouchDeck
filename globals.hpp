@@ -19,7 +19,7 @@
 #include "esp32s2/rom/rtc.h"
 #elif CONFIG_IDF_TARGET_ESP32C3
 #include "esp32c3/rom/rtc.h"
-#else 
+#else
 #error Target CONFIG_IDF_TARGET is not supported
 #endif
 #else // ESP32 Before IDF 4.0
@@ -29,9 +29,11 @@
 #include "rom/rtc.h"
 #endif
 
+
 enum class SystemMode
 {
   STANDARD,
+  CONSOLE,
   CONFIG
 };
 
@@ -39,19 +41,46 @@ enum class SystemMode
 #define Q(x) #x
 #define QUOTE(x) Q(x)
 #endif
-#define ENUM_TO_STRING_HELPER(x) case x: return QUOTE(x)
-#define ISNULLSTRING(x) (!x || strlen(x)==0)
-#define STRING_OR_DEFAULT(x,y) ISNULLSTRING(x)?y:x
-#define CJSON_STRING_OR_DEFAULT(x,y) (x && cJSON_IsString(x) && !ISNULLSTRING(cJSON_GetStringValue(x)))?cJSON_GetStringValue(x):y
-
-extern void * malloc_fn(size_t sz);
-IRAM_ATTR char* ps_strdup(const char * fmt);
+#define ENUM_TO_STRING_HELPER(x,y) \
+  case x::y:                        \
+    return QUOTE(y)
+#define ISNULLSTRING(x) (!x || strlen(x) == 0)
+#define STRING_OR_DEFAULT(x, y) ISNULLSTRING(x) ? y : x
+#define CJSON_STRING_OR_DEFAULT(x, y) (x && cJSON_IsString(x) && !ISNULLSTRING(cJSON_GetStringValue(x))) ? cJSON_GetStringValue(x) : y
+#define ASSING_IF_PASSED(x, y) \
+    if (x)                     \
+    *x = y
+extern void *malloc_fn(size_t sz);
+IRAM_ATTR char *ps_strdup(const char *fmt);
 extern void PrintMemInfo();
 extern TFT_eSPI tft;
 extern void displayInit();
 extern SystemMode restartReason;
 extern bool saveConfig(bool serial);
-#define FREE_AND_NULL(x) if(x!=NULL) {free(x); x=NULL;}
-#define MEMSET_SIZEOF(x)  memset(x,0x00,sizeof(x))
-#define EXECUTE_IF_EXISTS(x,y) if(x) { x(y); } else {ESP_LOGW(module,"Function %s not implemented", QUOTE(x));}
+extern bool GetValueOrDefault(cJSON *value, char **valuePointer, const char *defaultValue);
+extern bool GetValueOrDefault(cJSON *value, uint16_t *valuePointer, uint16_t defaultValue);
+extern bool GetValueOrDefault(cJSON *value, uint8_t *valuePointer, uint8_t defaultValue);
+extern bool GetValueOrDefault(cJSON *value, bool *valuePointer, bool defaultValue);
+extern bool GetValueOrDefault(cJSON *doc, const char *name, char **valuePointer, const char *defaultValue);
+extern bool GetValueOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue);
+extern bool GetValueOrDefault(cJSON *doc, const char *name, uint8_t *valuePointer, uint8_t defaultValue);
+extern void GetValueOrDefault(cJSON *doc, const char *name, bool *valuePointer, bool defaultValue);
+extern void ChangeMode(SystemMode newMode);
+extern void DumpCJson(cJSON *doc);
 
+#define FREE_AND_NULL(x) \
+  if (x != NULL)         \
+  {                      \
+    free(x);             \
+    x = NULL;            \
+  }
+#define MEMSET_SIZEOF(x) memset(x, 0x00, sizeof(x))
+#define EXECUTE_IF_EXISTS(x, y)                                \
+  if (x)                                                       \
+  {                                                            \
+    x(y);                                                      \
+  }                                                            \
+  else                                                         \
+  {                                                            \
+    ESP_LOGW(module, "Function %s not implemented", QUOTE(x)); \
+  }

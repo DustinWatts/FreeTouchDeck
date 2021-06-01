@@ -1,3 +1,7 @@
+namespace FreeTouchDeck
+{
+  extern char * MenusToJson(bool withSystem);
+}
 /**
 * @brief This function returns all the files in a given directory in a json 
          formatted string.
@@ -416,6 +420,9 @@ void handlerSetup()
   webserver.on("/index.htm", HTTP_POST, [](AsyncWebServerRequest *request) {
     request->send(FILESYSTEM, "/index.htm");
   });
+  webserver.on("/index2.htm", HTTP_POST, [](AsyncWebServerRequest *request) {
+    request->send(FILESYSTEM, "/index2.htm");
+  });  
 
   //----------- saveconfig handler -----------------
 
@@ -424,93 +431,103 @@ void handlerSetup()
     {
       AsyncWebParameter *p = request->getParam("save", true);
       String savemode = p->value().c_str();
-
       if (savemode == "general")
       {
 
-        // --- Saving general config
-        ESP_LOGI(module,"Saving General Config");
-
-        FILESYSTEM.remove("/config/general.json");
-        File file = FILESYSTEM.open("/config/general.json", "w");
-        if (!file)
+        AsyncWebParameter * value=  request->getParam("menubuttoncolor", true);
+        if(value)
         {
-          ESP_LOGD(module,"Failed to create file");
-          return;
+          generalconfig.menuButtonColour = convertRGB888ToRGB565(convertHTMLtoRGB888(value->value().c_str()));
+        }
+        value=  request->getParam("functionbuttoncolor", true);
+        if(value)
+        {
+          generalconfig.functionButtonColour = convertRGB888ToRGB565(convertHTMLtoRGB888(value->value().c_str()));
         }
 
-        DynamicJsonDocument doc(400);
-
-        JsonObject general = doc.to<JsonObject>();
-
-        AsyncWebParameter *menubuttoncolor = request->getParam("menubuttoncolor", true);
-        general["menubuttoncolor"] = menubuttoncolor->value().c_str();
-        AsyncWebParameter *functionbuttoncolor = request->getParam("functionbuttoncolor", true);
-        general["functionbuttoncolor"] = functionbuttoncolor->value().c_str();
-        AsyncWebParameter *latchcolor = request->getParam("latchcolor", true);
-        general["latchcolor"] = latchcolor->value().c_str();
-        AsyncWebParameter *background = request->getParam("background", true);
-        general["background"] = background->value().c_str();
-
-        // todo: implement flip control here as needed.
-        general["flip_touch_axis"] = generalconfig.flip_touch_axis;
-        general["rotation"] = generalconfig.screen_rotation;
-        general["reverse_x_touch"] = generalconfig.reverse_x_touch;
-        general["reverse_y_touch"] = generalconfig.reverse_y_touch;
-
-        AsyncWebParameter *sleepenable = request->getParam("sleepenable", true);
-        String sleepEnable = sleepenable->value().c_str();
-
-        if (sleepEnable == "true")
+        value=  request->getParam("latchcolor", true);
+        if(value)
         {
-          general["sleepenable"] = true;
-        }
-        else
-        {
-          general["sleepenable"] = false;
+          generalconfig.latchedColour = convertRGB888ToRGB565(convertHTMLtoRGB888(value->value().c_str()));
         }
 
-        AsyncWebParameter *beep = request->getParam("beep", true);
-        String Beep = beep->value().c_str();
-
-        if (Beep == "true")
+        value=  request->getParam("background", true);
+        if(value)
         {
-          general["beep"] = true;
+          generalconfig.backgroundColour = convertRGB888ToRGB565(convertHTMLtoRGB888(value->value().c_str()));
         }
-        else
+        value=  request->getParam("flip_touch_axis", true);
+        if(value)
         {
-          general["beep"] = false;
+          generalconfig.flip_touch_axis = value->value()=="true";
         }
-
-        // Sleep timer
-        AsyncWebParameter *sleeptimer = request->getParam("sleeptimer", true);
-
-        String sleepTimer = sleeptimer->value().c_str();
-        general["sleeptimer"] = sleepTimer.toInt();
-
-        //Modifiers
-
-        AsyncWebParameter *modifier1 = request->getParam("modifier1", true);
-        String Modifier1 = modifier1->value().c_str();    
-        general["modifier1"] = Modifier1.toInt();
-
-        AsyncWebParameter *modifier2 = request->getParam("modifier2", true);
-        String Modifier2 = modifier2->value().c_str();
-        general["modifier2"] = Modifier2.toInt();
-
-        AsyncWebParameter *modifier3 = request->getParam("modifier3", true);
-        String Modifier3 = modifier3->value().c_str();
-        general["modifier3"] = Modifier3.toInt();
-
-        AsyncWebParameter *helperdelay = request->getParam("helperdelay", true);
-        String Helperdelay = helperdelay->value().c_str();
-        general["helperdelay"] = Helperdelay.toInt();
-
-        if (serializeJsonPretty(doc, file) == 0)
+        value=  request->getParam("reverse_x_touch", true);
+        if(value)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          generalconfig.reverse_x_touch = value->value()=="true";
+        }        
+
+        value=  request->getParam("reverse_y_touch", true);
+        if(value)
+        {
+          generalconfig.reverse_y_touch = value->value()=="true";
         }
-        file.close();
+        value=  request->getParam("rotation", true);
+        if(value)
+        {
+          uint8_t rot=value->value().toInt();
+          generalconfig.screenrotation = rot>=0 && rot<=3?rot:generalconfig.screenrotation ;
+        }                
+
+        value=  request->getParam("sleepenable", true);
+        if(value)
+        {
+          generalconfig.sleepenable = value->value()=="true";
+        }
+        value=  request->getParam("beep", true);
+        if(value)
+        {
+          generalconfig.beep = value->value()=="true";
+        }
+        value=  request->getParam("sleeptimer", true);
+        if(value)
+        {
+          generalconfig.sleeptimer = value->value().toInt();
+        }
+        value=  request->getParam("modifier1", true);
+        if(value)
+        {
+          generalconfig.modifier1 = value->value().toInt();
+        }
+        value=  request->getParam("modifier2", true);
+        if(value)
+        {
+          generalconfig.modifier2 = value->value().toInt();
+        }
+        value=  request->getParam("modifier3", true);
+        if(value)
+        {
+          generalconfig.modifier3 = value->value().toInt();
+        }        
+
+        value=  request->getParam("helperdelay", true);
+        if(value)
+        {
+          generalconfig.helperdelay = value->value().toInt();
+        }        
+
+        value=  request->getParam("rowscount", true);
+        if(value)
+        {
+          generalconfig.rowscount = value->value().toInt();
+        }     
+        value=  request->getParam("colscount", true);
+        if(value)
+        {
+          generalconfig.colscount = value->value().toInt();
+        }     
+        saveConfig(false);
+
       }
       else if (savemode == "wifi")
       {
@@ -1734,6 +1751,18 @@ void handlerSetup()
     }
   });
 
+  webserver.on("/menus.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+    char * menusJson=FreeTouchDeck::MenusToJson(false);
+    if(menusJson)
+    {
+      request->send(200, "application/json", menusJson);
+      free(menusJson);
+    }
+    else
+    {
+      request->send(500,"Error Generating JSON structure");
+    } 
+  });
   webserver.on("/apislist", HTTP_GET, [](AsyncWebServerRequest *request) {
 
       request->send(200, "application/json", handleAPISList());

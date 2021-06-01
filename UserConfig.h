@@ -2,8 +2,8 @@
 #include <queue>
 #include "FTAction.h"
 #include <freertos/task.h>
-#define ESP32TOUCHCAM
-#ifdef ESP32TOUCHCAM
+//#define MAKERFABTOUCH
+#ifdef MAKERFABTOUCH
 
 #define CUSTOM_TOUCH_SDA 26
 #define CUSTOM_TOUCH_SCL 27
@@ -28,7 +28,11 @@
 // ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
 // The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
 #define touchInterruptPin GPIO_NUM_27
+#define speakerPin GPIO_NUM_26
 #define SCREEN_ROTATION 1
+#define TFT_BL 32
+#define TFT_BACKLIGHT_ON
+#define USECAPTOUCH
 
 #define ILI9341_DRIVER
 
@@ -84,19 +88,23 @@ struct Config
   uint16_t functionButtonColour;
   uint16_t backgroundColour;
   uint16_t latchedColour;
-  uint8_t ButtonsPerRow;
-  uint8_t RowCount;
+  uint8_t colscount;
+  uint8_t rowscount;
   bool sleepenable;
   uint16_t sleeptimer;
   bool beep;
   bool flip_touch_axis;
   bool reverse_x_touch;
   bool reverse_y_touch;
-  uint8_t screen_rotation;
+  uint8_t screenrotation;
   uint8_t modifier1;
   uint8_t modifier2;
   uint8_t modifier3;
   uint16_t helperdelay;
+  uint16_t DefaultOutline;
+  uint8_t DefaultTextSize;
+  uint16_t DefaultTextColor; 
+  bool moreLogs; 
 };
 
 // Define the storage to be used. For now just SPIFFS.

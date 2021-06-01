@@ -129,7 +129,7 @@ namespace FreeTouchDeck
     void ImageWrapper::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
-        ESP_LOGD(module, "Drawing bitmap file %s", LogoName);
+        ESP_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
             ESP_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);

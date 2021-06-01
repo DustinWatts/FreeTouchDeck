@@ -158,9 +158,14 @@ Wificonfig wificonfig = {.ssid = NULL, .password = NULL, .wifimode = NULL, .host
 
 Config generalconfig;
 
-__NOINIT_ATTR SystemMode restartReason;
+RTC_NOINIT_ATTR SystemMode restartReason = SystemMode::STANDARD;
 SystemMode RunMode = SystemMode::STANDARD;
 
+void ChangeMode(SystemMode newMode)
+{
+  restartReason = newMode;
+  ESP.restart();
+}
 volatile unsigned long previousMillis = 0;
 unsigned long Interval = 0;
 #ifdef ACTIONS_IN_TASKS
@@ -186,7 +191,6 @@ IRAM_ATTR char *ps_strdup(const char *fmt)
   char *o = (char *)malloc_fn(strlen(fmt) + 1);
   if (o)
   {
-    memset(o, 0x00, strlen(fmt) + 1);
     memcpy(o, fmt, strlen(fmt));
   }
   return o;
@@ -226,6 +230,10 @@ IRAM_ATTR void *malloc_fn(size_t sz)
   {
     drawErrorMessage(true, module, "Memory allocation failed");
   }
+  else
+  {
+    memset(ptr, 0x00, sz);
+  }
 
   return ptr;
 }
@@ -253,7 +261,7 @@ void init_cJSON()
 #ifndef USECAPTOUCH
 #include "Touch.h"
 #endif
-bool generalConfigLoaded=false;
+bool generalConfigLoaded = false;
 void DrawSplash()
 {
   ESP_LOGD(module, "Loading splash screen bitmap.");
@@ -290,17 +298,19 @@ void CacheBitmaps()
 }
 void PrintMemInfo()
 {
-  #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
+#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
   static size_t prev_free = 0;
   static size_t prev_min_free = 0;
-
-  ESP_LOGV(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-  ESP_LOGV(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-  prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-  prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
-  #else 
+  if(generalconfig.moreLogs)
+  {
+    ESP_LOGD(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+    ESP_LOGD(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+    prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+    prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+  }
+#else
   return;
-  #endif
+#endif
 }
 bool RestartConfigMode(FTAction *action)
 {
@@ -321,6 +331,18 @@ bool ChangeBrightness(FTAction *action)
   }
   ledcWrite(0, ledBrightness);
   return true;
+}
+const char *enum_to_string(SystemMode mode)
+{
+  switch (mode)
+  {
+
+    ENUM_TO_STRING_HELPER(SystemMode, STANDARD);
+    ENUM_TO_STRING_HELPER(SystemMode, CONSOLE);
+    ENUM_TO_STRING_HELPER(SystemMode, CONFIG);
+  default:
+    return "unknown";
+  }
 }
 void powerInit()
 {
@@ -361,7 +383,6 @@ void powerInit()
 void EnterSleep()
 {
   // esp_deep_sleep does not shut down WiFi, BT, and higher level protocol connections gracefully. Make sure relevant WiFi and BT stack functions are called to close any connections and deinitialize the peripherals. These include:
-
 }
 void HandleSleepConfig()
 {
@@ -400,23 +421,24 @@ void touchInit()
 
 void displayInit()
 {
-  static bool initialized=false;
-  if(initialized) return;
-  initialized=true;
+  static bool initialized = false;
+  if (initialized)
+    return;
+  initialized = true;
   // --------------- Init Display -------------------------
   ESP_LOGI(module, "Initializing display");
   // Initialise the TFT screen
   tft.init();
-  // Set the rotation 
-  if(generalConfigLoaded)
+  // Set the rotation
+  if (generalConfigLoaded)
   {
-    tft.setRotation(generalconfig.screen_rotation);
+    tft.setRotation(generalconfig.screenrotation);
   }
-  else 
+  else
   {
-    // if we are initializing the display before 
+    // if we are initializing the display before
     // loading the config (for example when displaying )
-    // an error while loading the config, fallback on 
+    // an error while loading the config, fallback on
     // the hard coded rotation
     tft.setRotation(SCREEN_ROTATION);
   }
@@ -456,13 +478,33 @@ void LoadSystemConfig()
     // draw an error message and stop
     drawErrorMessage(true, module, "/config/general.json not found. Make sure the data partition was uploaded");
   }
-  
+
   // After checking the config files exist, actually load them
   if (!loadConfig())
   {
     ESP_LOGW(module, "general.json seems to be corrupted. To reset to default type 'reset general'.");
   }
-  generalConfigLoaded=true;
+  generalConfigLoaded = true;
+}
+void PrintScreenMessage(const char *message)
+{
+  tft.setCursor(1, 3);
+  tft.setTextFont(2);
+  tft.setTextSize(1);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  tft.println(message);
+}
+
+void DumpCJson(cJSON *doc)
+{
+  if(!generalconfig.moreLogs) return;
+  char *d = cJSON_Print(doc);
+  if (d)
+  {
+    ESP_LOGI(module, "%s", d);
+  }
+  FREE_AND_NULL(d);
 }
 
 //-------------------------------- SETUP --------------------------------------------------------------
@@ -470,9 +512,10 @@ void LoadSystemConfig()
 void setup()
 {
 
+
   RESET_REASON resetReason = rtc_get_reset_reason(0);
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-
+  generalconfig.moreLogs=false;
   // Use serial port
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -487,28 +530,44 @@ void setup()
   ActionsCallbacks()->ConfigMode = RestartConfigMode;
   ActionsCallbacks()->RunLatchAction = RunLatchAction;
   ActionsCallbacks()->SetActiveScreen = RunActiveScreenAction;
-  
-  
+  if (restartReason != SystemMode::STANDARD && restartReason != SystemMode::CONFIG && restartReason != SystemMode::CONSOLE)
+  {
+    restartReason = SystemMode::STANDARD;
+  }
 
   // ------------------- Startup actions ------------------
-  ESP_LOGI(module, "Found Reset reason: %d",resetReason);
-  ESP_LOGI(module, "System mode: %d", restartReason);
+  ESP_LOGI(module, "Found Reset reason: %d", resetReason);
+  ESP_LOGI(module, "System mode: %s", enum_to_string(restartReason));
 
-
-  if ((resetReason == SW_RESET || resetReason == SW_CPU_RESET )&& restartReason == SystemMode::CONFIG)
+  if ((resetReason == SW_RESET || resetReason == SW_CPU_RESET))
   {
-    generalconfig.sleepenable = false;
-    if(ConfigMode())
+    //reset restartreason for next reboot
+
+    if (restartReason == SystemMode::CONFIG)
     {
+      generalconfig.sleepenable = false;
+      if (ConfigMode())
+      {
+        RunMode = SystemMode::CONFIG;
+        restartReason = SystemMode::STANDARD;
+        LoadSystemMenus();
+        LoadAllMenus();
+        return;
+      }
+      else
+      {
+        drawErrorMessage(true, module, "Unable to start config mode. Please reset device.");
+      }
+    }
+    else if (restartReason == SystemMode::CONSOLE)
+    {
+      RunMode = SystemMode::CONSOLE;
       restartReason = SystemMode::STANDARD;
-      RunMode = SystemMode::CONFIG;
+      PrintScreenMessage("Console mode active. Press screen to exit");
+      LoadSystemMenus();
+      LoadAllMenus();
       return;
     }
-    else
-    {
-      drawErrorMessage(true, module, "Unable to start config mode. Please reset device.") ;
-    }
-
   }
 
   if (wakeup_reason > ESP_SLEEP_WAKEUP_UNDEFINED)
@@ -531,12 +590,13 @@ void setup()
     tft.printf("Loading version %s\n", versionnumber);
     ESP_LOGI(module, "Loading version %s", versionnumber);
   }
+  // todo: remove hard code!  
+  generalconfig.beep = false;
   HandleAudio(Sounds::STARTUP);
 // Calibrate the touch screen and retrieve the scaling factors
 #ifndef USECAPTOUCH
   touch_calibrate();
 #endif
-
 
   //CacheBitmaps();
   LoadSystemMenus();
@@ -557,7 +617,7 @@ void setup()
   // ---------------- Start the first keypad -------------
 
   // Draw background
-  SetActiveScreen("homescreen");
+  SetActiveScreen("home");
   PrintMemInfo();
   HandleSleepConfig();
 #ifdef ACTIONS_IN_TASKS
@@ -584,36 +644,81 @@ void processSerial()
       FILESYSTEM.remove(CALIBRATION_FILE);
       ESP.restart();
     }
+    else if (command == "morelogs")
+    {
+      generalconfig.moreLogs=!generalconfig.moreLogs;
+      ESP_LOGI(module,"Extra logs are %s",generalconfig.moreLogs?"ACTIVE":"INACTIVE");
+      saveConfig(false);
+    }
+    else if (command == "console")
+    {
+      ESP_LOGW(module, "Changing mode to console");
+      ChangeMode(SystemMode::CONSOLE);
+    }
+    else if (command == "config")
+    {
+      ESP_LOGW(module, "Changing mode to config");
+      ChangeMode(SystemMode::CONFIG);
+    }
+    else if (command == "menus")
+    {
+
+      ESP_LOGI(module, "Generating menus structure");
+      char *json = FreeTouchDeck::MenusToJson(true);
+      if (json)
+      {
+        ESP_LOGI(module, "Menu structure: \n%s", json);
+        FREE_AND_NULL(json);
+      }
+      else
+      {
+        ESP_LOGE(module, "Unable to print menu structure");
+      }
+    }
+    
     else if (command == "rot")
     {
       String value = Serial.readString();
       uint8_t rot = value.toInt();
-      if(rot<=3 && rot >=0)
+      if (rot <= 3 && rot >= 0)
       {
-        generalconfig.screen_rotation = rot;
+        generalconfig.screenrotation = rot;
         saveConfig(false);
-        ESP_LOGI(module, "Screen rotation was updated to %d", generalconfig.screen_rotation);
+        ESP_LOGI(module, "Screen rotation was updated to %d", generalconfig.screenrotation);
       }
-      
     }
     else if (command == "revx")
     {
-      generalconfig.reverse_x_touch= !generalconfig.reverse_x_touch;
-      ESP_LOGI(module,"X axis touch reverse set to %s",generalconfig.reverse_x_touch?"YES":"NO" );
+      generalconfig.reverse_x_touch = !generalconfig.reverse_x_touch;
+      ESP_LOGI(module, "X axis touch reverse set to %s", generalconfig.reverse_x_touch ? "YES" : "NO");
+      saveConfig(false);
+    }
+    else if (command == "rows")
+    {
+      String value = Serial.readString();
+      generalconfig.rowscount = value.toInt();
+      ESP_LOGI(module, "Rows count set to %d", generalconfig.rowscount);
+      saveConfig(false);
+    }
+    else if (command == "cols")
+    {
+      String value = Serial.readString();
+      generalconfig.colscount = value.toInt();
+      ESP_LOGI(module, "Rows count set to %d", generalconfig.colscount);
       saveConfig(false);
     }
     else if (command == "revy")
     {
-      generalconfig.reverse_y_touch= !generalconfig.reverse_y_touch;
-      ESP_LOGI(module,"Y axis touch reverse set to %s",generalconfig.reverse_y_touch?"YES":"NO" );
+      generalconfig.reverse_y_touch = !generalconfig.reverse_y_touch;
+      ESP_LOGI(module, "Y axis touch reverse set to %s", generalconfig.reverse_y_touch ? "YES" : "NO");
       saveConfig(false);
-    }    
+    }
     else if (command == "invaxis")
     {
-      generalconfig.flip_touch_axis= !generalconfig.flip_touch_axis;
-      ESP_LOGI(module,"Touch axis flip set to %s",generalconfig.flip_touch_axis?"YES":"NO" );
+      generalconfig.flip_touch_axis = !generalconfig.flip_touch_axis;
+      ESP_LOGI(module, "Touch axis flip set to %s", generalconfig.flip_touch_axis ? "YES" : "NO");
       saveConfig(false);
-    }        
+    }
     else if (command == "setssid")
     {
 
@@ -660,11 +765,11 @@ void processSerial()
     else if (command == "conf")
     {
       saveConfig(true);
-    }    
-    else if(command == "help")
+    }
+    else if (command == "help")
     {
       ESP_LOGI(module,
-      R"(conf: dumps the configuration details
+               R"(conf: dumps the configuration details
 cal : Restarts in screen calibration mode (resistive screens only)
 revx : reverse X touch axis
 revy : reverse Y touch axis
@@ -674,8 +779,13 @@ setssid YOURSSID: Sets the WiFi SSID access point to connect to
 setpassword YOURPASWORD: Sets the WiFi password 
 setwifimode (WIFI_STA|WIFI_AP)
 restart : Restarts the system
-reset : reset configuration and reboot )");
-
+reset : reset configuration and reboot 
+menus : dump the menu structure
+conf : dump current configuration
+console : change the system mode to console
+config : change the system mode to configuration
+morelogs : increase log details for some activities - warning: this will slow down the system
+)");
     }
   }
 }
@@ -766,12 +876,12 @@ void ResetSleep()
 #ifdef USECAPTOUCH
 bool getTouch(uint16_t *t_x, uint16_t *t_y)
 {
-  static bool prev=false;
+  static bool prev = false;
   if (ts.touched())
   {
     // Retrieve a point
     TS_Point p = ts.getPoint();
-    if(generalconfig.flip_touch_axis)
+    if (generalconfig.flip_touch_axis)
     {
       //Flip things around so it matches our screen rotation
       *t_y = p.x;
@@ -782,26 +892,26 @@ bool getTouch(uint16_t *t_x, uint16_t *t_y)
       *t_y = p.y;
       *t_x = p.x;
     }
-        
-    if(generalconfig.reverse_x_touch)
+
+    if (generalconfig.reverse_x_touch)
     {
-      *t_x = map(*t_x, 0, tft.width(), tft.width(), 0);
+      *t_x =(uint16_t) map((long )*t_x, (long)0, (long)tft.width(), (long)tft.width(), (long)0);
     }
-    if(generalconfig.reverse_y_touch)
+    if (generalconfig.reverse_y_touch)
     {
-      *t_y = map(*t_y, 0, tft.height(), tft.height(), 0);
+      *t_y = (uint16_t)map((long)*t_y, (long)0, (long)tft.height(), (long)tft.height(), (long)0);
     }
 
-    if(!prev)
+    if (!prev)
     {
-      ESP_LOGD(module,"Input touch (%dx%d)=>(%dx%d) - Screen is %dx%d", p.x,p.y,*t_x,*t_y, tft.width(),tft.height());
-      prev=true;
+      ESP_LOGD(module, "Input touch (%dx%d)=>(%dx%d) - Screen is %dx%d", p.x, p.y, *t_x, *t_y, tft.width(), tft.height());
+      prev = true;
     }
 
     ResetSleep();
     return true;
   }
-  prev=false;
+  prev = false;
   return false;
 }
 #else
@@ -827,13 +937,24 @@ void processSleep()
       HandleAudio(Sounds::GOING_TO_SLEEP);
       //todo better power management for TWATCH
       //       power->setPowerOutPut(AXP202_LDO2, AXP202_OFF);
-      esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
-      esp_deep_sleep_start();
+      esp_err_t err = esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
+      if (err != ESP_OK)
+      {
+        ESP_LOGE(module, "Unable to set external wakeup pin: %s", esp_err_to_name(err));
+      }
+      else
+      {
+        generalconfig.sleepenable = false;
+        // Unlatch button
+        QueueAction(FreeTouchDeck::sleepSetLatchAction);
+        esp_deep_sleep_start();
+      }
     }
   }
 }
 void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
 {
+  static unsigned nextlog=0;
   auto Active = GetActiveScreen();
   if (Active)
   {
@@ -849,7 +970,13 @@ void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
   }
   else
   {
-    ESP_LOGD(module, "No active display");
+    if(nextlog<=millis())
+    {
+      ESP_LOGD(module, "No active display");
+      // to prevent flooding of the serial log, reduce the rate of this message
+      nextlog=millis()+1000;
+    }
+    
   }
 }
 void HandleActions()
@@ -863,6 +990,7 @@ void HandleActions()
     {
       ResetSleep();
       Action->Execute();
+      
     }
   } while (Action);
 }
@@ -871,15 +999,16 @@ void HandleScreen()
   uint16_t t_x = 0;
   uint16_t t_y = 0;
   bool pressed = getTouch(&t_x, &t_y);
-  if (RunMode == SystemMode::CONFIG)
+  if (RunMode == SystemMode::CONFIG || RunMode == SystemMode::CONSOLE)
   {
     delay(100);
-    if(pressed)
+    if (pressed)
     {
       ESP.restart();
     }
     return;
   }
+
   handleDisplay(pressed, t_x, t_y);
   ESP_LOGV(module, "Checking for screen actions");
   FTAction *Action = PopScreenQueue();
@@ -893,7 +1022,11 @@ void loop(void)
 {
 
   processSerial();
-  processSleep();
+  if (RunMode != SystemMode::CONSOLE && RunMode != SystemMode::CONFIG)
+  {
+    processSleep();
+  }
+
 #ifndef ACTIONS_IN_TASKS
   HandleActions();
   HandleScreen();
