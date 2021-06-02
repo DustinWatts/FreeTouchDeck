@@ -24,17 +24,54 @@ namespace FreeTouchDeck
     const char *FTButton::JsonLabelBackground = "background";
     const char *FTButton::JsonLabelTextColor = "textcolor";
     const char *FTButton::JsonLabelTextSize = "textsize";
-
+    const char *FTButton::homeButtonTemplate = R"(
+{ "logo":	"home.bmp",
+    "type":	"STANDARD",
+    "actions":	[{
+            "type":	"MENU",
+            "symbol":	"home"
+        }]
+    }    
+)";
+    const char *FTButton::backButtonTemplate = R"(			{
+				"label": "Back",
+				"logo": "arrow_back.bmp",
+				"latchedlogo": "",
+				"type": "STANDARD",
+				"actions": [
+					{
+						"type": "MENU",
+						"symbol": "~BACK"
+					}
+				]
+			})";
+    FTButton FTButton::BackButton(FTButton::backButtonTemplate,true);
+    FTButton FTButton::HomeButton(FTButton::homeButtonTemplate,true);
+    FTButton::FTButton(const char *templ, bool isShared)
+    {
+        IsShared=isShared;
+        cJSON *doc = cJSON_Parse(templ);
+        if (!doc)
+        {
+            const char *error = cJSON_GetErrorPtr();
+            drawErrorMessage(true, module, "Unable to parse json string : %s", error);
+        }
+        else
+        {
+            Init(doc);
+        }
+        cJSON_Delete(doc);
+    }
     ImageWrapper *FTButton::LatchedLogo()
     {
         ImageWrapper *image = NULL;
         if (_jsonLatchedLogo && strlen(_jsonLatchedLogo) > 0)
         {
-            ESP_LOGV(module, "Latched Logo file name is %s", _jsonLatchedLogo);
+            LOC_LOGV(module, "Latched Logo file name is %s", _jsonLatchedLogo);
             image = GetImage(_jsonLatchedLogo);
             if (image && !image->valid)
             {
-                ESP_LOGD(module, "Latched Logo file %s is invalid.", _jsonLatchedLogo);
+                LOC_LOGD(module, "Latched Logo file %s is invalid.", _jsonLatchedLogo);
                 image = NULL;
             }
         }
@@ -49,7 +86,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            ESP_LOGD(module, "Empty logo value");
+            LOC_LOGD(module, "Empty logo value");
         }
         if (!image || !image->valid)
         {
@@ -63,24 +100,24 @@ namespace FreeTouchDeck
 
         if (_jsonLogo && strlen(_jsonLogo) > 0)
         {
-            ESP_LOGV(module, "Logo file name is %s", _jsonLogo);
+            LOC_LOGV(module, "Logo file name is %s", _jsonLogo);
             image = GetImage(_jsonLogo);
         }
         else
         {
-            ESP_LOGD(module, "empty logo file name");
+            LOC_LOGD(module, "empty logo file name");
         }
 
         if (!image || !image->valid)
         {
-            ESP_LOGD(module, "Logo file name %s was not found. Defaulting to label.bmp", _jsonLogo ? _jsonLogo : "");
+            LOC_LOGD(module, "Logo file name %s was not found. Defaulting to label.bmp", _jsonLogo ? _jsonLogo : "");
             image = GetImage("label.bmp");
         }
         return image;
     }
     bool FTButton::Latch(FTAction *action)
     {
-        ESP_LOGD(module,"Button is Executing Action %s", action->toString());
+        LOC_LOGD(module, "Button is Executing Action %s", action->toString());
         if (ButtonType == ButtonTypes::LATCH && action->IsLatch())
         {
             switch (action->Type)
@@ -109,7 +146,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            ESP_LOGW(module, "Cannot latch button. Button %s has type %s.", STRING_OR_DEFAULT(Label, _jsonLogo), enum_to_string(ButtonType));
+            LOC_LOGW(module, "Cannot latch button. Button %s has type %s.", STRING_OR_DEFAULT(Label, _jsonLogo), enum_to_string(ButtonType));
             return false;
         }
         return true;
@@ -117,24 +154,31 @@ namespace FreeTouchDeck
 
     void FTButton::SetCoordinates(uint16_t width, uint16_t height, uint16_t row, uint16_t col, uint8_t spacing)
     {
-        ESP_LOGD(module, "Button size %dx%d, row %d, col %d  ", width, height, row, col);
+        uint16_t centerX=0;
+        uint16_t centerY=0;
         ButtonWidth = width;
         ButtonHeight = height;
         Spacing = spacing;
-        CenterX = (col * 2 + 1) * ButtonWidth / 2 + (col + 1) * spacing;
-        CenterY = (row * 2 + 1) * ButtonHeight / 2 + (row + 1) * spacing;
+        centerX = (col * 2 + 1) * ButtonWidth / 2 + col * spacing;
+        centerY = (row * 2 + 1) * ButtonHeight / 2 + row * spacing;
+        if(width!=ButtonWidth || ButtonHeight!=height || centerX!=CenterX || centerY!=CenterY || Spacing !=spacing)
+        {
+            LOC_LOGD(module, "Button size %dx%d, row %d, col %d  ", width, height, row, col);
+            CenterX=centerX;
+            CenterY=centerY;
+        }
     }
     FTButton::FTButton(const char *label, uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
     {
         char menuName[31] = {0};
-        ESP_LOGD(module, "Button Constructor for menu button");
+        LOC_LOGD(module, "Button Constructor for menu button");
         if (button && cJSON_IsString(button))
         {
             _jsonLogo = strdup(cJSON_GetStringValue(button));
         }
         else
         {
-            ESP_LOGW(module, "Menu button does not have a logo!");
+            LOC_LOGW(module, "Menu button does not have a logo!");
         }
         cJSON *jsonActionValue = NULL;
         ButtonType = ButtonTypes::MENU;
@@ -148,7 +192,7 @@ namespace FreeTouchDeck
         char logoName[31] = {0};
         cJSON *jsonActionValue = NULL;
         cJSON *_jsonLatch = NULL;
-        ESP_LOGD(module, "Button Constructor for action button");
+        LOC_LOGD(module, "Button Constructor for action button");
         snprintf(logoName, sizeof(logoName), "logo%d", index);
         cJSON *jsonLogo = cJSON_GetObjectItem(document, logoName);
         if (jsonLogo && cJSON_IsString(jsonLogo))
@@ -157,7 +201,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            ESP_LOGW(module, "No logo file was found for %s", jsonLogo);
+            LOC_LOGW(module, "No logo file was found for %s", jsonLogo);
         }
         Label = ps_strdup(STRING_OR_DEFAULT(label, ""));
         cJSON *jsonLatchedLogo = cJSON_GetObjectItem(button, "latchlogo");
@@ -171,26 +215,26 @@ namespace FreeTouchDeck
         cJSON *jsonActions = cJSON_GetObjectItem(button, "actionarray");
         if (!jsonActions)
         {
-            ESP_LOGE(module, "Button %s does not have any action!", Logo()->LogoName);
+            LOC_LOGE(module, "Button %s does not have any action!", Logo()->LogoName);
         }
         else
         {
             uint8_t valuePos = 0;
-            ESP_LOGD(module, "Button %s has %d actions", Logo()->LogoName, cJSON_GetArraySize(jsonActions));
+            LOC_LOGD(module, "Button %s has %d actions", Logo()->LogoName, cJSON_GetArraySize(jsonActions));
             cJSON_ArrayForEach(jsonActionValue, cJSON_GetObjectItem(button, "valuearray"))
             {
                 cJSON *jsonAction = cJSON_GetArrayItem(jsonActions, valuePos++);
                 if (!jsonAction)
                 {
-                    ESP_LOGE(module, "Current value does not have a matching action!");
+                    LOC_LOGE(module, "Current value does not have a matching action!");
                 }
                 else if (FTAction::GetType(jsonAction) != ActionTypes::NONE)
                 {
-                    ESP_LOGD(module, "Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
+                    LOC_LOGD(module, "Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
                     auto action = new FTAction(jsonAction, jsonActionValue);
                     if (!action)
                     {
-                        ESP_LOGE(module, "Could not allocate memory for action");
+                        LOC_LOGE(module, "Could not allocate memory for action");
                     }
                     else
                     {
@@ -199,7 +243,7 @@ namespace FreeTouchDeck
                             BackgroundColor = generalconfig.functionButtonColour;
                         }
                         actions.push_back(action);
-                        ESP_LOGD(module, "DONE Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
+                        LOC_LOGD(module, "DONE Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
                     }
 
                     // only push valid actions
@@ -207,7 +251,7 @@ namespace FreeTouchDeck
                 }
                 else
                 {
-                    ESP_LOGD(module, "Ignoring action type NONE for button %s", Logo()->LogoName);
+                    LOC_LOGD(module, "Ignoring action type NONE for button %s", Logo()->LogoName);
                 }
             }
         }
@@ -255,14 +299,14 @@ namespace FreeTouchDeck
 
         if (!image || !image->valid)
         {
-            ESP_LOGE(module, "No image found, or image invalid!");
+            LOC_LOGE(module, "No image found, or image invalid!");
         }
         else
         {
-            BGColor= tft.color565(image->R, image->G, image->B);
+            BGColor = tft.color565(image->R, image->G, image->B);
         }
-        ESP_LOGV(module, "Found image structure, bitmap is %s", image->LogoName);
-        ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", CenterX, CenterY, adjustedWidth, adjustedHeight,  Outline, BGColor, TextColor, TextSize);
+        LOC_LOGV(module, "Found image structure, bitmap is %s", image->LogoName);
+        LOC_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BGColor, TextColor, TextSize);
         PrintMemInfo();
         tft.setFreeFont(LABEL_FONT);
 
@@ -274,23 +318,22 @@ namespace FreeTouchDeck
             uint32_t cornerY = CenterY - (adjustedHeight / 2) + roundRectHeight / 2;
             if (Latched)
             {
-                ESP_LOGD(module, "Latched without a latched logo.  Drawing round rectangle");
+                LOC_LOGD(module, "Latched without a latched logo.  Drawing round rectangle");
                 tft.fillRoundRect(cornerX, cornerY, roundRectWidth, roundRectHeight, radius, generalconfig.latchedColour);
                 transparent = true;
             }
             else
             {
-                ESP_LOGD(module, "Latched deactivated without a latched logo.  Erasing round rectangle");
+                LOC_LOGD(module, "Latched deactivated without a latched logo.  Erasing round rectangle");
                 tft.fillRoundRect(cornerX, cornerY, roundRectWidth, roundRectHeight, radius, BackgroundColor);
                 // draw button one more time
                 _button.drawButton();
             }
         }
-        if (image && image->valid)    
+        if (image && image->valid)
         {
             image->Draw(CenterX, CenterY, transparent);
         }
-        
     }
     uint16_t FTButton::Width()
     {
@@ -303,32 +346,32 @@ namespace FreeTouchDeck
 
     void FTButton::Press()
     {
-        bool needsRelease=false;
+        bool needsRelease = false;
         if (IsPressed)
         {
-            ESP_LOGV(module, "Button already pressed. Ignoring");
+            LOC_LOGV(module, "Button already pressed. Ignoring");
             return;
         }
         // Beep
         HandleAudio(Sounds::BEEP);
-        ESP_LOGD(module, "%s Button Press detected with %d actions", enum_to_string(ButtonType), actions.size());
+        LOC_LOGD(module, "%s Button Press detected with %d actions", enum_to_string(ButtonType), actions.size());
         for (FTAction *action : actions)
         {
-            needsRelease=action->NeedsRelease?true:needsRelease;
-            ESP_LOGD(module, "Queuing action %s", enum_to_string(action->Type), action->toString());
+            needsRelease = action->NeedsRelease ? true : needsRelease;
+            LOC_LOGD(module, "Queuing action %s", enum_to_string(action->Type), action->toString());
             if (!QueueAction(action))
             {
-                ESP_LOGW(module, "Button action %s could not be queued for execution.", action->toString());
+                LOC_LOGW(module, "Button action %s could not be queued for execution.", action->toString());
             }
         }
         if (ButtonType == ButtonTypes::LATCH)
         {
             Latched = !Latched;
-            ESP_LOGD(module, "Toggling LATCH to %s", Latched ? "ACTIVE" : "INACTIVE");
+            LOC_LOGD(module, "Toggling LATCH to %s", Latched ? "ACTIVE" : "INACTIVE");
         }
         IsPressed = true;
         NeedsDraw = true;
-        if(needsRelease)
+        if (needsRelease)
         {
             QueueAction(&FTAction::releaseAllAction);
         }
@@ -337,7 +380,7 @@ namespace FreeTouchDeck
     {
         if (IsPressed)
         {
-            ESP_LOGD(module, "Releasing button with logo %s", Logo()->LogoName);
+            LOC_LOGD(module, "Releasing button with logo %s", Logo()->LogoName);
             IsPressed = false;
             NeedsDraw = true;
         }
@@ -350,7 +393,7 @@ namespace FreeTouchDeck
             drawErrorMessage(true, module, "Memory allocation failed when rendering JSON button");
             return NULL;
         }
-        ESP_LOGD(module, "Adding button members to Json");
+        LOC_LOGD(module, "Adding button members to Json");
         if (!ISNULLSTRING(Label))
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, STRING_OR_DEFAULT(Label, ""));
@@ -359,7 +402,7 @@ namespace FreeTouchDeck
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, _jsonLogo ? _jsonLogo : "");
         }
-        if (!ISNULLSTRING(_jsonLatchedLogo))
+        if (ButtonType == ButtonTypes::LATCH && !ISNULLSTRING(_jsonLatchedLogo))
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelLatchedLogo, _jsonLatchedLogo ? _jsonLatchedLogo : "");
         }
@@ -381,7 +424,7 @@ namespace FreeTouchDeck
         {
             cJSON_AddNumberToObject(button, FTButton::JsonLabelTextSize, TextSize);
         }
-        ESP_LOGD(module, "Adding actions to Json");
+        LOC_LOGD(module, "Adding actions to Json");
         if (actions.size() > 0)
         {
             cJSON *actionsJson = cJSON_CreateArray();
@@ -394,37 +437,42 @@ namespace FreeTouchDeck
             }
             cJSON_AddItemToObject(button, FTButton::JsonLabelActions, actionsJson);
         }
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
-        char *buttonString = cJSON_Print(button);
-        if (buttonString)
+        if (generalconfig.LogLevel >= LogLevels::VERBOSE)
         {
-            ESP_LOGD(module, "Button json structure : \n%s", buttonString);
-            FREE_AND_NULL(buttonString);
+            char *buttonString = cJSON_Print(button);
+            if (buttonString)
+            {
+                LOC_LOGD(module, "Button json structure : \n%s", buttonString);
+                FREE_AND_NULL(buttonString);
+            }
+            else
+            {
+                LOC_LOGE(module, "Unable to format JSON for output!");
+            }
         }
-        else
-        {
-            ESP_LOGE(module, "Unable to format JSON for output!");
-        }
-#endif
         return button;
     }
     bool FTButton::contains(uint16_t x, uint16_t y)
     {
-        return _button.contains(x,y);
+        return _button.contains(x, y);
     }
-    FTButton::FTButton(cJSON *button)
+    void FTButton::Init(cJSON *button)
     {
         char *buttonType = NULL;
-        GetValueOrDefault(button, FTButton::JsonLabelLabel, &Label, "");
-        ESP_LOGD(module, "Label: %s", Label);
-        GetValueOrDefault(button, FTButton::JsonLabelLogo, &_jsonLogo, "");
-        ESP_LOGD(module, "Logo : %s", _jsonLogo);
-        GetValueOrDefault(button, FTButton::JsonLabelLatchedLogo, &_jsonLatchedLogo, "");
-        ESP_LOGD(module, "Latched logo: %s", _jsonLatchedLogo);
         GetValueOrDefault(button, FTButton::JsonLabelType, &buttonType, enum_to_string(ButtonTypes::STANDARD));
         ButtonType = parse_button_types(buttonType);
         FREE_AND_NULL(buttonType);
-        ESP_LOGD(module, "Button type is %s", enum_to_string(ButtonType));
+        LOC_LOGD(module, "Button type is %s", enum_to_string(ButtonType));
+
+        GetValueOrDefault(button, FTButton::JsonLabelLabel, &Label, "");
+        LOC_LOGD(module, "Label: %s", Label);
+        GetValueOrDefault(button, FTButton::JsonLabelLogo, &_jsonLogo, "");
+        LOC_LOGD(module, "Logo : %s", _jsonLogo);
+        if (ButtonType == ButtonTypes::LATCH)
+        {
+            GetValueOrDefault(button, FTButton::JsonLabelLatchedLogo, &_jsonLatchedLogo, "");
+            LOC_LOGD(module, "Latched logo: %s", _jsonLatchedLogo);
+        }
 
         GetValueOrDefault(button, FTButton::JsonLabelOutline, &Outline, generalconfig.DefaultOutline);
         GetValueOrDefault(button, FTButton::JsonLabelBackground, &BackgroundColor, generalconfig.backgroundColour);
@@ -434,13 +482,13 @@ namespace FreeTouchDeck
         cJSON *jsonActions = cJSON_GetObjectItem(button, FTButton::JsonLabelActions);
         if (!jsonActions)
         {
-            ESP_LOGE(module, "Button %s does not have any action!", Logo()->LogoName);
+            LOC_LOGE(module, "Button %s does not have any action!", Logo()->LogoName);
         }
         else
         {
-            if(!cJSON_IsArray(jsonActions))
+            if (!cJSON_IsArray(jsonActions))
             {
-                ESP_LOGE(module, "Actions object for button %s should be an array but it is not.", Label);
+                LOC_LOGE(module, "Actions object for button %s should be an array but it is not.", Label);
             }
             cJSON *actionJson = NULL;
             cJSON_ArrayForEach(actionJson, jsonActions)
@@ -452,6 +500,10 @@ namespace FreeTouchDeck
                 }
             }
         }
+    }
+    FTButton::FTButton(cJSON *button)
+    {
+        Init(button);
     }
     ButtonTypes &operator++(ButtonTypes &state, int)
     {

@@ -10,6 +10,7 @@
 #include <array>
 #include <iostream>
 #include <new>
+#include "DrawHelper.h"
 
 #ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
 #if ESP_IDF_VERSION_MAJOR > 3
@@ -30,6 +31,50 @@
 #endif
 
 
+namespace FreeTouchDeck
+{
+  enum class LogLevels
+  {
+    NONE = 0,
+    ERROR,
+    WARN,
+    INFO,
+    DEBUG,
+    VERBOSE
+  };
+};
+extern const char *versionnumber;
+// the following can be uncommented in case the coordinates of the
+// X or Y axis touch panel are reversed
+// #define INVERSE_X_TOUCH
+// #define INVERSE_Y_TOUCH
+
+//Struct to hold the general config like colours.
+struct Config
+{
+  uint16_t menuButtonColour;
+  uint16_t functionButtonColour;
+  uint16_t backgroundColour;
+  uint16_t latchedColour;
+  uint8_t colscount;
+  uint8_t rowscount;
+  bool sleepenable;
+  uint16_t sleeptimer;
+  bool beep;
+  bool flip_touch_axis;
+  bool reverse_x_touch;
+  bool reverse_y_touch;
+  uint8_t screenrotation;
+  char * modifier1;
+  char * modifier2;
+  char * modifier3;
+  uint16_t helperdelay;
+  uint16_t DefaultOutline;
+  uint8_t DefaultTextSize;
+  uint16_t DefaultTextColor;
+  FreeTouchDeck::LogLevels LogLevel;
+};
+extern Config generalconfig;
 enum class SystemMode
 {
   STANDARD,
@@ -82,5 +127,10 @@ extern void DumpCJson(cJSON *doc);
   }                                                            \
   else                                                         \
   {                                                            \
-    ESP_LOGW(module, "Function %s not implemented", QUOTE(x)); \
+    LOC_LOGW(module, "Function %s not implemented", QUOTE(x)); \
   }
+#define LOC_LOGE(tag, ...)  if(generalconfig.LogLevel >= FreeTouchDeck::LogLevels::ERROR) log_e(__VA_ARGS__)
+#define LOC_LOGW(tag, ...)  if(generalconfig.LogLevel >= FreeTouchDeck::LogLevels::WARN) log_w(__VA_ARGS__)
+#define LOC_LOGI(tag, ...)  if(generalconfig.LogLevel >= FreeTouchDeck::LogLevels::INFO) log_i(__VA_ARGS__)
+#define LOC_LOGD(tag, ...)  if(generalconfig.LogLevel >= FreeTouchDeck::LogLevels::DEBUG) log_d(__VA_ARGS__)
+#define LOC_LOGV(tag, ...)  if(generalconfig.LogLevel >= FreeTouchDeck::LogLevels::VERBOSE) log_v(__VA_ARGS__)

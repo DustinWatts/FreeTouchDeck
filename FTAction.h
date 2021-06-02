@@ -44,6 +44,8 @@ namespace FreeTouchDeck
         BRIGHTNESS_UP,
         SLEEP,
         INFO,
+        REBOOT,
+        BEEP,
         ENDLIST
 
     };
@@ -78,22 +80,23 @@ namespace FreeTouchDeck
         static const char *JsonLabelValue;
         static const char *JsonLabelSymbol;
         static const char *JsonLabelLocalActionType;
-        FTAction(ActionTypes actionParm, char *jsonString);
+        FTAction(ActionTypes actionParm, const char *jsonString);
         FTAction(char *jsonActionType, char *jsonValueStr);
         FTAction(cJSON *jsonActionType, cJSON *jsonValue);
         FTAction(cJSON *jsonActionType);
+        void ParseModifierKey(char * modifier);
         ~FTAction();
-        const char *GetNthElementKey(ActionTypes actionType, uint8_t index);
-        bool get_by_index(ActionTypes actionType, const char *index, const char **value);
-        const KeyMap_t GetMap(ActionTypes actionType);
-        bool ParseToken(const char *token, KeyValue_t *values, ActionTypes *type);
+        static const char *GetNthElementKey(ActionTypes actionType, uint8_t index);
+        static bool get_by_index(ActionTypes actionType, const char *index, const char **value);
+        static const KeyMap_t GetMap(ActionTypes actionType);
+        static bool ParseToken(const char *token, KeyValue_t *values, ActionTypes *type);
         bool ParseFreeText(const char *text, KeySequences_t *keySequences);
         cJSON *ToJson();
         void Execute();
         static ActionTypes GetType(cJSON *jsonActionType);
         void *operator new(size_t sz)
         {
-            ESP_LOGV("FTAction", "operator new : %d", sz);
+            LOC_LOGV("FTAction", "operator new : %d", sz);
             return malloc_fn(sz);
         };
 
@@ -127,17 +130,18 @@ namespace FreeTouchDeck
         static bool parse(const char *value, ActionTypes *result);
         bool NeedsRelease;
         static bool parse(const char *value, LocalActionTypes *result);
-        bool parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, const char **foundKey = NULL);
-        bool parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, char **foundKey = NULL);
+        static bool parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, const char **foundKey = NULL);
+        static bool parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, char **foundKey = NULL);
         bool ParseBTSequence();
         //        bool parse(char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, const char **foundKey = NULL);
         //        bool parse(const char *keyname, ActionTypes actionType,  KeyValue_t * keyvalue,char **foundKey=NULL);
-        bool parse(char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, char **foundKey = NULL);
+        static bool parse(char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, char **foundKey = NULL);
         static FTAction releaseAllAction;
+        static FTAction rebootSystem;
 
     private:
         void SetType(const char *jsonTypeStr);
-        void SetValue(char *jsonValue);
+        void SetValue(const char *jsonValue);
         void SetType(int jsonType);
         void SetValue(int jsonValue);
         KeySequences_t KeySequences;
@@ -148,9 +152,11 @@ namespace FreeTouchDeck
     {
         ActionCallbackFn_t RunLatchAction;
         ActionCallbackFn_t ChangeBrightness;
+        ActionCallbackFn_t SetSleep;
         ActionCallbackFn_t PrintInfo;
         ActionCallbackFn_t ConfigMode;
         ActionCallbackFn_t SetActiveScreen;
+        ActionCallbackFn_t SetBeep;
 
     } ActionCallbacks_t;
 
@@ -158,6 +164,8 @@ namespace FreeTouchDeck
     extern FTAction *sleepSetLatchAction;
     extern FTAction *sleepClearLatchAction;
     extern FTAction *sleepToggleLatchAction;
+    extern  FTAction *beepSetLatchAction;
+    extern FTAction *beepClearLatchAction;
     extern bool QueueAction(FTAction *action);
     extern FTAction *PopQueue();
     extern bool QueueLock(TickType_t xTicksToWait);

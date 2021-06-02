@@ -28,12 +28,12 @@ namespace FreeTouchDeck
         {
             if (!GetBMPDetails())
             {
-                ESP_LOGE(module, "Unable to load bitmap file %s. ", LogoName);
+                LOC_LOGE(module, "Unable to load bitmap file %s. ", LogoName);
             }
         }
         else
         {
-            ESP_LOGE(module, "Unknown image.");
+            LOC_LOGE(module, "Unknown image.");
             strncpy(LogoName, "Unknown", sizeof(LogoName));
             valid = false;
         }
@@ -62,18 +62,18 @@ namespace FreeTouchDeck
 #endif
         // Open File
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
-        ESP_LOGD(module, "Loading details from file %s", FileNameBuffer);
+        LOC_LOGD(module, "Loading details from file %s", FileNameBuffer);
         fs::File imageWrapper = SPIFFS.open(FileNameBuffer, FILE_READ);
         valid = true;
         if (!imageWrapper || imageWrapper.size() == 0)
         {
-            ESP_LOGE(module, "Could not open file %s", FileNameBuffer);
+            LOC_LOGE(module, "Could not open file %s", FileNameBuffer);
             valid = false;
             return valid;
         }
         if (valid && read16(imageWrapper) == 0x4D42)
         {
-            ESP_LOGV(module, "Valid bitmap header signature found");
+            LOC_LOGV(module, "Valid bitmap header signature found");
             read32(imageWrapper);
             read32(imageWrapper);
             Offset = read32(imageWrapper);              // start of image data
@@ -93,16 +93,16 @@ namespace FreeTouchDeck
             if (Depth != 24)
             {
                 valid = false;
-                ESP_LOGE(module, "Unsupported bit depth %d for image %s. Image should be 24bpp.", Depth, imageWrapper.name());
+                LOC_LOGE(module, "Unsupported bit depth %d for image %s. Image should be 24bpp.", Depth, imageWrapper.name());
             }
             if (Compression != 0)
             {
-                ESP_LOGE(module, "Compression not supported for %s. Image should be uncompressed.", imageWrapper.name());
+                LOC_LOGE(module, "Compression not supported for %s. Image should be uncompressed.", imageWrapper.name());
                 valid = false;
             }
             if (Planes != 1)
             {
-                ESP_LOGE(module, "Unsupported number of planes %d for image %s.", Planes, imageWrapper.name());
+                LOC_LOGE(module, "Unsupported number of planes %d for image %s.", Planes, imageWrapper.name());
                 valid = false;
             }
             if (valid)
@@ -117,42 +117,42 @@ namespace FreeTouchDeck
         }
         else
         {
-            ESP_LOGE(module, "Invalid bitmap file %s. Signature 0x4D42 not found in header", imageWrapper.name());
+            LOC_LOGE(module, "Invalid bitmap file %s. Signature 0x4D42 not found in header", imageWrapper.name());
             valid = false;
         }
-        ESP_LOGV(module, "Closing file %s", imageWrapper.name());
+        LOC_LOGV(module, "Closing file %s", imageWrapper.name());
         imageWrapper.close();
-        ESP_LOGV(module, "Done parsing file");
+        LOC_LOGV(module, "Done parsing file");
         return valid;
     }
 
     void ImageWrapper::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
-        ESP_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);
+        LOC_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
-            ESP_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);
+            LOC_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);
             return;
         }
         if (!valid)
         {
             // won't draw an invalid image
-            ESP_LOGW(module, "Not drawing an invalid image");
+            LOC_LOGW(module, "Not drawing an invalid image");
             return;
         }
-        ESP_LOGV(module, "Getting background color");
+        LOC_LOGV(module, "Getting background color");
         uint16_t BGColor = tft.color565(R, G, B);
         bool Transparent = ((BGColor == 0) || transparent);
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
-        ESP_LOGV(module, "Opening file %s", FileNameBuffer);
+        LOC_LOGV(module, "Opening file %s", FileNameBuffer);
         fs::File bmpFS = FILESYSTEM.open(FileNameBuffer, "r");
         if (!bmpFS)
         {
-            ESP_LOGE(module, "File not found: %s", FileNameBuffer);
+            LOC_LOGE(module, "File not found: %s", FileNameBuffer);
             return;
         }
-        ESP_LOGV(module, "Seeking offset: %d", Offset);
+        LOC_LOGV(module, "Seeking offset: %d", Offset);
         bmpFS.seek(Offset);
 
         uint16_t row;
@@ -171,11 +171,11 @@ namespace FreeTouchDeck
         {
             // Push the pixel row to screen, pushImage will crop the line if needed
             // y is decremented as the BMP image is drawn bottom up
-            ESP_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
+            LOC_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
         }
         else
         {
-            ESP_LOGV(module, "Drawing bitmap line opaque");
+            LOC_LOGV(module, "Drawing bitmap line opaque");
         }
 
         for (row = 0; row < h; row++)
@@ -208,7 +208,7 @@ namespace FreeTouchDeck
             }
         }
         tft.setSwapBytes(oldSwapBytes);
-        ESP_LOGV(module, "Closing bitmap file %s", LogoName);
+        LOC_LOGV(module, "Closing bitmap file %s", LogoName);
         bmpFS.close();
     }
 
@@ -234,26 +234,26 @@ namespace FreeTouchDeck
         ImageWrapper *image = NULL;
         if (!imageName || strlen(imageName) == 0)
         {
-            //ESP_LOGE(module, "No image name passed");
+            //LOC_LOGE(module, "No image name passed");
             return NULL;
         }
-        ESP_LOGV(module, "Looking for image %s", imageName);
+        LOC_LOGV(module, "Looking for image %s", imageName);
         for (auto i: ImageList )
         {
             if (strcmp(i->LogoName, imageName) == 0)
             {
-                ESP_LOGV(module, "Returning cache entry for image %s", imageName);
+                LOC_LOGV(module, "Returning cache entry for image %s", imageName);
                 image = i;
                 break;
             }
             else
             {
-                ESP_LOGV(module, "Cache image %s != %s", i->LogoName, imageName);
+                LOC_LOGV(module, "Cache image %s != %s", i->LogoName, imageName);
             }
         }
         if (!image)
         {
-            ESP_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
+            LOC_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
             PrintMemInfo();
 
             image = new ImageWrapper(imageName);
@@ -263,10 +263,10 @@ namespace FreeTouchDeck
             }
             else
             {
-                ESP_LOGE(module, "Invalid image %s", imageName);
+                LOC_LOGE(module, "Invalid image %s", imageName);
                 FREE_AND_NULL(image);
             }
-            ESP_LOGD(module,"Done caching image");
+            LOC_LOGD(module,"Done caching image");
             PrintMemInfo();
         }
         return image;

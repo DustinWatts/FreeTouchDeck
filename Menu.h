@@ -20,7 +20,9 @@ namespace FreeTouchDeck
         OLDHOME,
         SYSTEM,
         HOME,
+        ROOT,
         HOMESYSTEM,
+        EMPTY,
         ENDLIST
     };
   class Menu
@@ -67,12 +69,12 @@ namespace FreeTouchDeck
     bool LoadConfig(File *config);
     bool LoadConfig(const char *config);
     std::list<FTAction *> actions;
-
-    void AddHomeButton();
-    void AddBackButton();
     void SetButtonWidth();
+    inline bool HasBackButton()
+    {
+      return Type!=MenuTypes::EMPTY && Type!=MenuTypes::ROOT &&  Type!=MenuTypes::SYSTEM;
+    }
     static FTAction *homeMenu;
-    static FTAction *backButton;
     uint16_t ButtonWidth = 0;
     uint16_t ButtonHeight = 0;
   };

@@ -9,8 +9,10 @@ namespace FreeTouchDeck {
     extern bool RunActiveScreenAction(FTAction * action);
     extern bool ScreenLock(TickType_t xTicksToWait) ;
     extern void ScreenUnlock() ;
+    extern char *MenusToJson(bool withSystem = false);
     extern Menu *GetActiveScreen();
     extern bool RunLatchAction(FTAction *action);
     extern Menu *GetScreen(const char *name);
+    extern bool SaveFullFormat();
 }
 

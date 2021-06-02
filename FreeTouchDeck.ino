@@ -156,7 +156,7 @@ struct Wificonfig
 // Create instances of the structs
 Wificonfig wificonfig = {.ssid = NULL, .password = NULL, .wifimode = NULL, .hostname = NULL};
 
-Config generalconfig;
+Config generalconfig ;
 
 RTC_NOINIT_ATTR SystemMode restartReason = SystemMode::STANDARD;
 SystemMode RunMode = SystemMode::STANDARD;
@@ -166,6 +166,7 @@ void ChangeMode(SystemMode newMode)
   restartReason = newMode;
   ESP.restart();
 }
+extern bool printinfo(FTAction *dummy);
 volatile unsigned long previousMillis = 0;
 unsigned long Interval = 0;
 #ifdef ACTIONS_IN_TASKS
@@ -216,7 +217,7 @@ IRAM_ATTR void *malloc_fn(size_t sz)
   //     ptr = ps_malloc(sz);
   //     if(!ptr)
   //     {
-  //       ESP_LOGE("FreeTouchDeck","malloc_fn: PSRAM alloc failed. Allocating RAM instead");
+  //       LOC_LOGE("FreeTouchDeck","malloc_fn: PSRAM alloc failed. Allocating RAM instead");
   //       ptr=malloc(sz);
   //     }
 
@@ -261,19 +262,19 @@ void init_cJSON()
 #ifndef USECAPTOUCH
 #include "Touch.h"
 #endif
-bool generalConfigLoaded = false;
+
 void DrawSplash()
 {
-  ESP_LOGD(module, "Loading splash screen bitmap.");
+  LOC_LOGD(module, "Loading splash screen bitmap.");
   FreeTouchDeck::ImageWrapper *splash = FreeTouchDeck::GetImage("freetouchdeck_logo.bmp");
   if (splash)
   {
-    ESP_LOGD(module, "splash screen bitmap loaded. Drawing");
+    LOC_LOGD(module, "splash screen bitmap loaded. Drawing");
     splash->Draw(0, 0, false);
   }
   else
   {
-    ESP_LOGW(module, "Unable to draw the splash screen.");
+    LOC_LOGW(module, "Unable to draw the splash screen.");
   }
 }
 void CacheBitmaps()
@@ -289,34 +290,45 @@ void CacheBitmaps()
     {
       int start = FileName.lastIndexOf("/") + 1;
       FileName = FileName.substring(start);
-      ESP_LOGV(module, "Caching bitmap from file %s, with name %s", file.name(), FileName.c_str());
+      LOC_LOGV(module, "Caching bitmap from file %s, with name %s", file.name(), FileName.c_str());
       FreeTouchDeck::ImageWrapper *image = FreeTouchDeck::GetImage(FileName.c_str());
-      ESP_LOGV(module, "Adding menu completed. Getting next file");
+      LOC_LOGV(module, "Adding menu completed. Getting next file");
     }
     file = root.openNextFile();
   }
 }
 void PrintMemInfo()
 {
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
   static size_t prev_free = 0;
   static size_t prev_min_free = 0;
-  if (generalconfig.moreLogs)
-  {
-    ESP_LOGD(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-    ESP_LOGD(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-    prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-    prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
-  }
-#else
-  return;
-#endif
+  if (generalconfig.LogLevel < LogLevels::VERBOSE)
+    return;
+  LOC_LOGV(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+  LOC_LOGV(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+  prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+  prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
 }
 bool RestartConfigMode(FTAction *action)
 {
-  ESP_LOGW(module, "Restarting in configuration mode");
+  LOC_LOGW(module, "Restarting in configuration mode");
   restartReason = SystemMode::CONFIG;
   ESP.restart();
+}
+
+bool SetSleep(FTAction *action)
+{
+  if (generalconfig.sleepenable)
+  {
+    generalconfig.sleepenable = false;
+    LOC_LOGI(module, "Sleep disabled.");
+  }
+  else
+  {
+    generalconfig.sleepenable = true;
+    Interval = generalconfig.sleeptimer * 60000;
+    LOC_LOGI(module, "Sleep Enabled. Timer set to %d", generalconfig.sleeptimer);
+  }
+  HandleSleepConfig();
 }
 
 bool ChangeBrightness(FTAction *action)
@@ -331,6 +343,11 @@ bool ChangeBrightness(FTAction *action)
   }
   ledcWrite(0, ledBrightness);
   return true;
+}
+bool SetBeepMode(FTAction *action)
+{
+  generalconfig.beep = !generalconfig.beep;
+  saveConfig(false);
 }
 const char *enum_to_string(SystemMode mode)
 {
@@ -347,12 +364,12 @@ const char *enum_to_string(SystemMode mode)
 void powerInit()
 {
 #ifdef ARDUINO_TWATCH_BASE
-  ESP_LOGI(module, "Enabling AXP power management chip.");
+  LOC_LOGI(module, "Enabling AXP power management chip.");
   Wire1.begin(21, 22);
   int ret = power->begin(Wire1, AXP202_SLAVE_ADDRESS, false);
   if (ret == AXP_FAIL)
   {
-    ESP_LOGE(module, "AXP Power begin failed");
+    LOC_LOGE(module, "AXP Power begin failed");
   }
   else
   {
@@ -368,7 +385,7 @@ void powerInit()
     power->setChargeControlCur(300);
   }
   power->setPowerOutPut(AXP202_LDO2, AXP202_ON);
-  ESP_LOGI(module, "Setting up Display Back light");
+  LOC_LOGI(module, "Setting up Display Back light");
 #endif
 
   // Setup PWM channel and attach pin 32
@@ -393,11 +410,22 @@ void HandleSleepConfig()
     pinMode(touchInterruptPin, INPUT_PULLUP);
     Interval = generalconfig.sleeptimer * 60000;
     QueueAction(FreeTouchDeck::sleepSetLatchAction);
-    ESP_LOGI(module, "Sleep enabled. Timer = %d minutes", generalconfig.sleeptimer);
+    LOC_LOGI(module, "Sleep enabled. Timer = %d minutes", generalconfig.sleeptimer);
   }
   else
   {
     QueueAction(FreeTouchDeck::sleepClearLatchAction);
+  }
+}
+void HandleBeepConfig()
+{
+  if (generalconfig.beep)
+  {
+    QueueAction(FreeTouchDeck::beepSetLatchAction);
+  }
+  else
+  {
+    QueueAction(FreeTouchDeck::beepClearLatchAction);
   }
 }
 void touchInit()
@@ -410,11 +438,11 @@ void touchInit()
   if (!ts.begin(40))
 #endif
   {
-    ESP_LOGE(module, "Unable to start the capacitive touchscreen.");
+    LOC_LOGE(module, "Unable to start the capacitive touchscreen.");
   }
   else
   {
-    ESP_LOGI(module, "Capacitive touch started");
+    LOC_LOGI(module, "Capacitive touch started");
   }
 #endif
 }
@@ -426,27 +454,16 @@ void displayInit()
     return;
   initialized = true;
   // --------------- Init Display -------------------------
-  ESP_LOGI(module, "Initializing display");
+  LOC_LOGI(module, "Initializing display");
   // Initialise the TFT screen
   tft.init();
   // Set the rotation
-  if (generalConfigLoaded)
-  {
-    tft.setRotation(generalconfig.screenrotation);
-  }
-  else
-  {
-    // if we are initializing the display before
-    // loading the config (for example when displaying )
-    // an error while loading the config, fallback on
-    // the hard coded rotation
-    tft.setRotation(SCREEN_ROTATION);
-  }
+  tft.setRotation(generalconfig.screenrotation);
   // Clear the screen
   tft.fillScreen(TFT_BLACK);
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
-  ESP_LOGI(module, "Screen size is %dx%d", tft.width(), tft.height());
+  LOC_LOGI(module, "Screen size is %dx%d", tft.width(), tft.height());
 }
 
 void LoadSystemConfig()
@@ -454,23 +471,23 @@ void LoadSystemConfig()
   // -------------- Start filesystem ----------------------
   if (!FILESYSTEM.begin())
   {
-    ESP_LOGE(module, "SPIFFS initialisation failed!");
+    LOC_LOGE(module, "SPIFFS initialisation failed!");
     drawErrorMessage(true, module, "Failed to init SPIFFS! Did you upload the data folder?");
   }
-  ESP_LOGI(module, "SPIFFS initialised. Free Space: %d", SPIFFS.totalBytes() - SPIFFS.usedBytes());
+  LOC_LOGI(module, "SPIFFS initialised. Free Space: %d", SPIFFS.totalBytes() - SPIFFS.usedBytes());
 
   // if(psramFound())
-  // ESP_LOGI(module,"Available PSRAM: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
+  // LOC_LOGI(module,"Available PSRAM: %d",heap_caps_get_free_size(MALLOC_CAP_SPIRAM));
 
   //------------------ Load Wifi Config ----------------------------------------------
-  ESP_LOGI(module, "Loading Wifi Config");
-  if (!loadMainConfig())
+  LOC_LOGI(module, "Loading Wifi Config");
+  if (!loadWifiConfig())
   {
-    ESP_LOGW(module, "Failed to load WiFi Credentials!");
+    LOC_LOGW(module, "Failed to load WiFi Credentials!");
   }
   else
   {
-    ESP_LOGI(module, "WiFi Credentials Loaded");
+    LOC_LOGI(module, "WiFi Credentials Loaded");
   }
   // Let's first check if all the files we need exist
   if (!checkfile("/config/general.json"))
@@ -480,21 +497,21 @@ void LoadSystemConfig()
   }
 
   // After checking the config files exist, actually load them
-  if (!loadConfig())
+  if (!loadGeneralConfig())
   {
-    ESP_LOGW(module, "general.json seems to be corrupted. To reset to default type 'reset general'.");
+    drawErrorMessage(false, module, "general.json seems to be corrupted. To reset to default type 'reset general'.");
+    
   }
-  generalConfigLoaded = true;
 }
 void ShowDir()
 {
 
   File root = SPIFFS.open("/");
   File file = root.openNextFile();
-  ESP_LOGI(module, "Name\tSize");
+  LOC_LOGI(module, "Name\tSize");
   while (file)
   {
-    ESP_LOGI(module, "%s\t%d", file.name(), file.size());
+    LOC_LOGI(module, "%s\t%d", file.name(), file.size());
     file = root.openNextFile();
   }
   root.close();
@@ -511,12 +528,12 @@ void PrintScreenMessage(const char *message)
 
 void DumpCJson(cJSON *doc)
 {
-  if (!generalconfig.moreLogs)
+  if (generalconfig.LogLevel < FreeTouchDeck::LogLevels::VERBOSE)
     return;
   char *d = cJSON_Print(doc);
   if (d)
   {
-    ESP_LOGI(module, "%s", d);
+    LOC_LOGD(module, "%s", d);
   }
   FREE_AND_NULL(d);
 }
@@ -528,11 +545,11 @@ void setup()
 
   RESET_REASON resetReason = rtc_get_reset_reason(0);
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-  generalconfig.moreLogs = false;
+  SetGeneralConfigDefaults();
   // Use serial port
   Serial.begin(115200);
   Serial.setDebugOutput(true);
-  ESP_LOGI(module, "Starting system.");
+  LOC_LOGI(module, "Starting system.");
   init_cJSON();
   LoadSystemConfig();
   displayInit();
@@ -540,6 +557,8 @@ void setup()
   touchInit();
   ActionsCallbacks()->PrintInfo = printinfo;
   ActionsCallbacks()->ChangeBrightness = ChangeBrightness;
+  ActionsCallbacks()->SetBeep = SetBeepMode;
+  ActionsCallbacks()->SetSleep = SetSleep;
   ActionsCallbacks()->ConfigMode = RestartConfigMode;
   ActionsCallbacks()->RunLatchAction = RunLatchAction;
   ActionsCallbacks()->SetActiveScreen = RunActiveScreenAction;
@@ -549,8 +568,8 @@ void setup()
   }
 
   // ------------------- Startup actions ------------------
-  ESP_LOGI(module, "Found Reset reason: %d", resetReason);
-  ESP_LOGI(module, "System mode: %s", enum_to_string(restartReason));
+  LOC_LOGI(module, "Found Reset reason: %d", resetReason);
+  LOC_LOGI(module, "System mode: %s", enum_to_string(restartReason));
 
   if ((resetReason == SW_RESET || resetReason == SW_CPU_RESET))
   {
@@ -594,14 +613,14 @@ void setup()
   {
     // Draw a splash screen
     DrawSplash();
-    ESP_LOGD(module, "Displaying version details");
+    LOC_LOGD(module, "Displaying version details");
     tft.setCursor(1, 3);
     tft.setTextFont(2);
     tft.setTextSize(1);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.printf("Loading version %s\n", versionnumber);
-    ESP_LOGI(module, "Loading version %s", versionnumber);
+    LOC_LOGI(module, "Loading version %s", versionnumber);
   }
   // todo: remove hard code!
   generalconfig.beep = false;
@@ -615,31 +634,38 @@ void setup()
   LoadSystemMenus();
   LoadAllMenus();
 
-  ESP_LOGI(module, "All config files loaded");
+  LOC_LOGI(module, "All config files loaded");
 
   //------------------BLE Initialization ------------------------------------------------------------------------
-  ESP_LOGI(module, "Starting BLE Keyboard");
+  LOC_LOGI(module, "Starting BLE Keyboard");
   bleKeyboard.begin();
 
   // ---------------- Printing version numbers -----------------------------------------------
-  ESP_LOGI(module, "BLE Keyboard version: %s", BLE_KEYBOARD_VERSION);
-  ESP_LOGI(module, "ArduinoJson version: %s", ARDUINOJSON_VERSION);
-  ESP_LOGI(module, "TFT_eSPI version: %s", TFT_ESPI_VERSION);
-  ESP_LOGI(module, "SPI Flash frequency: %s", CONFIG_ESPTOOLPY_FLASHFREQ);
+  LOC_LOGI(module, "BLE Keyboard version: %s", BLE_KEYBOARD_VERSION);
+  LOC_LOGI(module, "ArduinoJson version: %s", ARDUINOJSON_VERSION);
+  LOC_LOGI(module, "TFT_eSPI version: %s", TFT_ESPI_VERSION);
+  LOC_LOGI(module, "SPI Flash frequency: %s", CONFIG_ESPTOOLPY_FLASHFREQ);
 
   // ---------------- Start the first keypad -------------
 
   // Draw background
-  SetActiveScreen("home");
+  if(!GetActiveScreen())
+  {
+    // only set active screen to home if no screen is already active
+    // for example don't active home if drawError was called
+    SetActiveScreen("home");
+
+  } 
   PrintMemInfo();
   HandleSleepConfig();
+  HandleBeepConfig();
 #ifdef ACTIONS_IN_TASKS
   xTaskCreate(ScreenHandleTask, "Screen", 1024 * 3, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
   PrintMemInfo();
-  ESP_LOGD(module, "Screen task created");
+  LOC_LOGD(module, "Screen task created");
   xTaskCreate(ActionTask, "Action", 1024 * 4, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
   PrintMemInfo();
-  ESP_LOGD(module, "Action task created");
+  LOC_LOGD(module, "Action task created");
 #endif
 }
 
@@ -657,39 +683,48 @@ void processSerial()
       FILESYSTEM.remove(CALIBRATION_FILE);
       ESP.restart();
     }
-    else if (command == "morelogs")
+    else if (command == "loglevel")
     {
-      generalconfig.moreLogs = !generalconfig.moreLogs;
-      ESP_LOGI(module, "Extra logs are %s", generalconfig.moreLogs ? "ACTIVE" : "INACTIVE");
-      saveConfig(false);
+      String value = Serial.readString();
+      LogLevels lev = static_cast<LogLevels>(value.toInt());
+      if (lev >= LogLevels::NONE && lev <= LogLevels::VERBOSE)
+      {
+        generalconfig.LogLevel = lev;
+        LOC_LOGI(module, "Log level changed to %d", generalconfig.LogLevel);
+        saveConfig(false);
+      }
+      else
+      {
+        LOC_LOGE(module, "Invalid log level %s", value);
+      }
     }
     else if (command == "console")
     {
-      ESP_LOGW(module, "Changing mode to console");
+      LOC_LOGW(module, "Changing mode to console");
       ChangeMode(SystemMode::CONSOLE);
     }
-    else if (command == "config")
+    else if (command == "configmode")
     {
-      ESP_LOGW(module, "Changing mode to config");
+      LOC_LOGW(module, "Changing mode to configuration");
       ChangeMode(SystemMode::CONFIG);
     }
-    else if (command == "dir") 
+    else if (command == "dir")
     {
       ShowDir();
     }
+
     else if (command == "menus")
     {
-
-      ESP_LOGI(module, "Generating menus structure");
+      LOC_LOGI(module, "Generating menus structure");
       char *json = FreeTouchDeck::MenusToJson(true);
       if (json)
       {
-        ESP_LOGI(module, "Menu structure: \n%s", json);
+        LOC_LOGI(module, "Menu structure: \n%s", json);
         FREE_AND_NULL(json);
       }
       else
       {
-        ESP_LOGE(module, "Unable to print menu structure");
+        LOC_LOGE(module, "Unable to print menu structure");
       }
     }
 
@@ -701,39 +736,39 @@ void processSerial()
       {
         generalconfig.screenrotation = rot;
         saveConfig(false);
-        ESP_LOGI(module, "Screen rotation was updated to %d", generalconfig.screenrotation);
+        LOC_LOGI(module, "Screen rotation was updated to %d", generalconfig.screenrotation);
       }
     }
     else if (command == "revx")
     {
       generalconfig.reverse_x_touch = !generalconfig.reverse_x_touch;
-      ESP_LOGI(module, "X axis touch reverse set to %s", generalconfig.reverse_x_touch ? "YES" : "NO");
+      LOC_LOGI(module, "X axis touch reverse set to %s", generalconfig.reverse_x_touch ? "YES" : "NO");
       saveConfig(false);
     }
     else if (command == "rows")
     {
       String value = Serial.readString();
       generalconfig.rowscount = value.toInt();
-      ESP_LOGI(module, "Rows count set to %d", generalconfig.rowscount);
+      LOC_LOGI(module, "Rows count set to %d", generalconfig.rowscount);
       saveConfig(false);
     }
     else if (command == "cols")
     {
       String value = Serial.readString();
       generalconfig.colscount = value.toInt();
-      ESP_LOGI(module, "Rows count set to %d", generalconfig.colscount);
+      LOC_LOGI(module, "Rows count set to %d", generalconfig.colscount);
       saveConfig(false);
     }
     else if (command == "revy")
     {
       generalconfig.reverse_y_touch = !generalconfig.reverse_y_touch;
-      ESP_LOGI(module, "Y axis touch reverse set to %s", generalconfig.reverse_y_touch ? "YES" : "NO");
+      LOC_LOGI(module, "Y axis touch reverse set to %s", generalconfig.reverse_y_touch ? "YES" : "NO");
       saveConfig(false);
     }
     else if (command == "invaxis")
     {
       generalconfig.flip_touch_axis = !generalconfig.flip_touch_axis;
-      ESP_LOGI(module, "Touch axis flip set to %s", generalconfig.flip_touch_axis ? "YES" : "NO");
+      LOC_LOGI(module, "Touch axis flip set to %s", generalconfig.flip_touch_axis ? "YES" : "NO");
       saveConfig(false);
     }
     else if (command == "setssid")
@@ -742,9 +777,9 @@ void processSerial()
       String value = Serial.readString();
       if (saveWifiSSID(value))
       {
-        ESP_LOGI(module, "Saved new SSID: %s\n", value.c_str());
-        loadMainConfig();
-        ESP_LOGI(module, "New configuration loaded");
+        LOC_LOGI(module, "Saved new SSID: %s\n", value.c_str());
+        loadWifiConfig();
+        LOC_LOGI(module, "New configuration loaded");
       }
     }
     else if (command == "setpassword")
@@ -752,9 +787,9 @@ void processSerial()
       String value = Serial.readString();
       if (saveWifiPW(value))
       {
-        ESP_LOGI(module, "Saved new Password: %s\n", value.c_str());
-        loadMainConfig();
-        ESP_LOGI(module, "New configuration loaded");
+        LOC_LOGI(module, "Saved new Password: %s\n", value.c_str());
+        loadWifiConfig();
+        LOC_LOGI(module, "New configuration loaded");
       }
     }
     else if (command == "setwifimode")
@@ -762,31 +797,84 @@ void processSerial()
       String value = Serial.readString();
       if (saveWifiMode(value))
       {
-        ESP_LOGI(module, "Saved new WiFi Mode: %s\n", value.c_str());
-        loadMainConfig();
-        ESP_LOGI(module, "New configuration loaded");
+        LOC_LOGI(module, "Saved new WiFi Mode: %s\n", value.c_str());
+        loadWifiConfig();
+        LOC_LOGI(module, "New configuration loaded");
       }
     }
     else if (command == "restart")
     {
-      ESP_LOGD(module, "Restarting");
+      LOC_LOGD(module, "Restarting");
       ESP.restart();
     }
-
+    else if (command =="convertmenus")
+    {
+      LOC_LOGI(module,"Converting menu structure from old to new format");
+      SaveFullFormat();
+    }
     else if (command == "reset")
     {
       String file = Serial.readString();
       ESP_LOGI(module, "Resetting %s.json now\n", file.c_str());
       resetconfig(file);
     }
-    else if (command == "conf")
+    else if (command == "setconfig")
+    {
+      const char *tempName = "/config/~temp.";
+      fs::File tempfile = SPIFFS.open(tempName, FILE_WRITE);
+      if (tempfile)
+      {
+        int v;
+        bool end = false;
+        bool cancel = false;
+        uint8_t endCount = 0;
+        while (!end && !cancel)
+        {
+          if (Serial.available() > 0)
+          {
+            v = Serial.read();
+            if ((char)v == '~')
+            {
+              endCount++;
+            }
+            else if ((char)v == '\032')
+            {
+              LOC_LOGW(module, "Cancelling");
+              cancel = true;
+            }
+            else
+            {
+              while (endCount > 0)
+              {
+                endCount--;
+                tempfile.write((uint8_t)'~');
+              }
+              tempfile.write((uint8_t)v);
+            }
+            if (endCount >= 3)
+            {
+              end = true;
+            }
+          }
+        }
+        tempfile.close();
+        if (!cancel)
+        {
+          loadConfig(tempName);
+        }
+      }
+    }
+    else if (command == "showconfig")
     {
       saveConfig(true);
     }
     else if (command == "help")
     {
-      ESP_LOGI(module,
-               R"(conf: dumps the configuration details
+      LOC_LOGI(module,
+               R"(
+====================
+Help 
+====================
 cal : Restarts in screen calibration mode (resistive screens only)
 revx : reverse X touch axis
 revy : reverse Y touch axis
@@ -795,13 +883,15 @@ invaxis: Flip the X and Y axis
 setssid YOURSSID: Sets the WiFi SSID access point to connect to
 setpassword YOURPASWORD: Sets the WiFi password 
 setwifimode (WIFI_STA|WIFI_AP)
+convertmenus : converts from older menu formats to new format
 restart : Restarts the system
 reset : reset configuration and reboot 
 menus : dump the menu structure
-conf : dump current configuration
+showconfig  : dump current configuration
+setconfig (config json text) : Upload the configuration file - terminate blank line
 console : change the system mode to console
-config : change the system mode to configuration
-morelogs : increase log details for some activities - warning: this will slow down the system
+configmode : change the system mode to configuration
+loglevel (0-5) : increase log details for some activities - warning: more logs will slow down the system
 dir : show the content of the file system
 )");
     }
@@ -922,7 +1012,7 @@ bool getTouch(uint16_t *t_x, uint16_t *t_y)
 
     if (!prev)
     {
-      ESP_LOGD(module, "Input touch (%dx%d)=>(%dx%d) - Screen is %dx%d", p.x, p.y, *t_x, *t_y, tft.width(), tft.height());
+      LOC_LOGD(module, "Input touch (%dx%d)=>(%dx%d) - Screen is %dx%d", p.x, p.y, *t_x, *t_y, tft.width(), tft.height());
       prev = true;
     }
 
@@ -951,14 +1041,14 @@ void processSleep()
     {
       // The timer has ended and we are going to sleep  .
       tft.fillScreen(TFT_BLACK);
-      ESP_LOGD(module, "Going to sleep.");
+      LOC_LOGD(module, "Going to sleep.");
       HandleAudio(Sounds::GOING_TO_SLEEP);
       //todo better power management for TWATCH
       //       power->setPowerOutPut(AXP202_LDO2, AXP202_OFF);
       esp_err_t err = esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
       if (err != ESP_OK)
       {
-        ESP_LOGE(module, "Unable to set external wakeup pin: %s", esp_err_to_name(err));
+        LOC_LOGE(module, "Unable to set external wakeup pin: %s", esp_err_to_name(err));
       }
       else
       {
@@ -990,7 +1080,7 @@ void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
   {
     if (nextlog <= millis())
     {
-      ESP_LOGD(module, "No active display");
+      LOC_LOGD(module, "No active display");
       // to prevent flooding of the serial log, reduce the rate of this message
       nextlog = millis() + 1000;
     }
@@ -998,7 +1088,7 @@ void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
 }
 void HandleActions()
 {
-  ESP_LOGV(module, "Checking for regular actions");
+  LOC_LOGV(module, "Checking for regular actions");
   FTAction *Action = NULL;
   do
   {
@@ -1026,7 +1116,7 @@ void HandleScreen()
   }
 
   handleDisplay(pressed, t_x, t_y);
-  ESP_LOGV(module, "Checking for screen actions");
+  LOC_LOGV(module, "Checking for screen actions");
   FTAction *Action = PopScreenQueue();
   if (Action)
   {

@@ -40,7 +40,6 @@ namespace FreeTouchDeck
 
     public:
         bool contains(uint16_t x, uint16_t y);
-
         ButtonTypes ButtonType;
         static const char *JsonLabelLogo;
         static const char *JsonLabelLatchedLogo;
@@ -51,11 +50,19 @@ namespace FreeTouchDeck
         static const char *JsonLabelBackground;
         static const char *JsonLabelTextColor;
         static const char *JsonLabelTextSize;
+        static const char *backButtonTemplate;
+        static const char *homeButtonTemplate;
+        bool IsShared = false;
+
         char *Label = NULL;
         std::list<FTAction *> actions;
         FTButton(const char *label, uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor);
         FTButton(const char *label, uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor);
         FTButton(cJSON *button);
+        void Init(cJSON *button);
+        FTButton(const char * tmpl, bool isShared=false);
+        static FTButton BackButton; 
+        static FTButton HomeButton;
         void SetCoordinates(uint16_t width, uint16_t height, uint16_t row, uint16_t col, uint8_t spacing);
         ~FTButton();
         bool Latch(FTAction *action);
@@ -70,9 +77,10 @@ namespace FreeTouchDeck
         void Press();
         void Release();
         cJSON *ToJSON();
+        
     };
     static ButtonTypes &operator++(ButtonTypes &state, int);
-
+    
     ButtonTypes parse_button_types(const char *buttonType);
 
 }

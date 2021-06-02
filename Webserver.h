@@ -226,7 +226,7 @@ void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t in
 {
   if (filename != "menu1.json" && filename != "menu2.json" && filename != "menu3.json" && filename != "menu4.json" && filename != "menu5.json" && filename != "colors.json" && filename != "homescreen.json")
   {
-    ESP_LOGI(module,"JSON has invalid name: %s\n", filename.c_str());
+    LOC_LOGI(module,"JSON has invalid name: %s\n", filename.c_str());
     errorCode = "102";
     errorText = "JSON file has an invalid name. You can only upload JSON files with the following file names:";
     errorText += "<ul><li>menu1.json</li><li>menu2.json</li><li>menu3.json</li><li>menu4.json</li><li>menu5.json</li>";
@@ -236,7 +236,7 @@ void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t in
   }
   if (!index)
   {
-    ESP_LOGI(module,"JSON Upload Start: %s\n", filename.c_str());
+    LOC_LOGI(module,"JSON Upload Start: %s\n", filename.c_str());
     filename = "/config/" + filename; // TODO: Does the config directory need to be hardcoded?
 
     // Open the file on first call and store the file handle in the request object
@@ -249,7 +249,7 @@ void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t in
   }
   if (final)
   {
-    ESP_LOGI(module,"JSON Uploaded: %s\n", filename.c_str());
+    LOC_LOGI(module,"JSON Uploaded: %s\n", filename.c_str());
     // Close the file handle as the upload is now done
     request->_tempFile.close();
     request->send(FILESYSTEM, "/upload.htm");
@@ -274,7 +274,7 @@ void handleAPIUpload(AsyncWebServerRequest *request, String filename, size_t ind
 {
   if (!index)
   {
-    ESP_LOGI(module,"API file Upload Start: %s\n", filename.c_str());
+    LOC_LOGI(module,"API file Upload Start: %s\n", filename.c_str());
     filename = "/uploads/" + filename; // TODO: Does the uploads directory need to be hardcoded?
 
     // Open the file on first call and store the file handle in the request object
@@ -287,7 +287,7 @@ void handleAPIUpload(AsyncWebServerRequest *request, String filename, size_t ind
   }
   if (final)
   {
-    ESP_LOGI(module,"API file Uploaded: %s\n", filename.c_str());
+    LOC_LOGI(module,"API file Uploaded: %s\n", filename.c_str());
     // Close the file handle as the upload is now done
     request->_tempFile.close();
     request->send(FILESYSTEM, "/upload.htm");
@@ -305,7 +305,7 @@ bool spaceLeft()
 {
   float minmem = 100000.00; // Always leave 100 kB free pace on SPIFFS
   float freeMemory = SPIFFS.totalBytes() - SPIFFS.usedBytes();
-  ESP_LOGI(module,"Free memory left: %f bytes\n", freeMemory);
+  LOC_LOGI(module,"Free memory left: %f bytes\n", freeMemory);
   if (freeMemory < minmem)
   {
     return false;
@@ -333,7 +333,7 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
 {
   if (!index)
   {
-    ESP_LOGI(module,"File Upload Start: %s\n", filename.c_str());
+    LOC_LOGI(module,"File Upload Start: %s\n", filename.c_str());
     filename = "/logos/" + filename;
     // Open the file on first call and store the file handle in the request object
     request->_tempFile = SPIFFS.open(filename, "w");
@@ -345,14 +345,14 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
   }
   if (final)
   {
-    ESP_LOGI(module,"File Uploaded: %s\n", filename.c_str());
+    LOC_LOGI(module,"File Uploaded: %s\n", filename.c_str());
     // Close the file handle as the upload is now done
     request->_tempFile.close();
 
     // If there is not enough space left, we have to delete the recently uploaded file
     if (!spaceLeft())
     {
-      ESP_LOGD(module,"Not enough free space left");
+      LOC_LOGD(module,"Not enough free space left");
       errorCode = "103";
       errorText = "There is not enough free space left to upload a logo. Please delete unused logos and try again.";
       request->send(FILESYSTEM, "/error.htm", String(), false, processor);
@@ -361,7 +361,7 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
       String fileToDelete = "/logos/";
       fileToDelete += filename;
       FILESYSTEM.remove(fileToDelete);
-      ESP_LOGD(module,"File removed to keep enough free space");
+      LOC_LOGD(module,"File removed to keep enough free space");
       return;
     }
     else
@@ -497,17 +497,17 @@ void handlerSetup()
         value=  request->getParam("modifier1", true);
         if(value)
         {
-          generalconfig.modifier1 = value->value().toInt();
+          generalconfig.modifier1 = ps_strdup(value->value().c_str());
         }
         value=  request->getParam("modifier2", true);
         if(value)
         {
-          generalconfig.modifier2 = value->value().toInt();
+          generalconfig.modifier2 = ps_strdup(value->value().c_str());
         }
         value=  request->getParam("modifier3", true);
         if(value)
         {
-          generalconfig.modifier3 = value->value().toInt();
+          generalconfig.modifier3 = ps_strdup(value->value().c_str());
         }        
 
         value=  request->getParam("helperdelay", true);
@@ -533,13 +533,13 @@ void handlerSetup()
       {
 
         // --- Saving wifi config
-        ESP_LOGI(module,"Saving Wifi Config");
+        LOC_LOGI(module,"Saving Wifi Config");
 
         FILESYSTEM.remove("/config/wificonfig.json");
         File file = FILESYSTEM.open("/config/wificonfig.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create file");
+          LOC_LOGD(module,"Failed to create file");
           return;
         }
 
@@ -566,7 +566,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
         
@@ -576,13 +576,13 @@ void handlerSetup()
 
         // --- Saving Homescreen
 
-        ESP_LOGI(module,"Saving Homescreen");
+        LOC_LOGI(module,"Saving Homescreen");
 
         FILESYSTEM.remove("/config/homescreen.json");
         File file = FILESYSTEM.open("/config/homescreen.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create file");
+          LOC_LOGD(module,"Failed to create file");
           return;
         }
 
@@ -605,7 +605,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
       }
@@ -614,12 +614,12 @@ void handlerSetup()
 
         // --- Save menu 1
 
-        ESP_LOGI(module,"Saving Menu 1");
+        LOC_LOGI(module,"Saving Menu 1");
         FILESYSTEM.remove("/config/menu1.json");
         File file = FILESYSTEM.open("/config/menu1.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create menu1.json");
+          LOC_LOGD(module,"Failed to create menu1.json");
           return;
         }
 
@@ -650,7 +650,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen1latchlogo0 = request->getParam("screen1latchlogo0", true);
-        ESP_LOGI(module,"%s",screen1latchlogo0->value().c_str());
+        LOC_LOGI(module,"%s",screen1latchlogo0->value().c_str());
         if (strcmp(screen1latchlogo0->value().c_str(), "---") == 0)
         {
           button0["latchlogo"] = "";
@@ -688,15 +688,15 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen1latchlogo1 = request->getParam("screen1latchlogo1", true);
-        ESP_LOGI(module,"%s",screen1latchlogo1->value().c_str());
+        LOC_LOGI(module,"%s",screen1latchlogo1->value().c_str());
         if (strcmp(screen1latchlogo1->value().c_str(), "---") == 0)
         {
-          ESP_LOGI(module,"%s",screen1latchlogo1->value().c_str());
+          LOC_LOGI(module,"%s",screen1latchlogo1->value().c_str());
           button1["latchlogo"] = "";
         }
         else
         {
-          ESP_LOGI(module,"%s",screen1latchlogo1->value().c_str());
+          LOC_LOGI(module,"%s",screen1latchlogo1->value().c_str());
           button1["latchlogo"] = screen1latchlogo1->value().c_str();
         }
 
@@ -728,7 +728,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen1latchlogo2 = request->getParam("screen1latchlogo2", true);
-        ESP_LOGI(module,"%s",screen1latchlogo2->value().c_str());
+        LOC_LOGI(module,"%s",screen1latchlogo2->value().c_str());
         if (strcmp(screen1latchlogo2->value().c_str(), "---") == 0)
         {
           button2["latchlogo"] = "";
@@ -766,7 +766,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen1latchlogo3 = request->getParam("screen1latchlogo3", true);
-        ESP_LOGI(module,"%s",screen1latchlogo3->value().c_str());
+        LOC_LOGI(module,"%s",screen1latchlogo3->value().c_str());
         if (strcmp(screen1latchlogo3->value().c_str(), "---") == 0)
         {
           button3["latchlogo"] = "";
@@ -804,7 +804,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen1latchlogo4 = request->getParam("screen1latchlogo4", true);
-        ESP_LOGI(module,"%s",screen1latchlogo4->value().c_str());
+        LOC_LOGI(module,"%s",screen1latchlogo4->value().c_str());
         if (strcmp(screen1latchlogo4->value().c_str(), "---") == 0)
         {
           button4["latchlogo"] = "";
@@ -832,7 +832,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
       }
@@ -841,12 +841,12 @@ void handlerSetup()
 
         // --- Save menu 2
 
-        ESP_LOGI(module,"Saving Menu 2");
+        LOC_LOGI(module,"Saving Menu 2");
         FILESYSTEM.remove("/config/menu2.json");
         File file = FILESYSTEM.open("/config/menu2.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create menu2.json");
+          LOC_LOGD(module,"Failed to create menu2.json");
           return;
         }
 
@@ -877,7 +877,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen2latchlogo0 = request->getParam("screen2latchlogo0", true);
-        ESP_LOGI(module,"%s",screen2latchlogo0->value().c_str());
+        LOC_LOGI(module,"%s",screen2latchlogo0->value().c_str());
         if (strcmp(screen2latchlogo0->value().c_str(), "---") == 0)
         {
           button0["latchlogo"] = "";
@@ -915,7 +915,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen2latchlogo1 = request->getParam("screen2latchlogo1", true);
-        ESP_LOGI(module,"%s",screen2latchlogo1->value().c_str());
+        LOC_LOGI(module,"%s",screen2latchlogo1->value().c_str());
         if (strcmp(screen2latchlogo1->value().c_str(), "---") == 0)
         {
           button1["latchlogo"] = "";
@@ -953,7 +953,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen2latchlogo2 = request->getParam("screen2latchlogo2", true);
-        ESP_LOGI(module,"%s",screen2latchlogo2->value().c_str());
+        LOC_LOGI(module,"%s",screen2latchlogo2->value().c_str());
         if (strcmp(screen2latchlogo2->value().c_str(), "---") == 0)
         {
           button2["latchlogo"] = "";
@@ -991,7 +991,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen2latchlogo3 = request->getParam("screen2latchlogo3", true);
-        ESP_LOGI(module,"%s",screen2latchlogo3->value().c_str());
+        LOC_LOGI(module,"%s",screen2latchlogo3->value().c_str());
         if (strcmp(screen2latchlogo3->value().c_str(), "---") == 0)
         {
           button3["latchlogo"] = "";
@@ -1029,7 +1029,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen2latchlogo4 = request->getParam("screen2latchlogo4", true);
-        ESP_LOGI(module,"%s",screen2latchlogo4->value().c_str());
+        LOC_LOGI(module,"%s",screen2latchlogo4->value().c_str());
         if (strcmp(screen2latchlogo4->value().c_str(), "---") == 0)
         {
           button4["latchlogo"] = "";
@@ -1057,7 +1057,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
       }
@@ -1066,12 +1066,12 @@ void handlerSetup()
 
         // --- Save menu 3
 
-        ESP_LOGI(module,"Saving Menu 3");
+        LOC_LOGI(module,"Saving Menu 3");
         FILESYSTEM.remove("/config/menu3.json");
         File file = FILESYSTEM.open("/config/menu3.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create menu3.json");
+          LOC_LOGD(module,"Failed to create menu3.json");
           return;
         }
 
@@ -1102,7 +1102,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen3latchlogo0 = request->getParam("screen3latchlogo0", true);
-        ESP_LOGI(module,"%s",screen3latchlogo0->value().c_str());
+        LOC_LOGI(module,"%s",screen3latchlogo0->value().c_str());
         if (strcmp(screen3latchlogo0->value().c_str(), "---") == 0)
         {
           button0["latchlogo"] = "";
@@ -1140,7 +1140,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen3latchlogo1 = request->getParam("screen3latchlogo1", true);
-        ESP_LOGI(module,"%s",screen3latchlogo1->value().c_str());
+        LOC_LOGI(module,"%s",screen3latchlogo1->value().c_str());
         if (strcmp(screen3latchlogo1->value().c_str(), "---") == 0)
         {
           button1["latchlogo"] = "";
@@ -1178,7 +1178,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen3latchlogo2 = request->getParam("screen3latchlogo2", true);
-        ESP_LOGI(module,"%s",screen3latchlogo2->value().c_str());
+        LOC_LOGI(module,"%s",screen3latchlogo2->value().c_str());
         if (strcmp(screen3latchlogo2->value().c_str(), "---") == 0)
         {
           button2["latchlogo"] = "";
@@ -1216,7 +1216,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen3latchlogo3 = request->getParam("screen3latchlogo3", true);
-        ESP_LOGI(module,"%s",screen3latchlogo3->value().c_str());
+        LOC_LOGI(module,"%s",screen3latchlogo3->value().c_str());
         if (strcmp(screen3latchlogo3->value().c_str(), "---") == 0)
         {
           button3["latchlogo"] = "";
@@ -1254,7 +1254,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen3latchlogo4 = request->getParam("screen3latchlogo4", true);
-        ESP_LOGI(module,"%s",screen3latchlogo4->value().c_str());
+        LOC_LOGI(module,"%s",screen3latchlogo4->value().c_str());
         if (strcmp(screen3latchlogo4->value().c_str(), "---") == 0)
         {
           button4["latchlogo"] = "";
@@ -1282,7 +1282,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
       }
@@ -1291,12 +1291,12 @@ void handlerSetup()
 
         // --- Save menu 4
 
-        ESP_LOGI(module,"Saving Menu 4");
+        LOC_LOGI(module,"Saving Menu 4");
         FILESYSTEM.remove("/config/menu4.json");
         File file = FILESYSTEM.open("/config/menu4.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create menu3.json");
+          LOC_LOGD(module,"Failed to create menu3.json");
           return;
         }
 
@@ -1327,7 +1327,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen4latchlogo0 = request->getParam("screen4latchlogo0", true);
-        ESP_LOGI(module,"%s",screen4latchlogo0->value().c_str());
+        LOC_LOGI(module,"%s",screen4latchlogo0->value().c_str());
         if (strcmp(screen4latchlogo0->value().c_str(), "---") == 0)
         {
           button0["latchlogo"] = "";
@@ -1365,7 +1365,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen4latchlogo1 = request->getParam("screen4latchlogo1", true);
-        ESP_LOGI(module,"%s",screen4latchlogo1->value().c_str());
+        LOC_LOGI(module,"%s",screen4latchlogo1->value().c_str());
         if (strcmp(screen4latchlogo1->value().c_str(), "---") == 0)
         {
           button1["latchlogo"] = "";
@@ -1403,7 +1403,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen4latchlogo2 = request->getParam("screen4latchlogo2", true);
-        ESP_LOGI(module,"%s",screen4latchlogo2->value().c_str());
+        LOC_LOGI(module,"%s",screen4latchlogo2->value().c_str());
         if (strcmp(screen4latchlogo2->value().c_str(), "---") == 0)
         {
           button2["latchlogo"] = "";
@@ -1441,7 +1441,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen4latchlogo3 = request->getParam("screen4latchlogo3", true);
-        ESP_LOGI(module,"%s",screen4latchlogo3->value().c_str());
+        LOC_LOGI(module,"%s",screen4latchlogo3->value().c_str());
         if (strcmp(screen4latchlogo3->value().c_str(), "---") == 0)
         {
           button3["latchlogo"] = "";
@@ -1479,7 +1479,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen4latchlogo4 = request->getParam("screen4latchlogo4", true);
-        ESP_LOGI(module,"%s",screen4latchlogo4->value().c_str());
+        LOC_LOGI(module,"%s",screen4latchlogo4->value().c_str());
         if (strcmp(screen4latchlogo4->value().c_str(), "---") == 0)
         {
           button4["latchlogo"] = "";
@@ -1507,7 +1507,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
       }
@@ -1516,12 +1516,12 @@ void handlerSetup()
 
         // --- Save menu 5
 
-        ESP_LOGI(module,"Saving Menu 5");
+        LOC_LOGI(module,"Saving Menu 5");
         FILESYSTEM.remove("/config/menu5.json");
         File file = FILESYSTEM.open("/config/menu5.json", "w");
         if (!file)
         {
-          ESP_LOGD(module,"Failed to create menu5.json");
+          LOC_LOGD(module,"Failed to create menu5.json");
           return;
         }
 
@@ -1552,7 +1552,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen5latchlogo0 = request->getParam("screen5latchlogo0", true);
-        ESP_LOGI(module,"%s",screen5latchlogo0->value().c_str());
+        LOC_LOGI(module,"%s",screen5latchlogo0->value().c_str());
         if (strcmp(screen5latchlogo0->value().c_str(), "---") == 0)
         {
           button0["latchlogo"] = "";
@@ -1590,7 +1590,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen5latchlogo1 = request->getParam("screen5latchlogo1", true);
-        ESP_LOGI(module,"%s",screen5latchlogo1->value().c_str());
+        LOC_LOGI(module,"%s",screen5latchlogo1->value().c_str());
         if (strcmp(screen5latchlogo1->value().c_str(), "---") == 0)
         {
           button1["latchlogo"] = "";
@@ -1628,7 +1628,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen5latchlogo2 = request->getParam("screen5latchlogo2", true);
-        ESP_LOGI(module,"%s",screen5latchlogo2->value().c_str());
+        LOC_LOGI(module,"%s",screen5latchlogo2->value().c_str());
         if (strcmp(screen5latchlogo2->value().c_str(), "---") == 0)
         {
           button2["latchlogo"] = "";
@@ -1666,7 +1666,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen5latchlogo3 = request->getParam("screen5latchlogo3", true);
-        ESP_LOGI(module,"%s",screen5latchlogo3->value().c_str());
+        LOC_LOGI(module,"%s",screen5latchlogo3->value().c_str());
         if (strcmp(screen5latchlogo3->value().c_str(), "---") == 0)
         {
           button3["latchlogo"] = "";
@@ -1704,7 +1704,7 @@ void handlerSetup()
         }
 
         AsyncWebParameter *screen5latchlogo4 = request->getParam("screen5latchlogo4", true);
-        ESP_LOGI(module,"%s",screen5latchlogo4->value().c_str());
+        LOC_LOGI(module,"%s",screen5latchlogo4->value().c_str());
         if (strcmp(screen5latchlogo4->value().c_str(), "---") == 0)
         {
           button4["latchlogo"] = "";
@@ -1732,7 +1732,7 @@ void handlerSetup()
 
         if (serializeJsonPretty(doc, file) == 0)
         {
-          ESP_LOGD(module,"Failed to write to file");
+          LOC_LOGD(module,"Failed to write to file");
         }
         file.close();
       }
@@ -1856,7 +1856,7 @@ void handlerSetup()
     // First send some text to the browser otherwise an ugly browser error shows up
     request->send(200, "text/plain", "FreeTouchDeck is restarting...");
     // Then restart the ESP
-    ESP_LOGD(module,"Restarting");
+    LOC_LOGD(module,"Restarting");
     ESP.restart();
   });
 
@@ -1877,7 +1877,7 @@ void handlerSetup()
     for (i = 0; i < params; i++)
     {
       AsyncWebParameter *p = request->getParam(i);
-      ESP_LOGI(module,"Deleting file: %s\n", p->value().c_str());
+      LOC_LOGI(module,"Deleting file: %s\n", p->value().c_str());
       String filename = "/logos/";
       filename += p->value().c_str();
       if (SPIFFS.exists(filename))
@@ -1907,19 +1907,19 @@ void handlerSetup()
   webserver.on("/download", HTTP_GET, [](AsyncWebServerRequest *request) {
     AsyncWebParameter *p = request->getParam("file");
     String filerequest = p->value().c_str();
-    ESP_LOGI(module,"Requested file: %s\n", filerequest.c_str());
+    LOC_LOGI(module,"Requested file: %s\n", filerequest.c_str());
 
     String downloadfile = "/config/" + filerequest;
-    ESP_LOGI(module,"Full path: %s\n", downloadfile.c_str());
+    LOC_LOGI(module,"Full path: %s\n", downloadfile.c_str());
 
     if (FILESYSTEM.exists(downloadfile))
     {
-      ESP_LOGI(module,"Download file %s\n", downloadfile.c_str());
+      LOC_LOGI(module,"Download file %s\n", downloadfile.c_str());
       request->send(FILESYSTEM, downloadfile, String(), true);
     }
     else
     {
-      ESP_LOGI(module,"Download file %s doesn't exits!\n", downloadfile.c_str());
+      LOC_LOGI(module,"Download file %s doesn't exits!\n", downloadfile.c_str());
     }
   });
 

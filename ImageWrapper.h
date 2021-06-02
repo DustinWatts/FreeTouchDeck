@@ -26,7 +26,7 @@ namespace FreeTouchDeck
         {
             void *p = malloc_fn(sz);
             if (!p)
-                ESP_LOGE("ImageWrapper", "operator new %d returned null pointer! ", sz);
+                LOC_LOGE("ImageWrapper", "operator new %d returned null pointer! ", sz);
             return p;
         }
 

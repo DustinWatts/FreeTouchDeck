@@ -60,7 +60,9 @@ namespace FreeTouchDeck
             ENUM_TO_STRING_HELPER(LocalActionTypes, ENTER_CONFIG);
             ENUM_TO_STRING_HELPER(LocalActionTypes, BRIGHTNESS_DOWN);
             ENUM_TO_STRING_HELPER(LocalActionTypes, BRIGHTNESS_UP);
+            ENUM_TO_STRING_HELPER(LocalActionTypes, BEEP);
             ENUM_TO_STRING_HELPER(LocalActionTypes, SLEEP);
+            ENUM_TO_STRING_HELPER(LocalActionTypes, REBOOT);            
             ENUM_TO_STRING_HELPER(LocalActionTypes, INFO);
         default:
             return unknown;
@@ -84,7 +86,7 @@ namespace FreeTouchDeck
         {ActionTypes::FUNCTIONKEYS, {KEY_TO_MAP(F1), KEY_TO_MAP(F2), KEY_TO_MAP(F3), KEY_TO_MAP(F4), KEY_TO_MAP(F5), KEY_TO_MAP(F6), KEY_TO_MAP(F7), KEY_TO_MAP(F8), KEY_TO_MAP(F9), KEY_TO_MAP(F10), KEY_TO_MAP(F11), KEY_TO_MAP(F12), KEY_TO_MAP(F13), KEY_TO_MAP(F14), KEY_TO_MAP(F15), KEY_TO_MAP(F16), KEY_TO_MAP(F17), KEY_TO_MAP(F18), KEY_TO_MAP(F19), KEY_TO_MAP(F20), KEY_TO_MAP(F21), KEY_TO_MAP(F22), KEY_TO_MAP(F23), KEY_TO_MAP(F24)}},
         {ActionTypes::ARROWS_AND_TAB, {KEY_TO_MAP(UP_ARROW), KEY_TO_MAP(DOWN_ARROW), KEY_TO_MAP(LEFT_ARROW), KEY_TO_MAP(RIGHT_ARROW), KEY_TO_MAP(BACKSPACE), KEY_TO_MAP(TAB), KEY_TO_MAP(RETURN), KEY_TO_MAP(PAGE_UP), KEY_TO_MAP(PAGE_DOWN), KEY_TO_MAP(DELETE)}},
         {ActionTypes::OPTIONKEYS, {KEY_TO_MAP(LEFT_CTRL), KEY_TO_MAP(LEFT_SHIFT), KEY_TO_MAP(LEFT_ALT), KEY_TO_MAP(LEFT_GUI), KEY_TO_MAP(RIGHT_CTRL), KEY_TO_MAP(RIGHT_SHIFT), KEY_TO_MAP(RIGHT_ALT), KEY_TO_MAP(RIGHT_GUI)}},
-        {ActionTypes::COMBOS, {{"LCTRL+LSHIFT", {KEY_LEFT_CTRL, KEY_LEFT_SHIFT}}, {"LALT+LSHIFT", {KEY_LEFT_ALT, KEY_LEFT_SHIFT}}, {"LGUI+LSHIFT", {KEY_LEFT_GUI, KEY_LEFT_SHIFT}}, {"LCTRL+LGUI", {KEY_LEFT_CTRL, KEY_LEFT_GUI}}, {"LALT+LGUI", {KEY_LEFT_ALT, KEY_LEFT_GUI}}, {"LCTRL+LALT", {KEY_LEFT_CTRL, KEY_LEFT_ALT}}, {"LCTRL+LALT+LGUI", {KEY_LEFT_CTRL, KEY_LEFT_ALT, KEY_LEFT_GUI}}, {"RCTL+RSHIFT", {KEY_RIGHT_CTRL, KEY_RIGHT_SHIFT}}, {"RALT+RSHIFT", {KEY_RIGHT_ALT, KEY_RIGHT_SHIFT}}, {"RGUI+RSHIFT", {KEY_RIGHT_GUI, KEY_RIGHT_SHIFT}}, {"RCTL+RGUI", {KEY_RIGHT_CTRL, KEY_RIGHT_GUI}}, {"RALT+RGUI", {KEY_RIGHT_ALT, KEY_RIGHT_GUI}}, {"RCTL+RALT", {KEY_RIGHT_CTRL, KEY_RIGHT_ALT}}, {"RCTL+RALT+RGUI", {KEY_RIGHT_CTRL, KEY_RIGHT_ALT, KEY_RIGHT_GUI}}}}};
+        {ActionTypes::COMBOS, {{"LEFT_CTRL+LEFT_SHIFT", {KEY_LEFT_CTRL, KEY_LEFT_SHIFT}}, {"LALT+LSHIFT", {KEY_LEFT_ALT, KEY_LEFT_SHIFT}}, {"LGUI+LSHIFT", {KEY_LEFT_GUI, KEY_LEFT_SHIFT}}, {"LCTRL+LGUI", {KEY_LEFT_CTRL, KEY_LEFT_GUI}}, {"LALT+LGUI", {KEY_LEFT_ALT, KEY_LEFT_GUI}}, {"LCTRL+LALT", {KEY_LEFT_CTRL, KEY_LEFT_ALT}}, {"LCTRL+LALT+LGUI", {KEY_LEFT_CTRL, KEY_LEFT_ALT, KEY_LEFT_GUI}}, {"RCTL+RSHIFT", {KEY_RIGHT_CTRL, KEY_RIGHT_SHIFT}}, {"RALT+RSHIFT", {KEY_RIGHT_ALT, KEY_RIGHT_SHIFT}}, {"RGUI+RSHIFT", {KEY_RIGHT_GUI, KEY_RIGHT_SHIFT}}, {"RCTL+RGUI", {KEY_RIGHT_CTRL, KEY_RIGHT_GUI}}, {"RALT+RGUI", {KEY_RIGHT_ALT, KEY_RIGHT_GUI}}, {"RCTL+RALT", {KEY_RIGHT_CTRL, KEY_RIGHT_ALT}}, {"RCTL+RALT+RGUI", {KEY_RIGHT_CTRL, KEY_RIGHT_ALT, KEY_RIGHT_GUI}}}}};
 
     FTAction::~FTAction()
     {
@@ -105,7 +107,7 @@ namespace FreeTouchDeck
         uint8_t curPos = 0;
         for (KeyMap_t::iterator it = m.begin(); it != m.end(); ++it)
         {
-            ESP_LOGV(module, "Looking for element #%d.  Current element #%d: %s", index, curPos, it->first);
+            LOC_LOGV(module, "Looking for element #%d.  Current element #%d: %s", index, curPos, it->first);
             // numbered elements start at index 1
             if (++curPos == index)
             {
@@ -125,7 +127,7 @@ namespace FreeTouchDeck
         {
             // Parsing numeric local action type, which starts
             // at offset zero.  Push by one
-            ESP_LOGD(module, "Getting entry from number %s", index);
+            LOC_LOGD(module, "Getting entry from number %s", index);
             uint8_t val = atol(index);
             if (map.size() > val)
             {
@@ -141,11 +143,11 @@ namespace FreeTouchDeck
                     success = true;
                 }
 
-                ESP_LOGD(module, "Option key name is %s", *value);
+                LOC_LOGD(module, "Option key name is %s", *value);
             }
             else
             {
-                ESP_LOGE(module, "Number %d, from string %s does not match an option key", val, *value);
+                LOC_LOGE(module, "Number %d, from string %s does not match an option key", val, *value);
             }
         }
         return success;
@@ -162,12 +164,7 @@ namespace FreeTouchDeck
         {
             LocalResult++; // Start after NONE
             resultStr = enum_to_string(LocalResult);
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
-            if (generalconfig.moreLogs)
-            {
-                ESP_LOGI(module, "%s?=%s", resultStr, value);
-            }
-#endif
+            LOC_LOGV(module, "%s?=%s", resultStr, value);
 
         } while (strcmp(value, resultStr) != 0 && LocalResult != ActionTypes::NONE);
         if (strcmp(value, resultStr) == 0)
@@ -188,12 +185,7 @@ namespace FreeTouchDeck
         {
             LocalResult++; // Start after NONE
             resultStr = enum_to_string(LocalResult);
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
-            if (generalconfig.moreLogs)
-            {
-                ESP_LOGI(module, "%s?=%s", resultStr, value);
-            }
-#endif
+            LOC_LOGV(module, "%s?=%s", resultStr, value);
 
         } while (strcmp(value, resultStr) != 0 && LocalResult != LocalActionTypes::NONE);
         if (strcmp(value, resultStr) == 0)
@@ -225,7 +217,7 @@ namespace FreeTouchDeck
             }
             else
             {
-                ESP_LOGE(module, "Key %s was not found for type %s", keyname, enum_to_string(actionType));
+                LOC_LOGE(module, "Key %s was not found for type %s", keyname, enum_to_string(actionType));
             }
         }
         return success;
@@ -256,12 +248,12 @@ namespace FreeTouchDeck
                 if (strcmp(km.first, token) == 0)
                 {
                     *values = km.second;
-                    ESP_LOGD(module, "Found free form token: %s", token);
+                    LOC_LOGD(module, "Found free form token: %s", token);
                     return true;
                 }
             }
         }
-        ESP_LOGE(module, "Free form token %s not found", token);
+        LOC_LOGE(module, "Free form token %s not found", token);
         return false;
     }
     bool FTAction::ParseFreeText(const char *text, KeySequences_t *keySequences)
@@ -273,7 +265,7 @@ namespace FreeTouchDeck
         ActionTypes type;
         if (p == '\0')
             return false;
-        ESP_LOGD(module, "Parsing free form text %s", text);
+        LOC_LOGD(module, "Parsing free form text %s", text);
         do
         {
             if (*p == '{' || *p == '\0')
@@ -282,7 +274,7 @@ namespace FreeTouchDeck
                 {
                     KeySequence_t sequence = {.Type = ActionTypes::LETTERS, .Values = values};
                     //std::string str(values.begin(), values.end());
-                    ESP_LOGD(module, "Sequence found with len %d: %s", values.size(), values); //, str.c_str());
+                    LOC_LOGD(module, "Sequence found with len %d: %s", values.size(), values); //, str.c_str());
                     values.clear();
                 }
 
@@ -293,7 +285,7 @@ namespace FreeTouchDeck
                 memset(token, 0x00, sizeof(token));
                 size_t len = min((size_t)(p - tokenStart - 1), (size_t)(sizeof(token) - 1));
                 strncpy(token, tokenStart + 1, len);
-                ESP_LOGD(module, "Found token %s", token);
+                LOC_LOGD(module, "Found token %s", token);
                 if (ParseToken(token, &values, &type))
                 {
                     KeySequence_t sequence = {.Type = type, .Values = values};
@@ -350,6 +342,20 @@ namespace FreeTouchDeck
         strncpy(button, pch, buttonSize);
         return true;
     }
+    void FTAction::ParseModifierKey(char *modifier)
+    {
+        KeyValue_t KeyValue;
+        KeySequence_t Sequence;
+        if (ISNULLSTRING(modifier))
+            return;
+        if (parse(modifier, ActionTypes::OPTIONKEYS, &KeyValue))
+        {
+            Sequence.Type = ActionTypes::FUNCTIONKEYS;
+            Sequence.Values = KeyValue;
+            KeySequences.push_back(Sequence);
+            NeedsRelease = true;
+        }
+    }
     bool FTAction::ParseBTSequence()
     {
         KeyValue_t KeyValue;
@@ -359,12 +365,12 @@ namespace FreeTouchDeck
         NeedsRelease = false;
         if (ISNULLSTRING(symbol))
         {
-            ESP_LOGE(module, "No symbol provided");
+            LOC_LOGE(module, "No symbol provided");
             return false;
         }
         if (!IsBTSequence())
             return false;
-        ESP_LOGD(module, "Parsing value  %s", symbol);
+        LOC_LOGD(module, "Parsing value  %s", symbol);
         Sequence.Type = Type;
         switch (Type)
         {
@@ -378,7 +384,7 @@ namespace FreeTouchDeck
             }
             else
             {
-                ESP_LOGE(module, "Invalid arrows and tab key %s", symbol);
+                LOC_LOGE(module, "Invalid arrows and tab key %s", symbol);
             }
             NeedsRelease = true;
             break;
@@ -392,7 +398,7 @@ namespace FreeTouchDeck
             }
             else
             {
-                ESP_LOGE(module, "Invalid media key %s", symbol);
+                LOC_LOGE(module, "Invalid media key %s", symbol);
             }
             break;
         case ActionTypes::LETTERS:
@@ -415,31 +421,9 @@ namespace FreeTouchDeck
             break;
         case ActionTypes::HELPERS:
             // todo:  parse modifiers too!
-
-            modVal[0] = generalconfig.modifier1;
-            if (generalconfig.modifier1 > 0 && parse(modVal, ActionTypes::OPTIONKEYS, &KeyValue))
-            {
-                Sequence.Type = ActionTypes::FUNCTIONKEYS;
-                Sequence.Values = KeyValue;
-                KeySequences.push_back(Sequence);
-                NeedsRelease = true;
-            }
-            modVal[0] = generalconfig.modifier2;
-            if (generalconfig.modifier2 > 0 && parse(modVal, ActionTypes::OPTIONKEYS, &KeyValue))
-            {
-                Sequence.Type = ActionTypes::FUNCTIONKEYS;
-                Sequence.Values = KeyValue;
-                KeySequences.push_back(Sequence);
-                NeedsRelease = true;
-            }
-            modVal[0] = generalconfig.modifier3;
-            if (generalconfig.modifier3 > 0 && parse(modVal, ActionTypes::OPTIONKEYS, &KeyValue))
-            {
-                Sequence.Type = ActionTypes::FUNCTIONKEYS;
-                Sequence.Values = KeyValue;
-                KeySequences.push_back(Sequence);
-                NeedsRelease = true;
-            }
+            ParseModifierKey(generalconfig.modifier1);
+            ParseModifierKey(generalconfig.modifier2);
+            ParseModifierKey(generalconfig.modifier3);
             if (parse(symbol, Type, &KeyValue, &foundKey))
             {
                 Sequence.Type = Type;
@@ -457,7 +441,7 @@ namespace FreeTouchDeck
         }
     }
 
-    void FTAction::SetValue(char *jsonValue)
+    void FTAction::SetValue(const char *jsonValue)
     {
         symbol = ps_strdup(jsonValue);
 
@@ -468,11 +452,11 @@ namespace FreeTouchDeck
 
             if (localType == LocalActionTypes::NONE)
             {
-                ESP_LOGE(module, "Unexpected action type none while parsing vaue for local action type");
+                LOC_LOGE(module, "Unexpected action type none while parsing vaue for local action type");
             }
             else
             {
-                ESP_LOGD(module, "Local action type is %s", enum_to_string(localType));
+                LOC_LOGD(module, "Local action type is %s", enum_to_string(localType));
                 LocalActionType = localType;
             }
         }
@@ -480,17 +464,17 @@ namespace FreeTouchDeck
         {
             if (!ParseBTSequence())
             {
-                ESP_LOGE(module, "Error parsing BT key sequences");
+                LOC_LOGE(module, "Error parsing BT key sequences");
             }
         }
         else if (IsString())
         {
-            ESP_LOGD(module, "Found value %s", symbol);
+            LOC_LOGD(module, "Found value %s", symbol);
         }
         else
         {
             FREE_AND_NULL(symbol);
-            ESP_LOGE(module, "No value found for action type %s", enum_to_string(Type));
+            LOC_LOGE(module, "No value found for action type %s", enum_to_string(Type));
         }
     }
 
@@ -524,10 +508,10 @@ namespace FreeTouchDeck
         else
         {
             //   SetValue(jsonValue->valueint);
-            ESP_LOGE(module(, "Setting numeric value not implemented"));
+            LOC_LOGE(module(, "Setting numeric value not implemented"));
         }
     }
-    FTAction::FTAction(ActionTypes actionParm, char *jsonString)
+    FTAction::FTAction(ActionTypes actionParm, const char *jsonString)
     {
         Type = actionParm;
         SetValue(jsonString);
@@ -537,7 +521,7 @@ namespace FreeTouchDeck
         Menu *menu = NULL;
         MediaKeyReport MediaKey;
         KeyValue_t KeyValue;
-        ESP_LOGD(module, "Executing Action: %s", toString());
+        LOC_LOGD(module, "Executing Action: %s", toString());
 
         switch (Type)
         {
@@ -573,6 +557,7 @@ namespace FreeTouchDeck
                     }
                 }
             }
+
             break;
             break;
         case ActionTypes::MENU:
@@ -582,6 +567,9 @@ namespace FreeTouchDeck
         case ActionTypes::CLEARLATCH:
         case ActionTypes::TOGGLELATCH:
             EXECUTE_IF_EXISTS(callbacks.RunLatchAction, this);
+            break;
+        case ActionTypes::RELEASEALL:
+            bleKeyboard.releaseAll();
             break;
         case ActionTypes::LOCAL:
 
@@ -597,18 +585,14 @@ namespace FreeTouchDeck
             case LocalActionTypes::BRIGHTNESS_UP:
                 EXECUTE_IF_EXISTS(callbacks.ChangeBrightness, this);
                 break;
+            case LocalActionTypes::BEEP:
+                EXECUTE_IF_EXISTS(callbacks.SetBeep, this);
+                break;
             case LocalActionTypes::SLEEP:
-                if (generalconfig.sleepenable)
-                {
-                    generalconfig.sleepenable = false;
-                    ESP_LOGI(module, "Sleep disabled.");
-                }
-                else
-                {
-                    generalconfig.sleepenable = true;
-                    Interval = generalconfig.sleeptimer * 60000;
-                    ESP_LOGI(module, "Sleep Enabled. Timer set to %d", generalconfig.sleeptimer);
-                }
+                EXECUTE_IF_EXISTS(callbacks.SetSleep, this);
+                break;
+            case LocalActionTypes::REBOOT:
+                ESP.restart();
                 break;
             case LocalActionTypes::INFO:
                 EXECUTE_IF_EXISTS(callbacks.PrintInfo, NULL);
@@ -688,16 +672,16 @@ namespace FreeTouchDeck
         {
             if (!ScreenQueue.empty())
             {
-                ESP_LOGD(module, "Screen Action Queue Length : %d", ScreenQueue.size());
+                LOC_LOGD(module, "Screen Action Queue Length : %d", ScreenQueue.size());
                 Action = ScreenQueue.front();
                 ScreenQueue.pop();
-                ESP_LOGD(module, "Screen Action Queue Length : %d", ScreenQueue.size());
+                LOC_LOGD(module, "Screen Action Queue Length : %d", ScreenQueue.size());
             }
             QueueUnlock();
         }
         else
         {
-            ESP_LOGE(module, "Unable to screen lock Action queue");
+            LOC_LOGE(module, "Unable to screen lock Action queue");
         }
         return Action;
     }
@@ -709,54 +693,54 @@ namespace FreeTouchDeck
         {
             if (!Queue.empty())
             {
-                ESP_LOGD(module, "Action Queue Length : %d", Queue.size());
+                LOC_LOGD(module, "Action Queue Length : %d", Queue.size());
                 Action = Queue.front();
                 Queue.pop();
-                ESP_LOGD(module, "Action Queue Length : %d", Queue.size());
+                LOC_LOGD(module, "Action Queue Length : %d", Queue.size());
             }
             QueueUnlock();
         }
         else
         {
-            ESP_LOGE(module, "Unable to lock Action queue");
+            LOC_LOGE(module, "Unable to lock Action queue");
         }
         return Action;
     }
     bool QueueLock(TickType_t xTicksToWait)
     {
-        ESP_LOGV(module, "Locking Action Queue object");
+        LOC_LOGV(module, "Locking Action Queue object");
         if (xSemaphoreTake(xQueueSemaphore, xTicksToWait) == pdTRUE)
         {
-            ESP_LOGV(module, "Action Queue object  locked!");
+            LOC_LOGV(module, "Action Queue object  locked!");
             return true;
         }
         else
         {
-            ESP_LOGE(module, "Unable to lock the Action queue object");
+            LOC_LOGE(module, "Unable to lock the Action queue object");
             return false;
         }
     }
 
     void QueueUnlock()
     {
-        ESP_LOGV(module, "Unlocking the Action queue object");
+        LOC_LOGV(module, "Unlocking the Action queue object");
         xSemaphoreGive(xQueueSemaphore);
     }
     bool QueueAction(FTAction *action)
     {
         if (!QueueLock(100 / portTICK_PERIOD_MS))
         {
-            ESP_LOGE(module, "Unable to queue new action ");
+            LOC_LOGE(module, "Unable to queue new action ");
             return false;
         }
         if (action->IsScreen())
         {
-            ESP_LOGD(module, "Pushing action %s to screen queue", action->toString());
+            LOC_LOGD(module, "Pushing action %s to screen queue", action->toString());
             ScreenQueue.push(action);
         }
         else
         {
-            ESP_LOGD(module, "Pushing action %s to regular queue", action->toString());
+            LOC_LOGD(module, "Pushing action %s to regular queue", action->toString());
             Queue.push(action);
         }
 
@@ -771,10 +755,10 @@ namespace FreeTouchDeck
     {
         char *value = NULL;
         DumpCJson(jsonActionType);
-        ESP_LOGD(module, "Instantiating new Action from JSON");
+        LOC_LOGD(module, "Instantiating new Action from JSON");
         GetValueOrDefault(jsonActionType, FTAction::JsonLabelType, &value, "NONE");
         parse(value, &Type);
-        ESP_LOGD(module, "Action type is %s ", enum_to_string(Type));
+        LOC_LOGD(module, "Action type is %s ", enum_to_string(Type));
         FREE_AND_NULL(value);
         if (Type == ActionTypes::NONE)
         {
@@ -784,7 +768,7 @@ namespace FreeTouchDeck
         {
             GetValueOrDefault(jsonActionType, FTAction::JsonLabelLocalActionType, &value, "NONE");
             parse(value, &LocalActionType);
-            ESP_LOGD(module, "Local action type %s ", enum_to_string(LocalActionType));
+            LOC_LOGD(module, "Local action type %s ", enum_to_string(LocalActionType));
             FREE_AND_NULL(value);
         }
         else
@@ -792,14 +776,14 @@ namespace FreeTouchDeck
             LocalActionType = LocalActionTypes::NONE;
             if (IsString())
             {
-                ESP_LOGD(module, "Parsing value from symbol");
+                LOC_LOGD(module, "Parsing value from symbol");
                 GetValueOrDefault(jsonActionType, FTAction::JsonLabelSymbol, &symbol, "");
             }
             else
             {
-                ESP_LOGD(module, "Parsing value from value");
+                LOC_LOGD(module, "Parsing value from value");
                 GetValueOrDefault(jsonActionType, FTAction::JsonLabelValue, &value, 0);
-                ESP_LOGD(module, "Value %d ", value);
+                LOC_LOGD(module, "Value %d ", value);
             }
         }
     }
@@ -813,43 +797,46 @@ namespace FreeTouchDeck
             drawErrorMessage(true, module, "Memory allocation failed when rendering JSON action");
             return NULL;
         }
-        ESP_LOGD(module, "Adding Action type %s to Json", enum_to_string(Type));
+        LOC_LOGD(module, "Adding Action type %s to Json", enum_to_string(Type));
         cJSON_AddStringToObject(action, FTAction::JsonLabelType, enum_to_string(Type));
         if (IsString())
         {
             if (symbol && strlen(symbol) > 0)
             {
-                ESP_LOGD(module, "Adding string value [%s] to Json", symbol);
+                LOC_LOGD(module, "Adding string value [%s] to Json", symbol);
                 cJSON_AddStringToObject(action, FTAction::JsonLabelSymbol, symbol);
             }
             else
             {
-                ESP_LOGD(module, "ERROR:String type Action has no symbol ");
+                LOC_LOGD(module, "ERROR:String type Action has no symbol ");
             }
         }
         else if (Type == ActionTypes::LOCAL)
         {
-            ESP_LOGD(module, "Adding local type %s to Json", enum_to_string(LocalActionType));
+            LOC_LOGD(module, "Adding local type %s to Json", enum_to_string(LocalActionType));
             cJSON_AddStringToObject(action, FTAction::JsonLabelLocalActionType, enum_to_string(LocalActionType));
         }
         else
         {
-            ESP_LOGD(module, "Adding numeric value %d to Json", value);
+            LOC_LOGD(module, "Adding numeric value %d to Json", value);
             cJSON_AddNumberToObject(action, FTAction::JsonLabelValue, value);
         }
-#if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_VERBOSE
-        char *actionString = cJSON_Print(action);
-        if (actionString)
+        if (generalconfig.LogLevel >= LogLevels::VERBOSE)
         {
-            ESP_LOGD(module, "Action json structure : \n%s", actionString);
-            FREE_AND_NULL(actionString);
+            char *actionString = cJSON_Print(action);
+            if (actionString)
+            {
+                LOC_LOGD(module, "Action json structure : \n%s", actionString);
+                FREE_AND_NULL(actionString);
+            }
+            else
+            {
+                LOC_LOGE(module, "Unable to format JSON for output!");
+            }
         }
-        else
-        {
-            ESP_LOGE(module, "Unable to format JSON for output!");
-        }
-#endif
+
         return action;
     }
     FTAction FTAction::releaseAllAction = FTAction(ActionTypes::RELEASEALL, "");
+    FTAction FTAction::rebootSystem = FTAction(ActionTypes::LOCAL, enum_to_string(LocalActionTypes::REBOOT));
 }

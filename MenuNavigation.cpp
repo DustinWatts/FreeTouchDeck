@@ -11,6 +11,9 @@ namespace FreeTouchDeck
     FTAction *sleepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "Preferences,Sleep");
     FTAction *sleepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Sleep");
     FTAction *sleepToggleLatchAction = new FTAction(ActionTypes::TOGGLELATCH, "Preferences,Sleep");
+    FTAction *beepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "Preferences,Beep");
+    FTAction *beepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Beep");    
+    FTAction * criticalMessage = new FTAction(ActionTypes::MENU, "criticalmessage");
     std::list<Menu *> PrevScreen;
     static const char *configMenu =
         R"({
@@ -69,6 +72,17 @@ namespace FreeTouchDeck
 			]
 		},
 		{
+			"label": "Beep",
+			"logo": "music.bmp",
+			"type": "LATCH",
+			"actions": [
+				{
+					"type": "LOCAL",
+					"localactiontype": "BEEP"
+				}
+			]
+		},        
+		{
 			"label": "Info",
 			"logo": "info.bmp",
 			"type": "STANDARD",
@@ -85,52 +99,60 @@ namespace FreeTouchDeck
 		}
 	]
 })";
-    const char *action = R"([  
-{"buttons":[],
-"actions" :
-[ 
-    {
-        "type":"MENU",
-        "parm":"empty"
-    }
-]
-}])";
+//     const char *action = R"([  
+// {"buttons":[],
+// "actions" :
+// [ 
+//     {
+//         "type":"MENU",
+//         "parm":"empty"
+//     }
+// ]
+// }])";
     const char *blankMenu = R"({
 		"name": "empty",
-        "type": "SYSTEM",
+        "type": "EMPTY",
         "actions":	[{
 						"type":	"MENU",
 						"symbol":	"~BACK"
 					}]        
 	})";
+    const char *messageMenu = R"({
+		"name": "criticalmessage",
+        "type": "EMPTY",
+        "actions":	[{
+						"type":	"LOCAL",
+						"symbol":	"REBOOT"
+					}]        
+	})";    
     static const char *module = "MenuNavigation";
     using namespace std;
     std::list<Menu *> Menus;
     SemaphoreHandle_t xScreenSemaphore = xSemaphoreCreateMutex();
     bool ScreenLock(TickType_t xTicksToWait)
     {
-        //    ESP_LOGV(TAG, "Locking config json object");
+        //    LOC_LOGV(TAG, "Locking config json object");
         if (xSemaphoreTake(xScreenSemaphore, xTicksToWait) == pdTRUE)
         {
-            //ESP_LOGD(TAG, "Screen Lock object locked!");
+            //LOC_LOGD(TAG, "Screen Lock object locked!");
             return true;
         }
         else
         {
-            ESP_LOGE(module, "Unable to lock the Screen object");
+            LOC_LOGE(module, "Unable to lock the Screen object");
             return false;
         }
     }
 
     void ScreenUnlock()
     {
-        //ESP_LOGD(TAG, "Screen object unlocked!");
+        //LOC_LOGD(TAG, "Screen object unlocked!");
         xSemaphoreGive(xScreenSemaphore);
     }
     Menu *GetActiveScreen()
     {
         Menu *ActiveScreen = NULL;
-        ESP_LOGV(TAG, "Getting active screen");
+        LOC_LOGV(TAG, "Getting active screen");
         if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
         {
             for (auto m : Menus)
@@ -144,18 +166,18 @@ namespace FreeTouchDeck
         }
         if (ActiveScreen)
         {
-            ESP_LOGV(module, "Found active screen %s", ActiveScreen->Name);
+            LOC_LOGV(module, "Found active screen %s", ActiveScreen->Name);
         }
         else
         {
-            ESP_LOGV(module, "No active screen found");
+            LOC_LOGV(module, "No active screen found");
         }
         return ActiveScreen;
     }
     FreeTouchDeck::Menu *GetScreen(const char *name)
     {
         Menu *Match = NULL;
-        ESP_LOGD(TAG, "Getting screen object for %s", name);
+        LOC_LOGD(TAG, "Getting screen object for %s", name);
         if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
         {
             if (strcmp(name, "~BACK") == 0)
@@ -183,11 +205,11 @@ namespace FreeTouchDeck
 
             if (!Match)
             {
-                ESP_LOGE(module, "Screen %s not found", name);
+                LOC_LOGE(module, "Screen %s not found", name);
             }
             else
             {
-                ESP_LOGD(module, "Screen %s was found", name);
+                LOC_LOGD(module, "Screen %s was found", name);
             }
             ScreenUnlock();
         }
@@ -197,6 +219,7 @@ namespace FreeTouchDeck
     {
         bool result = false;
         PrintMemInfo();
+        if(Menus.size()==0) return false;
         Menu *Active = GetActiveScreen();
         PrintMemInfo();
         Menu *Match = GetScreen(name);
@@ -205,7 +228,7 @@ namespace FreeTouchDeck
         {
             if (Active && Match && strcmp(Active->Name, Match->Name) == 0)
             {
-                ESP_LOGD(module, "Screen %s is already active", name);
+                LOC_LOGD(module, "Screen %s is already active", name);
             }
             if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
             {
@@ -226,7 +249,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            ESP_LOGE(module, "Menu %s was not found", name);
+            LOC_LOGE(module, "Menu %s was not found", name);
         }
         return result;
     }
@@ -239,27 +262,27 @@ namespace FreeTouchDeck
         FTButton *Match = NULL;
         // this function is assumed to be called with the creen object
         // already locked
-        ESP_LOGD(TAG, "Getting old home screen button %s", MenuName);
+        LOC_LOGD(TAG, "Getting old home screen button %s", MenuName);
         for (auto m : Menus)
         {
             if (m->Type == MenuTypes::OLDHOME)
             {
-                ESP_LOGD(module, "Found Old menu entry %s", m->Name);
+                LOC_LOGD(module, "Found Old menu entry %s", m->Name);
                 Match = m->GetButtonForMenuName(MenuName);
                 break;
             }
             else
             {
-                ESP_LOGV(module, "Ignoring menu %s, type %s", m->Name, enum_to_string(m->Type));
+                LOC_LOGV(module, "Ignoring menu %s, type %s", m->Name, enum_to_string(m->Type));
             }
         }
         if (!Match)
         {
-            ESP_LOGE(module, "Button %s not found in old home screen", MenuName);
+            LOC_LOGE(module, "Button %s not found in old home screen", MenuName);
         }
         else
         {
-            ESP_LOGD(module, "Button %s was found", MenuName);
+            LOC_LOGD(module, "Button %s was found", MenuName);
         }
 
         return Match;
@@ -281,22 +304,24 @@ namespace FreeTouchDeck
             }
             else
             {
-                ESP_LOGE(module, "Could not add menu");
+                LOC_LOGE(module, "Could not add menu");
             }
             ScreenUnlock();
         }
         else
         {
-            ESP_LOGE(module, "Unable to add menus");
+            LOC_LOGE(module, "Unable to add menus");
         }
         return result;
     }
     void LoadSystemMenus()
     {
-        ESP_LOGD(module, "Adding settings menu");
+        LOC_LOGD(module, "Adding settings menu");
         PushJsonMenu(configMenu);
-        ESP_LOGD(module, "Adding blank menu");
+        LOC_LOGD(module, "Adding blank menu");
         PushJsonMenu(blankMenu);
+        LOC_LOGD(module,"Adding System Message Screen");
+        PushJsonMenu(messageMenu);
     }
     bool compare_nocase(const Menu *first, const Menu *second)
     {
@@ -314,11 +339,11 @@ namespace FreeTouchDeck
     bool GenerateHomeScreen(bool sortFirst)
     {
         FTButton *oldButton = NULL;
-        ESP_LOGD(module, "Generating home screen");
+        LOC_LOGD(module, "Generating home screen");
         // todo:  for "OLDHOME" menu types,
         // try to get the corresponding icon to show up on new homescreen
         cJSON *home = cJSON_CreateObject();
-        cJSON_AddStringToObject(home, Menu::JsonLabelType, enum_to_string(MenuTypes::SYSTEM));
+        cJSON_AddStringToObject(home, Menu::JsonLabelType, enum_to_string(MenuTypes::ROOT));
         cJSON_AddStringToObject(home, Menu::JsonLabelName, "home");
         cJSON_AddNumberToObject(home, Menu::JsonLabelColsCount, generalconfig.colscount);
         cJSON_AddNumberToObject(home, Menu::JsonLabelRowsCount, generalconfig.rowscount);
@@ -339,23 +364,23 @@ namespace FreeTouchDeck
                     cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, menu->Name);
                     if (ISNULLSTRING(menu->Icon))
                     {
-                        ESP_LOGD(module, "Processing old style menu. Fetching corresponding button for menu %s", menu->Name);
+                        LOC_LOGD(module, "Processing old style menu. Fetching corresponding button for menu %s", menu->Name);
                         FTButton *buttonOld = GetOldHomeButton(menu->Name);
                         if (!buttonOld)
                         {
-                            ESP_LOGE(module, "Unable to find old menu button. ");
+                            LOC_LOGE(module, "Unable to find old menu button. ");
                         }
                         else
                         {
                             ImageWrapper *image = buttonOld->Logo();
                             if (!ISNULLSTRING(image->LogoName))
                             {
-                                ESP_LOGD(menu, "Menu button has logo %s", image->LogoName);
+                                LOC_LOGD(menu, "Menu button has logo %s", image->LogoName);
                                 cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, image->LogoName);
                             }
                             else
                             {
-                                ESP_LOGE(module, "Defaulting button to question.bmp");
+                                LOC_LOGE(module, "Defaulting button to question.bmp");
                                 cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, "question.bmp");
                             }
                         }
@@ -378,25 +403,52 @@ namespace FreeTouchDeck
             }
             cJSON_AddItemToObject(home, Menu::JsonLabelButtons, buttons);
 
-            ESP_LOGD(module, "Instantiating home menu entry");
+            LOC_LOGD(module, "Instantiating home menu entry");
             Menu *m = new FreeTouchDeck::Menu(home);
             if (m)
             {
-                ESP_LOGD(module, "Home screen has %d buttons", m->buttons.size());
+                LOC_LOGD(module, "Home screen has %d buttons", m->buttons.size());
                 Menus.push_back(m);
             }
             else
             {
-                ESP_LOGE(module, "Home screen creation failed");
+                LOC_LOGE(module, "Home screen creation failed");
             }
 
             cJSON_Delete(home);
         }
         else
         {
-            ESP_LOGE(module, "No menu was found");
+            LOC_LOGE(module, "No menu was found");
         }
         return true;
+    }
+    bool SaveFullFormat()
+    {
+        LOC_LOGI(module, "Saving full menu structure");
+        File menus = SPIFFS.open("/config/menus.json", FILE_WRITE);
+        if (!menus)
+        {
+            LOC_LOGE(module,"Error opening menus.json");
+            return false;
+        }
+        char *json = MenusToJson(false);
+        if (json)
+        {
+
+            size_t written=menus.write((const uint8_t *)json, strlen(json));
+            menus.close();
+            if(strlen(json) != written)
+            {
+                ESP_LOGE(module,"Expected to write %d bytes but only %d bytes were written", strlen(json),written);
+                SPIFFS.remove("/config/menus.json");
+            }
+            FREE_AND_NULL(json);
+      }
+      else
+      {
+        LOC_LOGE(module, "Unable to print menu structure");
+      }
     }
     bool LoadFullFormat()
     {
@@ -446,10 +498,10 @@ namespace FreeTouchDeck
                     String FileName = file.name();
                     if (FileName.startsWith("/config/menu") || FileName.startsWith("/config/homescreen"))
                     {
-                        ESP_LOGD(module, "Adding menu from file %s", file.name());
+                        LOC_LOGD(module, "Adding menu from file %s", file.name());
                         Menus.push_back(new FreeTouchDeck::Menu(&file));
                         PrintMemInfo();
-                        ESP_LOGD(module, "Adding menu completed. Getting next file");
+                        LOC_LOGD(module, "Adding menu completed. Getting next file");
                     }
                     file = root.openNextFile();
                 }
@@ -457,14 +509,14 @@ namespace FreeTouchDeck
                 // This will ensure a positionning
                 // similar to the old naming scheme
                 GenerateHomeScreen(true);
-                ESP_LOGD(module, "Done Adding home screen menu from file name homescreen");
+                LOC_LOGD(module, "Done Adding home screen menu from file name homescreen");
                 root.close();
             }
             ScreenUnlock();
         }
         else
         {
-            ESP_LOGE(module, "Unable to add menus");
+            LOC_LOGE(module, "Unable to add menus");
         }
     }
     Menu *GetLatchScreen(FTAction *action)
@@ -484,61 +536,61 @@ namespace FreeTouchDeck
         Menu *menu = GetLatchScreen(action);
         if (menu)
         {
-            ESP_LOGD(module, "Running Latch Action on Menu %s", menu->Name);
+            LOC_LOGD(module, "Running Latch Action on Menu %s", menu->Name);
             success = menu->Button(action);
             if (!success)
             {
-                ESP_LOGE(module, "Running Latch action failed");
+                LOC_LOGE(module, "Running Latch action failed");
             }
         }
         else
         {
-            ESP_LOGE(module, "Screen not found for latch action.");
+            LOC_LOGE(module, "Screen not found for latch action.");
         }
         return success;
     }
-    char *MenusToJson(bool withSystem = false)
+    char *MenusToJson(bool withSystem)
     {
         char *json = NULL;
         cJSON *menusArray = cJSON_CreateArray();
-        ESP_LOGD(module, "Locking menu object");
+        LOC_LOGD(module, "Locking menu object");
         if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
         {
             for (auto m : Menus)
             {
                 if ((m->Type == MenuTypes::SYSTEM || m->Type == MenuTypes::HOMESYSTEM) && !withSystem)
                     continue; // don't output system menus as they are built-in
-                ESP_LOGD(module, "Converting menu %s", STRING_OR_DEFAULT(m->Name, "unknown"));
+                LOC_LOGD(module, "Converting menu %s", STRING_OR_DEFAULT(m->Name, "unknown"));
                 PrintMemInfo();
                 cJSON * menuEntry=m->ToJSON();
                 cJSON_AddItemToArray(menusArray, menuEntry);
                 json = cJSON_Print(menuEntry);
                 if (json)
                 {
-                    ESP_LOGD(module, "%s", json);
+                    LOC_LOGD(module, "%s", json);
                     FREE_AND_NULL(json);
                 }
             }
-            ESP_LOGD(module, "Unlocking menu object");
+            LOC_LOGD(module, "Unlocking menu object");
             ScreenUnlock();
         }
         else
         {
-            ESP_LOGE(module, "Unable to lock screens ");
+            LOC_LOGE(module, "Unable to lock screens ");
         }
         PrintMemInfo();
-        ESP_LOGD(module, "Menus were converted to JSON structure. Converting to string");
+        LOC_LOGD(module, "Menus were converted to JSON structure. Converting to string");
         json = cJSON_Print(menusArray);
         if (json)
         {
-            ESP_LOGD(module, "JSON menu structure contains %d bytes", strlen(json));
+            LOC_LOGD(module, "JSON menu structure contains %d bytes", strlen(json));
         }
         else
         {
-            ESP_LOGE(module, "Json structure could not be converted to string");
+            LOC_LOGE(module, "Json structure could not be converted to string");
         }
         cJSON_Delete(menusArray);
-        ESP_LOGD(module, "Done converting menu to json structure");
+        LOC_LOGD(module, "Done converting menu to json structure");
         PrintMemInfo();
         return json;
     }
