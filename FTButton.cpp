@@ -240,6 +240,7 @@ namespace FreeTouchDeck
     {
         bool transparent = false;
         int32_t radius = 4;
+        uint16_t BGColor = TFT_BLACK;
         uint16_t adjustedWidth = ButtonWidth - (2 * Spacing);
         uint16_t adjustedHeight = ButtonHeight - (2 * Spacing);
 
@@ -247,22 +248,24 @@ namespace FreeTouchDeck
             return;
 
         NeedsDraw = false;
+        _button.initButton(&tft, CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
+        _button.drawButton();
         bool LatchNeedsRoundRect = !LatchedLogo();
         ImageWrapper *image = GetActiveImage();
 
         if (!image || !image->valid)
         {
             ESP_LOGE(module, "No image found, or image invalid!");
-            return;
+        }
+        else
+        {
+            BGColor= tft.color565(image->R, image->G, image->B);
         }
         ESP_LOGV(module, "Found image structure, bitmap is %s", image->LogoName);
-
-        uint16_t BGColor = tft.color565(image->R, image->G, image->B);
         ESP_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", CenterX, CenterY, adjustedWidth, adjustedHeight,  Outline, BGColor, TextColor, TextSize);
         PrintMemInfo();
         tft.setFreeFont(LABEL_FONT);
-        _button.initButton(&tft, CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
-        _button.drawButton();
+
         if (ButtonType == ButtonTypes::LATCH && LatchNeedsRoundRect)
         {
             uint32_t roundRectWidth = ButtonWidth / 4;
@@ -283,8 +286,11 @@ namespace FreeTouchDeck
                 _button.drawButton();
             }
         }
-
-        image->Draw(CenterX, CenterY, transparent);
+        if (image && image->valid)    
+        {
+            image->Draw(CenterX, CenterY, transparent);
+        }
+        
     }
     uint16_t FTButton::Width()
     {

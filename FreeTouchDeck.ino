@@ -301,7 +301,7 @@ void PrintMemInfo()
 #if ARDUHAL_LOG_LEVEL >= ARDUHAL_LOG_LEVEL_DEBUG
   static size_t prev_free = 0;
   static size_t prev_min_free = 0;
-  if(generalconfig.moreLogs)
+  if (generalconfig.moreLogs)
   {
     ESP_LOGD(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
     ESP_LOGD(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
@@ -486,6 +486,19 @@ void LoadSystemConfig()
   }
   generalConfigLoaded = true;
 }
+void ShowDir()
+{
+
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+  ESP_LOGI(module, "Name\tSize");
+  while (file)
+  {
+    ESP_LOGI(module, "%s\t%d", file.name(), file.size());
+    file = root.openNextFile();
+  }
+  root.close();
+}
 void PrintScreenMessage(const char *message)
 {
   tft.setCursor(1, 3);
@@ -498,7 +511,8 @@ void PrintScreenMessage(const char *message)
 
 void DumpCJson(cJSON *doc)
 {
-  if(!generalconfig.moreLogs) return;
+  if (!generalconfig.moreLogs)
+    return;
   char *d = cJSON_Print(doc);
   if (d)
   {
@@ -512,10 +526,9 @@ void DumpCJson(cJSON *doc)
 void setup()
 {
 
-
   RESET_REASON resetReason = rtc_get_reset_reason(0);
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-  generalconfig.moreLogs=false;
+  generalconfig.moreLogs = false;
   // Use serial port
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -590,7 +603,7 @@ void setup()
     tft.printf("Loading version %s\n", versionnumber);
     ESP_LOGI(module, "Loading version %s", versionnumber);
   }
-  // todo: remove hard code!  
+  // todo: remove hard code!
   generalconfig.beep = false;
   HandleAudio(Sounds::STARTUP);
 // Calibrate the touch screen and retrieve the scaling factors
@@ -646,8 +659,8 @@ void processSerial()
     }
     else if (command == "morelogs")
     {
-      generalconfig.moreLogs=!generalconfig.moreLogs;
-      ESP_LOGI(module,"Extra logs are %s",generalconfig.moreLogs?"ACTIVE":"INACTIVE");
+      generalconfig.moreLogs = !generalconfig.moreLogs;
+      ESP_LOGI(module, "Extra logs are %s", generalconfig.moreLogs ? "ACTIVE" : "INACTIVE");
       saveConfig(false);
     }
     else if (command == "console")
@@ -659,6 +672,10 @@ void processSerial()
     {
       ESP_LOGW(module, "Changing mode to config");
       ChangeMode(SystemMode::CONFIG);
+    }
+    else if (command == "dir") 
+    {
+      ShowDir();
     }
     else if (command == "menus")
     {
@@ -675,7 +692,7 @@ void processSerial()
         ESP_LOGE(module, "Unable to print menu structure");
       }
     }
-    
+
     else if (command == "rot")
     {
       String value = Serial.readString();
@@ -785,6 +802,7 @@ conf : dump current configuration
 console : change the system mode to console
 config : change the system mode to configuration
 morelogs : increase log details for some activities - warning: this will slow down the system
+dir : show the content of the file system
 )");
     }
   }
@@ -895,7 +913,7 @@ bool getTouch(uint16_t *t_x, uint16_t *t_y)
 
     if (generalconfig.reverse_x_touch)
     {
-      *t_x =(uint16_t) map((long )*t_x, (long)0, (long)tft.width(), (long)tft.width(), (long)0);
+      *t_x = (uint16_t)map((long)*t_x, (long)0, (long)tft.width(), (long)tft.width(), (long)0);
     }
     if (generalconfig.reverse_y_touch)
     {
@@ -954,7 +972,7 @@ void processSleep()
 }
 void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
 {
-  static unsigned nextlog=0;
+  static unsigned nextlog = 0;
   auto Active = GetActiveScreen();
   if (Active)
   {
@@ -970,13 +988,12 @@ void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
   }
   else
   {
-    if(nextlog<=millis())
+    if (nextlog <= millis())
     {
       ESP_LOGD(module, "No active display");
       // to prevent flooding of the serial log, reduce the rate of this message
-      nextlog=millis()+1000;
+      nextlog = millis() + 1000;
     }
-    
   }
 }
 void HandleActions()
@@ -990,7 +1007,6 @@ void HandleActions()
     {
       ResetSleep();
       Action->Execute();
-      
     }
   } while (Action);
 }

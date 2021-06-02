@@ -480,11 +480,7 @@ namespace FreeTouchDeck
             }
             FREE_AND_NULL(value);
         }
-        if (Type != MenuTypes::SYSTEM && Type != MenuTypes::HOMESYSTEM)
-        {
-            ESP_LOGD(module, "Adding back button");
-            AddBackButton();
-        }
+
         if (Type == MenuTypes::HOME || Type==MenuTypes::HOMESYSTEM)
         {
             GetValueOrDefault(menuJson, Menu::JsonLabelIcon, &Icon, "question.bmp");
@@ -540,7 +536,7 @@ namespace FreeTouchDeck
                 }
             }
         }
-        if(Type!=MenuTypes::HOME && Type!=MenuTypes::HOMESYSTEM && buttons.size()==0)
+        if(Type!=MenuTypes::SYSTEM  && buttons.size()>0)
         {
             AddBackButton();
         }
