@@ -5,10 +5,10 @@
 #include "Menu.h"
 #include "globals.hpp"
 #include <algorithm>
+#include <cstdio>
 static const char *module = "FTAction";
 extern BleKeyboard bleKeyboard;
 extern Config generalconfig;
-extern int ledBrightness;
 extern unsigned long Interval;
 
 using namespace std;
@@ -17,15 +17,15 @@ static char printBuffer[101] = {0};
 
 namespace FreeTouchDeck
 {
+    const char *splitterFormat = "%[^.: ,-]%*[.: ,-]%s";
     SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
     std::queue<FTAction *> Queue;
     std::queue<FTAction *> ScreenQueue;
     const char *unknown = "Unknown";
     const char *FTAction::JsonLabelType = "type";
-    const char *FTAction::JsonLabelLocalActionType = "localactiontype";
     const char *FTAction::JsonLabelValue = "value";
     const char *FTAction::JsonLabelSymbol = "symbol";
-    ActionCallbacks_t callbacks = {0};
+
     const char *enum_to_string(ActionTypes type)
     {
         switch (type)
@@ -48,22 +48,6 @@ namespace FreeTouchDeck
             ENUM_TO_STRING_HELPER(ActionTypes, CLEARLATCH);
             ENUM_TO_STRING_HELPER(ActionTypes, TOGGLELATCH);
             ENUM_TO_STRING_HELPER(ActionTypes, RELEASEALL);
-        default:
-            return unknown;
-        }
-    }
-    const char *enum_to_string(LocalActionTypes type)
-    {
-        switch (type)
-        {
-            ENUM_TO_STRING_HELPER(LocalActionTypes, NONE);
-            ENUM_TO_STRING_HELPER(LocalActionTypes, ENTER_CONFIG);
-            ENUM_TO_STRING_HELPER(LocalActionTypes, BRIGHTNESS_DOWN);
-            ENUM_TO_STRING_HELPER(LocalActionTypes, BRIGHTNESS_UP);
-            ENUM_TO_STRING_HELPER(LocalActionTypes, BEEP);
-            ENUM_TO_STRING_HELPER(LocalActionTypes, SLEEP);
-            ENUM_TO_STRING_HELPER(LocalActionTypes, REBOOT);            
-            ENUM_TO_STRING_HELPER(LocalActionTypes, INFO);
         default:
             return unknown;
         }
@@ -174,27 +158,7 @@ namespace FreeTouchDeck
         }
         return success;
     }
-    bool FTAction::parse(const char *value, LocalActionTypes *result)
-    //bool parse(const char *value, LocalActionTypes *result)
-    {
-        LocalActionTypes LocalResult = LocalActionTypes::NONE;
-        *result = LocalActionTypes::NONE;
-        bool success = false;
-        const char *resultStr = NULL;
-        do
-        {
-            LocalResult++; // Start after NONE
-            resultStr = enum_to_string(LocalResult);
-            LOC_LOGV(module, "%s?=%s", resultStr, value);
 
-        } while (strcmp(value, resultStr) != 0 && LocalResult != LocalActionTypes::NONE);
-        if (strcmp(value, resultStr) == 0)
-        {
-            *result = LocalResult;
-            success = true;
-        }
-        return success;
-    }
     bool FTAction::parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, const char **foundKey)
     //bool parse(const char *keyname, ActionTypes actionType,  KeyValue_t * keyvalue,const char **foundKey)
     {
@@ -239,6 +203,25 @@ namespace FreeTouchDeck
         return success;
     }
 
+    bool FTAction::ParseToken(const char *token, KeySequences_t *keySequences)
+    {
+        FTAction *action = new FTAction(ActionTypes::LOCAL, token);
+
+        // first check if the token matches a user action
+        if (action->Type != ActionTypes::NONE)
+        {
+            KeySequence_t keySequence = {.Type = action->Type};
+            keySequence.action = action;
+            keySequences->push_back(keySequence);
+            return true;
+        }
+        else
+        {
+            delete (action);
+        }
+        return false;
+    }
+
     bool FTAction::ParseToken(const char *token, KeyValue_t *values, ActionTypes *type)
     {
         for (auto m : KeyMaps)
@@ -268,8 +251,15 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Parsing free form text %s", text);
         do
         {
-            if (*p == '{' || *p == '\0')
+            if (*p == '{' && tokenStart && *tokenStart == '{')
             {
+                //two curly brackets is interpreted as a single
+                // curly bracket char to be sent
+                //todo:  revise this logic
+            }
+            else if (*p == '{' || *p == '\0')
+            {
+
                 if (values.size() > 0)
                 {
                     KeySequence_t sequence = {.Type = ActionTypes::LETTERS, .Values = values};
@@ -286,7 +276,11 @@ namespace FreeTouchDeck
                 size_t len = min((size_t)(p - tokenStart - 1), (size_t)(sizeof(token) - 1));
                 strncpy(token, tokenStart + 1, len);
                 LOC_LOGD(module, "Found token %s", token);
-                if (ParseToken(token, &values, &type))
+                if (ParseToken(token, keySequences))
+                {
+                    LOC_LOGD(module, "Successfully parsed action token %s", token);
+                }
+                else if (ParseToken(token, &values, &type))
                 {
                     KeySequence_t sequence = {.Type = type, .Values = values};
                     keySequences->push_back(sequence);
@@ -321,26 +315,31 @@ namespace FreeTouchDeck
         Type = (ActionTypes)jsonType;
     }
 
-    bool FTAction::GetLatchButton(char *screen, size_t screenSize, char *button, size_t buttonSize)
+    bool FTAction::SplitActionParameter(const char *value, char *name, size_t nameSize, char *parameter, size_t parameterSize)
     {
-        char buffer[101] = {0};
-        if (!IsLatch())
-            return false;
-        if (!screen || !button || screenSize == 0 || buttonSize == 0)
+        char localName[strlen(value) + 1] = {0};
+        char localParameter[strlen(value) + 1] = {0};
+
+        if (!name || !parameter || nameSize == 0 || parameterSize == 0)
         {
+            LOC_LOGE(module,"Missing parameters: %s%s%s%s", name?"":"Missing name ", parameter?"":"Missing parameter ", nameSize>0?"":"Name buffer is null ", parameterSize>0?"":"parameter buffer is null");
             return false;
         }
-        strncpy(buffer, symbol, sizeof(buffer));
-        char *pch;
-        pch = strtok(buffer, " ,-");
-        if (!pch)
+        LOC_LOGD(module,"Scanning for value");
+        int ret = std::sscanf(value, splitterFormat, localName, localParameter);
+        if (ret != 2)
+        {
+            LOC_LOGD(module, "Nothing tp split %s", value);
             return false;
-        strncpy(screen, pch, screenSize);
-        pch = strtok(NULL, " ,-");
-        if (!pch)
-            return false;
-        strncpy(button, pch, buttonSize);
+        }
+        LOC_LOGD(module, "Found Name %s and parameter %s", localName, localParameter);
+        strncpy(name, localName, nameSize);
+        strncpy(parameter, localParameter, parameterSize);
         return true;
+    }
+    bool FTAction::SplitActionParameter(char *name, size_t nameSize, char *parameter, size_t parameterSize)
+    {
+        return (IsLatch() && SplitActionParameter(symbol, name, nameSize, parameter, parameterSize));
     }
     void FTAction::ParseModifierKey(char *modifier)
     {
@@ -443,21 +442,59 @@ namespace FreeTouchDeck
 
     void FTAction::SetValue(const char *jsonValue)
     {
-        symbol = ps_strdup(jsonValue);
+        if (ISNULLSTRING(jsonValue))
+        {
+            LOC_LOGD(module, "No value to assign for action");
+            return;
+        }
+        LOC_LOGD(module, "Evaluating value %s",jsonValue);
+        char * name = (char *)malloc_fn(strlen(jsonValue) + 1);
+        char * parameter = (char *)malloc_fn(strlen(jsonValue) + 1);
 
         if (Type == ActionTypes::LOCAL)
         {
-            LocalActionTypes localType = LocalActionTypes::NONE;
-            parse(STRING_OR_DEFAULT(jsonValue, "NONE"), &localType);
+            LOC_LOGD(module, "Action Type local. Checking if we have a callback named %s", jsonValue);
 
-            if (localType == LocalActionTypes::NONE)
+            if (CallActionCallback(jsonValue, NULL, true))
             {
-                LOC_LOGE(module, "Unexpected action type none while parsing vaue for local action type");
+                LOC_LOGD(module, "Found user Action %s", jsonValue);
+                ActionName = ps_strdup(jsonValue);
+                symbol = ps_strdup("");
             }
             else
             {
-                LOC_LOGD(module, "Local action type is %s", enum_to_string(localType));
-                LocalActionType = localType;
+                LOC_LOGD(module, "Trying to split action parameter");
+                if (SplitActionParameter(jsonValue, name, sizeof(name) - 1, parameter, sizeof(parameter) - 1))
+                {
+                    LOC_LOGD(module, "Action type local. Attempting to find corresponding callback");
+                    if (CallActionCallback(name, NULL, true))
+                    {
+                        LOC_LOGD(module, "Found user Action %s with parameter %s", name, parameter);
+                        ActionName = ps_strdup(name);
+                        symbol = ps_strdup(parameter);
+                    }
+                    else
+                    {
+                        LOC_LOGE(module, "Invalid local action type %s", jsonValue);
+                        Type == ActionTypes::NONE;
+                    }
+                }
+                else
+                {
+                    LOC_LOGE(module, "Invalid local action type %s", jsonValue);
+                    Type == ActionTypes::NONE;
+                }
+            }
+        }
+        else if (IsLatch())
+        {
+            if (!SplitActionParameter(jsonValue, name, sizeof(name) - 1, parameter, sizeof(parameter) - 1))
+            {
+                LOC_LOGE(module, "Parsing of latch value %s failed.", jsonValue);
+            }
+            else
+            {
+                symbol = ps_strdup(jsonValue);
             }
         }
         else if (IsBTSequence())
@@ -467,15 +504,13 @@ namespace FreeTouchDeck
                 LOC_LOGE(module, "Error parsing BT key sequences");
             }
         }
-        else if (IsString())
-        {
-            LOC_LOGD(module, "Found value %s", symbol);
-        }
         else
         {
-            FREE_AND_NULL(symbol);
-            LOC_LOGE(module, "No value found for action type %s", enum_to_string(Type));
+            symbol = ps_strdup(jsonValue);
+            LOC_LOGD(module, "Found value %s", symbol);
         }
+        FREE_AND_NULL(name);
+        FREE_AND_NULL(parameter);
     }
 
     FTAction::FTAction(char *jsonActionType, char *jsonValueStr)
@@ -514,10 +549,12 @@ namespace FreeTouchDeck
     FTAction::FTAction(ActionTypes actionParm, const char *jsonString)
     {
         Type = actionParm;
+        LOC_LOGD(module, "Instantiating action type %s", enum_to_string(Type));
         SetValue(jsonString);
     }
     void FTAction::Execute()
     {
+        std::map<const char *, ActionCallbackFn_t>::iterator callback;
         Menu *menu = NULL;
         MediaKeyReport MediaKey;
         KeyValue_t KeyValue;
@@ -529,7 +566,7 @@ namespace FreeTouchDeck
             break;
 
         case ActionTypes::DELAY:
-            delay(value);
+            delay(atol(symbol));
             break;
         case ActionTypes::LETTERS:
         case ActionTypes::SPECIAL_CHARS:
@@ -548,60 +585,36 @@ namespace FreeTouchDeck
                     MediaKey[0] = kv.Values[0];
                     MediaKey[1] = kv.Values[1];
                     bleKeyboard.write(MediaKey);
+                    delay(generalconfig.keyDelay);
+                }
+                else if (kv.Type == ActionTypes::LOCAL)
+                {
+                    CallActionCallback(kv.action);
                 }
                 else
                 {
                     for (auto ks : kv.Values)
                     {
                         bleKeyboard.write(ks);
+                        delay(generalconfig.keyDelay);
                     }
                 }
             }
-
             break;
             break;
         case ActionTypes::MENU:
-            EXECUTE_IF_EXISTS(callbacks.SetActiveScreen, this);
+            CallActionCallback("MENU", this);
             break;
         case ActionTypes::SETLATCH:
         case ActionTypes::CLEARLATCH:
         case ActionTypes::TOGGLELATCH:
-            EXECUTE_IF_EXISTS(callbacks.RunLatchAction, this);
+            CallActionCallback("TOGGLELATCH", this);
             break;
         case ActionTypes::RELEASEALL:
             bleKeyboard.releaseAll();
             break;
         case ActionTypes::LOCAL:
-
-            switch (LocalActionType)
-            {
-            case LocalActionTypes::ENTER_CONFIG:
-                /* code */
-                EXECUTE_IF_EXISTS(callbacks.ConfigMode, this);
-                break;
-            case LocalActionTypes::BRIGHTNESS_DOWN:
-                EXECUTE_IF_EXISTS(callbacks.ChangeBrightness, this);
-                break;
-            case LocalActionTypes::BRIGHTNESS_UP:
-                EXECUTE_IF_EXISTS(callbacks.ChangeBrightness, this);
-                break;
-            case LocalActionTypes::BEEP:
-                EXECUTE_IF_EXISTS(callbacks.SetBeep, this);
-                break;
-            case LocalActionTypes::SLEEP:
-                EXECUTE_IF_EXISTS(callbacks.SetSleep, this);
-                break;
-            case LocalActionTypes::REBOOT:
-                ESP.restart();
-                break;
-            case LocalActionTypes::INFO:
-                EXECUTE_IF_EXISTS(callbacks.PrintInfo, NULL);
-                break;
-            default:
-                break;
-            }
-            break;
-
+            CallActionCallback(this);
         default:
             break;
         }
@@ -616,7 +629,7 @@ namespace FreeTouchDeck
             break;
 
         case ActionTypes::DELAY:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, delay: %d", enum_to_string(Type), value);
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, delay: %s", enum_to_string(Type), symbol);
             break;
 
         case ActionTypes::FUNCTIONKEYS:
@@ -636,11 +649,11 @@ namespace FreeTouchDeck
             snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: %s", enum_to_string(Type), STRING_OR_DEFAULT(symbol, "Release All"));
             break;
         case ActionTypes::NUMBERS:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, Number: %d", enum_to_string(Type), value);
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, Number: %s", enum_to_string(Type), symbol);
             break;
         case ActionTypes::HELPERS:
             snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: ", enum_to_string(Type));
-            if (generalconfig.modifier1 != 0)
+            if (generalconfig.modifier1)
             {
                 snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier1);
             }
@@ -655,7 +668,7 @@ namespace FreeTouchDeck
             snprintf(printBuffer, sizeof(printBuffer), "%s %s", printBuffer, symbol);
             break;
         case ActionTypes::LOCAL:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, local action: %s", enum_to_string(Type), enum_to_string(LocalActionType));
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, local action: %s", enum_to_string(Type), ActionName);
             break;
 
         default:
@@ -747,10 +760,7 @@ namespace FreeTouchDeck
         QueueUnlock();
         return true;
     }
-    ActionCallbacks_t *ActionsCallbacks()
-    {
-        return &callbacks;
-    }
+
     FTAction::FTAction(cJSON *jsonActionType)
     {
         char *value = NULL;
@@ -764,27 +774,21 @@ namespace FreeTouchDeck
         {
             return;
         }
-        if (Type == ActionTypes::LOCAL)
+
+        if (IsString())
         {
-            GetValueOrDefault(jsonActionType, FTAction::JsonLabelLocalActionType, &value, "NONE");
-            parse(value, &LocalActionType);
-            LOC_LOGD(module, "Local action type %s ", enum_to_string(LocalActionType));
-            FREE_AND_NULL(value);
+            LOC_LOGD(module, "Parsing value from symbol");
+            GetValueOrDefault(jsonActionType, FTAction::JsonLabelSymbol, &symbol, "");
+            if (Type == ActionTypes::LOCAL)
+            {
+                SetValue(symbol);
+            }
         }
         else
         {
-            LocalActionType = LocalActionTypes::NONE;
-            if (IsString())
-            {
-                LOC_LOGD(module, "Parsing value from symbol");
-                GetValueOrDefault(jsonActionType, FTAction::JsonLabelSymbol, &symbol, "");
-            }
-            else
-            {
-                LOC_LOGD(module, "Parsing value from value");
-                GetValueOrDefault(jsonActionType, FTAction::JsonLabelValue, &value, 0);
-                LOC_LOGD(module, "Value %d ", value);
-            }
+            LOC_LOGD(module, "Parsing numeric value from value");
+            GetValueOrDefault(jsonActionType, FTAction::JsonLabelValue, &symbol, 0);
+            LOC_LOGD(module, "Value %s ", symbol);
         }
     }
 
@@ -799,7 +803,23 @@ namespace FreeTouchDeck
         }
         LOC_LOGD(module, "Adding Action type %s to Json", enum_to_string(Type));
         cJSON_AddStringToObject(action, FTAction::JsonLabelType, enum_to_string(Type));
-        if (IsString())
+        if (Type == ActionTypes::LOCAL)
+        {
+            const char *tokenFormat = "%s:%s";
+            if (!ISNULLSTRING(symbol))
+            {
+                size_t len = snprintf(NULL, 0, tokenFormat, ActionName, symbol);
+                char *localSymbol = (char *)malloc_fn(len + 1);
+                snprintf(localSymbol, len, tokenFormat, ActionName, symbol);
+                cJSON_AddStringToObject(action, FTAction::JsonLabelSymbol, localSymbol);
+                FREE_AND_NULL(localSymbol);
+            }
+            else
+            {
+                cJSON_AddStringToObject(action, FTAction::JsonLabelSymbol, symbol);
+            }
+        }
+        else if (IsString())
         {
             if (symbol && strlen(symbol) > 0)
             {
@@ -810,16 +830,6 @@ namespace FreeTouchDeck
             {
                 LOC_LOGD(module, "ERROR:String type Action has no symbol ");
             }
-        }
-        else if (Type == ActionTypes::LOCAL)
-        {
-            LOC_LOGD(module, "Adding local type %s to Json", enum_to_string(LocalActionType));
-            cJSON_AddStringToObject(action, FTAction::JsonLabelLocalActionType, enum_to_string(LocalActionType));
-        }
-        else
-        {
-            LOC_LOGD(module, "Adding numeric value %d to Json", value);
-            cJSON_AddNumberToObject(action, FTAction::JsonLabelValue, value);
         }
         if (generalconfig.LogLevel >= LogLevels::VERBOSE)
         {
@@ -838,5 +848,53 @@ namespace FreeTouchDeck
         return action;
     }
     FTAction FTAction::releaseAllAction = FTAction(ActionTypes::RELEASEALL, "");
-    FTAction FTAction::rebootSystem = FTAction(ActionTypes::LOCAL, enum_to_string(LocalActionTypes::REBOOT));
+    FTAction FTAction::rebootSystem = FTAction(ActionTypes::LOCAL, "REBOOT");
+    bool CallActionCallback(const char *name, FTAction *action, bool checkOnly)
+    {
+        ActionCallbackFn_t callbackFn = NULL;
+        auto callback = FreeTouchDeck::UserActions.find(name);
+        if (callback == FreeTouchDeck::UserActions.end())
+        {
+            LOC_LOGW(module, "Find failed. Trying to iterate entries");
+            for (auto c : FreeTouchDeck::UserActions)
+            {
+                if (c.first == name)
+                {
+                    callbackFn = c.second;
+                    LOC_LOGD(module, "Found the callback with a loop in the map values");
+                    break;
+                }
+            }
+        }
+        else
+        {
+            LOC_LOGD(module, "Found the callback in the map");
+            callbackFn = callback->second;
+        }
+
+        if (callbackFn)
+        {
+            if (checkOnly)
+            {
+                return true;
+            }
+            else
+            {
+                return callbackFn(action);
+            }
+        }
+        else
+        {
+            LOC_LOGE(module, "Invalid callback name %s. Valid callbacks are: ", name);
+            for (auto c : FreeTouchDeck::UserActions)
+            {
+                LOC_LOGE(module, "    %s", c.first);
+            }
+        }
+        return false;
+    }
+    bool CallActionCallback(FTAction *action, bool checkOnly)
+    {
+        return CallActionCallback(action->ActionName, action, checkOnly);
+    }
 }

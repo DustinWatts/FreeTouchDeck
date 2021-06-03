@@ -34,7 +34,7 @@ namespace FreeTouchDeck
 				},
 				{
 					"type": "LOCAL",
-					"localactiontype": "ENTER_CONFIG"
+					"symbol": "ENTER_CONFIG"
 				}
 			]
 		},
@@ -45,7 +45,7 @@ namespace FreeTouchDeck
 			"actions": [
 				{
 					"type": "LOCAL",
-					"localactiontype": "BRIGHTNESS_DOWN"
+					"symbol": "BRIGHTNESS_DOWN"
 				}
 			]
 		},
@@ -56,7 +56,7 @@ namespace FreeTouchDeck
 			"actions": [
 				{
 					"type": "LOCAL",
-					"localactiontype": "BRIGHTNESS_UP"
+					"symbol": "BRIGHTNESS_UP"
 				}
 			]
 		},
@@ -67,7 +67,7 @@ namespace FreeTouchDeck
 			"actions": [
 				{
 					"type": "LOCAL",
-					"localactiontype": "SLEEP"
+					"symbol": "SLEEP"
 				}
 			]
 		},
@@ -78,7 +78,7 @@ namespace FreeTouchDeck
 			"actions": [
 				{
 					"type": "LOCAL",
-					"localactiontype": "BEEP"
+					"symbol": "BEEP"
 				}
 			]
 		},        
@@ -93,22 +93,23 @@ namespace FreeTouchDeck
 				},
 				{
 					"type": "LOCAL",
-					"localactiontype": "INFO"
+					"symbol": "INFO"
+				}
+			]
+		},        
+		{
+			"label": "Sleep",
+			"type": "STANDARD",
+			"actions": [
+				{
+					"type": "LOCAL",
+					"symbol": "STARTSLEEP"
 				}
 			]
 		}
 	]
 })";
-//     const char *action = R"([  
-// {"buttons":[],
-// "actions" :
-// [ 
-//     {
-//         "type":"MENU",
-//         "parm":"empty"
-//     }
-// ]
-// }])";
+
     const char *blankMenu = R"({
 		"name": "empty",
         "type": "EMPTY",
@@ -253,10 +254,7 @@ namespace FreeTouchDeck
         }
         return result;
     }
-    bool RunActiveScreenAction(FTAction *action)
-    {
-        return SetActiveScreen(action->symbol);
-    }
+
     FTButton *GetOldHomeButton(const char *MenuName)
     {
         FTButton *Match = NULL;
@@ -524,30 +522,11 @@ namespace FreeTouchDeck
         char screenName[51] = {0};
         char buttonName[51] = {0};
         Menu *menu = NULL;
-        if (action->GetLatchButton(screenName, sizeof(screenName), buttonName, sizeof(buttonName)))
+        if (action->SplitActionParameter(screenName, sizeof(screenName), buttonName, sizeof(buttonName)))
         {
             menu = GetScreen(screenName);
         }
         return menu;
-    }
-    bool RunLatchAction(FTAction *action)
-    {
-        bool success = false;
-        Menu *menu = GetLatchScreen(action);
-        if (menu)
-        {
-            LOC_LOGD(module, "Running Latch Action on Menu %s", menu->Name);
-            success = menu->Button(action);
-            if (!success)
-            {
-                LOC_LOGE(module, "Running Latch action failed");
-            }
-        }
-        else
-        {
-            LOC_LOGE(module, "Screen not found for latch action.");
-        }
-        return success;
     }
     char *MenusToJson(bool withSystem)
     {

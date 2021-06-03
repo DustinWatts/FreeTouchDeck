@@ -85,26 +85,22 @@ const char *versionnumber = "0.9.11";
      * 
      * Make sure to check if you use your old config files that they match the structure of the new ones!
     */
-
+using namespace FreeTouchDeck;
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
 #include <SPIFFS.h>   // Filesystem support header
 
 #include <TFT_eSPI.h> // The TFT_eSPI library
 
-#include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
-#include "BLEDevice.h"   // Additional BLE functionaity
-#include "BLEUtils.h"    // Additional BLE functionaity
-#include "BLEBeacon.h"   // Additional BLE functionaity
-#include "esp_sleep.h"   // Additional BLE functionaity
-
-#include "esp_bt_main.h"   // Additional BLE functionaity
-#include "esp_bt_device.h" // Additional BLE functionaity
-
-#include <ArduinoJson.h> // Using ArduinoJson to read and write config files
-
-#include <WiFi.h> // Wifi support
-
+#include <BleKeyboard.h>       // BleKeyboard is used to communicate over BLE
+#include "BLEDevice.h"         // Additional BLE functionaity
+#include "BLEUtils.h"          // Additional BLE functionaity
+#include "BLEBeacon.h"         // Additional BLE functionaity
+#include "esp_sleep.h"         // Additional BLE functionaity
+#include "esp_bt_main.h"       // Additional BLE functionaity
+#include "esp_bt_device.h"     // Additional BLE functionaity
+#include <ArduinoJson.h>       // Using ArduinoJson to read and write config files
+#include <WiFi.h>              // Wifi support
 #include <AsyncTCP.h>          //Async Webserver support header
 #include <ESPAsyncWebServer.h> //Async Webserver support header
 #include "globals.hpp"
@@ -121,11 +117,19 @@ FT6236 ts = FT6236();
 #include "Menu.h"
 #include "cJSON.h"
 #include "ImageWrapper.h"
-using namespace FreeTouchDeck;
+
+// ----------------------------------------------
+// It is possible to define you own custom action
+// to perform various actions on the ESP32 itself 
+// (e.g. send the device to sleep, measure temperature
+// and send the result out as keypresses, etc.) and assign them
+// to buttons! 
+// See examples under UserActions.h
+//
+#include "UserActions.h"
+
 BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
-
 AsyncWebServer webserver(80);
-
 TFT_eSPI tft = TFT_eSPI();
 
 // This is the file name used to store the calibration data
@@ -139,7 +143,7 @@ TFT_eSPI tft = TFT_eSPI();
 #define REPEAT_CAL false
 
 // Initial LED brightness
-int ledBrightness = 255;
+
 //path to the directory the logo are in ! including leading AND trailing / !
 char logopath[64] = "/logos/";
 
@@ -156,7 +160,7 @@ struct Wificonfig
 // Create instances of the structs
 Wificonfig wificonfig = {.ssid = NULL, .password = NULL, .wifimode = NULL, .hostname = NULL};
 
-Config generalconfig ;
+Config generalconfig;
 
 RTC_NOINIT_ATTR SystemMode restartReason = SystemMode::STANDARD;
 SystemMode RunMode = SystemMode::STANDARD;
@@ -166,7 +170,7 @@ void ChangeMode(SystemMode newMode)
   restartReason = newMode;
   ESP.restart();
 }
-extern bool printinfo(FTAction *dummy);
+
 volatile unsigned long previousMillis = 0;
 unsigned long Interval = 0;
 #ifdef ACTIONS_IN_TASKS
@@ -308,47 +312,7 @@ void PrintMemInfo()
   prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
   prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
 }
-bool RestartConfigMode(FTAction *action)
-{
-  LOC_LOGW(module, "Restarting in configuration mode");
-  restartReason = SystemMode::CONFIG;
-  ESP.restart();
-}
 
-bool SetSleep(FTAction *action)
-{
-  if (generalconfig.sleepenable)
-  {
-    generalconfig.sleepenable = false;
-    LOC_LOGI(module, "Sleep disabled.");
-  }
-  else
-  {
-    generalconfig.sleepenable = true;
-    Interval = generalconfig.sleeptimer * 60000;
-    LOC_LOGI(module, "Sleep Enabled. Timer set to %d", generalconfig.sleeptimer);
-  }
-  HandleSleepConfig();
-}
-
-bool ChangeBrightness(FTAction *action)
-{
-  if ((LocalActionTypes)action->value == LocalActionTypes::BRIGHTNESS_UP)
-  {
-    ledBrightness = min(ledBrightness + LED_BRIGHTNESS_INCREMENT, 255);
-  }
-  else
-  {
-    ledBrightness = max(ledBrightness - LED_BRIGHTNESS_INCREMENT, 0);
-  }
-  ledcWrite(0, ledBrightness);
-  return true;
-}
-bool SetBeepMode(FTAction *action)
-{
-  generalconfig.beep = !generalconfig.beep;
-  saveConfig(false);
-}
 const char *enum_to_string(SystemMode mode)
 {
   switch (mode)
@@ -395,12 +359,9 @@ void powerInit()
 #else
   ledcAttachPin(32, 0);
 #endif
-  ledcWrite(0, ledBrightness); // Start @ initial Brightness
+  ledcWrite(0, generalconfig.ledBrightness); // Start @ initial Brightness
 }
-void EnterSleep()
-{
-  // esp_deep_sleep does not shut down WiFi, BT, and higher level protocol connections gracefully. Make sure relevant WiFi and BT stack functions are called to close any connections and deinitialize the peripherals. These include:
-}
+
 void HandleSleepConfig()
 {
 
@@ -500,7 +461,6 @@ void LoadSystemConfig()
   if (!loadGeneralConfig())
   {
     drawErrorMessage(false, module, "general.json seems to be corrupted. To reset to default type 'reset general'.");
-    
   }
 }
 void ShowDir()
@@ -552,16 +512,12 @@ void setup()
   LOC_LOGI(module, "Starting system.");
   init_cJSON();
   LoadSystemConfig();
+  // generalconfig.LogLevel=FreeTouchDeck::LogLevels::DEBUG;
+  // generalconfig.beep=false;
   displayInit();
   powerInit();
   touchInit();
-  ActionsCallbacks()->PrintInfo = printinfo;
-  ActionsCallbacks()->ChangeBrightness = ChangeBrightness;
-  ActionsCallbacks()->SetBeep = SetBeepMode;
-  ActionsCallbacks()->SetSleep = SetSleep;
-  ActionsCallbacks()->ConfigMode = RestartConfigMode;
-  ActionsCallbacks()->RunLatchAction = RunLatchAction;
-  ActionsCallbacks()->SetActiveScreen = RunActiveScreenAction;
+
   if (restartReason != SystemMode::STANDARD && restartReason != SystemMode::CONFIG && restartReason != SystemMode::CONSOLE)
   {
     restartReason = SystemMode::STANDARD;
@@ -622,8 +578,7 @@ void setup()
     tft.printf("Loading version %s\n", versionnumber);
     LOC_LOGI(module, "Loading version %s", versionnumber);
   }
-  // todo: remove hard code!
-  generalconfig.beep = false;
+
   HandleAudio(Sounds::STARTUP);
 // Calibrate the touch screen and retrieve the scaling factors
 #ifndef USECAPTOUCH
@@ -638,6 +593,8 @@ void setup()
 
   //------------------BLE Initialization ------------------------------------------------------------------------
   LOC_LOGI(module, "Starting BLE Keyboard");
+  bleKeyboard.deviceName = generalconfig.deviceName;
+  bleKeyboard.deviceManufacturer = generalconfig.manufacturer;
   bleKeyboard.begin();
 
   // ---------------- Printing version numbers -----------------------------------------------
@@ -649,13 +606,12 @@ void setup()
   // ---------------- Start the first keypad -------------
 
   // Draw background
-  if(!GetActiveScreen())
+  if (!GetActiveScreen())
   {
     // only set active screen to home if no screen is already active
     // for example don't active home if drawError was called
     SetActiveScreen("home");
-
-  } 
+  }
   PrintMemInfo();
   HandleSleepConfig();
   HandleBeepConfig();
@@ -807,9 +763,9 @@ void processSerial()
       LOC_LOGD(module, "Restarting");
       ESP.restart();
     }
-    else if (command =="convertmenus")
+    else if (command == "convertmenus")
     {
-      LOC_LOGI(module,"Converting menu structure from old to new format");
+      LOC_LOGI(module, "Converting menu structure from old to new format");
       SaveFullFormat();
     }
     else if (command == "reset")
@@ -1040,23 +996,7 @@ void processSleep()
     if (millis() > previousMillis + Interval)
     {
       // The timer has ended and we are going to sleep  .
-      tft.fillScreen(TFT_BLACK);
-      LOC_LOGD(module, "Going to sleep.");
-      HandleAudio(Sounds::GOING_TO_SLEEP);
-      //todo better power management for TWATCH
-      //       power->setPowerOutPut(AXP202_LDO2, AXP202_OFF);
-      esp_err_t err = esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
-      if (err != ESP_OK)
-      {
-        LOC_LOGE(module, "Unable to set external wakeup pin: %s", esp_err_to_name(err));
-      }
-      else
-      {
-        generalconfig.sleepenable = false;
-        // Unlatch button
-        QueueAction(FreeTouchDeck::sleepSetLatchAction);
-        esp_deep_sleep_start();
-      }
+      EnterSleep();
     }
   }
 }

@@ -62,7 +62,7 @@ namespace FreeTouchDeck
         char buttonName[51] = {0};
         bool success = false;
         FTButton *button = NULL;
-        if (action->GetLatchButton(screenName, sizeof(screenName), buttonName, sizeof(buttonName)) && strcmp(screenName, Name) == 0)
+        if (action->SplitActionParameter(screenName, sizeof(screenName), buttonName, sizeof(buttonName)) && strcmp(screenName, Name) == 0)
         {
             if ((button = GetButton(buttonName)) != NULL)
             {

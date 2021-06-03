@@ -1,7 +1,8 @@
 #include "globals.hpp"
 #include "UserConfig.h"
 #include "FTAction.h"
-
+const char * defaultDeviceName = "FreeTouchDeck";
+const char * defaultManufacturerName = "Made by me";
 bool GetValueOrDefault(cJSON *value, char **valuePointer, const char *defaultValue)
 {
   bool success = false;
@@ -273,7 +274,9 @@ bool HandleModifier(cJSON *doc, const char *name, char **modifier)
 }
 void SetGeneralConfigDefaults()
 {
+  FREE_AND_NULL(generalconfig.modifier1);
   generalconfig.modifier1=ps_strdup("LEFT_ALT");
+  FREE_AND_NULL(generalconfig.modifier2);
   generalconfig.modifier2=ps_strdup("LEFT_SHIFT");;
   generalconfig.modifier3=NULL;
   generalconfig.menuButtonColour = convertRGB888ToRGB565(0x009bf4);
@@ -294,8 +297,14 @@ void SetGeneralConfigDefaults()
   generalconfig.colscount= 3;
   generalconfig.DefaultOutline= TFT_WHITE;
   generalconfig.DefaultTextColor= TFT_WHITE;
+  generalconfig.keyDelay=0;
   generalconfig.DefaultTextSize= KEY_TEXTSIZE;
   generalconfig.backgroundColour= TFT_BLACK;
+  generalconfig.ledBrightness = 255;
+  FREE_AND_NULL(generalconfig.deviceName);
+  generalconfig.deviceName = ps_strdup(defaultDeviceName);
+  FREE_AND_NULL(generalconfig.manufacturer);
+  generalconfig.manufacturer = ps_strdup(defaultManufacturerName);
 }
 
 /**
@@ -335,6 +344,10 @@ bool loadConfig(const char * name)
   bool needsSave=HandleModifier(doc, "modifier1", &generalconfig.modifier1);
   needsSave=needsSave?needsSave:HandleModifier(doc, "modifier2", &generalconfig.modifier2);
   needsSave=needsSave?needsSave:HandleModifier(doc, "modifier3", &generalconfig.modifier3);
+   
+  GetValueOrDefault(cJSON_GetObjectItem(doc, "manufacturer"), &generalconfig.manufacturer, defaultManufacturerName);
+  GetValueOrDefault(cJSON_GetObjectItem(doc, "devicename"), &generalconfig.deviceName, defaultDeviceName);
+
   // Parsing colors
   // Get the color for the menu and back home buttons.
   char *valBuffer = NULL;
@@ -370,6 +383,9 @@ bool loadConfig(const char * name)
   GetValueOrDefault(cJSON_GetObjectItem(doc, "colscount"), &generalconfig.colscount, 3);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "outline"), &generalconfig.DefaultOutline, TFT_WHITE);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "textcolor"), &generalconfig.DefaultTextColor, TFT_WHITE);
+  GetValueOrDefault(cJSON_GetObjectItem(doc, "keydelay"), &generalconfig.keyDelay, 0);
+  
+  GetValueOrDefault(cJSON_GetObjectItem(doc, "ledbrightness"), (uint8_t *)&generalconfig.ledBrightness, 255);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "textsize"), &generalconfig.DefaultTextSize, KEY_TEXTSIZE);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "backgroundcolor"), &generalconfig.backgroundColour, TFT_BLACK);
   cJSON_Delete(doc);
@@ -417,11 +433,17 @@ bool saveConfig(bool serial)
     cJSON_AddStringToObject(doc, "modifier2", generalconfig.modifier2);
   if (!ISNULLSTRING(generalconfig.modifier3))
     cJSON_AddStringToObject(doc, "modifier3", generalconfig.modifier3);
+  if(!ISNULLSTRING(generalconfig.manufacturer))
+    cJSON_AddStringToObject(doc, "manufacturer", generalconfig.manufacturer);
+  if(!ISNULLSTRING(generalconfig.deviceName))
+    cJSON_AddStringToObject(doc, "devicename", generalconfig.deviceName);    
   cJSON_AddNumberToObject(doc, "helperdelay", generalconfig.helperdelay);
   cJSON_AddNumberToObject(doc, "rowscount", generalconfig.rowscount);
   cJSON_AddNumberToObject(doc, "colscount", generalconfig.colscount);
   cJSON_AddNumberToObject(doc, "outline", generalconfig.DefaultOutline);
   cJSON_AddNumberToObject(doc, "textcolor", generalconfig.DefaultTextColor);
+  cJSON_AddNumberToObject(doc, "keydelay", generalconfig.keyDelay);
+  cJSON_AddNumberToObject(doc, "ledbrightness", generalconfig.ledBrightness);
   cJSON_AddNumberToObject(doc, "textsize", generalconfig.DefaultTextSize);
   cJSON_AddNumberToObject(doc, "backgroundcolor", generalconfig.backgroundColour);
   char *json = cJSON_Print(doc);

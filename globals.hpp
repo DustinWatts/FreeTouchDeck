@@ -59,6 +59,7 @@ struct Config
   uint8_t colscount;
   uint8_t rowscount;
   bool sleepenable;
+  uint16_t keyDelay;
   uint16_t sleeptimer;
   bool beep;
   bool flip_touch_axis;
@@ -68,10 +69,13 @@ struct Config
   char * modifier1;
   char * modifier2;
   char * modifier3;
+  char * deviceName;
+  char * manufacturer;
   uint16_t helperdelay;
   uint16_t DefaultOutline;
   uint8_t DefaultTextSize;
   uint16_t DefaultTextColor;
+  int ledBrightness;
   FreeTouchDeck::LogLevels LogLevel;
 };
 extern Config generalconfig;
@@ -112,6 +116,8 @@ extern bool GetValueOrDefault(cJSON *doc, const char *name, uint8_t *valuePointe
 extern void GetValueOrDefault(cJSON *doc, const char *name, bool *valuePointer, bool defaultValue);
 extern void ChangeMode(SystemMode newMode);
 extern void DumpCJson(cJSON *doc);
+extern void HandleSleepConfig();
+extern unsigned long Interval;
 
 #define FREE_AND_NULL(x) \
   if (x != NULL)         \

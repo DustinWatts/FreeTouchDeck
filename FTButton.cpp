@@ -185,6 +185,7 @@ namespace FreeTouchDeck
         BackgroundColor = generalconfig.menuButtonColour;
         snprintf(menuName, sizeof(menuName), "menu%d", index + 1);
         Label = ps_strdup(STRING_OR_DEFAULT(label, ""));
+        LOC_LOGD(module,"New button name is %s, menu name is %s",Label, menuName);
         actions.push_back(new FTAction(ActionTypes::MENU, menuName));
     }
     FTButton::FTButton(const char *label, uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
@@ -292,11 +293,7 @@ namespace FreeTouchDeck
             return;
 
         NeedsDraw = false;
-        _button.initButton(&tft, CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
-        _button.drawButton();
-        bool LatchNeedsRoundRect = !LatchedLogo();
         ImageWrapper *image = GetActiveImage();
-
         if (!image || !image->valid)
         {
             LOC_LOGE(module, "No image found, or image invalid!");
@@ -304,10 +301,16 @@ namespace FreeTouchDeck
         else
         {
             BGColor = tft.color565(image->R, image->G, image->B);
+            BackgroundColor = BGColor;
         }
         LOC_LOGV(module, "Found image structure, bitmap is %s", image->LogoName);
         LOC_LOGD(module, "Drawing button at [%d,%d] size: %dx%d,  outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d", CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BGColor, TextColor, TextSize);
         PrintMemInfo();
+
+        _button.initButton(&tft, CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
+        _button.drawButton();
+        bool LatchNeedsRoundRect = !LatchedLogo();
+       
         tft.setFreeFont(LABEL_FONT);
 
         if (ButtonType == ButtonTypes::LATCH && LatchNeedsRoundRect)

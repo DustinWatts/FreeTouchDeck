@@ -3,8 +3,10 @@
 #include "globals.hpp"
 #include <vector>
 #include <map>
+#include <functional>
 namespace FreeTouchDeck
 {
+    class FTAction;
     enum class ActionTypes
     {
         NONE = 0,
@@ -36,19 +38,6 @@ namespace FreeTouchDeck
     }
     const char *enum_to_string(ActionTypes type);
 
-    enum class LocalActionTypes
-    {
-        NONE = 0,
-        ENTER_CONFIG,
-        BRIGHTNESS_DOWN,
-        BRIGHTNESS_UP,
-        SLEEP,
-        INFO,
-        REBOOT,
-        BEEP,
-        ENDLIST
-
-    };
     typedef std::vector<uint8_t> KeyValue_t;
     typedef std::map<const char *, KeyValue_t> KeyMap_t;
     typedef std::map<ActionTypes, KeyMap_t> KeyMaps_t;
@@ -56,40 +45,31 @@ namespace FreeTouchDeck
     {
         ActionTypes Type;
         KeyValue_t Values;
+        FTAction * action;
     } KeySequence_t;
     typedef std::list<KeySequence_t> KeySequences_t;
-
-    inline LocalActionTypes &
-    operator++(LocalActionTypes &state, int)
-    {
-        int i = static_cast<int>(state) + 1;
-        i = i >= (int)LocalActionTypes::ENDLIST ? (int)LocalActionTypes::NONE : i;
-        state = static_cast<LocalActionTypes>(i);
-        return state;
-    }
-    const char *enum_to_string(LocalActionTypes type);
 
     class FTAction
     {
     public:
         ActionTypes Type;
-        LocalActionTypes LocalActionType;
-        uint8_t value;
+        char *ActionName = NULL;
         char *symbol = NULL;
         static const char *JsonLabelType;
         static const char *JsonLabelValue;
         static const char *JsonLabelSymbol;
-        static const char *JsonLabelLocalActionType;
         FTAction(ActionTypes actionParm, const char *jsonString);
         FTAction(char *jsonActionType, char *jsonValueStr);
         FTAction(cJSON *jsonActionType, cJSON *jsonValue);
         FTAction(cJSON *jsonActionType);
+        
         void ParseModifierKey(char * modifier);
         ~FTAction();
         static const char *GetNthElementKey(ActionTypes actionType, uint8_t index);
         static bool get_by_index(ActionTypes actionType, const char *index, const char **value);
         static const KeyMap_t GetMap(ActionTypes actionType);
         static bool ParseToken(const char *token, KeyValue_t *values, ActionTypes *type);
+        static bool ParseToken(const char *token, KeySequences_t *keySequences);
         bool ParseFreeText(const char *text, KeySequences_t *keySequences);
         cJSON *ToJson();
         void Execute();
@@ -101,11 +81,19 @@ namespace FreeTouchDeck
         };
 
         bool IsLatch();
-        bool GetLatchButton(char *screen, size_t screenSize, char *button, size_t buttonSize);
+        bool SplitActionParameter(char *name, size_t nameSize, char *parameter, size_t parameterSize);
+        static bool SplitActionParameter(const char * value,char *name, size_t nameSize, char *parameter, size_t parameterSize);
         const char *toString();
         inline bool IsString()
         {
-            return Type == ActionTypes::LETTERS || Type == ActionTypes::MEDIAKEY || Type == ActionTypes::SPECIAL_CHARS || Type == ActionTypes::MENU || Type == ActionTypes::SETLATCH || Type == ActionTypes::CLEARLATCH || Type == ActionTypes::TOGGLELATCH;
+            return Type == ActionTypes::LETTERS ||
+            Type == ActionTypes::LOCAL || 
+            Type == ActionTypes::MEDIAKEY || 
+            Type == ActionTypes::SPECIAL_CHARS || 
+            Type == ActionTypes::MENU || 
+            Type == ActionTypes::SETLATCH || 
+            Type == ActionTypes::CLEARLATCH ||
+            Type == ActionTypes::TOGGLELATCH;
         }
         inline bool IsScreen()
         {
@@ -129,7 +117,6 @@ namespace FreeTouchDeck
         }
         static bool parse(const char *value, ActionTypes *result);
         bool NeedsRelease;
-        static bool parse(const char *value, LocalActionTypes *result);
         static bool parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, const char **foundKey = NULL);
         static bool parse(const char *keyname, ActionTypes actionType, KeyValue_t *keyvalue, char **foundKey = NULL);
         bool ParseBTSequence();
@@ -147,20 +134,12 @@ namespace FreeTouchDeck
         KeySequences_t KeySequences;
     };
 
-    typedef bool (*ActionCallbackFn_t)(FTAction *);
-    typedef struct ActionCallbacks
-    {
-        ActionCallbackFn_t RunLatchAction;
-        ActionCallbackFn_t ChangeBrightness;
-        ActionCallbackFn_t SetSleep;
-        ActionCallbackFn_t PrintInfo;
-        ActionCallbackFn_t ConfigMode;
-        ActionCallbackFn_t SetActiveScreen;
-        ActionCallbackFn_t SetBeep;
+    typedef std::function<bool(FTAction *)> ActionCallbackFn_t;
+    typedef std::map<std::string,ActionCallbackFn_t> ActionCallbackMap_t;
 
-    } ActionCallbacks_t;
-
-    ActionCallbacks_t *ActionsCallbacks();
+    bool CallActionCallback(const char * name,FTAction * action, bool checkOnly=false);
+    bool CallActionCallback(FTAction * action, bool checkOnly=false);
+    extern ActionCallbackMap_t UserActions;
     extern FTAction *sleepSetLatchAction;
     extern FTAction *sleepClearLatchAction;
     extern FTAction *sleepToggleLatchAction;
