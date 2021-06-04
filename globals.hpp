@@ -66,9 +66,7 @@ struct Config
   bool reverse_x_touch;
   bool reverse_y_touch;
   uint8_t screenrotation;
-  char * modifier1;
-  char * modifier2;
-  char * modifier3;
+  std::list<char *> modifiers;
   char * deviceName;
   char * manufacturer;
   uint16_t helperdelay;

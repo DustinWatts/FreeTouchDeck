@@ -13,5 +13,7 @@ namespace FreeTouchDeck {
     extern Menu *GetScreen(const char *name);
     extern bool SaveFullFormat();
     extern Menu *GetLatchScreen(FTAction *action);
+    extern bool LoadFullFormat(const char * fileName);
+    extern bool LoadFullFormat();
 }
 

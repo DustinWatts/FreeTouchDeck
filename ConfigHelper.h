@@ -455,23 +455,8 @@ bool resetconfig(String file)
     }
 
     FILESYSTEM.remove(filetoremove);
-
-    File newfile = FILESYSTEM.open(filetoremove, "w");
-    newfile.print(R"(
-{
-  "menubuttoncolor": "#009bf4",
-  "functionbuttoncolor": #00efcb,
-  "latchcolor: #fe0149,
-  "background: #000000,
-  "sleepenable: true,
-  "sleeptimer: 10,
-  "beep: true,
-  "modifier1: 130,
-  "modifier2: 129,
-  "modifier3: 0,
-  "helperdelay: 500
-})");
-    newfile.close();
+    SetGeneralConfigDefaults();
+    saveConfig(false);
     LOC_LOGI(module, "Done resetting general config.");
     LOC_LOGI(module, "Type \"restart\" to reload configuration.");
     return true;

@@ -12,8 +12,8 @@ namespace FreeTouchDeck
     FTAction *sleepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Sleep");
     FTAction *sleepToggleLatchAction = new FTAction(ActionTypes::TOGGLELATCH, "Preferences,Sleep");
     FTAction *beepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "Preferences,Beep");
-    FTAction *beepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Beep");    
-    FTAction * criticalMessage = new FTAction(ActionTypes::MENU, "criticalmessage");
+    FTAction *beepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Beep");
+    FTAction *criticalMessage = new FTAction(ActionTypes::MENU, "criticalmessage");
     std::list<Menu *> PrevScreen;
     static const char *configMenu =
         R"({
@@ -125,7 +125,7 @@ namespace FreeTouchDeck
 						"type":	"LOCAL",
 						"symbol":	"REBOOT"
 					}]        
-	})";    
+	})";
     static const char *module = "MenuNavigation";
     using namespace std;
     std::list<Menu *> Menus;
@@ -206,7 +206,7 @@ namespace FreeTouchDeck
 
             if (!Match)
             {
-                LOC_LOGE(module, "Screen %s not found", name);
+                LOC_LOGD(module, "Screen %s not found", name);
             }
             else
             {
@@ -220,7 +220,8 @@ namespace FreeTouchDeck
     {
         bool result = false;
         PrintMemInfo();
-        if(Menus.size()==0) return false;
+        if (Menus.size() == 0)
+            return false;
         Menu *Active = GetActiveScreen();
         PrintMemInfo();
         Menu *Match = GetScreen(name);
@@ -285,31 +286,66 @@ namespace FreeTouchDeck
 
         return Match;
     }
+    void DeleteMenuEntry(const char * name)
+    {
+        Menu * existing=GetScreen(name);
+        if(existing){
+            LOC_LOGD(module,"Removing existing menu %s", name);
+            delete(existing);
+            Menus.remove(existing);
+        }
+    }
+    bool AddReplaceMenuEntry(Menu * menu)
+    {
+        if(!menu)
+        {
+            LOC_LOGE(module,"Invalid menu object!");
+            return false;
+        }
+        DeleteMenuEntry(menu->Name);
+        Menus.push_back(menu);
+        return true;
+    }
+    bool PushJsonMenu(cJSON * menuJson)
+    {
+        // This function assumes that the menu collection
+        // object will be locked
+        bool result = false;
+        Menu * menu=new Menu(menuJson);
+        return AddReplaceMenuEntry(menu);
+        return result;
+    }
     bool PushJsonMenu(const char *menuString)
     {
         // This function assumes that the menu collection
         // object will be locked
         Menu *menu = NULL;
         bool result = false;
-        if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
-        {
 
-            menu = Menu::FromJson(menuString);
-            if (menu)
-            {
-                Menus.push_back(menu);
-                result = true;
-            }
-            else
-            {
-                LOC_LOGE(module, "Could not add menu");
-            }
-            ScreenUnlock();
+        cJSON *doc = cJSON_Parse(menuString);
+        if (!doc)
+        {
+            const char *error = cJSON_GetErrorPtr();
+            LOC_LOGE(module, "Menu parsing failed: %s", error);
+            drawErrorMessage(true, module, "Unable to parse json string : %s", error);
+            return false;
         }
         else
         {
-            LOC_LOGE(module, "Unable to add menus");
+            if(cJSON_IsArray(doc)) 
+            {
+                cJSON * menuJson = NULL;
+                cJSON_ArrayForEach(menuJson,doc)
+                {
+                    result = !result?result:PushJsonMenu(menuJson);
+                }
+            }
+            else 
+            {
+                result = PushJsonMenu(doc);
+            }
         }
+        cJSON_Delete(doc);
         return result;
     }
     void LoadSystemMenus()
@@ -318,7 +354,7 @@ namespace FreeTouchDeck
         PushJsonMenu(configMenu);
         LOC_LOGD(module, "Adding blank menu");
         PushJsonMenu(blankMenu);
-        LOC_LOGD(module,"Adding System Message Screen");
+        LOC_LOGD(module, "Adding System Message Screen");
         PushJsonMenu(messageMenu);
     }
     bool compare_nocase(const Menu *first, const Menu *second)
@@ -427,31 +463,35 @@ namespace FreeTouchDeck
         File menus = SPIFFS.open("/config/menus.json", FILE_WRITE);
         if (!menus)
         {
-            LOC_LOGE(module,"Error opening menus.json");
+            LOC_LOGE(module, "Error opening menus.json");
             return false;
         }
         char *json = MenusToJson(false);
         if (json)
         {
 
-            size_t written=menus.write((const uint8_t *)json, strlen(json));
+            size_t written = menus.write((const uint8_t *)json, strlen(json));
             menus.close();
-            if(strlen(json) != written)
+            if (strlen(json) != written)
             {
-                ESP_LOGE(module,"Expected to write %d bytes but only %d bytes were written", strlen(json),written);
+                ESP_LOGE(module, "Expected to write %d bytes but only %d bytes were written", strlen(json), written);
                 SPIFFS.remove("/config/menus.json");
             }
             FREE_AND_NULL(json);
-      }
-      else
-      {
-        LOC_LOGE(module, "Unable to print menu structure");
-      }
+        }
+        else
+        {
+            LOC_LOGE(module, "Unable to print menu structure");
+        }
     }
     bool LoadFullFormat()
     {
+        return LoadFullFormat("/config/menus.json");
+    }
+    bool LoadFullFormat(const char *fileName)
+    {
         bool result = false;
-        File menus = SPIFFS.open("/config/menus.json", "r");
+        File menus = SPIFFS.open(fileName, FILE_READ);
         if (!menus || menus.size() == 0)
         {
             return false;
@@ -469,6 +509,7 @@ namespace FreeTouchDeck
             }
             else
             {
+
                 result = PushJsonMenu(fullbuffer);
             }
         }
@@ -481,6 +522,7 @@ namespace FreeTouchDeck
             // they should be displayed
             result = GenerateHomeScreen(false);
         }
+        FREE_AND_NULL(fullbuffer);
         return result;
     }
     void LoadAllMenus()
@@ -541,7 +583,7 @@ namespace FreeTouchDeck
                     continue; // don't output system menus as they are built-in
                 LOC_LOGD(module, "Converting menu %s", STRING_OR_DEFAULT(m->Name, "unknown"));
                 PrintMemInfo();
-                cJSON * menuEntry=m->ToJSON();
+                cJSON *menuEntry = m->ToJSON();
                 cJSON_AddItemToArray(menusArray, menuEntry);
                 json = cJSON_Print(menuEntry);
                 if (json)
