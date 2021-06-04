@@ -100,6 +100,7 @@ namespace FreeTouchDeck
         }
         return "";
     }
+    
     bool FTAction::IsValidKey(ActionTypes actionType, const char * name, char ** foundValue)
     {
         bool found=false;
@@ -295,8 +296,9 @@ namespace FreeTouchDeck
                 if (values.size() > 0)
                 {
                     KeySequence_t sequence = {.Type = ActionTypes::LETTERS, .Values = values};
-                    //std::string str(values.begin(), values.end());
-                    LOC_LOGD(module, "Sequence found with len %d: %s", values.size(), values); //, str.c_str());
+                    keySequences->push_back(sequence);
+                    std::string valStr(values.begin(), values.end());
+                    LOC_LOGD(module, "Sequence found with len %d: %s", values.size(), valStr); //, str.c_str());
                     values.clear();
                 }
 
@@ -308,15 +310,16 @@ namespace FreeTouchDeck
                 size_t len = min((size_t)(p - tokenStart - 1), (size_t)(sizeof(token) - 1));
                 strncpy(token, tokenStart + 1, len);
                 LOC_LOGD(module, "Found token %s", token);
-                if (ParseToken(token, keySequences))
+                if (ParseToken(token, &values, &type))
                 {
-                    LOC_LOGD(module, "Successfully parsed action token %s", token);
-                }
-                else if (ParseToken(token, &values, &type))
-                {
+                    LOC_LOGD(module, "Token isn't a key sequence");
                     KeySequence_t sequence = {.Type = type, .Values = values};
                     keySequences->push_back(sequence);
                     values.clear();
+                }
+                else if (ParseToken(token, keySequences))
+                {
+                    LOC_LOGD(module, "Successfully parsed action token %s", token);
                 }
                 tokenStart = p + 1;
             }
@@ -489,7 +492,7 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Evaluating value %s",jsonValue);
         char * name = (char *)malloc_fn(strlen(jsonValue) + 1);
         char * parameter = (char *)malloc_fn(strlen(jsonValue) + 1);
-
+        if(IsValidKey)
         if (Type == ActionTypes::LOCAL)
         {
             LOC_LOGD(module, "Action Type local. Checking if we have a callback named %s", jsonValue);
@@ -908,7 +911,7 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "Invalid callback name %s. Valid callbacks are: ", name);
             for (auto c : FreeTouchDeck::UserActions)
             {
-                LOC_LOGE(module, "    %s", c.first);
+                LOC_LOGE(module, "    %s", c.first.c_str());
             }
         }
         return false;
