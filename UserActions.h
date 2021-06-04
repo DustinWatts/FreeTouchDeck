@@ -36,6 +36,7 @@ bool ChangeBrightness(FTAction *action)
         LOC_LOGE(module, "Unknown Brightness action %s", action->ActionName);
     }
     ledcWrite(0, generalconfig.ledBrightness);
+    saveConfig(false);
     return true;
 }
 

@@ -68,6 +68,7 @@ namespace FreeTouchDeck
         static const char *GetNthElementKey(ActionTypes actionType, uint8_t index);
         static bool get_by_index(ActionTypes actionType, const char *index, const char **value);
         static const KeyMap_t GetMap(ActionTypes actionType);
+        static bool IsValidKey(ActionTypes actionType, const char * name, char ** foundValue);
         static bool ParseToken(const char *token, KeyValue_t *values, ActionTypes *type);
         static bool ParseToken(const char *token, KeySequences_t *keySequences);
         bool ParseFreeText(const char *text, KeySequences_t *keySequences);
@@ -93,6 +94,7 @@ namespace FreeTouchDeck
             Type == ActionTypes::MENU || 
             Type == ActionTypes::SETLATCH || 
             Type == ActionTypes::CLEARLATCH ||
+            Type == ActionTypes::FREETEXT ||
             Type == ActionTypes::TOGGLELATCH;
         }
         inline bool IsScreen()

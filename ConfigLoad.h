@@ -208,77 +208,102 @@ bool loadWifiConfig()
   }
   return true;
 }
-bool HandleModifier(cJSON *doc, const char *name, char **modifier)
+char * GetModifierFromNumber(int modifier)
 {
-
-  bool changed=false;
-  KeyValue_t KeyValue;
-  KeySequence_t Sequence;
-  char numBuffer[21] = {0};
-  FREE_AND_NULL(*modifier);
-
-  cJSON *JsonModifier = cJSON_GetObjectItem(doc, name);
-  if (!JsonModifier)
-  {
-    LOC_LOGW(module, "No value found for %s", name);
-    return false;
-  }
-  if (cJSON_IsString(JsonModifier))
-  {
-    if (!ISNULLSTRING(cJSON_GetStringValue(JsonModifier)))
-    {
-      FTAction::parse(cJSON_GetStringValue(JsonModifier), ActionTypes::OPTIONKEYS, &KeyValue, modifier);
-    }
-    else
-    {
-      LOC_LOGW(module, "Empty value found for %s", name);
-    }
-  }
-  else if (cJSON_IsNumber(JsonModifier))
-  {
-    // From the old configuration style
-    switch (JsonModifier->valueint)
+    switch (modifier)
     {
     case 0:
       /* code */
       break;
     case 0x80:
-      *modifier = ps_strdup("LEFT_CTRL");
-      changed=true;
+      return  ps_strdup("LEFT_CTRL");
       break;
     case 0x81:
-      *modifier = ps_strdup("LEFT_SHIFT");
-      changed=true;
+      return ps_strdup("LEFT_SHIFT");
       break;      
     case 0x82:
-      *modifier = ps_strdup("LEFT_ALT");
-      changed=true;
+      return ps_strdup("LEFT_ALT");
       break;      
     case 0x83:
-      *modifier = ps_strdup("LEFT_GUI");
-      changed=true;
+      return ps_strdup("LEFT_GUI");
       break;      
     default:
-      LOC_LOGE(module,"Unknown numeric modifier %d",JsonModifier->valueint);
+      LOC_LOGE(module,"Unknown numeric modifier %d",modifier);
       break;
     }
-  }
-  if (!ISNULLSTRING(*modifier))
+    return NULL;
+}
+bool HandleModifier(const char * modifier)
+{
+    char * foundModifier=NULL;
+    KeyValue_t KeyValue;
+    if(ISNULLSTRING(modifier))
+    {
+      return false;
+    }
+    if(modifier[0]>='0' && modifier[0]<='9' )
+    {
+      char * numericMod=GetModifierFromNumber(atol(modifier));
+      if(!ISNULLSTRING(numericMod))
+      {
+        generalconfig.modifiers.push_back(numericMod);
+        return true;
+      }
+    }
+    if(FTAction::parse(modifier, ActionTypes::OPTIONKEYS, &KeyValue, &foundModifier))
+    {
+      LOC_LOGD(module,"Adding modifier %s",STRING_OR_DEFAULT(foundModifier,"") );
+      generalconfig.modifiers.push_back(foundModifier);
+    }
+    else
+    {
+      LOC_LOGD(module,"Invalid modifier string %s",STRING_OR_DEFAULT(modifier,"") );
+    }
+}
+
+bool HandleModifier(cJSON *doc, const char *name)
+{
+
+  bool changed=false;
+
+  KeySequence_t Sequence;
+  char numBuffer[21] = {0};
+
+  cJSON *JsonModifier = cJSON_GetObjectItem(doc, name);
+  if (!JsonModifier)
   {
-    LOC_LOGD(module, "%s value is %s", name, *modifier);
+    LOC_LOGD(module, "No value found for %s", name);
+    return false;
   }
-  else
+  if (cJSON_IsString(JsonModifier))
   {
-    LOC_LOGE(module, "Invalid value for %s", name);
+    
+    if (!ISNULLSTRING(cJSON_GetStringValue(JsonModifier)))
+    {
+      ESP_LOGD(module,"Parsing modifier %s",cJSON_GetStringValue(JsonModifier) );
+      HandleModifier(cJSON_GetStringValue(JsonModifier));
+    }
+    else
+    {
+      LOC_LOGD(module, "Empty value found for %s", name);
+    }
   }
+  else if (cJSON_IsNumber(JsonModifier))
+  {
+    // From the old configuration style
+    HandleModifier(GetModifierFromNumber(JsonModifier->valueint));
+  }
+  return changed;
 }
 void SetGeneralConfigDefaults()
 {
-  FREE_AND_NULL(generalconfig.modifier1);
-  generalconfig.modifier1=ps_strdup("LEFT_ALT");
-  FREE_AND_NULL(generalconfig.modifier2);
-  generalconfig.modifier2=ps_strdup("LEFT_SHIFT");;
-  generalconfig.modifier3=NULL;
+  for(auto m : generalconfig.modifiers)
+  {
+    FREE_AND_NULL(m);
+  }
+  generalconfig.modifiers.clear();
+  generalconfig.modifiers.push_back(ps_strdup("LEFT_ALT"));
+  generalconfig.modifiers.push_back(ps_strdup("LEFT_SHIFT"));
   generalconfig.menuButtonColour = convertRGB888ToRGB565(0x009bf4);
   generalconfig.functionButtonColour = convertRGB888ToRGB565(0x00efcb);
   generalconfig.latchedColour = convertRGB888ToRGB565(0xfe0149);
@@ -286,7 +311,11 @@ void SetGeneralConfigDefaults()
   generalconfig.sleepenable= false;
   generalconfig.sleeptimer=60;
   generalconfig.beep=true;
+  #ifdef DEFAULT_LOG_LEVEL
+  generalconfig.LogLevel = DEFAULT_LOG_LEVEL;
+  #else
   generalconfig.LogLevel = LogLevels::INFO;
+  #endif
 
   generalconfig.helperdelay= 0;
   generalconfig.screenrotation= SCREEN_ROTATION;
@@ -307,6 +336,33 @@ void SetGeneralConfigDefaults()
   generalconfig.manufacturer = ps_strdup(defaultManufacturerName);
 }
 
+void ProcessModifier(cJSON * modifier)
+{
+  if(!cJSON_IsString(modifier) )
+      {
+        LOC_LOGE(module,"Modifiers should be strings. Cannot load modifiers");
+      }
+      else
+      {
+        char * foundKey=NULL;
+        if(FTAction::IsValidKey(ActionTypes::OPTIONKEYS, cJSON_GetStringValue(modifier), &foundKey))
+        {
+            LOC_LOGD(module,"Parsed modifier with key %s", foundKey);
+            generalconfig.modifiers.push_back(foundKey);
+        }
+        else 
+        {
+          if(!ISNULLSTRING(cJSON_GetStringValue(modifier)))
+          {
+            LOC_LOGE(module,"Invalid modifier key %s",cJSON_GetStringValue(modifier));
+          }
+        } 
+      }
+}
+void ProcessModifier(cJSON * doc, const char * name)
+{
+    ProcessModifier(cJSON_GetObjectItem(doc,name));
+}
 /**
 * @brief This function loads the menu configuration.
 *
@@ -319,15 +375,26 @@ void SetGeneralConfigDefaults()
 */
 bool loadConfig(const char * name)
 {
-  
+  bool needsSave=false;
+  if(ISNULLSTRING(name))
+  {
+    LOC_LOGE(module, "Invalid configuration file passed. ");
+    return false;
+  }
   File configfile = FILESYSTEM.open(name, "r");
+  LOC_LOGI(module,"Loading configuration from file name: %s",STRING_OR_DEFAULT(name,""));
   if (!configfile && configfile.size() == 0)
   {
     LOC_LOGE(module, "Could not find file %s",name);
     return false;
   }
-  char buffer[configfile.size()+1] = {0};
-  size_t bytesRead = configfile.readBytes(buffer, sizeof(buffer));
+  char * buffer = (char *)malloc_fn(configfile.size()+1);
+  if(!buffer)
+  {
+    LOC_LOGE(module, "Could not allocate memory for reading file %s", name);
+    return false;
+  }
+  size_t bytesRead = configfile.readBytes(buffer,configfile.size()+1 );
   if (bytesRead != configfile.size())
   {
     drawErrorMessage(false, module, "Could not fully read %s config in buffer. Read %d of %d bytes.",name, bytesRead, configfile.size());
@@ -335,35 +402,63 @@ bool loadConfig(const char * name)
   }
   configfile.close();
   cJSON *doc = cJSON_Parse(buffer);
+  FREE_AND_NULL(buffer);
   if (!doc)
   {
     const char *error = cJSON_GetErrorPtr();
     drawErrorMessage(false, module, "Unable to parse json string : %s", error);
     return false;
   }
-  bool needsSave=HandleModifier(doc, "modifier1", &generalconfig.modifier1);
-  needsSave=needsSave?needsSave:HandleModifier(doc, "modifier2", &generalconfig.modifier2);
-  needsSave=needsSave?needsSave:HandleModifier(doc, "modifier3", &generalconfig.modifier3);
-   
+  else
+  {
+    char * docstr=cJSON_Print(doc);
+    if(docstr)
+    {
+      LOC_LOGD(module,"Configuration is : \n%s",docstr);
+      FREE_AND_NULL(docstr);
+    }
+  }
+  cJSON * modifiers = cJSON_GetObjectItem(doc,"modifiers");
+  if(modifiers && cJSON_IsArray(modifiers))
+  {
+    cJSON * modifier=NULL;
+    cJSON_ArrayForEach(modifier,modifiers)
+    {
+      ProcessModifier(modifier);
+    }
+  }
+  else
+  {
+    ProcessModifier(doc, "modifier1");
+    ProcessModifier(doc, "modifier2");
+    ProcessModifier(doc, "modifier3");
+    needsSave=generalconfig.modifiers.size()>0;
+  }
+    
   GetValueOrDefault(cJSON_GetObjectItem(doc, "manufacturer"), &generalconfig.manufacturer, defaultManufacturerName);
+  LOC_LOGD(module,"Manufacturer name : %s",generalconfig.manufacturer);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "devicename"), &generalconfig.deviceName, defaultDeviceName);
-
+  LOC_LOGD(module,"Device name : %s",generalconfig.deviceName);
   // Parsing colors
   // Get the color for the menu and back home buttons.
   char *valBuffer = NULL;
   GetValueOrDefault(cJSON_GetObjectItem(doc, "menubuttoncolor"), &valBuffer, "#009bf4");
-  generalconfig.menuButtonColour = convertRGB888ToRGB565(convertHTMLtoRGB888(valBuffer));
-
+  
+  generalconfig.menuButtonColour = convertHTMLRGB888ToRGB565(valBuffer);
+  LOC_LOGD(module,"menuButtonColour : %s, numeric: %6x",valBuffer, generalconfig.menuButtonColour);
   // Get the color for the function buttons.
   GetValueOrDefault(cJSON_GetObjectItem(doc, "functionbuttoncolor"), &valBuffer, "#00efcb");
-  generalconfig.functionButtonColour = convertRGB888ToRGB565(convertHTMLtoRGB888(valBuffer));
+  generalconfig.functionButtonColour = convertHTMLRGB888ToRGB565(valBuffer);
+  LOC_LOGD(module,"functionButtonColour : %s, numeric: %6x",valBuffer, generalconfig.functionButtonColour);
 
   // Get the color to use when latching.
   GetValueOrDefault(cJSON_GetObjectItem(doc, "latchcolor"), &valBuffer, "#fe0149");
-  generalconfig.latchedColour = convertRGB888ToRGB565(convertHTMLtoRGB888(valBuffer));
+  generalconfig.latchedColour = convertHTMLRGB888ToRGB565(valBuffer);
+LOC_LOGD(module,"latchcolor : %s, numeric: %6x",valBuffer, generalconfig.latchedColour);
   // Get the color for the background.
   GetValueOrDefault(cJSON_GetObjectItem(doc, "background"), &valBuffer, "#000000");
-  generalconfig.backgroundColour = convertRGB888ToRGB565(convertHTMLtoRGB888(valBuffer));
+  generalconfig.backgroundColour = convertHTMLRGB888ToRGB565(valBuffer);
+  LOC_LOGD(module,"background : %s, numeric: %6x",valBuffer, generalconfig.backgroundColour);
   FREE_AND_NULL(valBuffer);
   // Loading general settings
 
@@ -388,9 +483,13 @@ bool loadConfig(const char * name)
   GetValueOrDefault(cJSON_GetObjectItem(doc, "ledbrightness"), (uint8_t *)&generalconfig.ledBrightness, 255);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "textsize"), &generalconfig.DefaultTextSize, KEY_TEXTSIZE);
   GetValueOrDefault(cJSON_GetObjectItem(doc, "backgroundcolor"), &generalconfig.backgroundColour, TFT_BLACK);
+  
   cJSON_Delete(doc);
+  LOC_LOGD(module,"Configuration after load");
+  saveConfig(true);
   if(needsSave)
   {
+    LOC_LOGI(module,"Saving updated configuration");
     saveConfig(false);
   }
   return true;
@@ -427,12 +526,18 @@ bool saveConfig(bool serial)
   cJSON_AddNumberToObject(doc, "loglevel", static_cast<int>(generalconfig.LogLevel));
   cJSON_AddNumberToObject(doc, "screenrotation", generalconfig.screenrotation);
   cJSON_AddNumberToObject(doc, "sleeptimer", generalconfig.sleeptimer);
-  if (!ISNULLSTRING(generalconfig.modifier1))
-    cJSON_AddStringToObject(doc, "modifier1", generalconfig.modifier1);
-  if (!ISNULLSTRING(generalconfig.modifier2))
-    cJSON_AddStringToObject(doc, "modifier2", generalconfig.modifier2);
-  if (!ISNULLSTRING(generalconfig.modifier3))
-    cJSON_AddStringToObject(doc, "modifier3", generalconfig.modifier3);
+  if(generalconfig.modifiers.size()>0)
+  {
+    LOC_LOGV(module,"Found %d modifiers",generalconfig.modifiers.size());
+    cJSON * modifiers = cJSON_CreateArray();
+    for(auto m : generalconfig.modifiers)
+    {
+      cJSON_AddItemToArray(modifiers,cJSON_CreateString(m));
+    }  
+    cJSON_AddItemToObject(doc,"modifiers",modifiers);
+  
+  }
+  
   if(!ISNULLSTRING(generalconfig.manufacturer))
     cJSON_AddStringToObject(doc, "manufacturer", generalconfig.manufacturer);
   if(!ISNULLSTRING(generalconfig.deviceName))

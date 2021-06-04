@@ -494,21 +494,30 @@ void handlerSetup()
         {
           generalconfig.sleeptimer = value->value().toInt();
         }
-        value=  request->getParam("modifier1", true);
-        if(value)
+        value = request->getParam("modifier1", true);
+        if (value)
         {
-          generalconfig.modifier1 = ps_strdup(value->value().c_str());
+          if (!HandleModifier(value->value().c_str()))
+          {
+            LOC_LOGE(module, "Invalid modifier %s", value->value().c_str());
+          }
         }
-        value=  request->getParam("modifier2", true);
-        if(value)
+        value = request->getParam("modifier2", true);
+        if (value)
         {
-          generalconfig.modifier2 = ps_strdup(value->value().c_str());
+          if (!HandleModifier(value->value().c_str()))
+          {
+            LOC_LOGE(module, "Invalid modifier %s", value->value().c_str());
+          }
         }
-        value=  request->getParam("modifier3", true);
-        if(value)
+        value = request->getParam("modifier3", true);
+        if (value)
         {
-          generalconfig.modifier3 = ps_strdup(value->value().c_str());
-        }        
+          if (!HandleModifier(value->value().c_str()))
+          {
+            LOC_LOGE(module, "Invalid modifier %s", value->value().c_str());
+          }
+        }
 
         value=  request->getParam("helperdelay", true);
         if(value)

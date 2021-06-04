@@ -100,6 +100,38 @@ namespace FreeTouchDeck
         }
         return "";
     }
+    bool FTAction::IsValidKey(ActionTypes actionType, const char * name, char ** foundValue)
+    {
+        bool found=false;
+        KeyValue_t kv;
+        ASSING_IF_PASSED(foundValue,NULL);
+
+        if(ISNULLSTRING(name))
+        {
+            LOC_LOGD(module,"Empty key type %s passed", enum_to_string(actionType));
+            found=false;
+        }
+        else
+        {
+          char * foundKey=NULL;
+          if(FTAction::parse(name, actionType, &kv, &foundKey))
+          {
+            found=true;
+            LOC_LOGD(module,"Parsed modifier with key %s", foundKey);
+            if(*foundValue)
+            {
+                FREE_AND_NULL(*foundValue);
+                *foundValue=foundKey;
+                found=true;
+            }
+          }
+          else 
+          {
+            LOC_LOGE(module, "Invalid option key %s ", name);
+          }
+        }
+        return false;
+    }
     bool FTAction::get_by_index(ActionTypes actionType, const char *index, const char **value)
     {
         const KeyMap_t map = KeyMaps.find(actionType)->second;
@@ -349,10 +381,15 @@ namespace FreeTouchDeck
             return;
         if (parse(modifier, ActionTypes::OPTIONKEYS, &KeyValue))
         {
+            LOC_LOGD(module,"Adding modifier key %s",modifier);
             Sequence.Type = ActionTypes::FUNCTIONKEYS;
             Sequence.Values = KeyValue;
             KeySequences.push_back(Sequence);
             NeedsRelease = true;
+        }
+        else
+        {
+            LOC_LOGE(module,"Invalid modifier %s", STRING_OR_DEFAULT(modifier,""));
         }
     }
     bool FTAction::ParseBTSequence()
@@ -419,20 +456,22 @@ namespace FreeTouchDeck
             NeedsRelease = true;
             break;
         case ActionTypes::HELPERS:
-            // todo:  parse modifiers too!
-            ParseModifierKey(generalconfig.modifier1);
-            ParseModifierKey(generalconfig.modifier2);
-            ParseModifierKey(generalconfig.modifier3);
+            for(auto modifier:generalconfig.modifiers)
+            {
+                ParseModifierKey(modifier);
+            }
             if (parse(symbol, Type, &KeyValue, &foundKey))
             {
                 Sequence.Type = Type;
                 Sequence.Values = KeyValue;
                 FREE_AND_NULL(symbol);
                 symbol = foundKey;
+                LOC_LOGD(module,"Adding key %s", STRING_OR_DEFAULT(symbol,""));
                 KeySequences.push_back(Sequence);
             }
             break;
         case ActionTypes::FREETEXT:
+        LOC_LOGD(module,"Parsing free text sequence %s",STRING_OR_DEFAULT(symbol,""));
             ParseFreeText(symbol, &KeySequences);
             break;
         default:
@@ -499,6 +538,7 @@ namespace FreeTouchDeck
         }
         else if (IsBTSequence())
         {
+            symbol=ps_strdup(jsonValue);
             if (!ParseBTSequence())
             {
                 LOC_LOGE(module, "Error parsing BT key sequences");
@@ -629,9 +669,8 @@ namespace FreeTouchDeck
             break;
 
         case ActionTypes::DELAY:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, delay: %s", enum_to_string(Type), symbol);
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, delay: %s", enum_to_string(Type), STRING_OR_DEFAULT(symbol,""));
             break;
-
         case ActionTypes::FUNCTIONKEYS:
         case ActionTypes::MEDIAKEY:
         case ActionTypes::ARROWS_AND_TAB:
@@ -643,34 +682,18 @@ namespace FreeTouchDeck
         case ActionTypes::TOGGLELATCH:
         case ActionTypes::COMBOS:
         case ActionTypes::FREETEXT:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, value: %s", enum_to_string(Type), symbol);
-            break;
         case ActionTypes::OPTIONKEYS:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: %s", enum_to_string(Type), STRING_OR_DEFAULT(symbol, "Release All"));
-            break;
         case ActionTypes::NUMBERS:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, Number: %s", enum_to_string(Type), symbol);
+        case ActionTypes::LOCAL:
+            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, value: %s%s%s", enum_to_string(Type), STRING_OR_DEFAULT(ActionName,""),ISNULLSTRING(ActionName)?"":":",STRING_OR_DEFAULT(symbol,""));
             break;
         case ActionTypes::HELPERS:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, key: ", enum_to_string(Type));
-            if (generalconfig.modifier1)
+            for(auto modifier:generalconfig.modifiers)
             {
-                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier1);
+                snprintf(printBuffer, sizeof(printBuffer), "%s %s", printBuffer, STRING_OR_DEFAULT(modifier,""));                
             }
-            if (generalconfig.modifier2 != 0)
-            {
-                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier2);
-            }
-            if (generalconfig.modifier3 != 0)
-            {
-                snprintf(printBuffer, sizeof(printBuffer), "%s 0X%04X", printBuffer, generalconfig.modifier3);
-            }
-            snprintf(printBuffer, sizeof(printBuffer), "%s %s", printBuffer, symbol);
+            snprintf(printBuffer, sizeof(printBuffer), "%s %s", printBuffer, STRING_OR_DEFAULT(symbol,""));
             break;
-        case ActionTypes::LOCAL:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, local action: %s", enum_to_string(Type), ActionName);
-            break;
-
         default:
             break;
         }
@@ -685,10 +708,10 @@ namespace FreeTouchDeck
         {
             if (!ScreenQueue.empty())
             {
-                LOC_LOGD(module, "Screen Action Queue Length : %d", ScreenQueue.size());
+                LOC_LOGV(module, "Screen Action Queue Length : %d", ScreenQueue.size());
                 Action = ScreenQueue.front();
                 ScreenQueue.pop();
-                LOC_LOGD(module, "Screen Action Queue Length : %d", ScreenQueue.size());
+                LOC_LOGV(module, "Screen Action Queue Length : %d", ScreenQueue.size());
             }
             QueueUnlock();
         }
@@ -706,10 +729,10 @@ namespace FreeTouchDeck
         {
             if (!Queue.empty())
             {
-                LOC_LOGD(module, "Action Queue Length : %d", Queue.size());
+                LOC_LOGV(module, "Action Queue Length : %d", Queue.size());
                 Action = Queue.front();
                 Queue.pop();
-                LOC_LOGD(module, "Action Queue Length : %d", Queue.size());
+                LOC_LOGV(module, "Action Queue Length : %d", Queue.size());
             }
             QueueUnlock();
         }
@@ -777,12 +800,9 @@ namespace FreeTouchDeck
 
         if (IsString())
         {
-            LOC_LOGD(module, "Parsing value from symbol");
+            LOC_LOGD(module, "Parsing value from symbol %s", STRING_OR_DEFAULT(symbol,""));
             GetValueOrDefault(jsonActionType, FTAction::JsonLabelSymbol, &symbol, "");
-            if (Type == ActionTypes::LOCAL)
-            {
-                SetValue(symbol);
-            }
+            SetValue(symbol);
         }
         else
         {
