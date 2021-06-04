@@ -1,0 +1,37 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label":"openocd",
+            "type":"shell",
+            "presentation": {
+                "echo": true,
+                "reveal": "never",
+                "focus": false,
+                "panel":"new"
+            },
+            "command":"openocd -s share/openocd/scripts -f interface/jlink.cfg -f board/esp-wroom-32.cfg",
+            "windows": {
+                "command": "openocd.exe -s share/openocd/scripts -f interface/jlink.cfg -f board/esp-wroom-32.cfg"
+            },
+            "options": {
+                "env": {
+                    "PATH": "C:/Users/sle11/.espressif/tools/openocd-esp32/v0.10.0-esp32-20190313/openocd-esp32/bin"
+                }
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            },
+        },
+        
+    ]
+  }
