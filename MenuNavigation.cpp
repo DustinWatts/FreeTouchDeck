@@ -20,7 +20,7 @@ namespace FreeTouchDeck
 	"name": "Preferences",
 	"colscount": 3,
 	"rowscount": 3,
-    "icon": "spanner.bmp",
+    "logo": "spanner.bmp",
 	"type": "HOMESYSTEM",
 	"buttons": [
 		{
@@ -175,11 +175,11 @@ namespace FreeTouchDeck
         }
         return ActiveScreen;
     }
-    FreeTouchDeck::Menu *GetScreen(const char *name)
+    FreeTouchDeck::Menu *GetScreen(const char *name, bool lock)
     {
         Menu *Match = NULL;
         LOC_LOGD(TAG, "Getting screen object for %s", name);
-        if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
+        if (!lock || ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
         {
             if (strcmp(name, "~BACK") == 0)
             {
@@ -212,7 +212,8 @@ namespace FreeTouchDeck
             {
                 LOC_LOGD(module, "Screen %s was found", name);
             }
-            ScreenUnlock();
+            if (lock)
+                ScreenUnlock();
         }
         return Match;
     }
@@ -286,41 +287,46 @@ namespace FreeTouchDeck
 
         return Match;
     }
-    void DeleteMenuEntry(const char * name)
+    void DeleteMenuEntry(const char *name)
     {
-        Menu * existing=GetScreen(name);
-        if(existing){
-            LOC_LOGD(module,"Removing existing menu %s", name);
-            delete(existing);
+        Menu *existing = GetScreen(name, false);
+        if (existing)
+        {
+            LOC_LOGD(module, "Removing existing menu %s", name);
+            delete (existing);
             Menus.remove(existing);
         }
-    }
-    bool AddReplaceMenuEntry(Menu * menu)
-    {
-        if(!menu)
+        else
         {
-            LOC_LOGE(module,"Invalid menu object!");
+            LOC_LOGD(module, "Menu %s is new", STRING_OR_DEFAULT(name, "?"));
+        }
+    }
+    bool AddReplaceMenuEntry(Menu *menu)
+    {
+        if (!menu)
+        {
+            LOC_LOGE(module, "Invalid menu object!");
             return false;
         }
+        LOC_LOGD(module, "Checking if menu %s exists", STRING_OR_DEFAULT(menu->Name, "?"));
         DeleteMenuEntry(menu->Name);
+        LOC_LOGD(module, "Adding menu %s to the list", STRING_OR_DEFAULT(menu->Name, "?"));
         Menus.push_back(menu);
         return true;
     }
-    bool PushJsonMenu(cJSON * menuJson)
+    bool PushJsonMenu(cJSON *menuJson)
     {
         // This function assumes that the menu collection
         // object will be locked
-        bool result = false;
-        Menu * menu=new Menu(menuJson);
+        Menu *menu = new Menu(menuJson);
         return AddReplaceMenuEntry(menu);
-        return result;
     }
     bool PushJsonMenu(const char *menuString)
     {
         // This function assumes that the menu collection
         // object will be locked
         Menu *menu = NULL;
-        bool result = false;
+        bool result = true;
 
         cJSON *doc = cJSON_Parse(menuString);
         if (!doc)
@@ -332,16 +338,20 @@ namespace FreeTouchDeck
         }
         else
         {
-            if(cJSON_IsArray(doc)) 
+            LOC_LOGD(module, "Menu structure was parsed successfully.");
+            if (cJSON_IsArray(doc))
             {
-                cJSON * menuJson = NULL;
-                cJSON_ArrayForEach(menuJson,doc)
+                LOC_LOGD(module, "Processing array with %d entries.", cJSON_GetArraySize(doc));
+                cJSON *menuJson = NULL;
+                cJSON_ArrayForEach(menuJson, doc)
                 {
-                    result = !result?result:PushJsonMenu(menuJson);
+                    LOC_LOGD(module, "Pushing one menu");
+                    result = !result ? result : PushJsonMenu(menuJson);
                 }
             }
-            else 
+            else
             {
+                LOC_LOGD(module, "Processing single menu.");
                 result = PushJsonMenu(doc);
             }
         }
@@ -491,9 +501,11 @@ namespace FreeTouchDeck
     bool LoadFullFormat(const char *fileName)
     {
         bool result = false;
+        LOC_LOGI(module, "Loading menu structure from %s", fileName);
         File menus = SPIFFS.open(fileName, FILE_READ);
         if (!menus || menus.size() == 0)
         {
+            LOC_LOGW(module, "File not found or file is empty");
             return false;
         }
         char *fullbuffer = (char *)malloc_fn(menus.size() + 1);
@@ -509,7 +521,7 @@ namespace FreeTouchDeck
             }
             else
             {
-
+                LOC_LOGD(module, "Menu structure was read from file. Parsing");
                 result = PushJsonMenu(fullbuffer);
             }
         }
@@ -531,12 +543,13 @@ namespace FreeTouchDeck
         {
             if (!LoadFullFormat())
             {
+                LOC_LOGW(module, "Adding from Full menus json failed.");
                 File root = SPIFFS.open("/");
                 File file = root.openNextFile();
                 while (file)
                 {
                     String FileName = file.name();
-                    if (FileName.startsWith("/config/menu") || FileName.startsWith("/config/homescreen"))
+                    if ((FileName.startsWith("/config/menu") || FileName.startsWith("/config/homescreen")) && !FileName.startsWith("/config/menus"))
                     {
                         LOC_LOGD(module, "Adding menu from file %s", file.name());
                         Menus.push_back(new FreeTouchDeck::Menu(&file));
@@ -548,10 +561,17 @@ namespace FreeTouchDeck
                 // generate home screen with a sorted list.
                 // This will ensure a positionning
                 // similar to the old naming scheme
-                GenerateHomeScreen(true);
-                LOC_LOGD(module, "Done Adding home screen menu from file name homescreen");
+                LoadSystemMenus();
+                GenerateHomeScreen(false);
                 root.close();
             }
+            else
+            {
+                LoadSystemMenus();
+                GenerateHomeScreen(false);
+            }
+
+            LOC_LOGD(module, "Done Adding home screen menu from file name homescreen");
             ScreenUnlock();
         }
         else

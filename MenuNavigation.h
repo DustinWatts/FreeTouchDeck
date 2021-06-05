@@ -10,7 +10,7 @@ namespace FreeTouchDeck {
     extern void ScreenUnlock() ;
     extern char *MenusToJson(bool withSystem = false);
     extern Menu *GetActiveScreen();
-    extern Menu *GetScreen(const char *name);
+    extern Menu *GetScreen(const char *name, bool lock=true);
     extern bool SaveFullFormat();
     extern Menu *GetLatchScreen(FTAction *action);
     extern bool LoadFullFormat(const char * fileName);

@@ -372,7 +372,7 @@ namespace FreeTouchDeck
         }
     }
     const char *Menu::JsonLabelName = "name";
-    const char *Menu::JsonLabelIcon = "icon";
+    const char *Menu::JsonLabelIcon = "logo";
     const char *Menu::JsonLabelRowsCount = "rowscount";
     const char *Menu::JsonLabelColsCount = "colscount";
     const char *Menu::JsonLabelButtons = "buttons";

@@ -1,0 +1,167 @@
+[{
+  "type": "HOME",
+  "name": "Media",
+  "logo": "music.bmp",
+  "colscount": 4,
+  "rowscount": 4,
+  "buttons": [{
+    "logo": "mute.bmp",
+    "type": "LATCH",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "MUTE"
+     }]
+   }, {
+    "logo": "volumedown.bmp",
+    "type": "STANDARD",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "VOLUME_DOWN"
+     }]
+   }, {
+    "logo": "volumeup.bmp",
+    "type": "STANDARD",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "VOLUME_UP"
+     }]
+   }, {
+    "logo": "play.bmp",
+    "type": "STANDARD",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "PLAY_PAUSE"
+     }]
+   }, {
+    "logo": "stop.bmp",
+    "type": "STANDARD",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "NEXT_TRACK"
+     }]
+   }, {
+    "label":"Prev",
+    "type": "STANDARD",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "PREVIOUS_TRACK"
+     }]
+   }, {
+    "label":"Calc",
+    "type": "STANDARD",
+    "actions": [{
+      "type": "MEDIAKEY",
+      "symbol": "CALCULATOR"
+     }]
+   }
+   ]
+ }, {
+  "type": "HOME",
+  "name": "OBS",
+  "logo": "obs.bmp",
+  "buttons": [{
+    "label": "Submenu",
+    "type":	"MENU",
+	"actions":	[{
+			"type":	"MENU",
+			"symbol":	"OBS2"
+		}]
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }]
+ },{
+  "type": "STANDARD",
+  "name": "OBS2",
+  "buttons": [{
+    "label": "First",
+    "type":	"STANDARD",
+		"actions":	[{
+			"type":	"FREETEXT",
+			"symbol":	"{LEFT_CTRL}{LEFT_ALT}{DELETE}"
+		}]
+   }, {
+    "label": "Second",
+    "type":	"STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }]
+ }, {
+  "type": "HOME",
+  "name": "Firefox",
+  "logo": "firefox.bmp",
+  "buttons": [{
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }]
+ }, {
+  "type": "HOME",
+  "name": "Mail",
+  "logo": "mail.bmp",
+  "buttons": [{
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }]
+ }, {
+  "type": "HOME",
+  "name": "Youtube",
+  "logo": "youtube.bmp",
+  "buttons": [{
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }, {
+    "logo": "question.bmp",
+    "type": "STANDARD"
+   }]
+ }]
+ 
+   

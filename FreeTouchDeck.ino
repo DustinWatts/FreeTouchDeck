@@ -233,6 +233,8 @@ IRAM_ATTR void *malloc_fn(size_t sz)
 
   if (!ptr)
   {
+    Serial.print("free_iram: ");
+    Serial.print(heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
     drawErrorMessage(true, module, "Memory allocation failed");
   }
   else
@@ -541,7 +543,6 @@ void setup()
       {
         RunMode = SystemMode::CONFIG;
         restartReason = SystemMode::STANDARD;
-        LoadSystemMenus();
         LoadAllMenus();
         return;
       }
@@ -555,7 +556,6 @@ void setup()
       RunMode = SystemMode::CONSOLE;
       restartReason = SystemMode::STANDARD;
       PrintScreenMessage("Console mode active. Press screen to exit");
-      LoadSystemMenus();
       LoadAllMenus();
       return;
     }
@@ -589,8 +589,8 @@ void setup()
 #endif
 
   //CacheBitmaps();
-  LoadSystemMenus();
   LoadAllMenus();
+
 
   LOC_LOGI(module, "All config files loaded");
 

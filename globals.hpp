@@ -97,6 +97,9 @@ enum class SystemMode
 #define ASSING_IF_PASSED(x, y) \
     if (x)                     \
     *x = y
+#define FREE_AND_ASSIGNED_IF_PASSED(x, y) \
+    if (x){ if(*x) FREE_AND_NULL(*x);  *x = y;    }                     \
+    
 extern void *malloc_fn(size_t sz);
 IRAM_ATTR char *ps_strdup(const char *fmt);
 extern void PrintMemInfo();

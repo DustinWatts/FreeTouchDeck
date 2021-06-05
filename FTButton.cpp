@@ -45,11 +45,11 @@ namespace FreeTouchDeck
 					}
 				]
 			})";
-    FTButton FTButton::BackButton(FTButton::backButtonTemplate,true);
-    FTButton FTButton::HomeButton(FTButton::homeButtonTemplate,true);
+    FTButton FTButton::BackButton(FTButton::backButtonTemplate, true);
+    FTButton FTButton::HomeButton(FTButton::homeButtonTemplate, true);
     FTButton::FTButton(const char *templ, bool isShared)
     {
-        IsShared=isShared;
+        IsShared = isShared;
         cJSON *doc = cJSON_Parse(templ);
         if (!doc)
         {
@@ -154,18 +154,18 @@ namespace FreeTouchDeck
 
     void FTButton::SetCoordinates(uint16_t width, uint16_t height, uint16_t row, uint16_t col, uint8_t spacing)
     {
-        uint16_t centerX=0;
-        uint16_t centerY=0;
+        uint16_t centerX = 0;
+        uint16_t centerY = 0;
         ButtonWidth = width;
         ButtonHeight = height;
         Spacing = spacing;
         centerX = (col * 2 + 1) * ButtonWidth / 2 + col * spacing;
         centerY = (row * 2 + 1) * ButtonHeight / 2 + row * spacing;
-        if(width!=ButtonWidth || ButtonHeight!=height || centerX!=CenterX || centerY!=CenterY || Spacing !=spacing)
+        if (width != ButtonWidth || ButtonHeight != height || centerX != CenterX || centerY != CenterY || Spacing != spacing)
         {
             LOC_LOGD(module, "Button size %dx%d, row %d, col %d  ", width, height, row, col);
-            CenterX=centerX;
-            CenterY=centerY;
+            CenterX = centerX;
+            CenterY = centerY;
         }
     }
     FTButton::FTButton(const char *label, uint8_t index, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
@@ -185,7 +185,7 @@ namespace FreeTouchDeck
         BackgroundColor = generalconfig.menuButtonColour;
         snprintf(menuName, sizeof(menuName), "menu%d", index + 1);
         Label = ps_strdup(STRING_OR_DEFAULT(label, ""));
-        LOC_LOGD(module,"New button name is %s, menu name is %s",Label, menuName);
+        LOC_LOGD(module, "New button name is %s, menu name is %s", Label, menuName);
         actions.push_back(new FTAction(ActionTypes::MENU, menuName));
     }
     FTButton::FTButton(const char *label, uint8_t index, cJSON *document, cJSON *button, uint16_t outline, uint8_t textSize, uint16_t textColor) : Outline(outline), TextSize(textSize), TextColor(textColor)
@@ -212,8 +212,17 @@ namespace FreeTouchDeck
         }
         _jsonLatch = cJSON_GetObjectItem(button, "latch");
         ButtonType = (_jsonLatch && cJSON_IsBool(_jsonLatch) && cJSON_IsTrue(_jsonLatch)) ? ButtonTypes::LATCH : ButtonTypes::STANDARD;
-        BackgroundColor = (ButtonType == ButtonTypes::MENU ? generalconfig.menuButtonColour : generalconfig.backgroundColour);
+
+        if (ButtonType != ButtonTypes::MENU)
+        {
+            BackgroundColor = generalconfig.functionButtonColour;
+        }
+        else
+        {
+            BackgroundColor = generalconfig.menuButtonColour;
+        }
         cJSON *jsonActions = cJSON_GetObjectItem(button, "actionarray");
+
         if (!jsonActions)
         {
             LOC_LOGE(module, "Button %s does not have any action!", Logo()->LogoName);
@@ -239,10 +248,7 @@ namespace FreeTouchDeck
                     }
                     else
                     {
-                        if (action->Type == ActionTypes::FUNCTIONKEYS)
-                        {
-                            BackgroundColor = generalconfig.functionButtonColour;
-                        }
+
                         actions.push_back(action);
                         LOC_LOGD(module, "DONE Adding action to button %s, type %s", Logo()->LogoName, enum_to_string(FTAction::GetType(jsonAction)));
                     }
@@ -310,7 +316,7 @@ namespace FreeTouchDeck
         _button.initButton(&tft, CenterX, CenterY, adjustedWidth, adjustedHeight, Outline, BackgroundColor, TextColor, (char *)(IsLabelDraw() ? Label : ""), TextSize);
         _button.drawButton();
         bool LatchNeedsRoundRect = !LatchedLogo();
-       
+
         tft.setFreeFont(LABEL_FONT);
 
         if (ButtonType == ButtonTypes::LATCH && LatchNeedsRoundRect)

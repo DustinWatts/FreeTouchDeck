@@ -105,12 +105,11 @@ namespace FreeTouchDeck
     {
         bool found=false;
         KeyValue_t kv;
-        ASSING_IF_PASSED(foundValue,NULL);
+        FREE_AND_ASSIGNED_IF_PASSED(foundValue,NULL);
 
         if(ISNULLSTRING(name))
         {
             LOC_LOGD(module,"Empty key type %s passed", enum_to_string(actionType));
-            found=false;
         }
         else
         {
@@ -128,10 +127,10 @@ namespace FreeTouchDeck
           }
           else 
           {
-            LOC_LOGE(module, "Invalid option key %s ", name);
+            LOC_LOGE(module, "Invalid %s key %s ", enum_to_string(actionType), name);
           }
         }
-        return false;
+        return found;
     }
     bool FTAction::get_by_index(ActionTypes actionType, const char *index, const char **value)
     {
@@ -206,13 +205,20 @@ namespace FreeTouchDeck
             {
                 ASSING_IF_PASSED(foundKey, searchName);
             }
-            auto found = map.find(searchName);
-            if (found != map.end())
+
+            // We cannot use "map.find" here since we're storing const char * 
+            // and in that case, the system tries to compare the pointer
+            // value rather than the text value
+            for(auto e : map)
             {
-                ASSING_IF_PASSED(keyvalue, found->second);
-                success = true;
+                if(strcmp(e.first,searchName)==0)
+                {
+                    success=true;
+                    ASSING_IF_PASSED(keyvalue, e.second);
+                    break;
+                }
             }
-            else
+            if(!success)
             {
                 LOC_LOGE(module, "Key %s was not found for type %s", keyname, enum_to_string(actionType));
             }
