@@ -85,6 +85,7 @@ const char *versionnumber = "0.9.11";
      * 
      * Make sure to check if you use your old config files that they match the structure of the new ones!
     */
+   
 using namespace FreeTouchDeck;
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -378,9 +379,9 @@ void HandleSleepConfig()
     QueueAction(FreeTouchDeck::sleepSetLatchAction);
     LOC_LOGI(module, "Sleep enabled. Timer = %d minutes", generalconfig.sleeptimer);
   }
-  else
+  else 
   {
-    QueueAction(FreeTouchDeck::sleepClearLatchAction);
+      QueueAction(FreeTouchDeck::sleepClearLatchAction);
   }
 }
 void HandleBeepConfig()
@@ -428,7 +429,9 @@ void displayInit()
   // Clear the screen
   tft.fillScreen(TFT_BLACK);
   // Setup the Font used for plain text
-  tft.setFreeFont(LABEL_FONT);
+  InitFontsTable();
+  SetDefaultFont();
+  tft.setCursor(0, tft.fontHeight()+1);
   LOC_LOGI(module, "Screen size is %dx%d", tft.width(), tft.height());
 }
 
@@ -483,9 +486,9 @@ void ShowDir()
 }
 void PrintScreenMessage(const char *message)
 {
-  tft.setCursor(1, 3);
-  tft.setTextFont(2);
+  SetSmallestFont(1);
   tft.setTextSize(1);
+  tft.setCursor(0, tft.fontHeight()+1);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.println(message);
@@ -516,9 +519,14 @@ void setup()
   Serial.setDebugOutput(true);
   LOC_LOGI(module, "Starting system.");
   init_cJSON();
+  // We cannot rely on the c++ compiler to initialize our
+  // contants, for example the buttons list which is required by
+  // other constants.  Initializing them here ensure that
+  // primitive maps will exist before we try to access them
+  FTAction::InitConstants();
+  FTButton::InitConstants();
+
   LoadSystemConfig();
-  // generalconfig.LogLevel=FreeTouchDeck::LogLevels::DEBUG;
-  // generalconfig.beep=false;
   displayInit();
   powerInit();
   touchInit();
@@ -565,7 +573,7 @@ void setup()
   {
     // If we are woken up we do not need the splash screen
     // But we do draw something to indicate we are waking up
-    tft.setTextFont(2);
+    SetSmallestFont(1);
     tft.println(" Waking up...");
   }
   else
@@ -573,9 +581,9 @@ void setup()
     // Draw a splash screen
     DrawSplash();
     LOC_LOGD(module, "Displaying version details");
-    tft.setCursor(1, 3);
-    tft.setTextFont(2);
+    SetSmallestFont(1);
     tft.setTextSize(1);
+    tft.setCursor(1, tft.fontHeight()+1);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.printf("Loading version %s\n", versionnumber);
@@ -702,6 +710,16 @@ void processSerial()
       }
     }
 
+    else if (command.startsWith("activate"))
+{
+      String value = command.substring(command.lastIndexOf(" "));
+      value.trim();
+      LOC_LOGD(module,"Activating screen %s",value.c_str());
+      if(!SetActiveScreen(value.c_str()))
+      {
+        LOC_LOGE(module,"unable to activate screen %s",value.c_str());
+      }
+}
     else if (command.startsWith("rot"))
     {
       String value = command.substring(command.lastIndexOf(" "));

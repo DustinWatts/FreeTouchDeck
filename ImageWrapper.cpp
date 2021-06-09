@@ -126,7 +126,8 @@ namespace FreeTouchDeck
         return valid;
     }
 
-    void ImageWrapper::Draw(int16_t x, int16_t y, bool transparent)
+    // move the drawing function to IRAM in an attempt to speed up drawing
+    IRAM_ATTR void ImageWrapper::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
         LOC_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);
@@ -143,7 +144,7 @@ namespace FreeTouchDeck
         }
         LOC_LOGV(module, "Getting background color");
         uint16_t BGColor = tft.color565(R, G, B);
-        bool Transparent = ((BGColor == 0) || transparent);
+        bool Transparent = ((BGColor == TFT_BLACK) || transparent);
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
         LOC_LOGV(module, "Opening file %s", FileNameBuffer);
         fs::File bmpFS = FILESYSTEM.open(FileNameBuffer, "r");

@@ -29,26 +29,31 @@ namespace FreeTouchDeck
   {
   public:
     static const char *JsonLabelName;
+    static const char *JsonLabelLabel;
     static const char *JsonLabelRowsCount;
     static const char *JsonLabelColsCount;
     static const char *JsonLabelButtons;
+    static const char *JsonLabelBackgroundColor;
     static const char *JsonLabelActions;
     static const char *JsonLabelType;
     static const char *JsonLabelIcon;
+    static const char *JsonLabelOutline;
+    static const char *JsonLabelTextColor;
+
     char *Name = NULL;
     char *Icon=NULL;
     uint8_t ColsCount=0;
     uint8_t RowsCount = 0;
     uint8_t Spacing = 3;
+    char *Label=NULL;
+    uint32_t BackgroundColor=TFT_BLACK;
     MenuTypes Type=MenuTypes::STANDARD;
     bool Active = false;
     bool Loaded = true;
     std::list<FTButton *> buttons;
     bool Pressed = false;
-    Menu(const char *name);
-    Menu(File *config);
     Menu(cJSON *menuJson);
-    Menu(const char *name, const char *config);
+    Menu(MenuTypes menutype,const char * name,const char * label, const char * icon,  uint8_t rowsCount, uint8_t colsCount,uint32_t backgroundColor,uint32_t outline, uint32_t textColor,uint8_t textSize);
     void Draw(bool force = false);
     ~Menu();
     void Touch(uint16_t x, uint16_t y);
@@ -57,26 +62,27 @@ namespace FreeTouchDeck
     //    void Init(uint8_t rowsCount, uint8_t colsCount);
     bool Button(FTAction *action);
     FTButton *GetButton(const char *buttonName);
-    FTButton *GetButtonForMenuName(const char *menuName);
+//    FTButton *GetButtonForMenuName(const char *menuName);
     void Deactivate();
     cJSON *ToJSON();
     static Menu * FromJson(const char * jsonString);
-
+    uint16_t ButtonWidth = 0;
+    uint16_t ButtonHeight = 0;
+    void AddButton(FTButton * button);
   private:
-    uint16_t _outline = TFT_WHITE;
+    uint32_t _outline =  0xFFFFFFFF;
     uint8_t _textSize = KEY_TEXTSIZE;
-    uint16_t _textColor = TFT_WHITE;
-    bool LoadConfig(File *config);
-    bool LoadConfig(const char *config);
-    std::list<FTAction *> actions;
+    uint32_t _textColor = 0xFFFFFFFF;
+    // bool LoadConfig(File *config);
+    // bool LoadConfig(const char *config);
+    ActionSequencesList Actions;
     void SetButtonWidth();
     inline bool HasBackButton()
     {
       return Type!=MenuTypes::EMPTY && Type!=MenuTypes::ROOT &&  Type!=MenuTypes::SYSTEM;
     }
     static FTAction *homeMenu;
-    uint16_t ButtonWidth = 0;
-    uint16_t ButtonHeight = 0;
+
   };
       inline MenuTypes &operator++(MenuTypes &state, int)
     {

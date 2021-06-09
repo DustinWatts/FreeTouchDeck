@@ -54,5 +54,23 @@ unsigned int convertRGB888ToRGB565(unsigned long rgb)
 unsigned int convertHTMLRGB888ToRGB565(const char * html)
 {
   unsigned long rgb=convertHTMLtoRGB888(html);
-  return (((rgb & 0xf80000) >> 8) | ((rgb & 0xfc00) >> 5) | ((rgb & 0xf8) >> 3));
+  return convertRGB888ToRGB565(rgb);
+}
+
+
+unsigned long convertRGB656ToRGB888(unsigned long rgb565)
+{
+  return (unsigned long) (rgb565 & 0xF800 << 8) | (rgb565 & 0x7E0 << 5) | (rgb565 & 0x1F << 3);
+}
+const char * convertRGB656ToHTMLRGB888(unsigned long rgb565)
+{
+  static char buffer[8]={0};
+  snprintf(buffer,sizeof(buffer),"#%06x",convertRGB656ToRGB888(rgb565));
+  return buffer;
+}
+const char * convertRGB888oHTMLRGB888(unsigned long rgb888)
+{
+  static char buffer[8]={0};
+  snprintf(buffer,sizeof(buffer),"#%06x",rgb888);
+  return buffer;
 }

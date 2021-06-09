@@ -2,3 +2,4 @@
 
 void drawErrorMessage(bool stop, const char *module, const char *fmt, ...);
 void printDeviceAddress();
+void LoadFontsTable();

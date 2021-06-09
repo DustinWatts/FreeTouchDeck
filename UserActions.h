@@ -13,27 +13,38 @@ bool SetSleep(FTAction *action)
     }
     else
     {
-        generalconfig.sleepenable = true;
-        Interval = generalconfig.sleeptimer * 60000;
-        LOC_LOGI(module, "Sleep Enabled. Timer set to %d", generalconfig.sleeptimer);
+        if (touchInterruptPin >= 0)
+        {
+            generalconfig.sleepenable = true;
+            {
+                pinMode(touchInterruptPin, INPUT_PULLUP);
+            }
+            Interval = generalconfig.sleeptimer * 60000;
+            LOC_LOGI(module, "Sleep Enabled. Timer set to %d", generalconfig.sleeptimer);
+        }
+        else
+        {
+            LOC_LOGW(module,"Wakeup pin not defined. Cannot enable sleep");
+            QueueAction(FreeTouchDeck::sleepClearLatchAction);
+        }
     }
-    // save the configuration and 
+    // save the configuration 
     saveConfig(false);
-    HandleSleepConfig();
 }
 bool ChangeBrightness(FTAction *action)
 {
-    if (strcmp(action->ActionName, "BRIGHTNESS_UP") == 0)
+    auto operation = action->GetParameter(0);
+    if (operation =="BRIGHTNESS_UP")
     {
         generalconfig.ledBrightness = min(generalconfig.ledBrightness + LED_BRIGHTNESS_INCREMENT, 255);
     }
-    else if (strcmp(action->ActionName, "BRIGHTNESS_DOWN") == 0)
+    else if (operation =="BRIGHTNESS_DOWN")
     {
         generalconfig.ledBrightness = max(generalconfig.ledBrightness - LED_BRIGHTNESS_INCREMENT, 50);
     }
     else
     {
-        LOC_LOGE(module, "Unknown Brightness action %s", action->ActionName);
+        LOC_LOGE(module, "Unknown Brightness action %s", operation.c_str());
     }
     ledcWrite(0, generalconfig.ledBrightness);
     saveConfig(false);
@@ -53,18 +64,11 @@ bool ChangeBrightness(FTAction *action)
 
 bool printinfo(FTAction *dummy)
 {
-    tft.setCursor(1, 3);
-    tft.setTextFont(2);
-    if (tft.width() < 480)
-    {
-        tft.setTextSize(1);
-    }
-    else
-    {
-        tft.setTextSize(2);
-    }
+    SetSmallestFont(1);
     tft.fillScreen(TFT_BLACK);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.setCursor(0, tft.fontHeight()+1);
+
     tft.printf("Version: %s\n", versionnumber);
 
 #ifdef touchInterruptPin
@@ -108,6 +112,24 @@ bool printinfo(FTAction *dummy)
     tft.println(esp_get_idf_version());
     return true;
 }
+bool FontTest(FTAction * action)
+{
+    const char * testText=STRING_OR_DEFAULT(action->FirstParameter(),generalconfig.deviceName);
+    SetSmallestFont(0);
+    int16_t curYpos=0;
+    tft.setTextSize(1);
+    
+    tft.fillScreen(generalconfig.backgroundColour);
+    tft.setTextColor(generalconfig.DefaultTextColor);
+    do
+    {
+        curYpos+=tft.fontHeight();
+        tft.setCursor(0,curYpos);
+        tft.println(testText);
+
+    } while(SetLargerFont());
+    return true;
+}
 bool RunLatchAction(FTAction *action)
 {
     bool success = false;
@@ -140,7 +162,7 @@ bool EnterSleep()
     {
         LOC_LOGE(module, "Unable to set external wakeup pin: %s", esp_err_to_name(err));
         generalconfig.sleepenable = false;
-        // 
+        //
         HandleSleepConfig();
         // disable sleep for next time
         saveConfig(false);
@@ -170,7 +192,8 @@ ActionCallbackMap_t FreeTouchDeck::UserActions = {
      }},
     {"MENU", [](FTAction *action)
      {
-         return SetActiveScreen(action->symbol);
+         LOC_LOGD(module,"Activating screen %s",action->FirstParameter());
+         return SetActiveScreen(action->FirstParameter());
      }},
     {"SLEEP", SetSleep},
     {"BEEP", [](FTAction *action)
@@ -179,6 +202,7 @@ ActionCallbackMap_t FreeTouchDeck::UserActions = {
          return saveConfig(false);
      }},
     {"INFO", printinfo},
+    {"FONTTEST", FontTest},
     {"REBOOT", [](FTAction *action)
      {
          ESP.restart();
@@ -186,12 +210,23 @@ ActionCallbackMap_t FreeTouchDeck::UserActions = {
      }},
     {"DELAY", [](FTAction *action)
      {
-         delay(atol(action->symbol));
+         delay(atol(action->FirstParameter()));
          return true;
-     }},     
+     }},
     {"RELEASEALL", [](FTAction *action)
      {
          bleKeyboard.releaseAll();
          return true;
      }},
-    {"TOGGLELATCH", RunLatchAction}};
+    {"RELEASEKEY", [](FTAction *action)
+     {
+         uint16_t forcedDelay = max(generalconfig.keyDelay,(uint16_t)200); // force a 300ms delay
+         LOC_LOGD(module,"Releasing %d keys", action->Values.size());
+         for(auto k : action->Values)
+         {
+            delay(forcedDelay);
+            bleKeyboard.release(k);
+         }
+         return true;
+     }},     
+    {"LATCH", RunLatchAction}};

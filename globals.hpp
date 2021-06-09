@@ -52,10 +52,13 @@ extern const char *versionnumber;
 //Struct to hold the general config like colours.
 struct Config
 {
-  uint16_t menuButtonColour;
-  uint16_t functionButtonColour;
-  uint16_t backgroundColour;
-  uint16_t latchedColour;
+  uint32_t menuButtonColour;
+  uint32_t functionButtonColour;
+  uint32_t backgroundColour;
+  uint32_t latchedColour;
+  uint32_t DefaultOutline;
+  uint32_t DefaultTextColor;
+  uint8_t DefaultTextSize;
   uint8_t colscount;
   uint8_t rowscount;
   bool sleepenable;
@@ -66,13 +69,9 @@ struct Config
   bool reverse_x_touch;
   bool reverse_y_touch;
   uint8_t screenrotation;
-  std::list<char *> modifiers;
   char * deviceName;
   char * manufacturer;
   uint16_t helperdelay;
-  uint16_t DefaultOutline;
-  uint8_t DefaultTextSize;
-  uint16_t DefaultTextColor;
   int ledBrightness;
   FreeTouchDeck::LogLevels LogLevel;
 };
@@ -118,6 +117,22 @@ extern void GetValueOrDefault(cJSON *doc, const char *name, bool *valuePointer, 
 extern void ChangeMode(SystemMode newMode);
 extern void DumpCJson(cJSON *doc);
 extern void HandleSleepConfig();
+extern const char * convertRGB656ToHTMLRGB888(unsigned long rgb565);
+extern unsigned int convertHTMLRGB888ToRGB565(const char * html);
+extern unsigned long convertHTMLtoRGB888(const char *html);
+extern const char * convertRGB888oHTMLRGB888(unsigned long rgb888);
+extern unsigned long convertRGB656ToRGB888(unsigned long rgb565);
+extern unsigned int convertRGB888ToRGB565(unsigned long rgb);
+extern bool GetColorOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue);
+extern bool GetColorOrDefault(cJSON *doc, const char *name, uint32_t *valuePointer, uint32_t defaultValue);
+const GFXfont * GetCurrentFont();
+bool SetDefaultFont();
+void InitFontsTable();
+bool SetSmallerFont();
+bool SetSmallestFont(int whichOne=0);
+bool SetLargestFont();
+bool SetLargerFont();
+
 extern unsigned long Interval;
 
 #define FREE_AND_NULL(x) \

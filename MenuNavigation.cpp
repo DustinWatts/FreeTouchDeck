@@ -8,12 +8,13 @@
 #include "FTAction.h"
 namespace FreeTouchDeck
 {
-    FTAction *sleepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "Preferences,Sleep");
-    FTAction *sleepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Sleep");
-    FTAction *sleepToggleLatchAction = new FTAction(ActionTypes::TOGGLELATCH, "Preferences,Sleep");
-    FTAction *beepSetLatchAction = new FTAction(ActionTypes::SETLATCH, "Preferences,Beep");
-    FTAction *beepClearLatchAction = new FTAction(ActionTypes::CLEARLATCH, "Preferences,Beep");
-    FTAction *criticalMessage = new FTAction(ActionTypes::MENU, "criticalmessage");
+    FTAction *sleepSetLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Sleep","ON"}));
+    FTAction *sleepClearLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Sleep","OFF"}));
+    FTAction *sleepToggleLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Sleep","TOGGLE"}));
+    FTAction *beepSetLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Beep","ON"}));
+    FTAction *beepClearLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Beep","OFF"}));
+    FTAction *criticalMessage = new FTAction(ParametersList_t({"MENU", "criticalmessage"}));
+    const char * MenuActionTemplate="{MENU:%s}";
     std::list<Menu *> PrevScreen;
     static const char *configMenu =
         R"({
@@ -27,85 +28,43 @@ namespace FreeTouchDeck
 			"label": "Configuration",
 			"logo": "wifi.bmp",
 			"type": "STANDARD",
-			"actions": [
-				{
-					"type": "MENU",
-					"symbol": "empty"
-				},
-				{
-					"type": "LOCAL",
-					"symbol": "ENTER_CONFIG"
-				}
-			]
+			"actions": ["{MENU:empty}{ENTER_CONFIG}"]
 		},
 		{
 			"label": "Brightness-Down",
 			"logo": "brightnessdown.bmp",
 			"type": "STANDARD",
-			"actions": [
-				{
-					"type": "LOCAL",
-					"symbol": "BRIGHTNESS_DOWN"
-				}
-			]
+			"actions": ["{BRIGHTNESS_DOWN}"]
 		},
 		{
 			"label": "Brightness-Up",
 			"logo": "brightnessup.bmp",
 			"type": "STANDARD",
-			"actions": [
-				{
-					"type": "LOCAL",
-					"symbol": "BRIGHTNESS_UP"
-				}
-			]
+			"actions": ["{BRIGHTNESS_UP}"]
 		},
 		{
 			"label": "Sleep",
 			"logo": "sleep.bmp",
 			"type": "LATCH",
-			"actions": [
-				{
-					"type": "LOCAL",
-					"symbol": "SLEEP"
-				}
-			]
+			"actions": ["{SLEEP}"]
 		},
 		{
 			"label": "Beep",
 			"logo": "music.bmp",
 			"type": "LATCH",
-			"actions": [
-				{
-					"type": "LOCAL",
-					"symbol": "BEEP"
-				}
-			]
+			"actions": ["{BEEP}"]
 		},        
 		{
 			"label": "Info",
 			"logo": "info.bmp",
 			"type": "STANDARD",
-			"actions": [
-				{
-					"type": "MENU",
-					"symbol": "empty"
-				},
-				{
-					"type": "LOCAL",
-					"symbol": "INFO"
-				}
-			]
+			"actions": ["{MENU:empty}{INFO}"]
+
 		},        
 		{
 			"label": "Sleep",
 			"type": "STANDARD",
-			"actions": [
-				{
-					"type": "LOCAL",
-					"symbol": "STARTSLEEP"
-				}
-			]
+			"actions": ["{STARTSLEEP}"]
 		}
 	]
 })";
@@ -113,18 +72,12 @@ namespace FreeTouchDeck
     const char *blankMenu = R"({
 		"name": "empty",
         "type": "EMPTY",
-        "actions":	[{
-						"type":	"MENU",
-						"symbol":	"~BACK"
-					}]        
+		"actions": ["{MENU:~BACK}"]
 	})";
     const char *messageMenu = R"({
 		"name": "criticalmessage",
         "type": "EMPTY",
-        "actions":	[{
-						"type":	"LOCAL",
-						"symbol":	"REBOOT"
-					}]        
+        "actions":	["{REBOOT}"]        
 	})";
     static const char *module = "MenuNavigation";
     using namespace std;
@@ -243,7 +196,6 @@ namespace FreeTouchDeck
                     }
                     Active->Deactivate();
                 }
-                tft.fillScreen(generalconfig.backgroundColour);
                 Match->Activate();
                 ScreenUnlock();
                 result = true;
@@ -257,36 +209,6 @@ namespace FreeTouchDeck
         return result;
     }
 
-    FTButton *GetOldHomeButton(const char *MenuName)
-    {
-        FTButton *Match = NULL;
-        // this function is assumed to be called with the creen object
-        // already locked
-        LOC_LOGD(TAG, "Getting old home screen button %s", MenuName);
-        for (auto m : Menus)
-        {
-            if (m->Type == MenuTypes::OLDHOME)
-            {
-                LOC_LOGD(module, "Found Old menu entry %s", m->Name);
-                Match = m->GetButtonForMenuName(MenuName);
-                break;
-            }
-            else
-            {
-                LOC_LOGV(module, "Ignoring menu %s, type %s", m->Name, enum_to_string(m->Type));
-            }
-        }
-        if (!Match)
-        {
-            LOC_LOGE(module, "Button %s not found in old home screen", MenuName);
-        }
-        else
-        {
-            LOC_LOGD(module, "Button %s was found", MenuName);
-        }
-
-        return Match;
-    }
     void DeleteMenuEntry(const char *name)
     {
         Menu *existing = GetScreen(name, false);
@@ -405,42 +327,17 @@ namespace FreeTouchDeck
                 if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
                 {
                     cJSON *button = cJSON_CreateObject();
-                    cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, menu->Name);
-                    if (ISNULLSTRING(menu->Icon))
-                    {
-                        LOC_LOGD(module, "Processing old style menu. Fetching corresponding button for menu %s", menu->Name);
-                        FTButton *buttonOld = GetOldHomeButton(menu->Name);
-                        if (!buttonOld)
-                        {
-                            LOC_LOGE(module, "Unable to find old menu button. ");
-                        }
-                        else
-                        {
-                            ImageWrapper *image = buttonOld->Logo();
-                            if (!ISNULLSTRING(image->LogoName))
-                            {
-                                LOC_LOGD(menu, "Menu button has logo %s", image->LogoName);
-                                cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, image->LogoName);
-                            }
-                            else
-                            {
-                                LOC_LOGE(module, "Defaulting button to question.bmp");
-                                cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, "question.bmp");
-                            }
-                        }
-                    }
-                    else
+                    cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, STRING_OR_DEFAULT(menu->Label,STRING_OR_DEFAULT(menu->Name,"")));
+                    if (!ISNULLSTRING(menu->Icon))
                     {
                         cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, menu->Icon);
                     }
-
-                    cJSON_AddStringToObject(button, FTButton::JsonLabelType, enum_to_string(ButtonTypes::MENU));
-
-                    FTAction *action = new FTAction(ActionTypes::MENU, menu->Name);
                     cJSON *actions = cJSON_CreateArray();
-                    cJSON_AddItemToArray(actions, action->ToJson());
+                    char * menuActionString=(char*)malloc_fn(strlen(MenuActionTemplate)+strlen(menu->Name));
+                    sprintf(menuActionString,MenuActionTemplate,menu->Name);
+                    cJSON_AddItemToArray(actions, cJSON_CreateString(menuActionString));
+                    FREE_AND_NULL(menuActionString);
                     cJSON_AddItemToObject(button, FTButton::JsonLabelActions, actions);
-                    delete (action);
                     DumpCJson(button);
                     cJSON_AddItemToArray(buttons, button);
                 }
@@ -467,6 +364,41 @@ namespace FreeTouchDeck
         }
         return true;
     }
+    bool GenerateHomeScreenObject(bool sortFirst)
+    {
+        LOC_LOGD(module, "Generating home screen");
+        // todo:  for "OLDHOME" menu types,
+        // try to get the corresponding icon to show up on new homescreen
+        Menu * home = new Menu(MenuTypes::ROOT,"home","","",generalconfig.rowscount,generalconfig.colscount,generalconfig.backgroundColour,generalconfig.DefaultOutline,generalconfig.DefaultTextColor,generalconfig.DefaultTextSize);
+        if (Menus.size() > 0)
+        {
+            // sort by alphabetical order
+            if (sortFirst)
+            {
+                Menus.sort(compare_nocase);
+            }
+            for (auto menu : Menus)
+            {
+                if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
+                {
+                    FTButton * button = new FTButton(ButtonTypes::STANDARD,STRING_OR_DEFAULT(menu->Label,STRING_OR_DEFAULT(menu->Name,"")),menu->Icon,"",generalconfig.DefaultOutline,generalconfig.DefaultTextSize,generalconfig.DefaultTextColor);
+                    ActionsSequences sequences ;
+                    char * menuActionString=(char*)malloc_fn(strlen(MenuActionTemplate)+strlen(menu->Name));
+                    sprintf(menuActionString,MenuActionTemplate,menu->Name);
+                    sequences.Parse(menuActionString);
+                    FREE_AND_NULL(menuActionString);
+                    button->Sequences.push_back(sequences);
+                    home->AddButton(button);
+                }
+            }
+            Menus.push_back(home);
+        }
+        else
+        {
+            LOC_LOGE(module, "No menu was found");
+        }
+        return true;
+    }    
     bool SaveFullFormat()
     {
         LOC_LOGI(module, "Saving full menu structure");
@@ -532,7 +464,7 @@ namespace FreeTouchDeck
             // as the configuration file should
             // list buttons in the order in which
             // they should be displayed
-            result = GenerateHomeScreen(false);
+            result = GenerateHomeScreenObject(false);
         }
         FREE_AND_NULL(fullbuffer);
         return result;
@@ -541,34 +473,14 @@ namespace FreeTouchDeck
     {
         if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
         {
-            if (!LoadFullFormat())
+            if (LoadFullFormat())
             {
-                LOC_LOGW(module, "Adding from Full menus json failed.");
-                File root = SPIFFS.open("/");
-                File file = root.openNextFile();
-                while (file)
-                {
-                    String FileName = file.name();
-                    if ((FileName.startsWith("/config/menu") || FileName.startsWith("/config/homescreen")) && !FileName.startsWith("/config/menus"))
-                    {
-                        LOC_LOGD(module, "Adding menu from file %s", file.name());
-                        Menus.push_back(new FreeTouchDeck::Menu(&file));
-                        PrintMemInfo();
-                        LOC_LOGD(module, "Adding menu completed. Getting next file");
-                    }
-                    file = root.openNextFile();
-                }
-                // generate home screen with a sorted list.
-                // This will ensure a positionning
-                // similar to the old naming scheme
                 LoadSystemMenus();
-                GenerateHomeScreen(false);
-                root.close();
+                GenerateHomeScreenObject(false);
             }
             else
             {
-                LoadSystemMenus();
-                GenerateHomeScreen(false);
+                drawErrorMessage(true,module,"Unable to load file /config/menus.json");
             }
 
             LOC_LOGD(module, "Done Adding home screen menu from file name homescreen");
@@ -581,14 +493,7 @@ namespace FreeTouchDeck
     }
     Menu *GetLatchScreen(FTAction *action)
     {
-        char screenName[51] = {0};
-        char buttonName[51] = {0};
-        Menu *menu = NULL;
-        if (action->SplitActionParameter(screenName, sizeof(screenName), buttonName, sizeof(buttonName)))
-        {
-            menu = GetScreen(screenName);
-        }
-        return menu;
+        return GetScreen(action->FirstParameter());
     }
     char *MenusToJson(bool withSystem)
     {

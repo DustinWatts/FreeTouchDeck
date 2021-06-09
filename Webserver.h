@@ -451,7 +451,7 @@ void handlerSetup()
           generalconfig.latchedColour = convertRGB888ToRGB565(convertHTMLtoRGB888(value->value().c_str()));
         }
 
-        value=  request->getParam("background", true);
+        value=  request->getParam("backgroundcolor", true);
         if(value)
         {
           generalconfig.backgroundColour = convertRGB888ToRGB565(convertHTMLtoRGB888(value->value().c_str()));
@@ -494,31 +494,6 @@ void handlerSetup()
         {
           generalconfig.sleeptimer = value->value().toInt();
         }
-        value = request->getParam("modifier1", true);
-        if (value)
-        {
-          if (!HandleModifier(value->value().c_str()))
-          {
-            LOC_LOGE(module, "Invalid modifier %s", value->value().c_str());
-          }
-        }
-        value = request->getParam("modifier2", true);
-        if (value)
-        {
-          if (!HandleModifier(value->value().c_str()))
-          {
-            LOC_LOGE(module, "Invalid modifier %s", value->value().c_str());
-          }
-        }
-        value = request->getParam("modifier3", true);
-        if (value)
-        {
-          if (!HandleModifier(value->value().c_str()))
-          {
-            LOC_LOGE(module, "Invalid modifier %s", value->value().c_str());
-          }
-        }
-
         value=  request->getParam("helperdelay", true);
         if(value)
         {

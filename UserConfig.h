@@ -2,9 +2,22 @@
 #include <queue>
 #include "FTAction.h"
 #include <freertos/task.h>
-//#define MAKERFABTOUCH
-#ifdef MAKERFABTOUCH
 
+/* ------------------------------------------------------------------------ */
+/* Select the board that you are using below. Make sure to only select one! */
+/* ------------------------------------------------------------------------ */
+
+//#define MAKERFABTOUCH
+#define ESP32TOUCHDOWN
+//#define ESP32DEVKIT
+//#define ARDUINO_TWATCH
+
+/* ------------------------------------------------------------------------ */
+/* Board specific config. No need to touch if you selected the right board  */
+/* ------------------------------------------------------------------------ */
+
+/* MakerFab's Touchscreen configuration */
+#ifdef MAKERFABTOUCH
 #define CUSTOM_TOUCH_SDA 26
 #define CUSTOM_TOUCH_SCL 27
 #define USECAPTOUCH
@@ -13,7 +26,8 @@
 #define INVERSE_Y_TOUCH
 #define FLIP_TOUCH_AXIS
 
-#elif defined(ARDUINO_TWATCH_BASE)
+/* Arduino TWatch Configuration */
+#elif defined(ARDUINO_TWATCH_BASE) && defined(ARDUINO_TWATCH)
 #include "axp20x.h"
 #define CUSTOM_TOUCH_SDA 23
 #define CUSTOM_TOUCH_SCL 32
@@ -24,23 +38,26 @@
 #define SCREEN_HEIGHT 240
 #define SCREEN_ROTATION 2
 #define ILI9341_DRIVER
-#else
-// ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
-// The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
+
+/* ESP32 TouchDown Configuration */
+#elif defined(ESP32TOUCHDOWN)
 #define touchInterruptPin GPIO_NUM_27
 #define speakerPin GPIO_NUM_26
 #define SCREEN_ROTATION 1
 #define FLIP_TOUCH_AXIS
 #define INVERSE_Y_TOUCH
-#define TFT_BL 32
-#define TFT_BACKLIGHT_ON
 #define USECAPTOUCH
-
-#define ILI9341_DRIVER
-
-// ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define USESDCARD
+/* Using the ESP32 DevKit with a screen module */
+#else defined(ESP32DEVKIT)
+#define SCREEN_ROTATION 1
+#define FLIP_TOUCH_AXIS
+#define INVERSE_Y_TOUCH
+#define touchInterruptPin GPIO_NUM_27
 #endif
+
+/* --- END OF USER CONFIG --- */
+
 #ifndef touchInterruptPin
 #define touchInterruptPin -1
 #endif

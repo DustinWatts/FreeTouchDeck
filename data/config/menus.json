@@ -1,167 +1,252 @@
-[{
-  "type": "HOME",
-  "name": "Media",
-  "logo": "music.bmp",
-  "colscount": 4,
-  "rowscount": 4,
-  "buttons": [{
-    "logo": "mute.bmp",
-    "type": "LATCH",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "MUTE"
-     }]
-   }, {
-    "logo": "volumedown.bmp",
-    "type": "STANDARD",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "VOLUME_DOWN"
-     }]
-   }, {
-    "logo": "volumeup.bmp",
-    "type": "STANDARD",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "VOLUME_UP"
-     }]
-   }, {
-    "logo": "play.bmp",
-    "type": "STANDARD",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "PLAY_PAUSE"
-     }]
-   }, {
-    "logo": "stop.bmp",
-    "type": "STANDARD",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "NEXT_TRACK"
-     }]
-   }, {
-    "label":"Prev",
-    "type": "STANDARD",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "PREVIOUS_TRACK"
-     }]
-   }, {
-    "label":"Calc",
-    "type": "STANDARD",
-    "actions": [{
-      "type": "MEDIAKEY",
-      "symbol": "CALCULATOR"
-     }]
-   }
-   ]
- }, {
-  "type": "HOME",
-  "name": "OBS",
-  "logo": "obs.bmp",
-  "buttons": [{
-    "label": "Submenu",
-    "type":	"MENU",
-	"actions":	[{
-			"type":	"MENU",
-			"symbol":	"OBS2"
-		}]
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }]
- },{
-  "type": "STANDARD",
-  "name": "OBS2",
-  "buttons": [{
-    "label": "First",
-    "type":	"STANDARD",
-		"actions":	[{
-			"type":	"FREETEXT",
-			"symbol":	"{LEFT_CTRL}{LEFT_ALT}{DELETE}"
-		}]
-   }, {
-    "label": "Second",
-    "type":	"STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }]
- }, {
-  "type": "HOME",
-  "name": "Firefox",
-  "logo": "firefox.bmp",
-  "buttons": [{
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }]
- }, {
-  "type": "HOME",
-  "name": "Mail",
-  "logo": "mail.bmp",
-  "buttons": [{
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }]
- }, {
-  "type": "HOME",
-  "name": "Youtube",
-  "logo": "youtube.bmp",
-  "buttons": [{
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }, {
-    "logo": "question.bmp",
-    "type": "STANDARD"
-   }]
- }]
- 
-   
+[
+  {
+    "type":"HOME",
+    "name":"Media",
+    "logo":"music.bmp",
+    "colscount":4,
+    "rowscount":4,
+    "buttons":[
+      {
+        "logo":"mute.bmp",
+        "type":"LATCH",
+        "actions":[
+          "{MUTE}"
+        ]
+      },
+      {
+        "logo":"volumedown.bmp",
+        "actions":[
+          "{VOLUME_DOWN}"
+        ]
+      },
+      {
+        "logo":"volumeup.bmp",
+        "actions":[
+          "{VOLUME_UP}"
+        ]
+      },
+      {
+        "logo":"play.bmp",
+        "actions":[
+          "{PLAY_PAUSE}"
+        ]
+      },
+      {
+        "logo":"stop.bmp",
+        "actions":[
+          "{NEXT_TRACK}"
+        ]
+      },
+      {
+        "label":"Prev",
+        "actions":[
+          "{PREVIOUS_TRACK}"
+        ]
+      },
+      {
+        "label":"Calc",
+        "actions":[
+          "{CALCULATOR}"
+        ]
+      }
+    ]
+  },
+  {
+    "type":"HOME",
+    "name":"structure",
+    "label":"Structure",
+    "buttons":[
+      {
+        "label":"Varia",
+        "actions":[
+          "{MENU:varia}"
+        ]
+      },
+      {
+        "label":"Lilac",
+        "backgroundcolor":"#BD97CB",
+        "actions":[
+          "{MENU:lilac}"
+        ]
+      }
+    ]
+  },
+  {
+    "type":"HOME",
+    "name":"OBS",
+    "logo":"obs.bmp",
+    "buttons":[
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      }
+    ]
+  },
+  {
+    "name":"lilac",
+    "backgroundcolor":"#BD97CB",
+    "buttons":[
+      {
+        "label":"Hot Pink",
+        "backgroundcolor":"#E56997",
+        "actions":[
+          "Hot Pink #E56997"
+        ]
+      },
+      {
+        "label":"Gold",
+        "backgroundcolor":"#FBC740",
+        "actions":[
+          "Gold #FBC740"
+        ]
+      },
+      {
+        "label":"Cyan",
+        "backgroundcolor":"#66D2D6",
+        "actions":[
+          "Cyan #66D2D6"
+        ]
+      },
+      {
+        "label":"Fushia",
+        "backgroundcolor":"#BF3880",
+        "actions":[
+          "Fushia #BF3880"
+        ]
+      },
+      {
+        "label":"Alt+TAB",
+        "actions":[
+          "{LEFT_ALT}{TAB}"
+        ]
+      }
+    ]
+  },
+  {
+    "name":"varia",
+    "buttons":[
+      {
+        "label":"Alt+TAB",
+        "actions":[
+          "{LEFT_ALT}{TAB}"
+        ]
+      },
+      {
+        "label":"CTRL+ALT+DEL",
+        "actions":[
+          "{LEFT_CTRL}{LEFT_ALT}{DELETE}"
+        ]
+      },
+      {
+        "label":"Capture Screen",
+        "actions":[
+          "{LEFT_GUI}{LEFT_SHIFT}S"
+        ]
+      },
+	{
+        "label":"My Font Test",
+        "actions":[
+          "{MENU:empty}{FONTTEST:This is my test}"
+        ]
+      },
+	{
+        "label":"Font Test",
+        "actions":[
+          "{MENU:empty}{FONTTEST}"
+        ]
+      },	  
+      {
+        "label":"Release",
+        "backgroundcolor":"#66D2D6",
+        "actions":["This is some text{TAB}After tab key{LEFT_SHIFT}some capitalized text",
+        ". And this text has the shift key released automatically. {RETURN}",
+        "{LEFT_SHIFT}some more capitalized text{RELEASEALL}. Followed by a manual release"]
+      },
+      {
+        "label":"Multiline",
+        "actions":[
+          "This is the first bit ",
+          "and subsequent text{RETURN}",
+          "and this should start in a new line"
+        ]
+      }
+    ]
+  },
+  {
+    "type":"HOME",
+    "name":"Firefox",
+    "logo":"firefox.bmp",
+    "buttons":[
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      }
+    ]
+  },
+  {
+    "type":"HOME",
+    "name":"Mail",
+    "logo":"mail.bmp",
+    "buttons":[
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      }
+    ]
+  },
+  {
+    "type":"HOME",
+    "name":"Youtube",
+    "logo":"youtube.bmp",
+    "buttons":[
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      },
+      {
+        "logo":"question.bmp"
+      }
+    ]
+  }
+]
