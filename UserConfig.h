@@ -1,7 +1,4 @@
 #pragma once
-#include <queue>
-#include "FTAction.h"
-#include <freertos/task.h>
 
 /* ------------------------------------------------------------------------ */
 /* Select the board that you are using below. Make sure to only select one! */
@@ -47,13 +44,15 @@
 #define FLIP_TOUCH_AXIS
 #define INVERSE_Y_TOUCH
 #define USECAPTOUCH
-#define USESDCARD
+#define SDDAT3 25 
 /* Using the ESP32 DevKit with a screen module */
-#else defined(ESP32DEVKIT)
+#elif defined(ESP32DEVKIT)
 #define SCREEN_ROTATION 1
 #define FLIP_TOUCH_AXIS
 #define INVERSE_Y_TOUCH
 #define touchInterruptPin GPIO_NUM_27
+#else 
+#error("Unsupported platform")
 #endif
 
 /* --- END OF USER CONFIG --- */
@@ -92,8 +91,7 @@
 #define FLIP_TOUCH_AXIS true
 #endif
 
-// Define the storage to be used. For now just SPIFFS.
-#define FILESYSTEM SPIFFS
+
 
 // Text Button Label Font
 #define LABEL_FONT &FreeSansBold12pt7b
@@ -101,17 +99,14 @@
 // Font size multiplier
 #define KEY_TEXTSIZE 1
 
-enum class Sounds
-{
-  GOING_TO_SLEEP,
-  BEEP,
-  STARTUP
-};
+// This is the file name used to store the calibration data
+// You can change this to create new calibration files.
+// The FILESYSTEM file name must start with "/".
+#define CALIBRATION_FILE "/TouchCalData"
+
+// Set REPEAT_CAL to true instead of false to run calibration
+// again, otherwise it will only be done once.
+// Repeat calibration if you change the screen rotation.
+#define REPEAT_CAL false
 
 #define LED_BRIGHTNESS_INCREMENT 25
-
-extern void HandleAudio(Sounds sound);
-extern Config generalconfig;
-extern void drawErrorMessage(String message);
-extern void drawErrorMessageChar(String message);
-void drawErrorMessage(bool stop, const char *module, const char *fmt, ...);

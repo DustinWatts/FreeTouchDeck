@@ -1,5 +1,5 @@
 #include "FTButton.h"
-
+#include "Audio.h"
 static const char *module = "FTButton";
 namespace FreeTouchDeck
 {
@@ -128,18 +128,21 @@ namespace FreeTouchDeck
                 LOC_LOGE(module,"Invalid latch parameter. Should be ON,OFF or TOGGLE");
                 return false;
             }
-            if(state=="ON")
+            if(state=="ON" )
             {
+                if(!Latched)
+                {
                     Latched = true;
-                    Invalidate();                
+                    Invalidate();
+                }
             } 
-            else if(state =="OFF")
+            if(state =="OFF" )
             {
-                if (Latched)
+                if(!Latched)
                 {
                     Latched = false;
                     Invalidate();
-                }                
+                }
             }
             else if(state == "TOGGLE")
             {

@@ -1,18 +1,13 @@
 #include "Menu.h"
 #include <cstdlib>
-static const char *module = "Menu";
-static const char *nameTemplate = "/config/%s.json";
+#include "System.h"
 
-// Overloading global new operator
-void *operator new(size_t sz)
-{
-    //LOC_LOGD("Menu","operator new : %d",sz);
-    void *m = malloc_fn(sz);
-    return m;
-}
+
+
 namespace FreeTouchDeck
 {
-
+    static const char *module = "Menu";
+    static const char *nameTemplate = "/config/%s.json";
     FTAction *Menu::homeMenu = new FTAction(ParametersList_t({"MENU", "home"}));
     bool Menu::Button(FTAction *action)
     {

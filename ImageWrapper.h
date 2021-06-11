@@ -8,6 +8,7 @@ namespace FreeTouchDeck
     public:
         bool valid = false;
         char *FileName(char *buffer, size_t buffSize);
+        char *CacheFileName(char *buffer, size_t buffSize);
         char LogoName[31] = {0};
         uint16_t w = 0;
         uint16_t h = 0;
@@ -18,17 +19,13 @@ namespace FreeTouchDeck
         uint32_t Colors = 0;
         byte R, G, B;
         uint16_t padding = 0;
+        bool IsCache=false;
         ImageWrapper(const char *imageName);
         ImageWrapper();
         void Draw(int16_t x, int16_t y, bool transparent);
         ~ImageWrapper();
-        void *operator new(size_t sz)
-        {
-            void *p = malloc_fn(sz);
-            if (!p)
-                LOC_LOGE("ImageWrapper", "operator new %d returned null pointer! ", sz);
-            return p;
-        }
+        bool HasCache();
+        bool CacheFile();
 
     private:
         bool SetNameAndPath(const char *imageName);

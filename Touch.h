@@ -1,3 +1,4 @@
+#include "Storage.h"
 /**
 * @brief This function presents the user with 4 points to touch and saves
          that data to a claibration file.
@@ -14,16 +15,16 @@ void touch_calibrate()
   uint8_t calDataOK = 0;
 
   // check if calibration file exists and size is correct
-  if (FILESYSTEM.exists(CALIBRATION_FILE))
+  if (ftdfs->exists(CALIBRATION_FILE))
   {
     if (REPEAT_CAL)
     {
       // Delete if we want to re-calibrate
-      FILESYSTEM.remove(CALIBRATION_FILE);
+      ftdfs->remove(CALIBRATION_FILE);
     }
     else
     {
-      File f = FILESYSTEM.open(CALIBRATION_FILE, "r");
+      File f = ftdfs->open(CALIBRATION_FILE, "r");
       if (f)
       {
         if (f.readBytes((char *)calData, 14) == 14)
@@ -64,7 +65,7 @@ void touch_calibrate()
     tft.println("Calibration complete!");
 
     // store data
-    File f = FILESYSTEM.open(CALIBRATION_FILE, "w");
+    File f = ftdfs->open(CALIBRATION_FILE, "w");
     if (f)
     {
       f.write((const unsigned char *)calData, 14);

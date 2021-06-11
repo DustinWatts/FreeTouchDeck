@@ -6,10 +6,9 @@
 #include "globals.hpp"
 #include <algorithm>
 #include <cstdio>
+#include "ConfigLoad.h"
 static const char *module = "FTAction";
 extern BleKeyboard bleKeyboard;
-extern Config generalconfig;
-extern unsigned long Interval;
 
 using namespace std;
 

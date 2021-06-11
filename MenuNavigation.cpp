@@ -1,20 +1,19 @@
-#include "stdint.h"
 #include "MenuNavigation.h"
 #include "Menu.h"
 #include "FTAction.h"
 #include <vector>
 #include <TFT_eSPI.h>
-#include <FS.h>
 #include "FTAction.h"
+#include "Storage.h"
 namespace FreeTouchDeck
 {
-    FTAction *sleepSetLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Sleep","ON"}));
-    FTAction *sleepClearLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Sleep","OFF"}));
-    FTAction *sleepToggleLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Sleep","TOGGLE"}));
-    FTAction *beepSetLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Beep","ON"}));
-    FTAction *beepClearLatchAction = new FTAction(ParametersList_t({"LATCH","Preferences","Beep","OFF"}));
+    FTAction *sleepSetLatchAction = new FTAction(ParametersList_t({"LATCH", "Preferences", "Sleep", "ON"}));
+    FTAction *sleepClearLatchAction = new FTAction(ParametersList_t({"LATCH", "Preferences", "Sleep", "OFF"}));
+    FTAction *sleepToggleLatchAction = new FTAction(ParametersList_t({"LATCH", "Preferences", "Sleep", "TOGGLE"}));
+    FTAction *beepSetLatchAction = new FTAction(ParametersList_t({"LATCH", "Preferences", "Beep", "ON"}));
+    FTAction *beepClearLatchAction = new FTAction(ParametersList_t({"LATCH", "Preferences", "Beep", "OFF"}));
     FTAction *criticalMessage = new FTAction(ParametersList_t({"MENU", "criticalmessage"}));
-    const char * MenuActionTemplate="{MENU:%s}";
+    const char *MenuActionTemplate = "{MENU:%s}";
     std::list<Menu *> PrevScreen;
     static const char *configMenu =
         R"({
@@ -327,14 +326,14 @@ namespace FreeTouchDeck
                 if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
                 {
                     cJSON *button = cJSON_CreateObject();
-                    cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, STRING_OR_DEFAULT(menu->Label,STRING_OR_DEFAULT(menu->Name,"")));
+                    cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, STRING_OR_DEFAULT(menu->Label, STRING_OR_DEFAULT(menu->Name, "")));
                     if (!ISNULLSTRING(menu->Icon))
                     {
                         cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, menu->Icon);
                     }
                     cJSON *actions = cJSON_CreateArray();
-                    char * menuActionString=(char*)malloc_fn(strlen(MenuActionTemplate)+strlen(menu->Name));
-                    sprintf(menuActionString,MenuActionTemplate,menu->Name);
+                    char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + strlen(menu->Name));
+                    sprintf(menuActionString, MenuActionTemplate, menu->Name);
                     cJSON_AddItemToArray(actions, cJSON_CreateString(menuActionString));
                     FREE_AND_NULL(menuActionString);
                     cJSON_AddItemToObject(button, FTButton::JsonLabelActions, actions);
@@ -369,7 +368,7 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Generating home screen");
         // todo:  for "OLDHOME" menu types,
         // try to get the corresponding icon to show up on new homescreen
-        Menu * home = new Menu(MenuTypes::ROOT,"home","","",generalconfig.rowscount,generalconfig.colscount,generalconfig.backgroundColour,generalconfig.DefaultOutline,generalconfig.DefaultTextColor,generalconfig.DefaultTextSize);
+        Menu *home = new Menu(MenuTypes::ROOT, "home", "", "", generalconfig.rowscount, generalconfig.colscount, generalconfig.backgroundColour, generalconfig.DefaultOutline, generalconfig.DefaultTextColor, generalconfig.DefaultTextSize);
         if (Menus.size() > 0)
         {
             // sort by alphabetical order
@@ -381,10 +380,10 @@ namespace FreeTouchDeck
             {
                 if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
                 {
-                    FTButton * button = new FTButton(ButtonTypes::STANDARD,STRING_OR_DEFAULT(menu->Label,STRING_OR_DEFAULT(menu->Name,"")),menu->Icon,"",generalconfig.DefaultOutline,generalconfig.DefaultTextSize,generalconfig.DefaultTextColor);
-                    ActionsSequences sequences ;
-                    char * menuActionString=(char*)malloc_fn(strlen(MenuActionTemplate)+strlen(menu->Name));
-                    sprintf(menuActionString,MenuActionTemplate,menu->Name);
+                    FTButton *button = new FTButton(ButtonTypes::STANDARD, STRING_OR_DEFAULT(menu->Label, STRING_OR_DEFAULT(menu->Name, "")), menu->Icon, "", generalconfig.DefaultOutline, generalconfig.DefaultTextSize, generalconfig.DefaultTextColor);
+                    ActionsSequences sequences;
+                    char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + strlen(menu->Name));
+                    sprintf(menuActionString, MenuActionTemplate, menu->Name);
                     sequences.Parse(menuActionString);
                     FREE_AND_NULL(menuActionString);
                     button->Sequences.push_back(sequences);
@@ -398,11 +397,11 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "No menu was found");
         }
         return true;
-    }    
+    }
     bool SaveFullFormat()
     {
         LOC_LOGI(module, "Saving full menu structure");
-        File menus = SPIFFS.open("/config/menus.json", FILE_WRITE);
+        File menus = ftdfs->open("/config/menus.json", FILE_WRITE);
         if (!menus)
         {
             LOC_LOGE(module, "Error opening menus.json");
@@ -417,7 +416,7 @@ namespace FreeTouchDeck
             if (strlen(json) != written)
             {
                 ESP_LOGE(module, "Expected to write %d bytes but only %d bytes were written", strlen(json), written);
-                SPIFFS.remove("/config/menus.json");
+                ftdfs->remove("/config/menus.json");
             }
             FREE_AND_NULL(json);
         }
@@ -434,7 +433,7 @@ namespace FreeTouchDeck
     {
         bool result = false;
         LOC_LOGI(module, "Loading menu structure from %s", fileName);
-        File menus = SPIFFS.open(fileName, FILE_READ);
+        File menus = ftdfs->open(fileName, FILE_READ);
         if (!menus || menus.size() == 0)
         {
             LOC_LOGW(module, "File not found or file is empty");
@@ -480,7 +479,7 @@ namespace FreeTouchDeck
             }
             else
             {
-                drawErrorMessage(true,module,"Unable to load file /config/menus.json");
+                drawErrorMessage(true, module, "Unable to load file /config/menus.json");
             }
 
             LOC_LOGD(module, "Done Adding home screen menu from file name homescreen");
@@ -539,5 +538,31 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Done converting menu to json structure");
         PrintMemInfo();
         return json;
+    }
+    void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)
+    {
+        static unsigned nextlog = 0;
+        auto Active = GetActiveScreen();
+        if (Active)
+        {
+            if (pressed)
+            {
+                Active->Touch(t_x, t_y);
+            }
+            else
+            {
+                Active->ReleaseAll();
+            }
+            Active->Draw();
+        }
+        else
+        {
+            if (nextlog <= millis())
+            {
+                LOC_LOGD(module, "No active display");
+                // to prevent flooding of the serial log, reduce the rate of this message
+                nextlog = millis() + 1000;
+            }
+        }
     }
 }

@@ -3,10 +3,8 @@
 #include <map>
 #include <list>
 #include <vector>
-#include <ArduinoJson.h> // Using ArduinoJson to read and write config files
 #include "cJSON.h"       // using cJSON for menu processing
 #include <FS.h>          // Filesystem support header
-#include <SPIFFS.h>      // Filesystem support header
 #include "FTButton.h"
 #include "UserConfig.h"
 #include "globals.hpp"

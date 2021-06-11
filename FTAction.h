@@ -1,13 +1,12 @@
 #pragma once
 #include "BleKeyboard.h"
 #include "globals.hpp"
-#include <vector>
-#include <map>
-#include <functional>
+
 namespace FreeTouchDeck
 {
     class FTAction;
     class ActionsSequences;
+
     enum class ActionTypes
     {
         NONE = 0,
@@ -61,12 +60,6 @@ namespace FreeTouchDeck
         const char *ThirdParameter();
         static std::string& GetParameter(int index, ParametersList_t &parameters);
         static ActionTypes GetType(cJSON *jsonActionType, ParametersList_t &parameters);
-        void *operator new(size_t sz)
-        {
-            LOC_LOGV("FTAction", "operator new : %d", sz);
-            return malloc_fn(sz);
-        };
-
         bool SplitActionParameter(char *name, size_t nameSize, char *parameter, size_t parameterSize);
         static bool SplitActionParameter(const char *value, char *name, size_t nameSize, char *parameter, size_t parameterSize);
         inline bool IsScreen()

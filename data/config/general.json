@@ -1,8 +1,5 @@
 {
 	"sleepenable": true,
-	"flip_touch_axis": true,
-	"reverse_x_touch": false,
-	"reverse_y_touch": true,
 	"beep": false,
 	"menubuttoncolor": "#009bf4",
 	"functionbuttoncolor": "#00efcb",
@@ -11,7 +8,6 @@
 	"outline": "#ffffff",
 	"textcolor": "#ffffff",
 	"loglevel": 3,
-	"screenrotation": 1,
 	"sleeptimer": 60,
 	"manufacturer": "Made by me",
 	"devicename": "FreeTouchDeck",
