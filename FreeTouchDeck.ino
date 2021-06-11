@@ -136,7 +136,7 @@ void ActionTask(void *pvParameters);
 #define BLE_KEYBOARD_VERSION "Outdated"
 #endif
 
-#define DEFAULT_LOG_LEVEL LogLevels::DEBUG
+//#define DEFAULT_LOG_LEVEL LogLevels::DEBUG
 
 #include "ConfigLoad.h"
 #include "DrawHelper.h"
