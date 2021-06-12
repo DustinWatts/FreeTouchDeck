@@ -151,14 +151,9 @@ namespace FreeTouchDeck
     {
         while(!ftdfs->inserted())
         {
-            drawErrorMessage(false,module,"Please insert %s and press to continue");
-            while(!isTouched())
-            {
-                yield();
-                delay(500);
-            }
+            drawErrorMessage(true,module,"Please insert %s and press to continue");
         }
-        ftdfs->Begin();
+
         return true;
     }
     bool checkErrorFileSystem(FileSystem_t *fileSystem)

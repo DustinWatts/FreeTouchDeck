@@ -30,73 +30,86 @@ namespace FreeTouchDeck
     {
         char FileNameBuffer[101] = {0};
         char cacheFileNameBuffer[101] = {0};
-        bool result = false;
-        if (ftdfs->External && GetBMPDetails() && valid)
+        bool result = true;
+        if (ftdfs->External)
         {
-            ftdfs->mkdir("/cache");
-            CacheFileName(cacheFileNameBuffer, sizeof(FileNameBuffer));
-            FileName(FileNameBuffer, sizeof(FileNameBuffer));
-            LOC_LOGI(module, "Caching file %s to %s", FileNameBuffer, cacheFileNameBuffer);
-            fs::File bmpFS = ftdfs->open(FileNameBuffer, "r");
-            if (!bmpFS)
-            {
-                LOC_LOGE(module, "File not found: %s", FileNameBuffer);
-                return false;
-            }
-            fs::File cacheBmpFS = ftdfs->open(cacheFileNameBuffer, "w");
-            if (!cacheBmpFS)
-            {
-                bmpFS.close();
-                LOC_LOGE(module, "Unable to open cache image");
-                return false;
-            }
-            LOC_LOGV(module, "Seeking offset: %d", Offset);
-            bmpFS.seek(Offset);
-
-            uint8_t lineBuffer[4 * 101];
-            uint8_t OutLineBuffer[4 * 101];
-            size_t rLen = 0;
-            do
-            {
-                rLen = bmpFS.read(lineBuffer, sizeof(lineBuffer));
-                if (rLen == 0)
-                {
-                    break;
-                }
-                if (rLen % 4 > 0)
-                {
-                    LOC_LOGE(module, "Error. Expected to read 32 bit values.  Found %d byte(s) extra ", rLen % 4);
-                    result = false;
-                    break;
-                }
-
-                uint32_t *bptr = (uint32_t *)lineBuffer;
-                uint16_t *optr = (uint16_t *)OutLineBuffer;
-                // Convert 24 to 16 bit colours
-                for (uint16_t v = 0; v < rLen; v += 4)
-                {
-                    *optr = convertRGB888ToRGB565(*bptr);
-                    optr++;
-                    bptr++;
-                }
-                if (!cacheBmpFS.write(OutLineBuffer, rLen / 2))
-                {
-                    result = false;
-                    LOC_LOGE(module, "Error writing cache file %s", cacheFileNameBuffer);
-                }
-            } while (result);
-              if (!result)
-            {
-                ftdfs->remove(cacheFileNameBuffer);
-            }
-            else
-            {
-                LOC_LOGI(module, "Cache of image was successful! Size %d", cacheBmpFS.size());
-            }
-            bmpFS.close();
-            cacheBmpFS.close();
-          
+            LOC_LOGD(module, "External storage found");
         }
+        else
+        {
+            LOC_LOGD(module, "Internal storage does not support caching");
+            return false;
+        }
+        if (!GetBMPDetails() || !valid)
+        {
+            LOC_LOGD(module, "Could not get file details. Cannot cache");
+            return false;
+        }
+        LOC_LOGD(module, "Creating cache directory if it does not exist");
+        ftdfs->mkdir("/cache");
+        CacheFileName(cacheFileNameBuffer, sizeof(cacheFileNameBuffer));
+        FileName(FileNameBuffer, sizeof(FileNameBuffer));
+        LOC_LOGI(module, "Caching file %s to %s", FileNameBuffer, cacheFileNameBuffer);
+        fs::File bmpFS = ftdfs->open(FileNameBuffer, "r");
+        if (!bmpFS)
+        {
+            LOC_LOGE(module, "File not found: %s", FileNameBuffer);
+            return false;
+        }
+        fs::File cacheBmpFS = ftdfs->open(cacheFileNameBuffer, "w");
+        if (!cacheBmpFS)
+        {
+            bmpFS.close();
+            LOC_LOGE(module, "Unable to open cache image");
+            return false;
+        }
+        LOC_LOGD(module, "Caching from offset: %d", Offset);
+        bmpFS.seek(Offset);
+
+        uint8_t lineBuffer[4 * 101];
+        uint8_t OutLineBuffer[4 * 101];
+        size_t rLen = 0;
+        do
+        {
+            rLen = bmpFS.read(lineBuffer, sizeof(lineBuffer));
+            if (rLen == 0)
+            {
+                LOC_LOGD(module,"File read complete");
+                break;
+            }
+            if (rLen % 4 > 0)
+            {
+                LOC_LOGE(module, "Error. Expected to read 32 bit values.  Found %d byte(s) extra ", rLen % 4);
+                result = false;
+                break;
+            }
+            LOC_LOGD(module,"Read %d bytes from source. Converting to RGB565", rLen);
+            uint32_t *bptr = (uint32_t *)lineBuffer;
+            uint16_t *optr = (uint16_t *)OutLineBuffer;
+            // Convert 24 to 16 bit colours
+            for (uint16_t v = 0; v < rLen; v += 4)
+            {
+                *optr = convertRGB888ToRGB565(*bptr);
+                optr++;
+                bptr++;
+            }
+            if (!cacheBmpFS.write(OutLineBuffer, rLen / 2))
+            {
+                result = false;
+                LOC_LOGE(module, "Error writing cache file %s", cacheFileNameBuffer);
+            }
+        } while (result);
+        if (!result)
+        {
+            ftdfs->remove(cacheFileNameBuffer);
+        }
+        else
+        {
+            LOC_LOGI(module, "Cache of image was successful! Size %d", cacheBmpFS.size());
+        }
+        bmpFS.close();
+        cacheBmpFS.close();
+
         return result;
     }
     char *ImageWrapper::FileName(char *buffer, size_t buffSize)
@@ -123,14 +136,15 @@ namespace FreeTouchDeck
             {
                 LOC_LOGE(module, "Unable to load bitmap file %s. ", LogoName);
             }
-            else
-            {
-                if (ftdfs->External && !HasCache())
-                {
-                    LOC_LOGI(module,"File does not have a cache image on the external storage.");
-                    CacheFile();
-                }
-            }
+            // Cache WIP
+            // else
+            // {
+            //     if (ftdfs->External && !HasCache())
+            //     {
+            //         LOC_LOGI(module, "File does not have a cache image on the external storage.");
+            //         CacheFile();
+            //     }
+            // }
         }
         else
         {
@@ -246,14 +260,15 @@ namespace FreeTouchDeck
         LOC_LOGV(module, "Getting background color");
         uint16_t BGColor = tft.color565(R, G, B);
         bool Transparent = ((BGColor == TFT_BLACK) || transparent);
-        if (HasCache())
-        {
-            CacheFileName(FileNameBuffer, sizeof(FileNameBuffer));
-        }
-        else
-        {
-            FileName(FileNameBuffer, sizeof(FileNameBuffer));
-        }
+        // if (HasCache())
+        // {
+        //     CacheFileName(FileNameBuffer, sizeof(FileNameBuffer));
+        // }
+        // else
+        // {
+        //     FileName(FileNameBuffer, sizeof(FileNameBuffer));
+        // }
+        FileName(FileNameBuffer, sizeof(FileNameBuffer));
         bool oldSwapBytes = tft.getSwapBytes();
         tft.setSwapBytes(true);
 
@@ -266,49 +281,49 @@ namespace FreeTouchDeck
             return;
         }
         LOC_LOGV(module, "Seeking offset: %d", Offset);
-        if (HasCache())
-        {
-            uint16_t row;
-            uint8_t r, g, b;
+        // if (HasCache())
+        // {
+        //     uint16_t row;
+        //     uint8_t r, g, b;
 
-            //y += h - 1;
-            bool oldSwapBytes = tft.getSwapBytes();
-            tft.setSwapBytes(true);
+        //     //y += h - 1;
+        //     bool oldSwapBytes = tft.getSwapBytes();
+        //     tft.setSwapBytes(true);
 
-            uint8_t lineBuffer[w * sizeof(uint16_t)];
-            uint16_t lx = x - w / 2;
-            uint16_t ly = y + h / 2 - 1;
-            if (Transparent || transparent)
-            {
-                // Push the pixel row to screen, pushImage will crop the line if needed
-                // y is decremented as the BMP image is drawn bottom up
-                LOC_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
-            }
-            else
-            {
-                LOC_LOGV(module, "Drawing bitmap line opaque");
-            }
+        //     uint8_t lineBuffer[w * sizeof(uint16_t)];
+        //     uint16_t lx = x - w / 2;
+        //     uint16_t ly = y + h / 2 - 1;
+        //     if (Transparent || transparent)
+        //     {
+        //         // Push the pixel row to screen, pushImage will crop the line if needed
+        //         // y is decremented as the BMP image is drawn bottom up
+        //         LOC_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
+        //     }
+        //     else
+        //     {
+        //         LOC_LOGV(module, "Drawing bitmap line opaque");
+        //     }
 
-            for (row = 0; row < h; row++)
-            {
-                bmpFS.read(lineBuffer, sizeof(lineBuffer));
-                //Serial.println("Pushing line to screen");
-                if (Transparent || transparent)
-                {
-                    // Push the pixel row to screen, pushImage will crop the line if needed
-                    // y is decremented as the BMP image is drawn bottom up
-                    tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer, BGColor);
-                }
-                else
-                {
-                    // Push the pixel row to screen, pushImage will crop the line if needed
-                    // y is decremented as the BMP image is drawn bottom up
-                    tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer);
-                }
-            }
-        }
-        else
-        {
+        //     for (row = 0; row < h; row++)
+        //     {
+        //         bmpFS.read(lineBuffer, sizeof(lineBuffer));
+        //         //Serial.println("Pushing line to screen");
+        //         if (Transparent || transparent)
+        //         {
+        //             // Push the pixel row to screen, pushImage will crop the line if needed
+        //             // y is decremented as the BMP image is drawn bottom up
+        //             tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer, BGColor);
+        //         }
+        //         else
+        //         {
+        //             // Push the pixel row to screen, pushImage will crop the line if needed
+        //             // y is decremented as the BMP image is drawn bottom up
+        //             tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer);
+        //         }
+        //     }
+        // }
+        // else
+        // {
             bmpFS.seek(Offset);
             uint16_t row;
             uint8_t r, g, b;
@@ -360,7 +375,7 @@ namespace FreeTouchDeck
                     tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer);
                 }
             }
-        }
+        // }
         tft.setSwapBytes(oldSwapBytes);
         LOC_LOGV(module, "Closing bitmap file %s", LogoName);
         bmpFS.close();

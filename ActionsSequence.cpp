@@ -13,10 +13,6 @@ namespace FreeTouchDeck
             {
                 LOC_LOGW(module, "Button action %s could not be queued for execution.", action->toString());
             }
-            // if(NeedsReleaseAll)
-            // {
-            //     QueueAction(&FTAction::releaseAllAction);
-            // }
         }
     }
     bool ActionsSequences::Parse(const char * actionString)
@@ -37,7 +33,6 @@ namespace FreeTouchDeck
         bool success = true;
         
 
-        //NeedsReleaseAll = false;
         LOC_LOGD(module, "Parsing free form text %s", ConfigSequence);
         do
         {
