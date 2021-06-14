@@ -1,17 +1,11 @@
 #pragma once
 #include <cJSON.h>
 #include "esp_attr.h"
-#include "UserConfig.h"
-#ifdef USECAPTOUCH
-#include <Wire.h>
-#include <FT6236.h>
-#endif
+
 
 namespace FreeTouchDeck
 {
-#ifdef USECAPTOUCH
-    extern FT6236 ts;
-#endif
+
     enum class SystemMode
     {
         STANDARD,

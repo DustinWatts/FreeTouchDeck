@@ -142,9 +142,7 @@ void ActionTask(void *pvParameters);
 #include "DrawHelper.h"
 #include "ConfigHelper.h"
 #include "MenuNavigation.h"
-#ifndef USECAPTOUCH
-#include "Touch.h"
-#endif
+
 
 //-------------------------------- SETUP --------------------------------------------------------------
 

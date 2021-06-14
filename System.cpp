@@ -1,4 +1,5 @@
 #include "globals.hpp"
+#include "UserConfig.h"
 #include "System.h"
 #include "MenuNavigation.h"
 #include "Storage.h"
@@ -7,14 +8,14 @@
 #include "Audio.h"
 #include "UserConfig.h"
 
+#ifdef USECAPTOUCH
+#include "CapacitiveTouch.h"
+#else
+#include "ResistiveTouch.h"
+#endif
 namespace FreeTouchDeck
 {
     static const char *module = "System";
-#ifdef USECAPTOUCH
-#include <Wire.h>
-#include <FT6236.h>
-    FT6236 ts = FT6236();
-#endif
     volatile unsigned long previousMillis = 0;
     unsigned long SleepInterval = 0;
 
@@ -142,10 +143,8 @@ namespace FreeTouchDeck
         }
 
         HandleAudio(Sounds::STARTUP);
-// Calibrate the touch screen and retrieve the scaling factors
-#ifndef USECAPTOUCH
+    // Calibrate the touch screen and retrieve the scaling factors
         touch_calibrate();
-#endif
 
         //CacheBitmaps();
         LoadAllMenus();
@@ -250,23 +249,23 @@ namespace FreeTouchDeck
             // todo: implement sleep logic
             pinMode(touchInterruptPin, INPUT_PULLUP);
             SetSleepInterval(generalconfig.sleeptimer);
-            QueueAction(FreeTouchDeck::sleepSetLatchAction);
+            QueueAction(sleepSetLatchAction);
             LOC_LOGI(module, "Sleep enabled. Timer = %d minutes", generalconfig.sleeptimer);
         }
         else
         {
-            QueueAction(FreeTouchDeck::sleepClearLatchAction);
+            QueueAction(sleepClearLatchAction);
         }
     }
     void HandleBeepConfig()
     {
         if (generalconfig.beep)
         {
-            QueueAction(FreeTouchDeck::beepSetLatchAction);
+            QueueAction(beepSetLatchAction);
         }
         else
         {
-            QueueAction(FreeTouchDeck::beepClearLatchAction);
+            QueueAction(beepClearLatchAction);
         }
     }
     void touchInit()
@@ -289,7 +288,7 @@ namespace FreeTouchDeck
     }
     void DumpCJson(cJSON *doc)
     {
-        if (generalconfig.LogLevel < FreeTouchDeck::LogLevels::VERBOSE)
+        if (generalconfig.LogLevel < LogLevels::VERBOSE)
             return;
         char *d = cJSON_Print(doc);
         if (d)
@@ -353,7 +352,7 @@ namespace FreeTouchDeck
     bool isTouched()
     {
         uint16_t t_x, t_y;
-        return getTouch(&t_x,&t_y);
+        return getTouch(&t_x, &t_y);
     }
     void processSleep()
     {
@@ -441,6 +440,7 @@ namespace FreeTouchDeck
             }
         } while (Action);
     }
+
 
 };
 
