@@ -52,6 +52,7 @@ namespace FreeTouchDeck
         static bool KeyNeedsRelease(const char *keyName);
         static bool KeyIsDoubleBytes(const char *keyName);
         void Execute();
+        static void Stop();
         const char *toString();
         std::string& GetParameter(int index);
         const char *ActionName();
@@ -72,19 +73,17 @@ namespace FreeTouchDeck
         bool CallActionCallback(bool checkOnly = false);
         static bool CallActionCallback(ParametersList_t &parameters, FTAction *action, bool checkOnly);
         static bool IsActionCallback(ParametersList_t &parameters);
+        static bool Stopped;
     };
 
     typedef std::function<bool(FTAction *)> ActionCallbackFn_t;
     typedef std::map<std::string, ActionCallbackFn_t> ActionCallbackMap_t;
 
     extern ActionCallbackMap_t UserActions;
-    extern FTAction *sleepSetLatchAction;
-    extern FTAction *sleepClearLatchAction;
-    extern FTAction *sleepToggleLatchAction;
-    extern FTAction *beepSetLatchAction;
-    extern FTAction *beepClearLatchAction;
     extern bool QueueAction(FTAction *action);
     extern FTAction *PopQueue();
+    void EmptyQueue();
+
     extern bool QueueLock(TickType_t xTicksToWait);
     extern void QueueUnlock();
     extern FTAction *PopScreenQueue();

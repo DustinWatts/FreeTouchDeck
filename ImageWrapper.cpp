@@ -74,7 +74,7 @@ namespace FreeTouchDeck
             rLen = bmpFS.read(lineBuffer, sizeof(lineBuffer));
             if (rLen == 0)
             {
-                LOC_LOGD(module,"File read complete");
+                LOC_LOGD(module, "File read complete");
                 break;
             }
             if (rLen % 4 > 0)
@@ -83,7 +83,7 @@ namespace FreeTouchDeck
                 result = false;
                 break;
             }
-            LOC_LOGD(module,"Read %d bytes from source. Converting to RGB565", rLen);
+            LOC_LOGD(module, "Read %d bytes from source. Converting to RGB565", rLen);
             uint32_t *bptr = (uint32_t *)lineBuffer;
             uint16_t *optr = (uint16_t *)OutLineBuffer;
             // Convert 24 to 16 bit colours
@@ -222,9 +222,11 @@ namespace FreeTouchDeck
             }
             if (valid)
             {
-                padding = (4 - ((w * 3) & 3)) & 3;
+                // each row in a bmp pixel array is padded to a multiple of 4 bytes
+                //padding = (4 - ((w * 3) & 3)) & 3;
+                padding = 4 - ((w * (Depth / 8)) % 4);
                 imageWrapper.seek(Offset); //skip bitmap header
-
+                LOC_LOGD(module, "Depth: %d width is %d, padded bytes: %d, padding: %d", Depth, w, (Depth / 8 * w) + padding, padding);
                 B = imageWrapper.read();
                 G = imageWrapper.read();
                 R = imageWrapper.read();
@@ -324,59 +326,101 @@ namespace FreeTouchDeck
         // }
         // else
         // {
-            bmpFS.seek(Offset);
-            uint16_t row;
-            uint8_t r, g, b;
+        bmpFS.seek(Offset);
+        uint16_t row;
+        uint8_t r, g, b;
 
-            //y += h - 1;
+        //y += h - 1;
 
-            uint8_t lineBuffer[w * 3 + padding];
-            uint16_t lx = x - w / 2;
-            uint16_t ly = y + h / 2 - 1;
-            uint8_t *bptr = NULL;
-            uint16_t *tptr = NULL;
-            if (Transparent || transparent)
+        
+        uint8_t bytesPerPixel = Depth / 8;
+        size_t lineBufSpace = (bytesPerPixel * w) + padding;
+        // reserve 20% memory 
+        size_t  maxAlloclines = heap_caps_get_free_size(MALLOC_CAP_INTERNAL)*0.20/lineBufSpace;
+        //uint8_t lines = w > 80 ? 1 : 10;
+        size_t bufferSize = maxAlloclines * lineBufSpace;
+        uint8_t *lineBuffer = (uint8_t *)malloc(bufferSize);
+        if (!lineBuffer)
+        {
+            LOC_LOGE(module, "Error allocating memory for image drawing!");
+            tft.setSwapBytes(oldSwapBytes);
+            free(lineBuffer);
+            LOC_LOGV(module, "Closing bitmap file %s", LogoName);
+            bmpFS.close();
+            return;
+        }
+        LOC_LOGD(module, "Drawing picture lines: %d, bytesPerPixel: %d, lineBufSpace: %d, bufferSize: %d ", maxAlloclines, bytesPerPixel, lineBufSpace, bufferSize);
+        uint16_t lx = x - w / 2;
+        uint16_t ly = y + h / 2 - 1;
+        uint8_t *bptr = NULL;
+        uint16_t *tptr = NULL;
+        if (Transparent || transparent)
+        {
+            // Push the pixel row to screen, pushImage will crop the line if needed
+            // y is decremented as the BMP image is drawn bottom up
+            LOC_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
+        }
+        else
+        {
+            LOC_LOGV(module, "Drawing bitmap line opaque");
+        }
+
+        for (row = 0; row < h; row += maxAlloclines)
+        {
+            size_t readBuf = bmpFS.read(lineBuffer, bufferSize);
+            bptr = lineBuffer;
+            tptr = (uint16_t *)lineBuffer;
+            uint8_t readLines = readBuf / lineBufSpace;
+            //LOC_LOGD(module, "Read %d bytes (%d lines) from bmp",readBuf, readLines);
+            // Convert 24 to 16 bit colours
+            for (uint16_t r = 0; r < readLines; r++)
             {
-                // Push the pixel row to screen, pushImage will crop the line if needed
-                // y is decremented as the BMP image is drawn bottom up
-                LOC_LOGV(module, "Drawing with transparent color 0x%04x", BGColor);
-            }
-            else
-            {
-                LOC_LOGV(module, "Drawing bitmap line opaque");
-            }
-
-            for (row = 0; row < h; row++)
-            {
-                bmpFS.read(lineBuffer, sizeof(lineBuffer));
-                bptr = lineBuffer;
-                tptr = (uint16_t *)lineBuffer;
-
-                // Convert 24 to 16 bit colours
+                uint8_t *bptr2 = bptr;
+                //Serial.print("=>");
                 for (uint16_t col = 0; col < w; col++)
                 {
-                    b = *bptr++;
-                    g = *bptr++;
-                    r = *bptr++;
-                    *tptr++ = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-                }
 
+                    //Serial.printf("%s",*bptr2+bptr2[1]+bptr2[2]>0?".":"");
+                    bptr2 += bytesPerPixel;
+                }
+                //Serial.println();
+                //Serial.print("<=");
+
+                for (uint16_t col = 0; col < w; col++)
+                {
+                    *tptr = convertRGB888ToRGB565(bptr, Depth);
+                    //Serial.printf("%s",(*tptr)>0?".":"");
+
+                    tptr++;
+                    bptr += bytesPerPixel;
+                }
+                //Serial.println();
+                bptr += padding;
+            }
+            //LOC_LOGD(module,"Converted to rgb565");
+            tptr = (uint16_t *)lineBuffer;
+            for (uint16_t line = readLines; line > 0; line--)
+            {
+                //LOC_LOGD(module,"Pushing line %d",line);
                 //Serial.println("Pushing line to screen");
                 if (Transparent || transparent)
                 {
                     // Push the pixel row to screen, pushImage will crop the line if needed
                     // y is decremented as the BMP image is drawn bottom up
-                    tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer, BGColor);
+                    tft.pushImage(lx, ly--, w, 1, (uint16_t *)tptr, BGColor);
                 }
                 else
                 {
                     // Push the pixel row to screen, pushImage will crop the line if needed
                     // y is decremented as the BMP image is drawn bottom up
-                    tft.pushImage(lx, ly--, w, 1, (uint16_t *)lineBuffer);
+                    tft.pushImage(lx, ly--, w, 1, (uint16_t *)tptr);
                 }
+                tptr += w;
             }
+        }
         // }
         tft.setSwapBytes(oldSwapBytes);
+        free(lineBuffer);
         LOC_LOGV(module, "Closing bitmap file %s", LogoName);
         bmpFS.close();
     }

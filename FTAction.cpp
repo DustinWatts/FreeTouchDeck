@@ -16,6 +16,7 @@ static char printBuffer[201] = {0};
 
 namespace FreeTouchDeck
 {
+    bool FTAction::Stopped=false;
     const char *splitterFormat = "%[^.:,]%*s";
     const char *separatorFormat = "%[ .:,]";
     SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
@@ -292,12 +293,15 @@ namespace FreeTouchDeck
         Type = ActionTypes::LOCAL;
         Parameters = parameters;
     }
-
+    void FTAction::Stop()
+    {
+        FTAction::Stopped=true;
+    }
     void FTAction::Execute()
     {
         MediaKeyReport MediaKey;
         LOC_LOGD(module, "Executing Action: %s", toString());
-
+        FTAction::Stopped = false;
         switch (Type)
         {
         case ActionTypes::NONE:
@@ -321,6 +325,10 @@ namespace FreeTouchDeck
                         // individually
                         bleKeyboard.press(ks);
                         delay(generalconfig.keyDelay);
+                        if(FTAction::Stopped)
+                        {
+                            break;
+                        }
                     }
                 }
                 else
@@ -328,7 +336,16 @@ namespace FreeTouchDeck
                     // send all keys through the write operation
                     // as this presses and releases all the keys
                     // in the sequence
-                    bleKeyboard.write(Values.data(),Values.size());
+                    for (auto ks : Values)
+                    {
+
+                        bleKeyboard.write(ks);
+                        delay(generalconfig.keyDelay);
+                        if(FTAction::Stopped)
+                        {
+                            break;
+                        }
+                    }                    
                 }
             }
             break;
@@ -336,6 +353,10 @@ namespace FreeTouchDeck
             CallActionCallback(false);
         default:
             break;
+        }
+        if(FTAction::Stopped && NeedsRelease)
+        {
+            bleKeyboard.releaseAll();
         }
     }
 
@@ -378,6 +399,18 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "Unable to screen lock Action queue");
         }
         return Action;
+    }
+    void EmptyQueue()
+    {
+        if (QueueLock(portMAX_DELAY / portTICK_PERIOD_MS))
+        {
+            while(!Queue.empty())
+            {
+                Queue.pop();
+            }
+            QueueUnlock();
+        }
+        FTAction::Stop();
     }
     FTAction *PopQueue()
     {

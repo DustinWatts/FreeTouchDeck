@@ -316,19 +316,7 @@ Note   : none
     return (unsigned long)strtoul(hex, NULL, 16);
   }
 
-  /**
-* @brief This function converts RGB888 to RGB565.
-*
-* @param rgb unsigned long
-*
-* @return unsigned int
-*
-* @note none
-*/
-  unsigned int convertRGB888ToRGB565(unsigned long rgb)
-  {
-    return (((rgb & 0xf80000) >> 8) | ((rgb & 0xfc00) >> 5) | ((rgb & 0xf8) >> 3));
-  }
+
 
   /**
 * @brief This function converts RGB888 to RGB565.

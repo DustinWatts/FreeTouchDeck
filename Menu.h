@@ -52,7 +52,8 @@ namespace FreeTouchDeck
     bool Pressed = false;
     Menu(cJSON *menuJson);
     Menu(MenuTypes menutype,const char * name,const char * label, const char * icon,  uint8_t rowsCount, uint8_t colsCount,uint32_t backgroundColor,uint32_t outline, uint32_t textColor,uint8_t textSize);
-    void Draw(bool force = false);
+    void DrawShape(bool force = false);
+    void DrawImages(bool force = false);
     ~Menu();
     void Touch(uint16_t x, uint16_t y);
     void ReleaseAll();

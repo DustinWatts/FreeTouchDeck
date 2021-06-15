@@ -180,6 +180,12 @@
           "and subsequent text{RETURN}",
           "and this should start in a new line"
         ]
+      },
+      {
+        "logo":"home.bmp",
+        "actions":[
+          "{MENU:home}"
+        ]
       }
     ]
   },

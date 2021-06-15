@@ -174,8 +174,9 @@ namespace FreeTouchDeck
          }},
         {"MENU", [](FTAction *action)
          {
-             LOC_LOGD(module, "Activating screen %s", action->FirstParameter());
-             return SetActiveScreen(action->FirstParameter());
+             const char * screen=action->FirstParameter();
+             LOC_LOGD(module, "Activating screen %s", screen);
+             return SetActiveScreen(screen);
          }},
         {"SLEEP", SetSleep},
         {"BEEP", [](FTAction *action)
@@ -195,26 +196,6 @@ namespace FreeTouchDeck
              delay(atol(action->FirstParameter()));
              return true;
          }},
-        {"RELEASEALL", [](FTAction *action)
-         {
-            uint16_t forcedDelay = max(generalconfig.keyDelay, (uint16_t)500); // force a 500ms delay
-            LOC_LOGD(module, "Releasing All");
-            bleKeyboard.releaseAll();
-            delay(forcedDelay);
-            return true;
-         }},
-        {"RELEASEKEY", [](FTAction *action)
-         {
-             uint16_t forcedDelay = max(generalconfig.keyDelay, (uint16_t)500); // force a 500ms delay
-             LOC_LOGD(module, "Releasing %d keys", action->Values.size());
-            //  for (auto k : action->Values)
-            //  {
-            //      delay(forcedDelay);
-            //      bleKeyboard.release(k);
-            //  }
-            bleKeyboard.releaseAll();
-            delay(forcedDelay);
-             return true;
-         }},
+     
         {"LATCH", RunLatchAction}};
 }

@@ -196,10 +196,10 @@ namespace FreeTouchDeck
     {
         static size_t prev_free = 0;
         static size_t prev_min_free = 0;
-        if (generalconfig.LogLevel < LogLevels::DEBUG)
+        if (generalconfig.LogLevel < LogLevels::VERBOSE)
             return;
-        LOC_LOGI(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-        LOC_LOGI(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        LOC_LOGV(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        LOC_LOGV(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
         prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
         prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
     }
@@ -430,15 +430,13 @@ namespace FreeTouchDeck
     {
         LOC_LOGV(module, "Checking for regular actions");
         FTAction *Action = NULL;
-        do
+        Action = PopQueue();
+        while (Action && !FTAction::Stopped)
         {
-            Action = PopQueue();
-            if (Action)
-            {
-                ResetSleep();
-                Action->Execute();
-            }
-        } while (Action);
+            ResetSleep();
+            Action->Execute();
+        }
+        FTAction::Stopped=false;
     }
 
 

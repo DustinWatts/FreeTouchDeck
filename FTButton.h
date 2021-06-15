@@ -21,24 +21,30 @@ namespace FreeTouchDeck
     protected:
         bool Latched = false;
         bool NeedsDraw = true;
+        bool NeedsDrawImage = true;
         bool IsPressed = false;
 
     private:
         uint16_t CenterX = 0;
         uint16_t CenterY = 0;
+        uint16_t X = 0;
+        uint16_t Y = 0;
         uint16_t ButtonWidth = 0;
+           
         uint8_t Spacing = 0;
         uint16_t ButtonHeight = 0;
-
+        uint16_t AdjustedWidth;
+        uint16_t AdjustedHeight;
+        uint16_t TextAdjustedWidth;
         char *_jsonLogo = NULL;
         char *_jsonLatchedLogo = NULL;
-
-        TFT_eSPI_Button _button;
+        void ExecuteActions();
 
     public:
         bool contains(uint16_t x, uint16_t y);
         ButtonTypes ButtonType;
         uint32_t BackgroundColor = 0;
+        uint32_t MenuBackgroundColor = 0;
         uint32_t Outline = 0;
         uint8_t TextSize = 0;
         uint32_t TextColor = 0;
@@ -62,7 +68,7 @@ namespace FreeTouchDeck
         std::list<ActionsSequences> Sequences;
         FTButton(cJSON *button);
         FTButton();
-        FTButton(cJSON *button,uint32_t BackgroundColor,        uint32_t Outline ,uint32_t TextColor );
+        FTButton(cJSON *button,uint32_t BackgroundColor,uint32_t Outline ,uint32_t TextColor);
         FTButton(ButtonTypes buttonType, const char * label, const char * logo,const char * latchedLogo, uint32_t outline, uint8_t textSize, uint32_t textColor);
         void Init(cJSON *button);
         FTButton(const char * tmpl, bool isShared=false);
@@ -77,6 +83,8 @@ namespace FreeTouchDeck
         ImageWrapper *Logo();
         uint16_t Width();
         uint16_t Height();
+        void DrawShape(bool force);
+        void DrawImage(bool force);
         void Draw(bool force);
         void Invalidate();
         void Press();

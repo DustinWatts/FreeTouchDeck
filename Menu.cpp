@@ -41,17 +41,28 @@ namespace FreeTouchDeck
         return NULL;
     }
 
-    void Menu::Draw(bool force)
+    void Menu::DrawShape(bool force)
     {
         for (auto button : buttons)
         {
-            button->Draw(force);
+            button->DrawShape(force);
         }
         if (HasBackButton())
         {
-            FTButton::BackButton->Draw(force);
+            FTButton::BackButton->DrawShape(force);
         }
     }
+    void Menu::DrawImages(bool force)
+    {
+        for (auto button : buttons)
+        {
+            button->DrawImage(force);
+        }
+        if (HasBackButton())
+        {
+            FTButton::BackButton->DrawImage(force );
+        }
+    }    
     Menu::~Menu()
     {
         LOC_LOGD(module, "Freeing memory for menu %s", Name ? Name : "UNKNOWN");
@@ -76,7 +87,6 @@ namespace FreeTouchDeck
         }
         if (HasBackButton())
         {
-
             FTButton::BackButton->Release();
         }
     }
@@ -91,7 +101,8 @@ namespace FreeTouchDeck
             {
                 FTButton::BackButton->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
             }
-            Draw(true);
+            DrawShape(true);
+            DrawImages(true);
         }
     }
     void Menu::Deactivate()
@@ -103,7 +114,6 @@ namespace FreeTouchDeck
             ReleaseAll();
         }
     }
-
     void Menu::SetButtonWidth()
     {
         if (ColsCount == 0)
@@ -115,6 +125,7 @@ namespace FreeTouchDeck
             RowsCount = generalconfig.rowscount;
         }
         LOC_LOGD(module, "Menu is organized in a %dx%d matrix", ColsCount, RowsCount);
+        // Calculate adjusted button height and weight, considering the spacing
         ButtonWidth = (tft.width() - max(ColsCount - 1, 0) * Spacing) / ColsCount;
         ButtonHeight = (tft.height() - max(RowsCount - 1, 0) * Spacing) / RowsCount;
     }

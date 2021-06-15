@@ -16,6 +16,10 @@ namespace FreeTouchDeck {
     bool LoadFullFormat(const char * fileName);
     bool LoadFullFormat();
     void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y);
-    
+    extern FTAction *sleepSetLatchAction;
+    extern FTAction *sleepClearLatchAction;
+    extern FTAction *sleepToggleLatchAction;
+    extern FTAction *beepSetLatchAction;
+    extern FTAction *beepClearLatchAction;
 }
 

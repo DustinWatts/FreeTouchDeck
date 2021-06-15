@@ -144,6 +144,8 @@ namespace FreeTouchDeck
                 {
                     Match = GetScreen("home");
                 }
+                // stop executing any pending keyboard action
+                EmptyQueue();
             }
             else
             {
@@ -160,7 +162,7 @@ namespace FreeTouchDeck
             {
                 LOC_LOGD(module, "Screen %s not found", name);
             }
-            else
+            else 
             {
                 LOC_LOGD(module, "Screen %s was found", name);
             }
@@ -196,6 +198,12 @@ namespace FreeTouchDeck
                     Active->Deactivate();
                 }
                 Match->Activate();
+                if(strcmp("home",Match->Name)==0 && PrevScreen.size()>0)
+                {
+                    LOC_LOGD(module,"Returning to home from lower level menu. Clearing navigation stack");
+                    PrevScreen.clear();
+                }                
+
                 ScreenUnlock();
                 result = true;
             }
@@ -279,6 +287,7 @@ namespace FreeTouchDeck
         cJSON_Delete(doc);
         return result;
     }
+
     void LoadSystemMenus()
     {
         LOC_LOGD(module, "Adding settings menu");
@@ -553,7 +562,8 @@ namespace FreeTouchDeck
             {
                 Active->ReleaseAll();
             }
-            Active->Draw();
+            Active->DrawShape();
+            Active->DrawImages();
         }
         else
         {

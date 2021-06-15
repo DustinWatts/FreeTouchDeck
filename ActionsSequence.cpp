@@ -1,13 +1,10 @@
 #include "ActionsSequence.h"
 namespace FreeTouchDeck
 {
-
     bool ActionsSequences::Execute()
     {
-        bool needsRelease = false;
         for (auto action : Actions)
         {
-            needsRelease = action->NeedsRelease ? true : needsRelease;
             LOC_LOGD(module, "Queuing action %s",  action->toString());
             if (!QueueAction(action))
             {
@@ -90,10 +87,7 @@ namespace FreeTouchDeck
         } while (true);
         if(releaseKeyList.size()>0)
         {
-           releaseParameters.push_back("RELEASEKEY");
-           auto releaseAction = new FTAction(releaseParameters);
-           releaseAction->Values.insert(releaseAction->Values.end(), releaseKeyList.begin(),releaseKeyList.end());
-           Actions.push_back(releaseAction);
+           Actions.push_back(new FTAction("Release Keys", releaseKeyList));
         }
 
         return success;

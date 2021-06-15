@@ -49,7 +49,7 @@
 // PAY ATTENTION! Even if resistive touch is not used, the TOUCH pin has to be defined!
 // It can be a random unused pin.
 // TODO: Find a way around this!
-
+#define ACTIONS_IN_TASKS
 #include "UserConfig.h"
 
 #ifdef ARDUINO_TWATCH_BASE
@@ -123,8 +123,8 @@ BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 Wificonfig wificonfig = {.ssid = NULL, .password = NULL, .wifimode = NULL, .hostname = NULL};
 
 #ifdef ACTIONS_IN_TASKS
-TaskHandle_t xScreenTask = NULL;
-void ScreenHandleTask(void *pvParameters);
+//TaskHandle_t xScreenTask = NULL;
+//void ScreenHandleTask(void *pvParameters);
 TaskHandle_t xActionTask = NULL;
 void ActionTask(void *pvParameters);
 #endif
@@ -183,9 +183,9 @@ void setup()
   HandleSleepConfig();
   HandleBeepConfig();
 #ifdef ACTIONS_IN_TASKS
-  xTaskCreate(ScreenHandleTask, "Screen", 1024 * 3, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
-  PrintMemInfo();
-  LOC_LOGD(module, "Screen task created");
+  // xTaskCreate(ScreenHandleTask, "Screen", 1024 * 3, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
+  // PrintMemInfo();
+  // LOC_LOGD(module, "Screen task created");
   xTaskCreate(ActionTask, "Action", 1024 * 4, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
   PrintMemInfo();
   LOC_LOGD(module, "Action task created");
@@ -201,26 +201,25 @@ void loop(void)
 
   processSerial();
   processSleep();
-
+HandleScreen();
 #ifndef ACTIONS_IN_TASKS
   HandleActions();
-  HandleScreen();
 #endif
   // screen debounce
   delay(10);
 }
 #ifdef ACTIONS_IN_TASKS
-void ScreenHandleTask(void *pvParameters)
-{
+// void ScreenHandleTask(void *pvParameters)
+// {
 
-  // Load menu definitions
+//   // Load menu definitions
 
-  for (;;)
-  {
-    HandleScreen();
-    delay(50);
-  }
-}
+//   for (;;)
+//   {
+//     HandleScreen();
+//     delay(50);
+//   }
+// }
 
 void ActionTask(void *pvParameters)
 {
