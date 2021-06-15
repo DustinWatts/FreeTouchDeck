@@ -187,6 +187,23 @@ namespace FreeTouchDeck
         LOC_LOGD(module,"Getting third parameter from %s", toString());
         return GetParameter(3).c_str();
     }
+    std::string& FTAction::ActionNameStr()
+    {
+        LOC_LOGD(module,"Getting Action name from %s", toString());
+        return GetParameter(0);
+    }
+    std::string& FTAction::FirstParameterStr()
+    {
+        return GetParameter(1);
+    }
+    std::string& FTAction::SecondParameterStr()
+    {
+        return GetParameter(2);
+    }
+    std::string& FTAction::ThirdParameterStr()
+    {
+        return GetParameter(3);
+    }
     std::string& FTAction::GetParameter(int index, ParametersList_t &parameters)
     {
         LOC_LOGD(module,"Getting parameter %d a total of %d entries", index,parameters.size());
@@ -468,7 +485,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            LOC_LOGD(module, "Pushing action %s to regular queue", action->toString());
+            LOC_LOGD(module, "Pushing action %s to keyboard queue", action->toString());
             Queue.push(action);
         }
 

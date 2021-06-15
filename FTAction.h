@@ -26,6 +26,8 @@ namespace FreeTouchDeck
     typedef std::map<const char *, KeyValue_t> KeyMap_t;
     typedef std::list<FTAction *> ActionsList;
     typedef std::list<std::string> ParametersList_t;
+    typedef std::list<std::string> ActionQueueType_t;
+    extern ActionQueueType_t UserActionsKeyboardQueue;
     class FTAction
     {
     public:
@@ -59,13 +61,28 @@ namespace FreeTouchDeck
         const char *FirstParameter();
         const char *SecondParameter();
         const char *ThirdParameter();
+        std::string& ActionNameStr();
+        std::string& FirstParameterStr();
+        std::string& SecondParameterStr();
+        std::string& ThirdParameterStr();
         static std::string& GetParameter(int index, ParametersList_t &parameters);
         static ActionTypes GetType(cJSON *jsonActionType, ParametersList_t &parameters);
         bool SplitActionParameter(char *name, size_t nameSize, char *parameter, size_t parameterSize);
         static bool SplitActionParameter(const char *value, char *name, size_t nameSize, char *parameter, size_t parameterSize);
         inline bool IsScreen()
         {
-            return Type != ActionTypes::KEYBOARD;
+            bool KeyboardLocalAction=false;
+            for(auto e : UserActionsKeyboardQueue)
+            {
+                if(e==ActionNameStr())
+                {
+                    KeyboardLocalAction=true;
+                    break;
+                }
+            }
+
+            // Screen queue if not Keyboard event and acction name not in the Keyboard queue list
+            return  Type != ActionTypes::KEYBOARD && !KeyboardLocalAction;
         }
 
         static FTAction releaseAllAction;
@@ -78,7 +95,6 @@ namespace FreeTouchDeck
 
     typedef std::function<bool(FTAction *)> ActionCallbackFn_t;
     typedef std::map<std::string, ActionCallbackFn_t> ActionCallbackMap_t;
-
     extern ActionCallbackMap_t UserActions;
     extern bool QueueAction(FTAction *action);
     extern FTAction *PopQueue();

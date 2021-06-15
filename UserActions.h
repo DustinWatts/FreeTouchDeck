@@ -198,4 +198,6 @@ namespace FreeTouchDeck
          }},
      
         {"LATCH", RunLatchAction}};
+
+    ActionQueueType_t UserActionsKeyboardQueue = {"DELAY" };
 }
