@@ -431,7 +431,7 @@ namespace FreeTouchDeck
         LOC_LOGV(module, "Checking for regular actions");
         FTAction *Action = NULL;
         Action = PopQueue();
-        while (Action && !FTAction::Stopped)
+        if (Action && !FTAction::Stopped)
         {
             ResetSleep();
             Action->Execute();

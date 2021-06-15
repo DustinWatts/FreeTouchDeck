@@ -263,7 +263,7 @@ Note   : none
     if (splash)
     {
       LOC_LOGD(module, "splash screen bitmap loaded. Drawing");
-      splash->Draw(0, 0, false);
+      splash->Draw(tft.width()/2, tft.height()/2, false);
     }
     else
     {

@@ -125,14 +125,14 @@ namespace FreeTouchDeck
                 LOC_LOGI(module, "Initializing storage %s", STRING_OR_DEFAULT(currentFS->Name, "N/A"));
                 if (!currentFS->Begin())
                 {
-                    LOC_LOGE(module, "Error initializing file system %s", (STRING_OR_DEFAULT(currentFS->Name, "")));
+                    LOC_LOGI(module, "File system %s could not be initialized", (STRING_OR_DEFAULT(currentFS->Name, "")));
                 }
                 else
                 {
                     currentFS->Initialized = true;
                     if (!ftdfs)
                     {
-                        LOC_LOGI(module, "Assigning File system %s as default system", currentFS->Name);
+                        LOC_LOGI(module, "Using File system %s.", currentFS->Name);
                         ftdfs = currentFS;
                     }
                 }

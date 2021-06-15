@@ -1,6 +1,7 @@
 #include "FTButton.h"
 #include "Audio.h"
 #include "esp_attr.h"
+#include "WString.h"
 static const char *module = "FTButton";
 namespace FreeTouchDeck
 {
@@ -124,7 +125,7 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Button is Executing Action %s", action->toString());
         if (ButtonType == ButtonTypes::LATCH)
         {
-            std::string state = action->GetParameter(3);
+            String state = action->GetParameter(3).c_str();
             if (ISNULLSTRING(state.c_str()))
             {
                 LOC_LOGE(module, "Invalid latch parameter. Should be ON,OFF or TOGGLE");

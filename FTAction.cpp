@@ -29,11 +29,7 @@ namespace FreeTouchDeck
     const char *FTAction::JsonLabelSymbol = "symbol";
     FTAction FTAction::releaseAllAction;
     FTAction FTAction::rebootSystem;
-    void FTAction::InitConstants()
-    {
-        releaseAllAction = FTAction(ParametersList_t({"RELEASEALL", ""}));
-        rebootSystem = FTAction(ParametersList_t({"REBOOT"}));
-    }
+
     FTAction::FTAction()
     {
         Type = ActionTypes::NONE;
@@ -91,6 +87,11 @@ namespace FreeTouchDeck
     {
         Values.clear();
         Parameters.clear();
+    }
+        void FTAction::InitConstants()
+    {
+        releaseAllAction = FTAction("RELEASEALL", {{KEY_LEFT_CTRL,KEY_LEFT_SHIFT,KEY_LEFT_ALT,KEY_LEFT_GUI,KEY_RIGHT_CTRL,KEY_RIGHT_SHIFT,KEY_RIGHT_ALT,KEY_RIGHT_GUI}});
+        rebootSystem = FTAction(ParametersList_t({"REBOOT"}));
     }
 
     bool FTAction::IsValidKey(const char *name, char **foundValue)
