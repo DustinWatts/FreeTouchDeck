@@ -141,6 +141,10 @@ namespace FreeTouchDeck
                 foundPressedButton = true;
                 button->Press();
             }
+            else
+            {
+                button->UnPress();
+            }
         }
         if (!foundPressedButton && HasBackButton())
         {
@@ -148,6 +152,10 @@ namespace FreeTouchDeck
             {
                 foundPressedButton = true;
                 FTButton::BackButton->Press();
+            }
+            else
+            {
+                FTButton::BackButton->UnPress();
             }
         }
         if (!foundPressedButton && buttons.size() == 0)

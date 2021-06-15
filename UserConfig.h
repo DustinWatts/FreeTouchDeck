@@ -110,3 +110,8 @@
 #define REPEAT_CAL false
 
 #define LED_BRIGHTNESS_INCREMENT 25
+
+// percentage of free memory that the system will use as
+// a temporary buffer when drawing images. Warning! 
+// too much buffer will lead to system instabilities. 
+#define BITMAP_BUFFER_FREE_RAM_PCT 0.30

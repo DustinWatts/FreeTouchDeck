@@ -224,7 +224,8 @@ namespace FreeTouchDeck
             {
                 // each row in a bmp pixel array is padded to a multiple of 4 bytes
                 //padding = (4 - ((w * 3) & 3)) & 3;
-                padding = 4 - ((w * (Depth / 8)) % 4);
+                padding = ((w * (Depth / 8)) % 4);
+                padding=padding>0?4-padding:padding;
                 imageWrapper.seek(Offset); //skip bitmap header
                 LOC_LOGD(module, "Depth: %d width is %d, padded bytes: %d, padding: %d", Depth, w, (Depth / 8 * w) + padding, padding);
                 B = imageWrapper.read();
@@ -335,21 +336,21 @@ namespace FreeTouchDeck
         
         uint8_t bytesPerPixel = Depth / 8;
         size_t lineBufSpace = (bytesPerPixel * w) + padding;
-        // reserve 20% memory 
-        size_t  maxAlloclines = heap_caps_get_free_size(MALLOC_CAP_INTERNAL)*0.20/lineBufSpace;
+        // reserve buffer memory enough to load all lines or up to the max buffer allowed 
+        size_t  maxAlloclines = min(((size_t)(heap_caps_get_free_size(MALLOC_CAP_INTERNAL)*BITMAP_BUFFER_FREE_RAM_PCT ))/lineBufSpace, (size_t)h);
         //uint8_t lines = w > 80 ? 1 : 10;
         size_t bufferSize = maxAlloclines * lineBufSpace;
         uint8_t *lineBuffer = (uint8_t *)malloc(bufferSize);
         if (!lineBuffer)
         {
-            LOC_LOGE(module, "Error allocating memory for image drawing!");
+            LOC_LOGE(module, "Error allocating %d bytes of buffer for image drawing!", bufferSize);
             tft.setSwapBytes(oldSwapBytes);
             free(lineBuffer);
             LOC_LOGV(module, "Closing bitmap file %s", LogoName);
             bmpFS.close();
             return;
         }
-        LOC_LOGD(module, "Drawing picture lines: %d, bytesPerPixel: %d, lineBufSpace: %d, bufferSize: %d ", maxAlloclines, bytesPerPixel, lineBufSpace, bufferSize);
+        LOC_LOGV(module, "Drawing picture lines: %d, bytesPerPixel: %d, lineBufSpace: %d, bufferSize: %d ", maxAlloclines, bytesPerPixel, lineBufSpace, bufferSize);
         uint16_t lx = x - w / 2;
         uint16_t ly = y + h / 2 - 1;
         uint8_t *bptr = NULL;
@@ -375,38 +376,40 @@ namespace FreeTouchDeck
             // Convert 24 to 16 bit colours
             for (uint16_t r = 0; r < readLines; r++)
             {
+                
+                #ifdef DRAWDEBUG
                 uint8_t *bptr2 = bptr;
-                //Serial.print("=>");
+                Serial.print("=>");
                 for (uint16_t col = 0; col < w; col++)
                 {
 
-                    //Serial.printf("%s",*bptr2+bptr2[1]+bptr2[2]>0?".":"");
+                    Serial.printf("%s",*bptr2+bptr2[1]+bptr2[2]>0?".":"");
                     bptr2 += bytesPerPixel;
                 }
-                //Serial.println();
-                //Serial.print("<=");
-
+                Serial.println();
+                Serial.print("<=");
                 for (uint16_t col = 0; col < w; col++)
                 {
                     *tptr = convertRGB888ToRGB565(bptr, Depth);
-                    //Serial.printf("%s",(*tptr)>0?".":"");
-
+                    Serial.printf("%s",(*tptr)>0?".":"");
                     tptr++;
                     bptr += bytesPerPixel;
                 }
-                //Serial.println();
+                Serial.println();                
+                #endif
+                for (uint16_t col = 0; col < w; col++)
+                {
+                    *tptr = convertRGB888ToRGB565(bptr, Depth);
+                    tptr++;
+                    bptr += bytesPerPixel;
+                }
                 bptr += padding;
             }
-            //LOC_LOGD(module,"Converted to rgb565");
             tptr = (uint16_t *)lineBuffer;
             for (uint16_t line = readLines; line > 0; line--)
             {
-                //LOC_LOGD(module,"Pushing line %d",line);
-                //Serial.println("Pushing line to screen");
                 if (Transparent || transparent)
                 {
-                    // Push the pixel row to screen, pushImage will crop the line if needed
-                    // y is decremented as the BMP image is drawn bottom up
                     tft.pushImage(lx, ly--, w, 1, (uint16_t *)tptr, BGColor);
                 }
                 else

@@ -389,6 +389,14 @@ namespace FreeTouchDeck
             sequence.Execute();
         }
     }
+    void FTButton::UnPress()
+    {
+        if (!IsPressed) return;
+        LOC_LOGD(module, "Cancelling press for button %s",STRING_OR_DEFAULT(Label, STRING_OR_DEFAULT(Logo()->LogoName, "")));
+        IsPressed = false;
+        FTButton::Invalidate();
+        return;
+    }
     void FTButton::Press()
     {
         if (IsPressed)
@@ -396,24 +404,24 @@ namespace FreeTouchDeck
             LOC_LOGV(module, "Button already pressed. Ignoring");
             return;
         }
-        // Beep
         HandleAudio(Sounds::BEEP);
-
-        if (ButtonType == ButtonTypes::LATCH)
-        {
-            Latched = !Latched;
-            LOC_LOGD(module, "Toggling LATCH to %s", Latched ? "ACTIVE" : "INACTIVE");
-        }
         IsPressed = true;
-        NeedsDraw = true;
+        FTButton::Invalidate();
     }
     void FTButton::Release()
     {
         if (IsPressed)
         {
             LOC_LOGD(module, "Releasing button %s", STRING_OR_DEFAULT(Label, STRING_OR_DEFAULT(Logo()->LogoName, "")));
+            // Beep
+
+            if (ButtonType == ButtonTypes::LATCH)
+            {
+                Latched = !Latched;
+                LOC_LOGD(module, "Toggling LATCH to %s", Latched ? "ACTIVE" : "INACTIVE");
+            }            
             IsPressed = false;
-            NeedsDraw = true;
+            FTButton::Invalidate();
             ExecuteActions();
         }
     }

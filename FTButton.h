@@ -88,6 +88,7 @@ namespace FreeTouchDeck
         void Draw(bool force);
         void Invalidate();
         void Press();
+        void UnPress();
         void Release();
         cJSON *ToJSON();
         

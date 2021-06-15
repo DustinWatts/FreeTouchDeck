@@ -131,13 +131,13 @@ namespace FreeTouchDeck
         else
         {
             // Draw a splash screen
-            DrawSplash();
             LOC_LOGD(module, "Displaying version details");
             SetSmallestFont(1);
             tft.setTextSize(1);
             tft.setCursor(1, tft.fontHeight() + 1);
             tft.fillScreen(TFT_BLACK);
             tft.setTextColor(TFT_WHITE, TFT_BLACK);
+            DrawSplash();            
             tft.printf("Loading version %s\n", versionnumber);
             LOC_LOGI(module, "Loading version %s", versionnumber);
         }
