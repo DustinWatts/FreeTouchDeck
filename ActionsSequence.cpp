@@ -28,6 +28,7 @@ namespace FreeTouchDeck
         FTAction * releaseAction=NULL;
         ParametersList_t releaseParameters;
         bool success = true;
+
         
 
         LOC_LOGD(module, "Parsing free form text %s", ConfigSequence);

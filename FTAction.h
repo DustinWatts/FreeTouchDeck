@@ -34,6 +34,7 @@ namespace FreeTouchDeck
         ActionTypes Type;
         bool NeedsRelease;
         bool NeedsDoubleBytes;
+        uint16_t HoldTime=0;
         KeyValue_t Values;
         ParametersList_t Parameters;
         static const char *JsonLabelType;
