@@ -82,7 +82,6 @@ namespace FreeTouchDeck
         LoadSystemConfig();
         // Init display
         displayInit();
-        powerInit();
 
         // ------------------- Determine system mode  ------------------
         if (restartReason != SystemMode::STANDARD && restartReason != SystemMode::CONFIG && restartReason != SystemMode::CONSOLE)
@@ -115,7 +114,7 @@ namespace FreeTouchDeck
             {
                 RunMode = SystemMode::CONSOLE;
                 restartReason = SystemMode::STANDARD;
-                PrintScreenMessage("Console mode active. Press screen to exit");
+                PrintScreenMessage(true, "Console mode active. Press screen to exit");
                 LoadAllMenus();
                 return;
             }
@@ -132,18 +131,14 @@ namespace FreeTouchDeck
         {
             // Draw a splash screen
             LOC_LOGD(module, "Displaying version details");
-            SetSmallestFont(1);
-            tft.setTextSize(1);
-            tft.setCursor(1, tft.fontHeight() + 1);
-            tft.fillScreen(TFT_BLACK);
-            tft.setTextColor(TFT_WHITE, TFT_BLACK);
-            DrawSplash();            
+            ClearScreen();
+            DrawSplash();
             tft.printf("Loading version %s\n", versionnumber);
             LOC_LOGI(module, "Loading version %s", versionnumber);
         }
 
         HandleAudio(Sounds::STARTUP);
-    // Calibrate the touch screen and retrieve the scaling factors
+        // Calibrate the touch screen and retrieve the scaling factors
         touch_calibrate();
 
         //CacheBitmaps();
@@ -204,6 +199,27 @@ namespace FreeTouchDeck
         prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
     }
 
+    void TFTPrintMemInfo()
+    {
+        tft.printf("free_iram: %d\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+        tft.printf("min_free_iram: %d\n", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+    }
+    void WaitTouchReboot()
+    {
+        uint16_t t_x;
+        uint16_t t_y;
+        PrintScreenMessage(false,"Press screen to restart");
+        while (true)
+        {
+            if (getTouch(&t_x, &t_y))
+            {
+                PrintScreenMessage(false,"Restarting...");
+                delay(2000);
+                ESP.restart();
+            }
+            yield();
+        }
+    }
     void powerInit()
     {
 #ifdef ARDUINO_TWATCH_BASE
@@ -230,7 +246,6 @@ namespace FreeTouchDeck
         power->setPowerOutPut(AXP202_LDO2, AXP202_ON);
         LOC_LOGI(module, "Setting up Display Back light");
 #endif
-
         // Setup PWM channel and attach pin 32
         ledcSetup(0, 5000, 8);
 #ifdef TFT_BL
@@ -436,9 +451,8 @@ namespace FreeTouchDeck
             ResetSleep();
             Action->Execute();
         }
-        FTAction::Stopped=false;
+        FTAction::Stopped = false;
     }
-
 
 };
 

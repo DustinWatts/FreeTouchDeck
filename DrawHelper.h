@@ -7,11 +7,12 @@ namespace FreeTouchDeck
     void printDeviceAddress();
     void LoadFontsTable();
     void displayInit();
-    void PrintScreenMessage(const char *message);
+    void PrintScreenMessage(bool clear, const char *message, ...);
     void drawErrorMessage(String message);
     const GFXfont *GetCurrentFont();
     bool SetFont(const GFXfont *newFont);
     bool SetDefaultFont();
+    void ClearScreen();
     void InitFontsTable();
     bool SetSmallerFont();
     bool SetSmallestFont(int whichOne = 0);

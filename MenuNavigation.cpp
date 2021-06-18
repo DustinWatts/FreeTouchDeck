@@ -20,42 +20,42 @@ namespace FreeTouchDeck
 	"name": "Preferences",
 	"colscount": 3,
 	"rowscount": 3,
-    "logo": "spanner.bmp",
+    "logo": "spanner.jpg",
 	"type": "HOMESYSTEM",
 	"buttons": [
 		{
 			"label": "Configuration",
-			"logo": "wifi.bmp",
+			"logo": "wifi.jpg",
 			"type": "STANDARD",
 			"actions": ["{MENU:empty}{ENTER_CONFIG}"]
 		},
 		{
 			"label": "Brightness-Down",
-			"logo": "brightnessdown.bmp",
+			"logo": "brightnessdown.jpg",
 			"type": "STANDARD",
 			"actions": ["{BRIGHTNESS_DOWN}"]
 		},
 		{
 			"label": "Brightness-Up",
-			"logo": "brightnessup.bmp",
+			"logo": "brightnessup.jpg",
 			"type": "STANDARD",
 			"actions": ["{BRIGHTNESS_UP}"]
 		},
 		{
 			"label": "Sleep",
-			"logo": "sleep.bmp",
+			"logo": "sleep.jpg",
 			"type": "LATCH",
 			"actions": ["{SLEEP}"]
 		},
 		{
 			"label": "Beep",
-			"logo": "music.bmp",
+			"logo": "music.jpg",
 			"type": "LATCH",
 			"actions": ["{BEEP}"]
 		},        
 		{
 			"label": "Info",
-			"logo": "info.bmp",
+			"logo": "info.jpg",
 			"type": "STANDARD",
 			"actions": ["{MENU:empty}{INFO}"]
 

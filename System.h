@@ -18,6 +18,7 @@ namespace FreeTouchDeck
     const char *enum_to_string(SystemMode mode);
     void LoadSystemConfig();
     void PrintMemInfo();
+    void TFTPrintMemInfo();
     void powerInit();
     void InitSystem();
     void HandleSleepConfig();
@@ -30,6 +31,7 @@ namespace FreeTouchDeck
     void processSleep();
     bool getTouch(uint16_t *t_x, uint16_t *t_y);
     bool isTouched();
+    void WaitTouchReboot();    
     void ResetSleep();
     IRAM_ATTR char *ps_strdup(const char *fmt);
     extern SystemMode restartReason;

@@ -2,6 +2,7 @@
 #include "Audio.h"
 #include "esp_attr.h"
 #include "WString.h"
+#include "ImageCache.h"
 static const char *module = "FTButton";
 namespace FreeTouchDeck
 {
@@ -26,8 +27,8 @@ namespace FreeTouchDeck
     const char *FTButton::JsonLabelBackground = "backgroundcolor";
     const char *FTButton::JsonLabelTextColor = "textcolor";
     const char *FTButton::JsonLabelTextSize = "textsize";
-    const char *FTButton::homeButtonTemplate = R"({ "label":"Home",  "logo":"home.bmp","actions": ["{MENU:home}"] })";
-    const char *FTButton::backButtonTemplate = R"({"label": "Back","logo": "arrow_back.bmp","actions": ["{MENU:~BACK}"]})";
+    const char *FTButton::homeButtonTemplate = R"({ "label":"Home",  "logo":"home.jpg","actions": ["{MENU:home}"] })";
+    const char *FTButton::backButtonTemplate = R"({"label": "Back","logo": "arrow_back.jpg","actions": ["{MENU:~BACK}"]})";
     FTButton *FTButton::BackButton = NULL;
     FTButton *FTButton::HomeButton = NULL;
     void FTButton::InitConstants()
@@ -79,7 +80,7 @@ namespace FreeTouchDeck
         if (!ISNULLSTRING(_jsonLatchedLogo))
         {
             LOC_LOGV(module, "Latched Logo file name is %s", _jsonLatchedLogo);
-            image = GetImage(_jsonLatchedLogo);
+            image = ImageCache::GetImage(_jsonLatchedLogo);
             if (image && !image->valid)
             {
                 LOC_LOGD(module, "Latched Logo file %s is invalid.", _jsonLatchedLogo);
@@ -90,11 +91,8 @@ namespace FreeTouchDeck
     }
     bool FTButton::IsLabelDraw()
     {
-        ImageWrapper *image = NULL;
-        if (!ISNULLSTRING(_jsonLogo))
-        {
-            image = GetImage(_jsonLogo);
-        }
+        ImageWrapper *image = GetActiveImage();
+        
         if (!image || !image->valid)
         {
             return true;
@@ -108,7 +106,7 @@ namespace FreeTouchDeck
         if (!ISNULLSTRING(_jsonLogo))
         {
             LOC_LOGD(module, "Logo file name is [%s]", _jsonLogo);
-            image = GetImage(_jsonLogo);
+            image = ImageCache::GetImage(_jsonLogo);
             if (!image || !image->valid)
             {
                 LOC_LOGD(module, "Logo file name [%s] was not found or is invalid.", STRING_OR_DEFAULT(_jsonLogo, ""));
@@ -213,9 +211,22 @@ namespace FreeTouchDeck
         }
         if (!image || !image->valid)
         {
-            LOC_LOGV(module, "Getting button's default logo");
+            LOC_LOGV(module, "Getting button's logo");
             image = Logo();
         }
+        if (!image || !image->valid)
+        {
+            if(strlen(Label) == 0 || (Label[0] == '?' && strlen(_jsonLogo)>0 ))
+            {
+                String LogoName = _jsonLogo;
+                int dotPos =LogoName.lastIndexOf(".")-1;
+                dotPos=dotPos>0?dotPos:LogoName.length()-1;
+                LogoName.substring(0,dotPos);
+                FREE_AND_NULL(_jsonLogo);
+                _jsonLogo = ps_strdup(LogoName.c_str());
+                LOC_LOGW(module,"Defaulting Label to Logo icon name %s",_jsonLogo);
+            }
+        }        
         return image;
     }
     void IRAM_ATTR FTButton::DrawShape(bool force)
@@ -264,7 +275,7 @@ namespace FreeTouchDeck
         else
         {
             LOC_LOGD(module, "Image draw of button %s", STRING_OR_DEFAULT(image->LogoName, ""));
-            uint16_t ImagePixelColor = tft.color565(image->R, image->G, image->B);
+            uint16_t ImagePixelColor = image->GetPixelColor();
             if (ImagePixelColor == TFT_BLACK)
             {
                 LOC_LOGV(module, "Corner pixel is black, drawing transparent with default background color");
@@ -342,10 +353,11 @@ namespace FreeTouchDeck
         ImageWrapper *image = GetActiveImage();
         if (!image || !image->valid)
         {
+            LOC_LOGD(module,"Skipping invalid image draw");
             return;
         }
         LOC_LOGV(module, "Image draw of button %s", STRING_OR_DEFAULT(image->LogoName, ""));
-        uint16_t ImagePixelColor = tft.color565(image->R, image->G, image->B);
+        uint16_t ImagePixelColor = image->GetPixelColor();
         if (ImagePixelColor == TFT_BLACK)
         {
             LOC_LOGV(module, "Corner pixel is black, drawing transparent with default background color");
@@ -366,20 +378,20 @@ namespace FreeTouchDeck
     }
     uint16_t FTButton::Width()
     {
-        if (!Logo() || !Logo()->valid)
+        if (!GetActiveImage() || !GetActiveImage()->valid)
         {
             return 0;
         }
 
-        return LatchedLogo() ? max(Logo()->w, LatchedLogo()->w) : Logo()->w;
+        return GetActiveImage()->w;
     }
     uint16_t FTButton::Height()
     {
-        if (!Logo() || !Logo()->valid)
+        if (!GetActiveImage() || !GetActiveImage()->valid)
         {
             return 0;
         }
-        return LatchedLogo() ? max(Logo()->h, LatchedLogo()->h) : Logo()->h;
+        return GetActiveImage()->h;
     }
     void FTButton::ExecuteActions()
     {
@@ -392,7 +404,9 @@ namespace FreeTouchDeck
     void FTButton::UnPress()
     {
         if (!IsPressed) return;
-        LOC_LOGD(module, "Cancelling press for button %s",STRING_OR_DEFAULT(Label, STRING_OR_DEFAULT(Logo()->LogoName, "")));
+        LOC_LOGD(module, "Cancelling press for button %s",
+        STRING_OR_DEFAULT(Label, 
+            STRING_OR_DEFAULT((GetActiveImage() && GetActiveImage()->valid?GetActiveImage()->LogoName:""), "")));
         IsPressed = false;
         FTButton::Invalidate();
         return;
@@ -506,7 +520,7 @@ namespace FreeTouchDeck
         GetValueOrDefault(button, FTButton::JsonLabelType, &buttonType, enum_to_string(ButtonTypes::STANDARD));
         ButtonType = parse_button_types(buttonType);
         FREE_AND_NULL(buttonType);
-        GetValueOrDefault(button, FTButton::JsonLabelLabel, &Label, NULL);
+        GetValueOrDefault(button, FTButton::JsonLabelLabel, &Label, "?");
         GetValueOrDefault(button, FTButton::JsonLabelLogo, &_jsonLogo, NULL);
         LOC_LOGD(module, "Button type is [%s], Label: [%s], Logo : [%s]", enum_to_string(ButtonType), STRING_OR_DEFAULT(Label, ""), STRING_OR_DEFAULT(_jsonLogo, ""));
         if (ButtonType == ButtonTypes::LATCH)

@@ -7,6 +7,7 @@
 #include "esp_bt_device.h" // Additional BLE functionaity
 #include "Tiny3x3a2pt7b.h"
 #include "Storage.h"
+#include "ImageCache.h"
 namespace FreeTouchDeck
 {
   using namespace fs;
@@ -22,43 +23,47 @@ Note   : none
   std::list<std::string> Messages;
   void drawErrorMessage(bool stop, const char *module, const char *fmt, ...)
   {
-    displayInit();
-    char *message = NULL;
-    size_t msg_size = 0;
-    if (stop)
-    {
-      SetActiveScreen("criticalmessage");
-    }
-
     va_list args;
     va_start(args, fmt);
-    tft.fillScreen(TFT_BLACK);
-    SetSmallestFont(1);
-    tft.setTextSize(1);
-    tft.setCursor(0, tft.fontHeight() + 1);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    msg_size = vsnprintf(NULL, 0, fmt, args) + 1;
+    char *message = NULL;
+    char *printmsg = message;
+    size_t msg_size = 0;
+
+    msg_size = vsnprintf(NULL, 0, fmt, args) + 4;
     message = (char *)malloc_fn(msg_size);
 
     if (!message)
     {
       ESP_LOGE(module, "Could not allocate %d bytes of memory to display message on screen", msg_size);
-      tft.println(fmt);
       stop = true;
     }
     else
     {
       vsprintf(message, fmt, args);
+      printmsg = message;
       LOC_LOGE(module, "%s", message);
-      tft.println(message);
     }
     va_end(args);
-    free(message);
+    displayInit();
+    if (stop)
+    {
+      SetActiveScreen("criticalmessage");
+    }
+
+    tft.fillScreen(TFT_BLACK);
+    SetSmallestFont(1);
+    tft.setTextSize(1);
+    tft.setCursor(0, tft.fontHeight() + 1);
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);
+    tft.println(printmsg);
+    TFTPrintMemInfo();
+
+    FREE_AND_NULL(message);
     uint16_t t_x;
     uint16_t t_y;
     while (stop)
     {
-      if(getTouch(&t_x,&t_y))
+      if (getTouch(&t_x, &t_y))
       {
         tft.println("Restarting...");
         delay(1000);
@@ -224,12 +229,20 @@ Note   : none
 
     return false;
   }
-
+  void ClearScreen()
+  {
+    SetSmallestFont(1);
+    tft.setTextSize(1);
+    tft.setCursor(0, tft.fontHeight() + 1);
+    tft.fillScreen(generalconfig.backgroundColour);
+    tft.setTextColor(generalconfig.DefaultTextColor, generalconfig.backgroundColour);
+  }
   void displayInit()
   {
     static bool initialized = false;
     if (initialized)
       return;
+
     initialized = true;
     // --------------- Init Display -------------------------
     LOC_LOGI(module, "Initializing display");
@@ -238,32 +251,65 @@ Note   : none
     // Set the rotation
     tft.setRotation(generalconfig.screenrotation);
     // Clear the screen
-    tft.fillScreen(TFT_BLACK);
     // Setup the Font used for plain text
     InitFontsTable();
-    SetDefaultFont();
-    tft.setCursor(0, tft.fontHeight() + 1);
+    ClearScreen();
+    powerInit();
     LOC_LOGI(module, "Screen size is %dx%d", tft.width(), tft.height());
   }
 
-  void PrintScreenMessage(const char *message)
+  void PrintScreenMessage(bool clear, const char *message, ...)
   {
-    SetSmallestFont(1);
-    tft.setTextSize(1);
-    tft.setCursor(0, tft.fontHeight() + 1);
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println(message);
+    static std::list<std::string> screenbuffer;
+    displayInit();
+    char *formatted_message = NULL;
+    size_t msg_size = 0;
+    va_list args;
+    va_start(args, message);
+    msg_size = vsnprintf(NULL, 0, message, args) + 1;
+    formatted_message = (char *)malloc_fn(msg_size);
+
+    if (!formatted_message)
+    {
+      ESP_LOGE(module, "Could not allocate %d bytes of memory to display message on screen", msg_size);
+      tft.printf("Could not allocate %d bytes of memory to display message on screen\n", msg_size);
+      tft.println(message);
+      return;
+    }
+    vsprintf(formatted_message, message, args);
+    LOC_LOGI(module, "%s", formatted_message);
+    va_end(args);
+    screenbuffer.push_back(formatted_message);
+    FREE_AND_NULL(formatted_message);
+    if (clear)
+    {
+      screenbuffer.clear();
+      ClearScreen();
+    }
+    if ((tft.getCursorY() + tft.fontHeight() ) > tft.height())
+    {
+      // This is where we start removing top lines
+      ClearScreen();
+      screenbuffer.pop_front();
+      for (auto m : screenbuffer)
+      {
+        tft.println(m.c_str());
+      }
+    }
+    else
+    {
+      tft.println(screenbuffer.back().c_str());
+    }
   }
 
   void DrawSplash()
   {
     LOC_LOGD(module, "Loading splash screen bitmap.");
-    ImageWrapper *splash = FreeTouchDeck::GetImage("freetouchdeck_logo.bmp");
+    ImageWrapper *splash = ImageCache::GetImage("freetouchdeck_logo.jpg");
     if (splash)
     {
       LOC_LOGD(module, "splash screen bitmap loaded. Drawing");
-      splash->Draw(tft.width()/2, tft.height()/2, false);
+      splash->Draw(tft.width() / 2, tft.height() / 2, false);
     }
     else
     {
@@ -284,7 +330,7 @@ Note   : none
         int start = FileName.lastIndexOf("/") + 1;
         FileName = FileName.substring(start);
         LOC_LOGV(module, "Caching bitmap from file %s, with name %s", file.name(), FileName.c_str());
-        FreeTouchDeck::ImageWrapper *image = FreeTouchDeck::GetImage(FileName.c_str());
+        FreeTouchDeck::ImageWrapper *image = ImageCache::GetImage(FileName.c_str());
         LOC_LOGV(module, "Adding menu completed. Getting next file");
       }
       file = root.openNextFile();
@@ -315,8 +361,6 @@ Note   : none
     }
     return (unsigned long)strtoul(hex, NULL, 16);
   }
-
-
 
   /**
 * @brief This function converts RGB888 to RGB565.

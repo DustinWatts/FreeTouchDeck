@@ -65,5 +65,5 @@ void SetGeneralConfigDefaults();
 bool loadConfig(const char *name);
 bool loadGeneralConfig();
 bool saveConfig(bool serial);
-
+extern const char * generalConfigFile;
 }

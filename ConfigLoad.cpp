@@ -10,16 +10,16 @@ namespace FreeTouchDeck
   const char *defaultManufacturerName = "Made by me";
   Config generalconfig;
   static const char *module = "ConfigLoad";
-
+  const char * generalConfigFile="/config/general.json";
   void SetGeneralConfigDefaults()
   {
     generalconfig.menuButtonColour = 0x009bf4;
     generalconfig.functionButtonColour = 0x00efcb;
     generalconfig.latchedColour = 0xfe0149;
-    generalconfig.backgroundColour = 0x000000;
+    generalconfig.backgroundColour = TFT_BLACK;
     generalconfig.sleepenable = false;
     generalconfig.sleeptimer = 60;
-    generalconfig.beep = true;
+    generalconfig.beep = false;
 #ifdef DEFAULT_LOG_LEVEL
     generalconfig.LogLevel = DEFAULT_LOG_LEVEL;
 #else
@@ -261,33 +261,39 @@ namespace FreeTouchDeck
       LOC_LOGE(module, "Invalid configuration file passed. ");
       return false;
     }
+    LOC_LOGI(module, "Loading configuration from %s - %s", STRING_OR_DEFAULT(ftdfs->Name,"?"),  STRING_OR_DEFAULT(name, ""));
     File configfile = ftdfs->open(name, "r");
-    LOC_LOGI(module, "Loading configuration from file name: %s", STRING_OR_DEFAULT(name, ""));
+
     if (!configfile && configfile.size() == 0)
     {
       LOC_LOGE(module, "Could not find file %s", name);
       return false;
     }
 
-    char *buffer = (char *)malloc_fn(configfile.size() + 1);
+    size_t bufferSize=configfile.size() + 1;
+    char *buffer = (char *)malloc_fn(bufferSize);
     if (!buffer)
     {
-      LOC_LOGE(module, "Could not allocate memory for reading file %s", name);
+      LOC_LOGE(module, "Could not allocate %d bytes for reading file %s", bufferSize,name);
       return false;
     }
-    size_t bytesRead = configfile.readBytes(buffer, configfile.size() + 1);
+    size_t bytesRead = configfile.readBytes(buffer, bufferSize);
     if (bytesRead != configfile.size())
     {
+      LOC_LOGE(module, "Could not fully read %s config in buffer. Read %d of %d bytes.", name, bytesRead, configfile.size());
+      configfile.close();
+      ShowDir(ftdfs);
       drawErrorMessage(false, module, "Could not fully read %s config in buffer. Read %d of %d bytes.", name, bytesRead, configfile.size());
       return false;
     }
     configfile.close();
+    LOC_LOGD(module,"Parsing configuration file:\n%s",buffer);
     cJSON *doc = cJSON_Parse(buffer);
-    FREE_AND_NULL(buffer);
     if (!doc)
     {
       const char *error = cJSON_GetErrorPtr();
-      drawErrorMessage(false, module, "Unable to parse json string : %s", error);
+      drawErrorMessage(!ftdfs->External, module, "Unable to parse json string while loading file %s. Error: %s\nContent:\n%s",name, error, buffer);
+      FREE_AND_NULL(buffer);
       return false;
     }
     else
@@ -300,6 +306,7 @@ namespace FreeTouchDeck
       }
     }
 
+    FREE_AND_NULL(buffer);
     GetValueOrDefault(cJSON_GetObjectItem(doc, "manufacturer"), &generalconfig.manufacturer, defaultManufacturerName);
     LOC_LOGD(module, "Manufacturer name : %s", generalconfig.manufacturer);
     GetValueOrDefault(cJSON_GetObjectItem(doc, "devicename"), &generalconfig.deviceName, defaultDeviceName);
@@ -364,23 +371,43 @@ namespace FreeTouchDeck
 
     return true;
   }
+  
   bool loadGeneralConfig()
   {
-    if (!loadConfig("/config/general.json"))
+    if(ftdfs->External)
     {
-      if (!InitializeStorage())
+      LOC_LOGD(module,"Booting from external storage. Checking if config exists");
+      bool needsInit = false;
+      if(!ftdfs->exists(generalConfigFile))
       {
-        drawErrorMessage(true, module, "Could not initialize storage %s", ftdfs->Name);
+        PrintScreenMessage(true, "Reading from %s, config file not found", ftdfs->Name);
+        needsInit=true;        
       }
-      else
+      else if(GetFileSize(generalConfigFile, ftdfs)==0)
       {
-        if(loadConfig("/config/general.json"))
+        PrintScreenMessage(false, "Configuration file is empty on device %s", ftdfs->Name);  
+        needsInit=true;
+      }
+      
+      if(needsInit )
+      {
+        PrintScreenMessage(false, "Initializing %s from internal storage", ftdfs->Name);  
+        if (!InitializeStorage())
         {
-          LOC_LOGI(module, "Storage initialization complete. Restarting system");
-          ESP.restart();
+          drawErrorMessage(true, module, "Could not initialize storage %s", ftdfs->Name);
+        }
+        else
+        {
+          PrintScreenMessage(false,"Finished initializing storage %s", ftdfs->Name);
+          WaitTouchReboot();
         }
       }
     }
+    if (!loadConfig(generalConfigFile))
+    {
+        drawErrorMessage(true, module, "Error loading configuration from %s", ftdfs->Name);
+    }
+    return true;
   }
 #define ADD_COLOR_TO_JSON(x, y)                                         \
   snprintf(colorBuffer, sizeof(colorBuffer), "#%06x", generalconfig.x); \

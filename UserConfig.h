@@ -1,5 +1,5 @@
 #pragma once
-
+//#define DEFAULT_LOG_LEVEL LogLevels::DEBUG
 /* ------------------------------------------------------------------------ */
 /* Select the board that you are using below. Make sure to only select one! */
 /* ------------------------------------------------------------------------ */
@@ -45,6 +45,7 @@
 #define INVERSE_Y_TOUCH
 #define USECAPTOUCH
 #define SDDAT3 25 
+
 /* Using the ESP32 DevKit with a screen module */
 #elif defined(ESP32DEVKIT)
 #define SCREEN_ROTATION 1

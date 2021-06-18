@@ -162,7 +162,7 @@ namespace FreeTouchDeck
             if(strlen(tokenName) == 1)
             {
                 LOC_LOGD(module, "Found Keyboard symbol %s with delay %d", tokenName, delay);
-                actions->Actions.push_back(new FTAction(tokenName, KeyValue_t({(unsigned int)tokenName[0]})));
+                actions->Actions.push_back(new FTAction(tokenName, KeyValue_t({(unsigned char)tokenName[0]})));
                 actions->Actions.back()->HoldTime = delay;
                 success = true;
             }

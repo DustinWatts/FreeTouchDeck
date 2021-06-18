@@ -2,37 +2,37 @@
   {
     "type":"HOME",
     "name":"Media",
-    "logo":"music.bmp",
+    "logo":"music.jpg",
     "colscount":4,
     "rowscount":4,
     "buttons":[
       {
-        "logo":"mute.bmp",
+        "logo":"mute.jpg",
         "type":"LATCH",
         "actions":[
           "{MUTE}"
         ]
       },
       {
-        "logo":"volumedown.bmp",
+        "logo":"volumedown.jpg",
         "actions":[
           "{VOLUME_DOWN}"
         ]
       },
       {
-        "logo":"volumeup.bmp",
+        "logo":"volumeup.jpg",
         "actions":[
           "{VOLUME_UP}"
         ]
       },
       {
-        "logo":"play.bmp",
+        "logo":"play.jpg",
         "actions":[
           "{PLAY_PAUSE}"
         ]
       },
       {
-        "logo":"stop.bmp",
+        "logo":"stop.jpg",
         "actions":[
           "{NEXT_TRACK}"
         ]
@@ -74,22 +74,22 @@
   {
     "type":"HOME",
     "name":"OBS",
-    "logo":"obs.bmp",
+    "logo":"obs.jpg",
     "buttons":[
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       }
     ]
   },
@@ -125,6 +125,20 @@
           "Fushia #BF3880"
         ]
       },
+	  {
+        "logo":"headphones.svg",
+        "backgroundcolor":"#BF3880",
+        "actions":[
+          "headphones svg"
+        ]
+      },
+	  {
+        "logo":"headphones.svg",
+        "actions":[
+          "headphones svg no background"
+        ]
+      }	  ,
+	  
       {
         "label":"Alt+TAB",
         "actions":[
@@ -182,7 +196,7 @@
         ]
       },
       {
-        "logo":"home.bmp",
+        "logo":"home.jpg",
         "actions":[
           "{MENU:home}"
         ]
@@ -192,66 +206,66 @@
   {
     "type":"HOME",
     "name":"Firefox",
-    "logo":"firefox.bmp",
+    "logo":"firefox.jpg",
     "buttons":[
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       }
     ]
   },
   {
     "type":"HOME",
     "name":"Mail",
-    "logo":"mail.bmp",
+    "logo":"mail.jpg",
     "buttons":[
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       }
     ]
   },
   {
     "type":"HOME",
     "name":"Youtube",
-    "logo":"youtube.bmp",
+    "logo":"youtube.jpg",
     "buttons":[
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       },
       {
-        "logo":"question.bmp"
+        "logo":"question.jpg"
       }
     ]
   }

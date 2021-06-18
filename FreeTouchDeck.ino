@@ -1,3 +1,4 @@
+
 /*
   Author: Dustin Watts
   Date: 27-08-2020
@@ -89,6 +90,12 @@ const char *versionnumber = "0.9.11";
 #include <pgmspace.h> // PROGMEM support header
 #include "Arduino.h"
 #include <SPI.h>
+// 
+#include "SPIFFS.h"
+#ifdef SDDAT3
+#include "SD.h"
+#endif
+
 #include <TFT_eSPI.h> // The TFT_eSPI library
 #include <BleKeyboard.h>       // BleKeyboard is used to communicate over BLE
 #include "BLEDevice.h"         // Additional BLE functionaity
@@ -135,8 +142,6 @@ void ActionTask(void *pvParameters);
 #warning Old BLE Keyboard version detected. Please update.
 #define BLE_KEYBOARD_VERSION "Outdated"
 #endif
-
-//#define DEFAULT_LOG_LEVEL LogLevels::DEBUG
 
 #include "ConfigLoad.h"
 #include "DrawHelper.h"

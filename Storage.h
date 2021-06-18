@@ -43,6 +43,7 @@ namespace FreeTouchDeck
     StringOperationCallback_t stmkdir;
     StringOperationCallback_t strmdir;
     CheckStatusCallback_t inserted;
+    
     bool External;
    FileSystem_t(fs::FS&_fileSystem, const char * _Name, BeginCallback_t _Begin, SizeCallback_t _totalBytes, SizeCallback_t _usedBytes, StorageType_t _StorageType, OpenCallback_t _open,
                  OperationCallback_t _exists,
@@ -74,4 +75,6 @@ namespace FreeTouchDeck
 */
   bool checkfile(const char *filename);
   void ShowDir();
+  void ShowDir(FileSystem_t * targetFS);
+  size_t GetFileSize(const char * fileName, FileSystem_t * fileSystem);
 };

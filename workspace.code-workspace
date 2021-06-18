@@ -1,0 +1,67 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"arduino.ignoreBoards": [
+		
+		],
+		"arduino.logLevel": "verbose",
+		"arduino.path": "C:\\Program Files (x86)\\Arduino",
+		"files.associations": {
+			"*.tcc": "cpp",
+			"fstream": "cpp",
+			"array": "cpp",
+			"deque": "cpp",
+			"string": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"vector": "cpp",
+			"memory": "cpp",
+			"random": "cpp",
+			"initializer_list": "cpp",
+			"regex": "cpp",
+			"functional": "cpp",
+			"typeinfo": "cpp",
+			"bitset": "cpp",
+			"cctype": "cpp",
+			"clocale": "cpp",
+			"cmath": "cpp",
+			"cstdarg": "cpp",
+			"cstdint": "cpp",
+			"cstdio": "cpp",
+			"cstdlib": "cpp",
+			"cstring": "cpp",
+			"ctime": "cpp",
+			"cwchar": "cpp",
+			"cwctype": "cpp",
+			"list": "cpp",
+			"exception": "cpp",
+			"algorithm": "cpp",
+			"system_error": "cpp",
+			"tuple": "cpp",
+			"type_traits": "cpp",
+			"iomanip": "cpp",
+			"iosfwd": "cpp",
+			"istream": "cpp",
+			"limits": "cpp",
+			"new": "cpp",
+			"ostream": "cpp",
+			"numeric": "cpp",
+			"sstream": "cpp",
+			"stdexcept": "cpp",
+			"streambuf": "cpp",
+			"cinttypes": "cpp",
+			"utility": "cpp",
+			"iostream": "cpp",
+			"map": "cpp"
+		},
+		"arduino.enableUSBDetection": false,
+		"idf.openOcdConfigs": [
+			"interface/ftdi/esp32_devkitj_v1.cfg",
+			"target/esp32.cfg"
+		]
+	}
+}
