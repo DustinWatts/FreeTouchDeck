@@ -36,7 +36,7 @@ namespace FreeTouchDeck
             {
                 return button;
             }
-            LOC_LOGD(module, "Ignoring button %s", STRING_OR_DEFAULT(button->Label,""));
+            LOC_LOGV(module, "Ignoring button %s", STRING_OR_DEFAULT(button->Label,""));
         }
         return NULL;
     }

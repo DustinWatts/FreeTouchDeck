@@ -558,7 +558,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            LOC_LOGE(module, "Invalid callback name %s. Valid callbacks are: ", name);
+            LOC_LOGE(module, "Invalid callback name %s. Valid callbacks are: ", name.c_str());
             for (auto c : FreeTouchDeck::UserActions)
             {
                 LOC_LOGE(module, "    %s", c.first.c_str());

@@ -57,44 +57,37 @@ namespace FreeTouchDeck
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
         valid = true;
         LOC_LOGD(module, "Loading details from file %s", FileNameBuffer);
-
-        LOC_LOGD(module, "Getting the file dimensions");
+        LOC_LOGI(module,"free_iram: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+        LOC_LOGI(module,"min_free_iram: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
         JRESULT res = JDR_OK;
-        if (ftdfs->External)
+        File imageFile = ftdfs->open(FileNameBuffer, FILE_READ);
+        if (!imageFile)
         {
-            LOC_LOGD(module,"Getting size from SD card file");
-            res = TJpgDec.getSdJpgSize(&w, &h, FileNameBuffer);
+            LOC_LOGE(module, "Error opening %s", FileNameBuffer);
+            return false;
         }
-        else
-        {
-            LOC_LOGD(module,"Getting size from SPIFFS file");
-            res = TJpgDec.getFsJpgSize(&w, &h, FileNameBuffer);
-        }
+        LOC_LOGD(module, "Getting size from SD card file");
+        res = TJpgDec.getFsJpgSize(&w, &h, imageFile);
+
         if (res == JDR_OK)
         {
             // need to open the file again, since get size will close it
             TJpgDec.setCallback(ImageFormatJPG::pixelcheck);
-            if (ftdfs->External)
-            {
-                LOC_LOGD(module,"Gettomg pixel color from SD file");
-                TJpgDec.drawSdJpg(0, 0, FileNameBuffer);
-            }
-            else
-            {
-                LOC_LOGD(module,"Gettomg pixel color from SPIFFS file");
-                TJpgDec.drawFsJpg(0, 0, FileNameBuffer);
-            }
+            LOC_LOGD(module, "Getting pixel color from SD file");
+            TJpgDec.drawFsJpg(0, 0, imageFile);
 
             PixelColor = firstPixColor;
             valid = true;
-            LOC_LOGD(module, "JPG File dimensions are %dx%d, background color is RGB565 %02d", w, h, PixelColor);
+            LOC_LOGD(module, "JPG File dimensions are %dx%d, background color is RGB565 0x%04d", w, h, PixelColor);
         }
         else
         {
             LOC_LOGE(module, "Unable to get JPG size. Return code was %s ", enum_to_string(res));
             valid = false;
         }
-
+        imageFile.close();
+                LOC_LOGI(module,"free_iram: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+        LOC_LOGI(module,"min_free_iram: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
         // don't close the file; the getSdJpgSize call does it
         LOC_LOGV(module, "Done parsing file");
         return valid;
@@ -103,7 +96,7 @@ namespace FreeTouchDeck
     void ImageFormatJPG::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
-        LOC_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);
+        LOC_LOGD(module, "Drawing jpg file %s at [%d,%d] ", LogoName, x, y);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
             LOC_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);
@@ -121,20 +114,22 @@ namespace FreeTouchDeck
         bool oldSwapBytes = tft.getSwapBytes();
         tft.setSwapBytes(true);
 
-        uint16_t cornerX = max((uint16_t)(x-(w/2)),(uint16_t)0);
-        uint16_t cornerY = max((uint16_t)(y-(h/2)),(uint16_t)0);
+        uint16_t cornerX = max((uint16_t)(x - (w / 2)), (uint16_t)0);
+        uint16_t cornerY = max((uint16_t)(y - (h / 2)), (uint16_t)0);
 
         TJpgDec.setCallback(ImageFormatJPG::tft_output);
-        if (ftdfs->External)
+        File imageFile = ftdfs->open(FileNameBuffer, FILE_READ);
+        if (!imageFile)
         {
-            LOC_LOGD(module,"Drawing from SD file");
-            TJpgDec.drawSdJpg(cornerX, cornerY, FileNameBuffer);
+            LOC_LOGE(module, "Error opening %s", FileNameBuffer);
+            return;
         }
-        else
-        {
-            LOC_LOGD(module,"Drawing from SPIFFS file");
-            TJpgDec.drawFsJpg(cornerX,cornerY, FileNameBuffer);
-        }
+
+        LOC_LOGD(module, "Drawing from image file");
+        TJpgDec.drawFsJpg(cornerX, cornerY, imageFile);
+        imageFile.close();
+        LOC_LOGI(module,"free_iram: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+        LOC_LOGI(module,"min_free_iram: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
         LOC_LOGV(module, "Closing bitmap file %s", LogoName);
         tft.setSwapBytes(oldSwapBytes);
     }

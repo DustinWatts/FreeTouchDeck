@@ -16,7 +16,7 @@ namespace FreeTouchDeck
              return (ImageWrapper*)ImageFormatBMP::GetImageInstance(fileName);
              }},
          {"jpg",[](const char * fileName){
-             LOC_LOGD(module, "Getting Image instance from BMP constructor");
+             LOC_LOGD(module, "Getting Image instance from JPG constructor");
              return (ImageWrapper*)ImageFormatJPG::GetImageInstance(fileName);
              }}
     };

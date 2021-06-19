@@ -137,7 +137,7 @@ namespace FreeTouchDeck
                     Invalidate();
                 }
             }
-            if (state == "OFF")
+            else if (state == "OFF")
             {
                 if (!Latched)
                 {

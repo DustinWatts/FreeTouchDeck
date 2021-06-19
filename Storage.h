@@ -8,6 +8,7 @@ namespace FreeTouchDeck
   class FileSystem_t;
   typedef size_t (*SizeCallback_t)();
   typedef bool (*BeginCallback_t)();
+  typedef bool (*BooleanCallback_t)();
   typedef bool (*CheckStatusCallback_t)();
   typedef const char * (*StorageType_t)();
   typedef fs::File (*OpenCallback_t)(const char *path, const char *mode);
@@ -31,6 +32,7 @@ namespace FreeTouchDeck
     BeginCallback_t Begin = NULL;
     bool Initialized = false;
     OpenCallback_t open;
+    BooleanCallback_t end;
     OperationCallback_t exists;
     OperationCallback_t remove;
     FromToOperation_cb rename;
@@ -56,7 +58,7 @@ namespace FreeTouchDeck
                  StringOperationCallback_t _str_remove,
                  StringFromToOprationCallback_t _str_rename,
                  StringOperationCallback_t _str_mkdir,
-                 StringOperationCallback_t _str_rmdir, CheckStatusCallback_t _inserted, bool _external);
+                 StringOperationCallback_t _str_rmdir, CheckStatusCallback_t _inserted, bool _external, BooleanCallback_t _end );
   };
   extern FileSystem_t *ftdfs;
   inline bool isStorageInitialized() { return ftdfs && ftdfs->Initialized; }

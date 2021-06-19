@@ -399,6 +399,7 @@ namespace FreeTouchDeck
         else
         {
           PrintScreenMessage(false,"Finished initializing storage %s", ftdfs->Name);
+          ftdfs->end();
           WaitTouchReboot();
         }
       }
