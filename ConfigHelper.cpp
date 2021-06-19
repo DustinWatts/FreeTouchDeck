@@ -22,11 +22,11 @@ namespace FreeTouchDeck
   using namespace std;
   void stopBT()
   {
-    PrintMemInfo();
+    PrintMemInfo(__FUNCTION__, __LINE__);
     LOC_LOGD(module, "Terminating BLE Keyboard");
     // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
     bleKeyboard.end();
-    PrintMemInfo();
+    PrintMemInfo(__FUNCTION__, __LINE__);
     LOC_LOGD(module, "Terminating BT");
     // Stop BLE from interfering with our WIFI signal
     btStop();
@@ -49,15 +49,15 @@ namespace FreeTouchDeck
     }
     if (!MDNS.begin(STRING_OR_DEFAULT(wificonfig.hostname, "freetouchdeck")) || !MDNS.addService("http", "tcp", 80))
     {
-      PrintMemInfo();
+      PrintMemInfo(__FUNCTION__, __LINE__);
       drawErrorMessage(true, module, "Unable to start MDNS server");
     }
-    PrintMemInfo();
+    PrintMemInfo(__FUNCTION__, __LINE__);
     LOC_LOGD(module, "MDNS started");
 
     // ----------------- Load webserver ---------------------
     handlerSetup();
-    PrintMemInfo();
+    PrintMemInfo(__FUNCTION__, __LINE__);
     LOC_LOGD(module, "Http handlers configured, starting web server");
     // Start the webserver
     webserver.begin();
@@ -141,7 +141,7 @@ namespace FreeTouchDeck
 
     LOC_LOGI(module, "Entering Config Mode");
     tft.println("Connecting to Wifi...");
-    PrintMemInfo();
+    PrintMemInfo(__FUNCTION__, __LINE__);
 
     if (String(wificonfig.ssid) == "YOUR_WIFI_SSID" || String(wificonfig.password) == "YOUR_WIFI_PASSWORD") // Still default
     {

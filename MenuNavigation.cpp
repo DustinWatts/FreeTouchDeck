@@ -174,13 +174,13 @@ namespace FreeTouchDeck
     bool SetActiveScreen(const char *name)
     {
         bool result = false;
-        PrintMemInfo();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         if (Menus.size() == 0)
             return false;
         Menu *Active = GetActiveScreen();
-        PrintMemInfo();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         Menu *Match = GetScreen(name);
-        PrintMemInfo();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         if (Match)
         {
             if (Active && Match && strcmp(Active->Name, Match->Name) == 0)
@@ -207,7 +207,7 @@ namespace FreeTouchDeck
                 ScreenUnlock();
                 result = true;
             }
-            PrintMemInfo();
+            PrintMemInfo(__FUNCTION__, __LINE__);
         }
         else
         {
@@ -466,14 +466,7 @@ namespace FreeTouchDeck
             }
         }
         menus.close();
-        if (result)
-        {
-            // generate home screen. Don't sort
-            // as the configuration file should
-            // list buttons in the order in which
-            // they should be displayed
-            result = GenerateHomeScreenObject(false);
-        }
+  
         FREE_AND_NULL(fullbuffer);
         return result;
     }
@@ -515,7 +508,7 @@ namespace FreeTouchDeck
                 if ((m->Type == MenuTypes::SYSTEM || m->Type == MenuTypes::HOMESYSTEM) && !withSystem)
                     continue; // don't output system menus as they are built-in
                 LOC_LOGD(module, "Converting menu %s", STRING_OR_DEFAULT(m->Name, "unknown"));
-                PrintMemInfo();
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 cJSON *menuEntry = m->ToJSON();
                 cJSON_AddItemToArray(menusArray, menuEntry);
                 json = cJSON_Print(menuEntry);
@@ -532,7 +525,7 @@ namespace FreeTouchDeck
         {
             LOC_LOGE(module, "Unable to lock screens ");
         }
-        PrintMemInfo();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         LOC_LOGD(module, "Menus were converted to JSON structure. Converting to string");
         json = cJSON_Print(menusArray);
         if (json)
@@ -545,7 +538,7 @@ namespace FreeTouchDeck
         }
         cJSON_Delete(menusArray);
         LOC_LOGD(module, "Done converting menu to json structure");
-        PrintMemInfo();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         return json;
     }
     void handleDisplay(bool pressed, uint16_t t_x, uint16_t t_y)

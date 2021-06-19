@@ -273,6 +273,7 @@ namespace FreeTouchDeck
     }
     Menu *Menu::FromJson(const char *jsonString)
     {
+        PrintMemInfo(__FUNCTION__, __LINE__);
         cJSON *doc = cJSON_Parse(jsonString);
         if (!doc)
         {
@@ -286,7 +287,10 @@ namespace FreeTouchDeck
         {
             LOC_LOGD(module, "Json string parsed successfully");
         }
-        return new Menu(doc);
+        Menu * menuOut = new Menu(doc);
+        cJSON_Delete(doc);
+        PrintMemInfo(__FUNCTION__, __LINE__);
+        return menuOut;
     }
     Menu::Menu(MenuTypes menutype, const char *name, const char *label, const char *icon, uint8_t rowsCount, uint8_t colsCount, uint32_t backgroundColor, uint32_t outline, uint32_t textColor, uint8_t textSize)
     {

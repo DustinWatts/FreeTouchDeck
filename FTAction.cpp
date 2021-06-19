@@ -27,7 +27,6 @@ namespace FreeTouchDeck
     const char *FTAction::JsonLabelType = "type";
     const char *FTAction::JsonLabelValue = "value";
     const char *FTAction::JsonLabelSymbol = "symbol";
-    FTAction FTAction::releaseAllAction;
     FTAction FTAction::rebootSystem;
 
     FTAction::FTAction()
@@ -90,7 +89,6 @@ namespace FreeTouchDeck
     }
     void FTAction::InitConstants()
     {
-        releaseAllAction = FTAction("RELEASEALL", {{KEY_LEFT_CTRL, KEY_LEFT_SHIFT, KEY_LEFT_ALT, KEY_LEFT_GUI, KEY_RIGHT_CTRL, KEY_RIGHT_SHIFT, KEY_RIGHT_ALT, KEY_RIGHT_GUI}});
         rebootSystem = FTAction(ParametersList_t({"REBOOT"}));
     }
 
@@ -135,6 +133,7 @@ namespace FreeTouchDeck
 
     bool FTAction::ParseToken(const char *token, ActionsSequences *actions)
     {
+        PrintMemInfo(__FUNCTION__, __LINE__);
         bool success = false;
         ParametersList_t parameters;
         uint16_t delay = 0;
@@ -185,6 +184,7 @@ namespace FreeTouchDeck
         {
             LOC_LOGE(module, "Invalid local action type %s with %d parameter(s)", token, parameters.size());
         }
+        PrintMemInfo(__FUNCTION__, __LINE__);
         return success;
     }
     const char *FTAction::ActionName()
@@ -248,6 +248,7 @@ namespace FreeTouchDeck
 
     bool FTAction::SplitParameters(const char *parmString, ParametersList_t &parameters)
     {
+        PrintMemInfo(__FUNCTION__, __LINE__);
         char *token = ps_strdup(parmString);
         char *separators = ps_strdup(parmString);
         const char *p = parmString;
@@ -280,6 +281,7 @@ namespace FreeTouchDeck
 
         FREE_AND_NULL(token);
         FREE_AND_NULL(separators);
+        PrintMemInfo(__FUNCTION__, __LINE__);
         LOC_LOGV(module, "End of parameters list");
         return true;
     }

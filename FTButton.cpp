@@ -229,7 +229,7 @@ namespace FreeTouchDeck
         }        
         return image;
     }
-    void IRAM_ATTR FTButton::DrawShape(bool force)
+    void  FTButton::DrawShape(bool force)
     {
         bool transparent = false;
         int32_t radius = 4;
@@ -290,7 +290,7 @@ namespace FreeTouchDeck
         }
 
         LOC_LOGV(module, "Drawing button at [%d,%d] size: %dx%d,  outline : 0x%04X, BG Color: 0x%04X, Text color: 0x%04X, Text size: %d, logo: %s", CenterX, CenterY, AdjustedWidth, AdjustedHeight, Outline, BGColor, TextColor, TextSize, STRING_OR_DEFAULT(_jsonLogo, ""));
-        PrintMemInfo();
+        PrintMemInfo(__FUNCTION__, __LINE__);
 
         uint8_t r = min(ButtonWidth, ButtonHeight) / 4; // Corner radius
         if (BGColor != MenuBackgroundColor)
@@ -517,6 +517,7 @@ namespace FreeTouchDeck
     void FTButton::Init(cJSON *button)
     {
         char *buttonType = NULL;
+        PrintMemInfo(__FUNCTION__, __LINE__);
         GetValueOrDefault(button, FTButton::JsonLabelType, &buttonType, enum_to_string(ButtonTypes::STANDARD));
         ButtonType = parse_button_types(buttonType);
         FREE_AND_NULL(buttonType);
@@ -558,6 +559,7 @@ namespace FreeTouchDeck
                 }
             }
         }
+        PrintMemInfo(__FUNCTION__, __LINE__);
     }
     FTButton::FTButton(cJSON *button)
     {

@@ -85,8 +85,6 @@ namespace FreeTouchDeck
             // Screen queue if not Keyboard event and acction name not in the Keyboard queue list
             return  Type != ActionTypes::KEYBOARD && !KeyboardLocalAction;
         }
-
-        static FTAction releaseAllAction;
         static FTAction rebootSystem;
         bool CallActionCallback(bool checkOnly = false);
         static bool CallActionCallback(ParametersList_t &parameters, FTAction *action, bool checkOnly);

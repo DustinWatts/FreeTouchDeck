@@ -155,20 +155,21 @@ void setup()
 {
   // Use serial port
   Serial.begin(115200);
+  PrintMemInfo(__FUNCTION__, __LINE__);
   SetGeneralConfigDefaults();
   Serial.setDebugOutput(true);
   LOC_LOGI(module, "Starting system.");
-  
+  PrintMemInfo(__FUNCTION__, __LINE__);
   // Init Touch first. We will use it to restart the system when displaying a hard error
   InitSystem();
   
-
+PrintMemInfo(__FUNCTION__, __LINE__);
   //------------------BLE Initialization ------------------------------------------------------------------------
   LOC_LOGI(module, "Starting BLE Keyboard");
   bleKeyboard.deviceName = generalconfig.deviceName;
   bleKeyboard.deviceManufacturer = generalconfig.manufacturer;
   bleKeyboard.begin();
-
+PrintMemInfo(__FUNCTION__, __LINE__);
   // ---------------- Printing version numbers -----------------------------------------------
   LOC_LOGI(module, "BLE Keyboard version: %s", BLE_KEYBOARD_VERSION);
   LOC_LOGI(module, "ArduinoJson version: %s", ARDUINOJSON_VERSION);
@@ -184,15 +185,15 @@ void setup()
     // for example don't active home if drawError was called
     SetActiveScreen("home");
   }
-  PrintMemInfo();
+  PrintMemInfo(__FUNCTION__, __LINE__);
   HandleSleepConfig();
   HandleBeepConfig();
 #ifdef ACTIONS_IN_TASKS
   // xTaskCreate(ScreenHandleTask, "Screen", 1024 * 3, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
-  // PrintMemInfo();
+  // PrintMemInfo(__FUNCTION__, __LINE__);
   // LOC_LOGD(module, "Screen task created");
   xTaskCreate(ActionTask, "Action", 1024 * 4, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
-  PrintMemInfo();
+  PrintMemInfo(__FUNCTION__, __LINE__);
   LOC_LOGD(module, "Action task created");
 #endif
 }

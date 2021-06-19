@@ -63,7 +63,7 @@ namespace FreeTouchDeck
         if (!image)
         {
             LOC_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
-            PrintMemInfo();
+            PrintMemInfo(__FUNCTION__, __LINE__);
             auto constructor = GetConstructorForImage(imageName);
             if(!constructor)
             {
@@ -72,9 +72,11 @@ namespace FreeTouchDeck
             else
             {
                 image = constructor(imageName);
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 if (image && image->valid)
                 {
                     ImageList.push_back(image);
+                    PrintMemInfo(__FUNCTION__, __LINE__);
                 }
                 else
                 {
@@ -82,7 +84,6 @@ namespace FreeTouchDeck
                     FREE_AND_NULL(image);
                 }
                 LOC_LOGD(module, "Done caching image");
-                PrintMemInfo();
             }
         }
         return image;

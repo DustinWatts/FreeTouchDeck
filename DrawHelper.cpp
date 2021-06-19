@@ -321,7 +321,7 @@ Note   : none
     // Preload all bitmaps
     File root = ftdfs->open("/", FILE_READ);
     File file = root.openNextFile();
-    PrintMemInfo();
+    PrintMemInfo(__FUNCTION__, __LINE__);
     while (file)
     {
       String FileName = file.name();

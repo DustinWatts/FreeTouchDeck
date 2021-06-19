@@ -69,8 +69,11 @@ namespace FreeTouchDeck
         RESET_REASON resetReason = rtc_get_reset_reason(0);
         esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
         init_cJSON();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         touchInit();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         InitFileSystem();
+        PrintMemInfo(__FUNCTION__, __LINE__);
 
         // We cannot rely on the c++ compiler to initialize our
         // contants, for example the buttons list which is required by
@@ -78,8 +81,9 @@ namespace FreeTouchDeck
         // primitive maps will exist before we try to access them
         FTAction::InitConstants();
         FTButton::InitConstants();
-
+        PrintMemInfo(__FUNCTION__, __LINE__);
         LoadSystemConfig();
+        PrintMemInfo(__FUNCTION__, __LINE__);
         // Init display
         displayInit();
 
@@ -177,6 +181,7 @@ namespace FreeTouchDeck
             drawErrorMessage(false, module, "general.json seems to be corrupted. To reset to default type 'reset general'.");
         }
         //------------------ Load Wifi Config ----------------------------------------------
+        PrintMemInfo(__FUNCTION__, __LINE__);
         LOC_LOGI(module, "Loading Wifi Config");
         if (!loadWifiConfig())
         {
@@ -186,6 +191,7 @@ namespace FreeTouchDeck
         {
             LOC_LOGI(module, "WiFi Credentials Loaded");
         }
+        PrintMemInfo(__FUNCTION__, __LINE__);
     }
     void PrintMemInfo()
     {
@@ -193,10 +199,19 @@ namespace FreeTouchDeck
         static size_t prev_min_free = 0;
         if (generalconfig.LogLevel < LogLevels::DEBUG)
             return;
-        LOC_LOGD(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-        LOC_LOGD(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        //LOC_LOGI(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        //LOC_LOGI(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        Serial.printf( "free_iram: %d, delta: %d\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        Serial.printf( "min_free_iram: %d, delta: %d\n", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
         prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
         prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+    }
+    void PrintMemInfo(const char * fn, uint16_t line)
+    {
+                static size_t prev_free = 0;
+
+        Serial.printf( "%s[%d]free_iram: %d, delta: %d\n",fn,line, heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
     }
 
     void TFTPrintMemInfo()

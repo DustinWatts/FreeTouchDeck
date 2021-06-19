@@ -196,8 +196,13 @@ namespace FreeTouchDeck
              delay(atol(action->FirstParameter()));
              return true;
          }},
-     
+         
+        {"RELEASEALL", [](FTAction *action)
+         {
+             bleKeyboard.releaseAll();
+             return true;
+         }},
         {"LATCH", RunLatchAction}};
 
-    ActionQueueType_t UserActionsKeyboardQueue = {"DELAY" };
+    ActionQueueType_t UserActionsKeyboardQueue = {"DELAY","RELEASEALL" };
 }

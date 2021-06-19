@@ -94,7 +94,7 @@ namespace FreeTouchDeck
         return valid;
     }
     // move the drawing function to IRAM in an attempt to speed up drawing
-    IRAM_ATTR void ImageFormatBMP::Draw(int16_t x, int16_t y, bool transparent)
+     void ImageFormatBMP::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
         LOC_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);

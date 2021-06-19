@@ -57,8 +57,7 @@ namespace FreeTouchDeck
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
         valid = true;
         LOC_LOGD(module, "Loading details from file %s", FileNameBuffer);
-        LOC_LOGI(module,"free_iram: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-        LOC_LOGI(module,"min_free_iram: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+        PrintMemInfo(__FUNCTION__, __LINE__);
         JRESULT res = JDR_OK;
         File imageFile = ftdfs->open(FileNameBuffer, FILE_READ);
         if (!imageFile)
@@ -86,8 +85,7 @@ namespace FreeTouchDeck
             valid = false;
         }
         imageFile.close();
-                LOC_LOGI(module,"free_iram: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-        LOC_LOGI(module,"min_free_iram: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+        PrintMemInfo(__FUNCTION__, __LINE__);
         // don't close the file; the getSdJpgSize call does it
         LOC_LOGV(module, "Done parsing file");
         return valid;
@@ -128,8 +126,7 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Drawing from image file");
         TJpgDec.drawFsJpg(cornerX, cornerY, imageFile);
         imageFile.close();
-        LOC_LOGI(module,"free_iram: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-        LOC_LOGI(module,"min_free_iram: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+        PrintMemInfo(__FUNCTION__, __LINE__);
         LOC_LOGV(module, "Closing bitmap file %s", LogoName);
         tft.setSwapBytes(oldSwapBytes);
     }
