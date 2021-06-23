@@ -1,5 +1,4 @@
 #include "FTAction.h"
-#include "BleKeyboard.h"
 #include "UserConfig.h"
 #include "MenuNavigation.h"
 #include "Menu.h"
@@ -7,8 +6,8 @@
 #include <algorithm>
 #include <cstdio>
 #include "ConfigLoad.h"
+#include "System.h"
 static const char *module = "FTAction";
-extern BleKeyboard bleKeyboard;
 
 using namespace std;
 
@@ -84,12 +83,23 @@ namespace FreeTouchDeck
 
     FTAction::~FTAction()
     {
+
         Values.clear();
         Parameters.clear();
     }
     void FTAction::InitConstants()
     {
+        LOC_LOGD(module, "Initializing actions constants");
         rebootSystem = FTAction(ParametersList_t({"REBOOT"}));
+    }
+    cJSON *KeyNamesJson()
+    {
+        cJSON *doc = cJSON_CreateArray();
+        for (auto k : KeyMap)
+        {
+            cJSON_AddItemToArray(doc, cJSON_CreateString(k.first));
+        }
+        return doc;
     }
 
     bool FTAction::IsValidKey(const char *name, char **foundValue)
@@ -131,16 +141,16 @@ namespace FreeTouchDeck
         return found;
     }
 
-    bool FTAction::ParseToken(const char *token, ActionsSequences *actions)
+    bool FTAction::ParseToken(const char *token, std::vector<FTAction *> &actions)
     {
         PrintMemInfo(__FUNCTION__, __LINE__);
         bool success = false;
         ParametersList_t parameters;
         uint16_t delay = 0;
         SplitParameters(token, parameters);
-        const char * tokenName=GetParameter(0, parameters).c_str();
+        const char *tokenName = GetParameter(0, parameters).c_str();
 
-        if(parameters.size() > 1 && atol(GetParameter(1, parameters).c_str()) > 0)
+        if (parameters.size() > 1 && atol(GetParameter(1, parameters).c_str()) > 0)
         {
             delay = atol(GetParameter(1, parameters).c_str());
         }
@@ -149,23 +159,26 @@ namespace FreeTouchDeck
         {
             if (strcmp(k.first, tokenName) == 0)
             {
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 LOC_LOGD(module, "Found Keyboard symbol %s, press delay %d ", tokenName, delay);
-                actions->Actions.push_back(new FTAction(k.first, k.second));
-                actions->Actions.back()->HoldTime=delay;
+                actions.push_back(new FTAction(k.first, k.second));
+                actions.back()->HoldTime = delay;
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 success = true;
                 break;
             }
         }
-        if (!success && delay>0)
+        if (!success && delay > 0)
         {
-            if(strlen(tokenName) == 1)
+            if (strlen(tokenName) == 1)
             {
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 LOC_LOGD(module, "Found Keyboard symbol %s with delay %d", tokenName, delay);
-                actions->Actions.push_back(new FTAction(tokenName, KeyValue_t({(unsigned char)tokenName[0]})));
-                actions->Actions.back()->HoldTime = delay;
+                actions.push_back(new FTAction((tokenName), KeyValue_t({(unsigned char)tokenName[0]})));
+                actions.back()->HoldTime = delay;
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 success = true;
             }
-
         }
         if (!success)
         {
@@ -176,7 +189,7 @@ namespace FreeTouchDeck
             else if (IsActionCallback(parameters))
             {
                 LOC_LOGD(module, "Found user Action %s with %d parameter(s)", GetParameter(0, parameters).c_str(), parameters.size() - 1);
-                actions->Actions.push_back(new FTAction(parameters));
+                actions.push_back(new FTAction(parameters));
                 success = true;
             }
         }
@@ -189,27 +202,27 @@ namespace FreeTouchDeck
     }
     const char *FTAction::ActionName()
     {
-        LOC_LOGD(module, "Getting Action name from %s", toString());
+        LOC_LOGV(module, "Getting Action name from %s", toString());
         return GetParameter(0).c_str();
     }
     const char *FTAction::FirstParameter()
     {
-        LOC_LOGD(module, "Getting first parameter from %s", toString());
+        LOC_LOGV(module, "Getting first parameter from %s", toString());
         return GetParameter(1).c_str();
     }
     const char *FTAction::SecondParameter()
     {
-        LOC_LOGD(module, "Getting second parameter from %s", toString());
+        LOC_LOGV(module, "Getting second parameter from %s", toString());
         return GetParameter(2).c_str();
     }
     const char *FTAction::ThirdParameter()
     {
-        LOC_LOGD(module, "Getting third parameter from %s", toString());
+        LOC_LOGV(module, "Getting third parameter from %s", toString());
         return GetParameter(3).c_str();
     }
     std::string &FTAction::ActionNameStr()
     {
-        LOC_LOGD(module, "Getting Action name from %s", toString());
+        LOC_LOGV(module, "Getting Action name from %s", toString());
         return GetParameter(0);
     }
     std::string &FTAction::FirstParameterStr()
@@ -308,8 +321,21 @@ namespace FreeTouchDeck
         }
         return false;
     }
-    FTAction::FTAction(const char *keyName, KeyValue_t values)
+    bool checkForStop()
     {
+        uint16_t t_x = 0;
+        uint16_t t_y = 0;
+        if (getTouch(&t_x, &t_y))
+        {
+            EmptyQueue();
+            LOC_LOGI(module, "Stopping action playback.");
+            return true;
+        }
+        return false;
+    }
+    FTAction::FTAction(const char *keyName, const KeyValue_t &values)
+    {
+        PrintMemInfo(__FUNCTION__, __LINE__);
         Type = ActionTypes::KEYBOARD;
         if (ISNULLSTRING(keyName))
         {
@@ -317,18 +343,21 @@ namespace FreeTouchDeck
         }
         else
         {
+            LOC_LOGD(module, "New action with key names %s, length of %d", keyName, Values.size());
             Parameters.push_back(keyName);
+            PrintMemInfo(__FUNCTION__, __LINE__);
             NeedsRelease = KeyNeedsRelease(keyName);
             NeedsDoubleBytes = KeyIsDoubleBytes(keyName);
         }
+        PrintMemInfo(__FUNCTION__, __LINE__);
         Values = values;
     }
-    FTAction::FTAction(KeyValue_t values)
+    FTAction::FTAction(const KeyValue_t &values)
     {
         Type = ActionTypes::KEYBOARD;
         Values = values;
     }
-    FTAction::FTAction(ParametersList_t parameters)
+    FTAction::FTAction(const ParametersList_t &parameters)
     {
         Type = ActionTypes::LOCAL;
         Parameters = parameters;
@@ -340,13 +369,22 @@ namespace FreeTouchDeck
     void FTAction::Execute()
     {
         MediaKeyReport MediaKey;
-        LOC_LOGD(module, "Executing Action: %s", toString());
+        LOC_LOGD(module, "Executing Action %s", toString());
+        if (checkForStop())
+        {
+            return;
+        }
         FTAction::Stopped = false;
         switch (Type)
         {
         case ActionTypes::NONE:
             break;
         case ActionTypes::KEYBOARD:
+            if (!bleKeyboard.isConnected())
+            {
+                LOC_LOGW(module, "Skipping action %s. Bluetooth Keyboard not connected", toString());
+                return;
+            }
             if (NeedsDoubleBytes)
             {
                 MediaKey[0] = Values[0];
@@ -365,10 +403,12 @@ namespace FreeTouchDeck
                         // individually
                         bleKeyboard.press(ks);
                         delay(generalconfig.keyDelay);
+                        checkForStop();
                         if (FTAction::Stopped)
                         {
                             break;
                         }
+                        
                     }
                 }
                 else
@@ -383,10 +423,12 @@ namespace FreeTouchDeck
                         delay(HoldTime);
                         bleKeyboard.release(ks);
                         delay(generalconfig.keyDelay);
+                        checkForStop();
                         if (FTAction::Stopped)
                         {
                             break;
                         }
+                        
                     }
                 }
             }
@@ -415,6 +457,7 @@ namespace FreeTouchDeck
             {
                 snprintf(printBuffer, sizeof(printBuffer), "%s %s", printBuffer, p.c_str());
             }
+            snprintf(printBuffer, sizeof(printBuffer), "%s, Values count: %d", printBuffer, Values.size());
             break;
         default:
             break;
@@ -453,6 +496,10 @@ namespace FreeTouchDeck
             QueueUnlock();
         }
         FTAction::Stop();
+    }
+    size_t QueueSize()
+    {
+        return Queue.size()+ScreenQueue.size();
     }
     FTAction *PopQueue()
     {
@@ -520,6 +567,7 @@ namespace FreeTouchDeck
     bool FTAction::CallActionCallback(ParametersList_t &parameters, FTAction *action, bool checkOnly)
     {
         ActionCallbackFn_t callbackFn = NULL;
+        PrintMemInfo(__FUNCTION__, __LINE__);
         std::string name = GetParameter(0, parameters);
         auto callback = FreeTouchDeck::UserActions.find(name.c_str());
         if (callback == FreeTouchDeck::UserActions.end())
@@ -540,7 +588,6 @@ namespace FreeTouchDeck
             LOC_LOGD(module, "Found the callback in the map");
             callbackFn = callback->second;
         }
-
         if (callbackFn)
         {
             if (checkOnly)
@@ -554,8 +601,10 @@ namespace FreeTouchDeck
             }
             else
             {
-                LOC_LOGD(module, "Calling function");
-                return callbackFn(action);
+                LOC_LOGD(module, "Calling function %s", name.c_str());
+                bool res = callbackFn(action);
+                PrintMemInfo(__FUNCTION__, __LINE__);
+                return res;
             }
         }
         else
@@ -575,5 +624,14 @@ namespace FreeTouchDeck
     bool FTAction::CallActionCallback(bool checkOnly)
     {
         return CallActionCallback(Parameters, this, checkOnly);
+    }
+    cJSON *UserActionsJson()
+    {
+        cJSON *doc = cJSON_CreateArray();
+        for (auto a : UserActions)
+        {
+            cJSON_AddItemToArray(doc, cJSON_CreateString(a.first.c_str()));
+        }
+        return doc;
     }
 }

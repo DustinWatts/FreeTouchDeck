@@ -16,7 +16,7 @@ namespace FreeTouchDeck
     };
     const char *enum_to_string(ButtonTypes type);
 
-    class FTButton 
+    class FTButton
     {
     protected:
         bool Latched = false;
@@ -30,17 +30,19 @@ namespace FreeTouchDeck
         uint16_t X = 0;
         uint16_t Y = 0;
         uint16_t ButtonWidth = 0;
-           
+        bool IsLabel = false;
+
         uint8_t Spacing = 0;
         uint16_t ButtonHeight = 0;
         uint16_t AdjustedWidth;
         uint16_t AdjustedHeight;
         uint16_t TextAdjustedWidth;
-        char *_jsonLogo = NULL;
-        char *_jsonLatchedLogo = NULL;
+        std::string _jsonLogo;
+        std::string _jsonLatchedLogo;
         void ExecuteActions();
 
     public:
+        static FTButton EmptyButton;
         bool contains(uint16_t x, uint16_t y);
         ButtonTypes ButtonType;
         uint32_t BackgroundColor = 0;
@@ -48,7 +50,7 @@ namespace FreeTouchDeck
         uint32_t Outline = 0;
         uint8_t TextSize = 0;
         uint32_t TextColor = 0;
-        char *Label = NULL;
+        std::string Label;
         static void InitConstants();
 
         static const char *JsonLabelLogo;
@@ -64,23 +66,22 @@ namespace FreeTouchDeck
         static const char *homeButtonTemplate;
         bool IsShared = false;
 
-
-        std::list<ActionsSequences> Sequences;
+        std::vector<ActionsSequences> Sequences;
         FTButton(cJSON *button);
         FTButton();
-        FTButton(cJSON *button,uint32_t BackgroundColor,uint32_t Outline ,uint32_t TextColor);
-        FTButton(ButtonTypes buttonType, const char * label, const char * logo,const char * latchedLogo, uint32_t outline, uint8_t textSize, uint32_t textColor);
+        FTButton(cJSON *button, uint32_t BackgroundColor, uint32_t Outline, uint32_t TextColor);
+        FTButton(ButtonTypes buttonType, const char *label, const char *logo, const char *latchedLogo, uint32_t outline, uint8_t textSize, uint32_t textColor);
         void Init(cJSON *button);
-        FTButton(const char * tmpl, bool isShared=false);
-        static FTButton * BackButton; 
-        static FTButton * HomeButton;
+        FTButton(const char *tmpl, bool isShared = false);
+        static FTButton *BackButton;
+        static FTButton *HomeButton;
         void SetCoordinates(uint16_t width, uint16_t height, uint16_t row, uint16_t col, uint8_t spacing);
         ~FTButton();
         bool Latch(FTAction *action);
         ImageWrapper *LatchedLogo();
         ImageWrapper *GetActiveImage();
-        bool IsLabelDraw();
         ImageWrapper *Logo();
+        bool HasKeyboardActions();
         uint16_t Width();
         uint16_t Height();
         void DrawShape(bool force);
@@ -91,7 +92,6 @@ namespace FreeTouchDeck
         void UnPress();
         void Release();
         cJSON *ToJSON();
-        
     };
     static ButtonTypes &operator++(ButtonTypes &state, int);
     

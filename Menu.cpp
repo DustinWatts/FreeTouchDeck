@@ -2,8 +2,6 @@
 #include <cstdlib>
 #include "System.h"
 
-
-
 namespace FreeTouchDeck
 {
     static const char *module = "Menu";
@@ -12,11 +10,11 @@ namespace FreeTouchDeck
     bool Menu::Button(FTAction *action)
     {
         bool success = false;
-        FTButton *button = GetButton(action->SecondParameter());
-        if (button)
+        FTButton &button = GetButton(action->SecondParameterStr());
+        if (button.ButtonType != ButtonTypes::NONE)
         {
-            LOC_LOGD(module, "Found button %s to run action %s", button->Label, action->toString());
-            success = button->Latch(action);
+            LOC_LOGD(module, "Found button %s to run action %s", button.Label.c_str(), action->toString());
+            success = button.Latch(action);
             if (!success)
             {
                 LOC_LOGE(module, "Running %s failed", action->toString());
@@ -28,24 +26,23 @@ namespace FreeTouchDeck
         }
         return success;
     }
-    FTButton *Menu::GetButton(const char *buttonName)
+    FTButton &Menu::GetButton(const std::string &buttonName)
     {
-        for (auto button : buttons)
+        for (int i = 0; i < buttons.size(); i++)
         {
-            if (strcmp(button->Label, buttonName) == 0)
+            if (buttons.at(i).Label == buttonName)
             {
-                return button;
+                return buttons.at(i);
             }
-            LOC_LOGV(module, "Ignoring button %s", STRING_OR_DEFAULT(button->Label,""));
         }
-        return NULL;
+        return FTButton::EmptyButton;
     }
 
     void Menu::DrawShape(bool force)
     {
-        for (auto button : buttons)
+        for (int i = 0; i < buttons.size(); i++)
         {
-            button->DrawShape(force);
+            buttons.at(i).DrawShape(force);
         }
         if (HasBackButton())
         {
@@ -54,24 +51,19 @@ namespace FreeTouchDeck
     }
     void Menu::DrawImages(bool force)
     {
-        for (auto button : buttons)
+        for (int i = 0; i < buttons.size(); i++)
         {
-            button->DrawImage(force);
+            buttons.at(i).DrawImage(force);
         }
         if (HasBackButton())
         {
-            FTButton::BackButton->DrawImage(force );
+            FTButton::BackButton->DrawImage(force);
         }
-    }    
+    }
     Menu::~Menu()
     {
-        LOC_LOGD(module, "Freeing memory for menu %s", Name ? Name : "UNKNOWN");
-        for (auto button : buttons)
-        {
-            delete (button);
-        }
-        FREE_AND_NULL(Name);
-        FREE_AND_NULL(Label);
+        LOC_LOGD(module, "Freeing memory for menu %s", Name.c_str());
+        buttons.clear();
     }
 
     void Menu::ReleaseAll()
@@ -81,9 +73,9 @@ namespace FreeTouchDeck
 
         Pressed = false;
         LOC_LOGV(module, "Releasing all %d button ", buttons.size());
-        for (auto button : buttons)
+        for (int i = 0; i < buttons.size(); i++)
         {
-            button->Release();
+            buttons.at(i).Release();
         }
         if (HasBackButton())
         {
@@ -96,20 +88,26 @@ namespace FreeTouchDeck
         {
             tft.fillScreen(BackgroundColor);
             Active = true;
-            LOC_LOGD(module, "Activating menu %s", Name);
+            LOC_LOGD(module, "Activating menu %s", Name.c_str());
             if (HasBackButton())
             {
                 FTButton::BackButton->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
             }
-            DrawShape(true);
-            DrawImages(true);
+            for (int i = 0; i < buttons.size(); i++)
+            {
+                buttons.at(i).Invalidate();
+            }
+            if (HasBackButton())
+            {
+                FTButton::BackButton->Invalidate();
+            }
         }
     }
     void Menu::Deactivate()
     {
         if (Active)
         {
-            LOC_LOGD(module, "Deactivating screen %s", Name);
+            LOC_LOGD(module, "Deactivating screen %s", Name.c_str());
             Active = false;
             ReleaseAll();
         }
@@ -134,16 +132,16 @@ namespace FreeTouchDeck
     {
         Pressed = true;
         bool foundPressedButton = false;
-        for (auto button : buttons)
+        for (int i = 0; i < buttons.size(); i++)
         {
-            if (button->contains(x, y))
+            if (buttons.at(i).contains(x, y))
             {
                 foundPressedButton = true;
-                button->Press();
+                buttons.at(i).Press();
             }
             else
             {
-                button->UnPress();
+                buttons.at(i).UnPress();
             }
         }
         if (!foundPressedButton && HasBackButton())
@@ -169,13 +167,6 @@ namespace FreeTouchDeck
                     action.Execute();
                     foundPressedButton = true;
                 }
-            }
-            else if (strcmp("config", Name))
-            {
-                // in config mode, default to going back to home screen
-                // when pressed
-                QueueAction(Menu::homeMenu);
-                foundPressedButton = true;
             }
         }
         else if (!foundPressedButton)
@@ -205,14 +196,14 @@ namespace FreeTouchDeck
 
         LOC_LOGD(module, "Adding members to Json");
         cJSON_AddStringToObject(menu, Menu::JsonLabelType, enum_to_string(Type));
-        cJSON_AddStringToObject(menu, Menu::JsonLabelName, STRING_OR_DEFAULT(Name, ""));
-        if (!ISNULLSTRING(Label))
+        cJSON_AddStringToObject(menu, Menu::JsonLabelName, Name.c_str());
+        if (!Label.empty())
         {
-            cJSON_AddStringToObject(menu, Menu::JsonLabelLabel, Label);
+            cJSON_AddStringToObject(menu, Menu::JsonLabelLabel, Label.c_str());
         }
-        if (!ISNULLSTRING(Icon))
+        if (!Icon.empty())
         {
-            cJSON_AddStringToObject(menu, Menu::JsonLabelIcon, Icon);
+            cJSON_AddStringToObject(menu, Menu::JsonLabelIcon, Icon.c_str());
         }
 
         if (BackgroundColor != generalconfig.backgroundColour)
@@ -240,11 +231,11 @@ namespace FreeTouchDeck
         {
             LOC_LOGD(module, "Adding buttons to Json");
             cJSON *buttonsJson = cJSON_CreateArray();
-            for (auto button : buttons)
+            for (FTButton &button : buttons)
             {
-                if (button->ButtonType != ButtonTypes::NONE)
+                if (button.ButtonType != ButtonTypes::NONE)
                 {
-                    cJSON *buttonJson = button->ToJSON();
+                    cJSON *buttonJson = button.ToJSON();
                     if (buttonJson)
                     {
                         cJSON_AddItemToArray(buttonsJson, buttonJson);
@@ -287,16 +278,16 @@ namespace FreeTouchDeck
         {
             LOC_LOGD(module, "Json string parsed successfully");
         }
-        Menu * menuOut = new Menu(doc);
+        Menu *menuOut = new Menu(doc);
         cJSON_Delete(doc);
         PrintMemInfo(__FUNCTION__, __LINE__);
         return menuOut;
     }
     Menu::Menu(MenuTypes menutype, const char *name, const char *label, const char *icon, uint8_t rowsCount, uint8_t colsCount, uint32_t backgroundColor, uint32_t outline, uint32_t textColor, uint8_t textSize)
     {
-        Name = ps_strdup(name);
-        Label = ps_strdup(STRING_OR_DEFAULT(label, ""));
-        LOC_LOGD(module, "Label %s, name: %s", Label, Name);
+        Name = name;
+        Label = label;
+        LOC_LOGD(module, "Label %s, name: %s", Label.c_str(), Name.c_str());
         RowsCount = rowsCount;
         ColsCount = colsCount;
         BackgroundColor = backgroundColor;
@@ -308,17 +299,18 @@ namespace FreeTouchDeck
         SetButtonWidth();
         Type = menutype;
     }
-    void Menu::AddButton(FTButton *button)
+    void Menu::AddButton(FTButton &button)
     {
-        button->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
+        button.SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
         buttons.push_back(button);
     }
     Menu::Menu(cJSON *menuJson)
     {
         char *value = NULL;
-        GetValueOrDefault(menuJson, Menu::JsonLabelName, &Name, "");
-        GetValueOrDefault(menuJson, Menu::JsonLabelLabel, &Label, "");
-        LOC_LOGD(module, "Label %s, name: %s", STRING_OR_DEFAULT(Label,""),STRING_OR_DEFAULT(Name,""));
+        PrintMemInfo(__FUNCTION__, __LINE__);
+        GetValueOrDefault(menuJson, Menu::JsonLabelName, Name, NULL);
+        GetValueOrDefault(menuJson, Menu::JsonLabelLabel, Label, NULL);
+        LOC_LOGD(module, "Label %s, name: %s", Label.c_str(), Name.c_str());
         GetValueOrDefault(menuJson, Menu::JsonLabelColsCount, &ColsCount, generalconfig.colscount);
         GetValueOrDefault(menuJson, Menu::JsonLabelRowsCount, &RowsCount, generalconfig.rowscount);
         GetColorOrDefault(menuJson, Menu::JsonLabelBackgroundColor, &BackgroundColor, generalconfig.backgroundColour);
@@ -335,7 +327,7 @@ namespace FreeTouchDeck
             parse(value, &Type);
             if (Type == MenuTypes::NONE)
             {
-                drawErrorMessage(true, module, "Invalid menu type %s for menu %s.", value, STRING_OR_DEFAULT(Name, "unknown"));
+                drawErrorMessage(true, module, "Invalid menu type %s for menu %s.", value, Name.c_str());
                 Type = MenuTypes::STANDARD;
             }
             FREE_AND_NULL(value);
@@ -343,15 +335,15 @@ namespace FreeTouchDeck
 
         if (Type == MenuTypes::HOME || Type == MenuTypes::HOMESYSTEM)
         {
-            GetValueOrDefault(menuJson, Menu::JsonLabelIcon, &Icon, "");
-            LOC_LOGD(module, "Icon is %s", STRING_OR_DEFAULT(Icon,""));
+            GetValueOrDefault(menuJson, Menu::JsonLabelIcon, Icon, NULL);
+            LOC_LOGD(module, "Icon is %s", Icon.c_str());
         }
         cJSON *buttonsJson = cJSON_GetObjectItem(menuJson, Menu::JsonLabelButtons);
         if (buttonsJson)
         {
             if (!cJSON_IsArray(buttonsJson))
             {
-                drawErrorMessage(true, module, "Buttons under menu %s should be an array.", STRING_OR_DEFAULT(Name, "unknown"));
+                drawErrorMessage(true, module, "Buttons under menu %s should be an array.", Name.c_str());
                 return;
             }
             else
@@ -361,17 +353,18 @@ namespace FreeTouchDeck
             cJSON *buttonJson = NULL;
             cJSON_ArrayForEach(buttonJson, buttonsJson)
             {
-                auto button = new FTButton(buttonJson, BackgroundColor, _outline, _textColor);
-                if (button->ButtonType != ButtonTypes::NONE)
+                PrintMemInfo(__FUNCTION__, __LINE__);
+                auto button = FTButton(buttonJson, BackgroundColor, _outline, _textColor);
+                if (button.ButtonType != ButtonTypes::NONE)
                 {
-                    button->SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
+                    button.SetCoordinates(ButtonWidth, ButtonHeight, (uint16_t)(buttons.size() / ColsCount), (uint16_t)(buttons.size() % ColsCount), Spacing);
                     buttons.push_back(button);
                 }
                 else
                 {
                     LOC_LOGE(module, "Invalid button type.");
-                    delete (button);
                 }
+                PrintMemInfo(__FUNCTION__, __LINE__);
             }
         }
         else
@@ -383,7 +376,7 @@ namespace FreeTouchDeck
         {
             if (!cJSON_IsArray(actionsJson))
             {
-                drawErrorMessage(true, module, "Actions under menu %s should be an array.", STRING_OR_DEFAULT(Name, "unknown"));
+                drawErrorMessage(true, module, "Actions under menu %s should be an array.", Name.c_str());
                 return;
             }
             cJSON *actionJson = NULL;

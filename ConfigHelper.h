@@ -1,9 +1,9 @@
 #pragma once
 #include "WString.h"
 #include <ESPAsyncWebServer.h> //Async Webserver support header
+#include "globals.hpp"
 namespace FreeTouchDeck
 {
-
     typedef struct 
     {
         char *ssid;
@@ -59,4 +59,10 @@ namespace FreeTouchDeck
          configuration using loadWifiConfig()
 */
     bool saveWifiMode(String wifimode);
+
+    cJSON * toJson(Wificonfig * wificonfig);
+bool Commit(Wificonfig * wificonfig);    
+void EraseWifiConfig(Wificonfig * config);
+
+
 }

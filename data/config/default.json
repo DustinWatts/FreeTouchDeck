@@ -3,7 +3,7 @@
     "type":"HOME",
     "name":"Media",
     "logo":"music.jpg",
-    "colscount":3,
+    "colscount":4,
     "rowscount":4,
     "buttons":[
       {

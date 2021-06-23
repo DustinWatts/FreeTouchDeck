@@ -35,14 +35,15 @@ namespace FreeTouchDeck
     }
 
     String ImageFormatJPG::Description = "JPG File";
-    ImageFormatJPG::ImageFormatJPG(const char *imageName) : ImageWrapper(imageName)
+    ImageFormatJPG::ImageFormatJPG(const std::string &imageName) : ImageWrapper(imageName)
     {
         LOC_LOGD(module, "Instantiating JPG file");
         if (!LoadImageDetails())
         {
-            LOC_LOGE(module, "Unable to load file %s. ", LogoName);
+            LOC_LOGE(module, "Unable to load file %s. ", LogoName.c_str());
         }
     };
+    ImageFormatJPG::ImageFormatJPG():ImageWrapper(){};
     bool ImageFormatJPG::LoadImageDetails()
     {
 
@@ -55,7 +56,7 @@ namespace FreeTouchDeck
 #endif
         // Open File
         FileName(FileNameBuffer, sizeof(FileNameBuffer));
-        valid = true;
+        valid = false;
         LOC_LOGD(module, "Loading details from file %s", FileNameBuffer);
         PrintMemInfo(__FUNCTION__, __LINE__);
         JRESULT res = JDR_OK;
@@ -65,14 +66,14 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "Error opening %s", FileNameBuffer);
             return false;
         }
-        LOC_LOGD(module, "Getting size from SD card file");
+        //LOC_LOGD(module, "Getting size from SD card file");
         res = TJpgDec.getFsJpgSize(&w, &h, imageFile);
 
         if (res == JDR_OK)
         {
             // need to open the file again, since get size will close it
             TJpgDec.setCallback(ImageFormatJPG::pixelcheck);
-            LOC_LOGD(module, "Getting pixel color from SD file");
+            //LOC_LOGD(module, "Getting pixel color from SD file");
             TJpgDec.drawFsJpg(0, 0, imageFile);
 
             PixelColor = firstPixColor;
@@ -82,7 +83,6 @@ namespace FreeTouchDeck
         else
         {
             LOC_LOGE(module, "Unable to get JPG size. Return code was %s ", enum_to_string(res));
-            valid = false;
         }
         imageFile.close();
         PrintMemInfo(__FUNCTION__, __LINE__);
@@ -90,11 +90,18 @@ namespace FreeTouchDeck
         LOC_LOGV(module, "Done parsing file");
         return valid;
     }
-    // move the drawing function to IRAM in an attempt to speed up drawing
+    bool ImageFormatJPG::IsValid()
+    {
+        return valid;
+    }
+    const std::string &ImageFormatJPG::GetLogoName()
+    {
+        return LogoName;
+    }
     void ImageFormatJPG::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
-        LOC_LOGD(module, "Drawing jpg file %s at [%d,%d] ", LogoName, x, y);
+        LOC_LOGD(module, "Drawing jpg file %s at [%d,%d] ", LogoName.c_str(), x, y);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
             LOC_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);
@@ -123,30 +130,28 @@ namespace FreeTouchDeck
             return;
         }
 
-        LOC_LOGD(module, "Drawing from image file");
         TJpgDec.drawFsJpg(cornerX, cornerY, imageFile);
         imageFile.close();
         PrintMemInfo(__FUNCTION__, __LINE__);
-        LOC_LOGV(module, "Closing bitmap file %s", LogoName);
+        LOC_LOGV(module, "Closing bitmap file %s", LogoName.c_str());
         tft.setSwapBytes(oldSwapBytes);
     }
     const String &ImageFormatJPG::GetDescription()
     {
         return Description;
     }
-    ImageFormatJPG *ImageFormatJPG::GetImageInstance(const char *imageName)
+    ImageFormatJPG * ImageFormatJPG::GetImageInstance(const std::string &imageName)
     {
-        LOC_LOGD(module, "JPG handler checking if extension of %s is a match for 'JPG'", imageName);
+        LOC_LOGD(module, "JPG handler checking if extension of %s is a match for 'JPG'", imageName.c_str());
         if (!IsExtensionMatch("jpg", imageName))
         {
             LOC_LOGE(module, "Invalid file extension. ");
-            return NULL;
+            return new ImageFormatJPG();
         }
         return new ImageFormatJPG(imageName);
     }
     uint16_t ImageFormatJPG::GetPixelColor()
     {
-
         return PixelColor;
     }
 
@@ -158,7 +163,6 @@ namespace FreeTouchDeck
         // Stop further decoding as image is running off bottom of screen
         if (y >= tft.height())
         {
-            LOC_LOGE(module, "drawing beyond screen boundaries (%d,%d)", y, tft.height());
             return 0;
         }
 

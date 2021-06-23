@@ -1,7 +1,6 @@
 #pragma once
-#include "BleKeyboard.h"
 #include "globals.hpp"
-
+#include "System.h"
 namespace FreeTouchDeck
 {
     class FTAction;
@@ -24,9 +23,9 @@ namespace FreeTouchDeck
     const char *enum_to_string(ActionTypes type);
     typedef std::vector<uint8_t> KeyValue_t;
     typedef std::map<const char *, KeyValue_t> KeyMap_t;
-    typedef std::list<FTAction *> ActionsList;
-    typedef std::list<std::string> ParametersList_t;
-    typedef std::list<std::string> ActionQueueType_t;
+    typedef std::vector<FTAction *> ActionsList;
+    typedef std::vector<std::string> ParametersList_t;
+    typedef std::vector<std::string> ActionQueueType_t;
     extern ActionQueueType_t UserActionsKeyboardQueue;
     class FTAction
     {
@@ -42,15 +41,15 @@ namespace FreeTouchDeck
         static const char *JsonLabelSymbol;
         FTAction();
         FTAction(char *jsonActionType, char *jsonValueStr);
-        FTAction(ParametersList_t parameters);
-        FTAction(const char *keyName, KeyValue_t values);
-        FTAction(KeyValue_t values);
+        FTAction(const ParametersList_t &parameters);
+        FTAction(const char *keyName, const KeyValue_t &values);
+        FTAction(const KeyValue_t &values);
         static bool SplitParameters(const char *parmString, ParametersList_t &parameters);
         static void InitConstants();
         void ParseModifierKey(char *modifier);
         ~FTAction();
         static bool IsValidKey(const char *name, char **foundValue);
-        static bool ParseToken(const char *token, ActionsSequences *sequences);
+        static bool ParseToken(const char *token, std::vector<FTAction *> &sequences);
 
         static bool KeyNeedsRelease(const char *keyName);
         static bool KeyIsDoubleBytes(const char *keyName);
@@ -73,7 +72,7 @@ namespace FreeTouchDeck
         inline bool IsScreen()
         {
             bool KeyboardLocalAction=false;
-            for(auto e : UserActionsKeyboardQueue)
+            for(const std::string &e : UserActionsKeyboardQueue)
             {
                 if(e==ActionNameStr())
                 {
@@ -94,11 +93,13 @@ namespace FreeTouchDeck
 
     typedef std::function<bool(FTAction *)> ActionCallbackFn_t;
     typedef std::map<std::string, ActionCallbackFn_t> ActionCallbackMap_t;
-    extern ActionCallbackMap_t UserActions;
+    extern const ActionCallbackMap_t UserActions;
     extern bool QueueAction(FTAction *action);
     extern FTAction *PopQueue();
     void EmptyQueue();
-
+    cJSON * UserActionsJson();
+    cJSON *KeyNamesJson();
+    size_t QueueSize();
     extern bool QueueLock(TickType_t xTicksToWait);
     extern void QueueUnlock();
     extern FTAction *PopScreenQueue();

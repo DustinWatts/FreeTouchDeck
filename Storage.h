@@ -79,4 +79,9 @@ namespace FreeTouchDeck
   void ShowDir();
   void ShowDir(FileSystem_t * targetFS);
   size_t GetFileSize(const char * fileName, FileSystem_t * fileSystem);
+  bool ShowFileContent(const char * fileName, FileSystem_t * fileSystem);
+  bool CopyFile(const char *source, FileSystem_t *fromSystem,FileSystem_t *toSystem);
+  bool CopyFile(const char *source, const char *target, FileSystem_t *fromSystem, FileSystem_t *toSystem);
+  bool CopyFile(fs::File *source, const char *targetName, FileSystem_t *toSystem);
+  bool CopyFile(fs::File *source, FileSystem_t *toSystem);
 };

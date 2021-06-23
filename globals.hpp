@@ -14,7 +14,6 @@
 #include "System.h"
 #include "ConfigLoad.h"
 
-
 #ifdef ESP_IDF_VERSION_MAJOR // IDF 4+
 #if ESP_IDF_VERSION_MAJOR > 3
 #if CONFIG_IDF_TARGET_ESP32 // ESP32/PICO-D4

@@ -3,14 +3,70 @@
 #include "System.h"
 #include "Storage.h"
 #include "ConfigHelper.h"
+#include "FTAction.h"
 namespace FreeTouchDeck
 {
+  FTAction *saveConfigAction = new FTAction(ParametersList_t({"SAVECONFIG"}));
   using namespace fs;
   const char *defaultDeviceName = "FreeTouchDeck";
   const char *defaultManufacturerName = "Made by me";
   Config generalconfig;
   static const char *module = "ConfigLoad";
-  const char * generalConfigFile="/config/general.json";
+  const char *generalConfigFile = "/config/general.json";
+
+  void HasConfigElementChanged(const char *name, const char *currentVal, const char *newVal, bool &result, const char * module)
+  {
+    if (strcmp(currentVal, newVal) != 0)
+    {
+      LOC_LOGI(module, "Configuration element %s change from %s to %s", name, currentVal, newVal);
+      result = true;
+    }
+  }
+   void HasConfigElementChanged(const char *name, bool currentVal, bool newVal, bool &result, const char * module)
+  {
+    if (currentVal != newVal)
+    {
+      LOC_LOGI(module, "Configuration element %s change from %s to %s", name, currentVal ? "TRUE" : "FALSE", newVal ? "TRUE" : "FALSE");
+      result = true;
+    }
+  }
+   void HasConfigElementChanged(const char *name, LogLevels currentVal, LogLevels  newVal, bool &result, const char * module )
+  {
+    if (currentVal != newVal)
+    {
+      LOC_LOGI(module, "Configuration element %s change from %d to %d", name, currentVal, newVal);
+      result = true;
+    }
+  }  
+#define HAS_CONFIG_ELEMENT_CHANGED(e) HasConfigElementChanged(QUOTE(e), currentConfig.e, newConfig.e, result, module)
+  bool WasConfigChanged(Config &currentConfig, Config &newConfig)
+  {
+    bool result = false;
+    HAS_CONFIG_ELEMENT_CHANGED(menuButtonColour);
+    HAS_CONFIG_ELEMENT_CHANGED(functionButtonColour);
+    HAS_CONFIG_ELEMENT_CHANGED(backgroundColour);
+    HAS_CONFIG_ELEMENT_CHANGED(latchedColour);
+    HAS_CONFIG_ELEMENT_CHANGED(DefaultOutline);
+    HAS_CONFIG_ELEMENT_CHANGED(DefaultTextColor);
+    HAS_CONFIG_ELEMENT_CHANGED(DefaultTextSize);
+    HAS_CONFIG_ELEMENT_CHANGED(colscount);
+    HAS_CONFIG_ELEMENT_CHANGED(rowscount);
+    HAS_CONFIG_ELEMENT_CHANGED(sleepenable);
+    HAS_CONFIG_ELEMENT_CHANGED(keyDelay);
+    HAS_CONFIG_ELEMENT_CHANGED(sleeptimer);
+    HAS_CONFIG_ELEMENT_CHANGED(beep);
+    HAS_CONFIG_ELEMENT_CHANGED(flip_touch_axis);
+    HAS_CONFIG_ELEMENT_CHANGED(reverse_x_touch);
+    HAS_CONFIG_ELEMENT_CHANGED(reverse_y_touch);
+    HAS_CONFIG_ELEMENT_CHANGED(screenrotation);
+    HAS_CONFIG_ELEMENT_CHANGED(deviceName);
+    HAS_CONFIG_ELEMENT_CHANGED(manufacturer);
+    HAS_CONFIG_ELEMENT_CHANGED(helperdelay);
+    HAS_CONFIG_ELEMENT_CHANGED(ledBrightness);
+    HAS_CONFIG_ELEMENT_CHANGED(LogLevel);
+
+    return result;
+  }
   void SetGeneralConfigDefaults()
   {
     generalconfig.menuButtonColour = 0x009bf4;
@@ -33,9 +89,9 @@ namespace FreeTouchDeck
     generalconfig.reverse_y_touch = INVERSE_Y_TOUCH;
     generalconfig.rowscount = 3;
     generalconfig.colscount = 3;
-    generalconfig.DefaultOutline = TFT_WHITE;
-    generalconfig.DefaultTextColor = TFT_WHITE;
-    generalconfig.keyDelay = 0;
+    generalconfig.DefaultOutline = 0xffffff;
+    generalconfig.DefaultTextColor = 0xffffff;
+    generalconfig.keyDelay = 20;
     generalconfig.DefaultTextSize = KEY_TEXTSIZE;
     generalconfig.ledBrightness = 255;
     FREE_AND_NULL(generalconfig.deviceName);
@@ -88,6 +144,51 @@ namespace FreeTouchDeck
       else
       {
         (*valuePointer) = NULL;
+      }
+    }
+    return success;
+  }
+  bool GetValueOrDefault(cJSON *value, std::string &valuePointer, const char *defaultValue)
+  {
+    bool success = false;
+    char *tempValue = NULL;
+    LOC_LOGV(module, "Clearing string value");
+    valuePointer.clear();
+    if (value && cJSON_IsString(value))
+    {
+      tempValue = cJSON_GetStringValue(value);
+      if (tempValue && strlen(tempValue) > 0)
+      {
+        LOC_LOGV(module, "Assigning value %s", tempValue);
+        valuePointer = tempValue;
+        success = true;
+      }
+      else
+      {
+        LOC_LOGV(module, "Empty string value was found");
+      }
+    }
+    else
+    {
+      if (!value)
+      {
+        LOC_LOGV(module, "Value was not found");
+      }
+      else if (!cJSON_IsString(value))
+      {
+        LOC_LOGV(module, "Value is not a string");
+      }
+      else
+      {
+        LOC_LOGV(module, "Unknown value type");
+      }
+    }
+    if (valuePointer.empty())
+    {
+      if (defaultValue)
+      {
+        LOC_LOGV(module, "Copying default value [%s]", defaultValue);
+        valuePointer = defaultValue;
       }
     }
     return success;
@@ -179,6 +280,15 @@ namespace FreeTouchDeck
       DumpCJson(doc);
     }
   }
+  bool GetValueOrDefault(cJSON *doc, const char *name, std::string &valuePointer, const char *defaultValue)
+  {
+    LOC_LOGV(module, "Looking for char value %s", name);
+
+    if (!GetValueOrDefault(cJSON_GetObjectItem(doc, name), valuePointer, defaultValue))
+    {
+      DumpCJson(doc);
+    }
+  }
 
   bool GetValueOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue)
   {
@@ -251,7 +361,7 @@ namespace FreeTouchDeck
 * @note Options for values are: colors, homescreen, menu1, menu2, menu3
          menu4, and menu5
 */
-  bool loadConfig(const char *name)
+  bool loadConfig(const char *name, bool saveifchanged)
   {
     Config currentConfig;
     memcpy(&currentConfig, &generalconfig, sizeof(currentConfig));
@@ -261,7 +371,7 @@ namespace FreeTouchDeck
       LOC_LOGE(module, "Invalid configuration file passed. ");
       return false;
     }
-    LOC_LOGI(module, "Loading configuration from %s - %s", STRING_OR_DEFAULT(ftdfs->Name,"?"),  STRING_OR_DEFAULT(name, ""));
+    LOC_LOGI(module, "Loading configuration from %s - %s", STRING_OR_DEFAULT(ftdfs->Name, "?"), STRING_OR_DEFAULT(name, ""));
     File configfile = ftdfs->open(name, "r");
 
     if (!configfile && configfile.size() == 0)
@@ -270,11 +380,11 @@ namespace FreeTouchDeck
       return false;
     }
 
-    size_t bufferSize=configfile.size() + 1;
+    size_t bufferSize = configfile.size() + 1;
     char *buffer = (char *)malloc_fn(bufferSize);
     if (!buffer)
     {
-      LOC_LOGE(module, "Could not allocate %d bytes for reading file %s", bufferSize,name);
+      LOC_LOGE(module, "Could not allocate %d bytes for reading file %s", bufferSize, name);
       return false;
     }
     size_t bytesRead = configfile.readBytes(buffer, bufferSize);
@@ -287,25 +397,27 @@ namespace FreeTouchDeck
       return false;
     }
     configfile.close();
-    LOC_LOGD(module,"Parsing configuration file:\n%s",buffer);
+    LOC_LOGD(module, "Parsing configuration file:\n%s", buffer);
     cJSON *doc = cJSON_Parse(buffer);
     if (!doc)
     {
       const char *error = cJSON_GetErrorPtr();
-      drawErrorMessage(!ftdfs->External, module, "Unable to parse json string while loading file %s. Error: %s\nContent:\n%s",name, error, buffer);
+      drawErrorMessage(!ftdfs->External, module, "Unable to parse json string while loading file %s. Error: %s\nContent:\n%s", name, error, buffer);
       FREE_AND_NULL(buffer);
       return false;
     }
     else
     {
-      char *docstr = cJSON_Print(doc);
-      if (docstr)
+      if (generalconfig.LogLevel >= LogLevels::VERBOSE)
       {
-        LOC_LOGD(module, "Configuration is : \n%s", docstr);
-        FREE_AND_NULL(docstr);
+        char *docstr = cJSON_Print(doc);
+        if (docstr)
+        {
+          LOC_LOGD(module, "Configuration is : \n%s", docstr);
+          FREE_AND_NULL(docstr);
+        }
       }
     }
-
     FREE_AND_NULL(buffer);
     GetValueOrDefault(cJSON_GetObjectItem(doc, "manufacturer"), &generalconfig.manufacturer, defaultManufacturerName);
     LOC_LOGD(module, "Manufacturer name : %s", generalconfig.manufacturer);
@@ -353,12 +465,16 @@ namespace FreeTouchDeck
     GetValueOrDefault(cJSON_GetObjectItem(doc, "textsize"), &generalconfig.DefaultTextSize, KEY_TEXTSIZE);
 
     cJSON_Delete(doc);
-    LOC_LOGD(module, "Configuration after load");
-    saveConfig(true);
-    if (memcmp(&currentConfig, &generalconfig, sizeof(currentConfig)) != 0)
+
+    if (generalconfig.LogLevel >= LogLevels::VERBOSE)
     {
-      LOC_LOGI(module, "Saving updated configuration");
-      saveConfig(false);
+      LOC_LOGD(module, "Configuration after load");
+      saveConfig(true);
+    }
+    if (WasConfigChanged(currentConfig, generalconfig))
+    {
+      LOC_LOGI(module, "Queuing saving of the updated configuration");
+      
     }
     FTButton::BackButton->BackgroundColor = generalconfig.functionButtonColour;
     FTButton::BackButton->TextColor = generalconfig.DefaultTextColor;
@@ -371,34 +487,38 @@ namespace FreeTouchDeck
 
     return true;
   }
-  
+  void QueueSaving()
+  {
+    QueueAction(saveConfigAction);
+  }
+
   bool loadGeneralConfig()
   {
-    if(ftdfs->External)
+    if (ftdfs->External)
     {
-      LOC_LOGD(module,"Booting from external storage. Checking if config exists");
+      LOC_LOGD(module, "Booting from external storage. Checking if config exists");
       bool needsInit = false;
-      if(!ftdfs->exists(generalConfigFile))
+      if (!ftdfs->exists(generalConfigFile))
       {
         PrintScreenMessage(true, "Reading from %s, config file not found", ftdfs->Name);
-        needsInit=true;        
+        needsInit = true;
       }
-      else if(GetFileSize(generalConfigFile, ftdfs)==0)
+      else if (GetFileSize(generalConfigFile, ftdfs) == 0)
       {
-        PrintScreenMessage(false, "Configuration file is empty on device %s", ftdfs->Name);  
-        needsInit=true;
+        PrintScreenMessage(false, "Configuration file is empty on device %s", ftdfs->Name);
+        needsInit = true;
       }
-      
-      if(needsInit )
+
+      if (needsInit)
       {
-        PrintScreenMessage(false, "Initializing %s from internal storage", ftdfs->Name);  
+        PrintScreenMessage(false, "Initializing %s from internal storage", ftdfs->Name);
         if (!InitializeStorage())
         {
           drawErrorMessage(true, module, "Could not initialize storage %s", ftdfs->Name);
         }
         else
         {
-          PrintScreenMessage(false,"Finished initializing storage %s", ftdfs->Name);
+          PrintScreenMessage(false, "Finished initializing storage %s", ftdfs->Name);
           ftdfs->end();
           WaitTouchReboot();
         }
@@ -406,21 +526,17 @@ namespace FreeTouchDeck
     }
     if (!loadConfig(generalConfigFile))
     {
-        drawErrorMessage(true, module, "Error loading configuration from %s", ftdfs->Name);
+      drawErrorMessage(true, module, "Error loading configuration from %s", ftdfs->Name);
     }
     return true;
   }
-#define ADD_COLOR_TO_JSON(x, y)                                         \
-  snprintf(colorBuffer, sizeof(colorBuffer), "#%06x", generalconfig.x); \
-  cJSON_AddStringToObject(doc, y, colorBuffer)
-  bool saveConfig(bool serial)
-  {
 
-    char colorBuffer[21] = {0};
+  cJSON *GetConfigJson()
+  {
     cJSON *doc = cJSON_CreateObject();
     if (!doc)
     {
-      return false;
+      return NULL;
     }
 
     cJSON_AddBoolToObject(doc, "sleepenable", generalconfig.sleepenable);
@@ -451,38 +567,18 @@ namespace FreeTouchDeck
     cJSON_AddNumberToObject(doc, "keydelay", generalconfig.keyDelay);
     cJSON_AddNumberToObject(doc, "ledbrightness", generalconfig.ledBrightness);
     cJSON_AddNumberToObject(doc, "textsize", generalconfig.DefaultTextSize);
-
-    char *json = cJSON_Print(doc);
-    if (json)
+    return doc;
+  }
+  bool saveConfig(bool serial)
+  {
+    cJSON *doc = GetConfigJson();
+    SaveJsonToFile("/config/general.json", doc);
+    if (serial)
     {
-      if (serial)
-      {
-        LOC_LOGI(module, "Configuration: \n%s \n", json);
-      }
-      else
-      {
-        File configfile = ftdfs->open("/config/general.json", "w");
-        if (!configfile)
-        {
-          LOC_LOGE(module, "Could not write to file /config/general.json");
-        }
-        else
-        {
-          size_t bytesWritten = configfile.write((const uint8_t *)json, strlen(json));
-          if (bytesWritten != strlen(json))
-          {
-            drawErrorMessage(false, module, "Could not fully write general.json config file. Written %d of %d bytes.", bytesWritten, strlen(json));
-          }
-          configfile.close();
-        }
-      }
-      FREE_AND_NULL(json);
+      PrintMemInfo(__FUNCTION__, __LINE__);
+      ShowFileContent("/config/general.json", ftdfs);
+      PrintMemInfo(__FUNCTION__, __LINE__);
     }
-    else
-    {
-      LOC_LOGE(module, "Error generating the config structure");
-    }
-    cJSON_Delete(doc);
 
     return true;
   }

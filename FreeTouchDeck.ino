@@ -8,7 +8,7 @@
 
   FreeTouchDeck is based on the FreeDeck idea by Koriwi. It uses the TFT_eSPI library 
   by Bodmer for the display and touch functionality and it uses an ESP32-BLE-Keyboard fork 
-  with a few modifications. For saving and loading configuration it uses ArduinoJson V6.
+  with a few modifications. For saving and loading configuration it uses cJSON.
 
   FreeTouchDeck uses some libraries from other sources. These must be installed for 
   FreeTouchDeck to compile and run. 
@@ -21,7 +21,7 @@
       - ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
       - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
       - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-      - ArduinoJson (version 6.16.1 or above), available through Library Manager
+      - TJpg_Decoder (latest version) download from https://github.com/Bodmer/TJpg_Decoder
 
       --- If you use Capacitive touch ---
       - Dustin Watts FT6236 Library (version 1.0.1), https://github.com/DustinWatts/FT6236
@@ -125,7 +125,6 @@ using namespace FreeTouchDeck;
 //
 #include "UserActions.h"
 
-BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 // Create instances of the structs
 Wificonfig wificonfig = {.ssid = NULL, .password = NULL, .wifimode = NULL, .hostname = NULL};
 
@@ -155,6 +154,7 @@ void setup()
 {
   // Use serial port
   Serial.begin(115200);
+  PrintBasicMemInfo();
   PrintMemInfo(__FUNCTION__, __LINE__);
   SetGeneralConfigDefaults();
   Serial.setDebugOutput(true);
@@ -163,16 +163,9 @@ void setup()
   // Init Touch first. We will use it to restart the system when displaying a hard error
   InitSystem();
   
-PrintMemInfo(__FUNCTION__, __LINE__);
-  //------------------BLE Initialization ------------------------------------------------------------------------
-  LOC_LOGI(module, "Starting BLE Keyboard");
-  bleKeyboard.deviceName = generalconfig.deviceName;
-  bleKeyboard.deviceManufacturer = generalconfig.manufacturer;
-  bleKeyboard.begin();
-PrintMemInfo(__FUNCTION__, __LINE__);
+  PrintMemInfo(__FUNCTION__, __LINE__);
   // ---------------- Printing version numbers -----------------------------------------------
   LOC_LOGI(module, "BLE Keyboard version: %s", BLE_KEYBOARD_VERSION);
-  LOC_LOGI(module, "ArduinoJson version: %s", ARDUINOJSON_VERSION);
   LOC_LOGI(module, "TFT_eSPI version: %s", TFT_ESPI_VERSION);
   LOC_LOGI(module, "SPI Flash frequency: %s", CONFIG_ESPTOOLPY_FLASHFREQ);
 
@@ -192,27 +185,43 @@ PrintMemInfo(__FUNCTION__, __LINE__);
   // xTaskCreate(ScreenHandleTask, "Screen", 1024 * 3, NULL, tskIDLE_PRIORITY + 8, &xScreenTask);
   // PrintMemInfo(__FUNCTION__, __LINE__);
   // LOC_LOGD(module, "Screen task created");
-  xTaskCreate(ActionTask, "Action", 1024 * 4, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
-  PrintMemInfo(__FUNCTION__, __LINE__);
-  LOC_LOGD(module, "Action task created");
+//  xTaskCreate(ActionTask, "Action", 1024 * 4, NULL, tskIDLE_PRIORITY + 5, &xActionTask);
+  //PrintMemInfo(__FUNCTION__, __LINE__);
+//  LOC_LOGD(module, "Action task created");
 #endif
+PrintBasicMemInfo();
+  PrintMemInfo(__FUNCTION__, __LINE__);
 }
 
 //--------------------- LOOP ---------------------------------------------------------------------
-
-
-
 void loop(void)
 {
 
-  processSerial();
+  try
+  {
+    processSerial();
+  }  
+  catch (const std::exception &e)
+  {
+      std::cerr << e.what() << '\n';
+  }
+  PrintMemStats();
   processSleep();
-HandleScreen();
+  HandleScreen();
 #ifndef ACTIONS_IN_TASKS
   HandleActions();
 #endif
+  HandleActions();
+
   // screen debounce
-  delay(10);
+  if(QueueSize()==0)
+  {
+    delay(50);
+  }
+  else 
+  {
+    delay(10);
+  }
 }
 #ifdef ACTIONS_IN_TASKS
 // void ScreenHandleTask(void *pvParameters)

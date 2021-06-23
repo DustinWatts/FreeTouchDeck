@@ -1,5 +1,6 @@
 #pragma once
 //#define DEFAULT_LOG_LEVEL LogLevels::DEBUG
+//#define PRINT_MEM_INFO
 /* ------------------------------------------------------------------------ */
 /* Select the board that you are using below. Make sure to only select one! */
 /* ------------------------------------------------------------------------ */

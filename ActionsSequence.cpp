@@ -1,22 +1,34 @@
 #include "ActionsSequence.h"
 namespace FreeTouchDeck
 {
+    bool ActionsSequences::HasKeyboardAction()
+    {
+        for (FTAction * action : Actions)
+        {
+            if(action->Type == ActionTypes::KEYBOARD)
+            return true;
+        }
+        return false;
+    }
     bool ActionsSequences::Execute()
     {
-        for (auto action : Actions)
+        for (FTAction * action : Actions)
         {
-            LOC_LOGD(module, "Queuing action %s",  action->toString());
+            LOC_LOGD(module, "Queuing action %s", action->toString());
             if (!QueueAction(action))
             {
                 LOC_LOGW(module, "Button action %s could not be queued for execution.", action->toString());
             }
         }
     }
-    bool ActionsSequences::Parse(const char * actionString)
+    ActionsSequences::ActionsSequences()
     {
-        if(ISNULLSTRING(actionString))
+    }
+    bool ActionsSequences::Parse(const char *actionString)
+    {
+        if (ISNULLSTRING(actionString))
         {
-            LOC_LOGD(module,"Null or empty action sequence received");
+            LOC_LOGD(module, "Null or empty action sequence received");
             return false;
         }
         ConfigSequence = ps_strdup(actionString);
@@ -25,11 +37,9 @@ namespace FreeTouchDeck
         char token[101] = {0};
         KeyValue_t values;
         KeyValue_t releaseKeyList;
-        FTAction * releaseAction=NULL;
+        FTAction *releaseAction = NULL;
         ParametersList_t releaseParameters;
         bool success = true;
-
-        
 
         LOC_LOGD(module, "Parsing free form text %s", ConfigSequence);
         do
@@ -60,17 +70,17 @@ namespace FreeTouchDeck
                 strncpy(token, tokenStart + 1, len);
 
                 LOC_LOGD(module, "Found token %s", token);
-                if (!FTAction::ParseToken(token, this))
+                if (!FTAction::ParseToken(token, Actions))
                 {
                     LOC_LOGE(module, "Invalid token %s found", token);
                     success = false;
                 }
-                else 
+                else
                 {
-                    auto lastAction=Actions.back();
-                    if(lastAction->NeedsRelease)
+                    auto lastAction = Actions.back();
+                    if (lastAction->NeedsRelease)
                     {
-                        releaseKeyList.insert(releaseKeyList.end(), lastAction->Values.begin(), lastAction->Values.end()); 
+                        releaseKeyList.insert(releaseKeyList.end(), lastAction->Values.begin(), lastAction->Values.end());
                     }
                 }
                 values.clear();
@@ -86,9 +96,9 @@ namespace FreeTouchDeck
             }
             p++;
         } while (true);
-        if(releaseKeyList.size()>0)
+        if (releaseKeyList.size() > 0)
         {
-           Actions.push_back(new FTAction("Release Keys", releaseKeyList));
+            Actions.push_back(new FTAction("Release Keys", releaseKeyList));
         }
 
         return success;

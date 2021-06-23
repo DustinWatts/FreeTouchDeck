@@ -5,12 +5,16 @@ static const char *module = "ImageFormatBMP";
 namespace FreeTouchDeck
 {
     String ImageFormatBMP::Description="Bitmap File";
-    ImageFormatBMP::ImageFormatBMP(const char *imageName)  : ImageWrapper(imageName)
+    ImageFormatBMP::ImageFormatBMP():ImageWrapper()
+    {
+
+    }
+    ImageFormatBMP::ImageFormatBMP(const std::string &imageName)  : ImageWrapper(imageName)
     {
         LOC_LOGD(module, "Instantiating BMP file");
         if (!LoadImageDetails())
         {
-            LOC_LOGE(module, "Unable to load file %s. ", LogoName);
+            LOC_LOGE(module, "Unable to load file %s. ", LogoName.c_str());
         }
     };
     bool ImageFormatBMP::LoadImageDetails()
@@ -97,7 +101,7 @@ namespace FreeTouchDeck
      void ImageFormatBMP::Draw(int16_t x, int16_t y, bool transparent)
     {
         char FileNameBuffer[100] = {0};
-        LOC_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName, x, y);
+        LOC_LOGD(module, "Drawing bitmap file %s at [%d,%d] ", LogoName.c_str(), x, y);
         if ((x >= tft.width()) || (y >= tft.height()))
         {
             LOC_LOGE(module, "Coordinates [%d,%d] overflow screen size", x, y);
@@ -142,7 +146,7 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "Error allocating %d bytes of buffer for image drawing!", bufferSize);
             tft.setSwapBytes(oldSwapBytes);
             free(lineBuffer);
-            LOC_LOGV(module, "Closing bitmap file %s", LogoName);
+            LOC_LOGV(module, "Closing bitmap file %s", LogoName.c_str());
             bmpFS.close();
             return;
         }
@@ -219,21 +223,29 @@ namespace FreeTouchDeck
         }
         // }
         free(lineBuffer);
-        LOC_LOGV(module, "Closing bitmap file %s", LogoName);
+        LOC_LOGV(module, "Closing bitmap file %s", LogoName.c_str());
         bmpFS.close();
         tft.setSwapBytes(oldSwapBytes);
+    }
+    bool ImageFormatBMP::IsValid()
+    {
+        return valid;
+    }
+    const std::string &ImageFormatBMP::GetLogoName()
+    {
+        return LogoName;
     }
     const String& ImageFormatBMP::GetDescription()
     {
         return Description;
     }
-     ImageFormatBMP * ImageFormatBMP::GetImageInstance(const char *imageName)
+     ImageFormatBMP * ImageFormatBMP::GetImageInstance(const std::string &imageName)
      {
          LOC_LOGD(module,"BMP handler checking if extension of %s is a match for 'bmp'",imageName);
-         if(!IsExtensionMatch("bmp",imageName))
+         if(!IsExtensionMatch("bmp",imageName.c_str()))
          {
              LOC_LOGE(module, "Invalid file extension. ");
-             return NULL;
+             return new ImageFormatBMP();
          }
          return new ImageFormatBMP(imageName);
      }

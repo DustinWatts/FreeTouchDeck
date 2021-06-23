@@ -8,84 +8,77 @@
 static const char *module = "ImageCache";
 namespace FreeTouchDeck
 {
-    std::list<ImageWrapper *> ImageCache::ImageList; // reserve room for 100
-    ImageInstanceGetMap_t ImageCache::ConstructorList=
-    {
-         {"bmp",[](const char * fileName){
-             LOC_LOGD(module, "Getting Image instance from BMP constructor");
-             return (ImageWrapper*)ImageFormatBMP::GetImageInstance(fileName);
+    std::vector<ImageWrapper *> ImageCache::ImageList; // reserve room for 100
+    ImageInstanceGetMap_t ImageCache::ConstructorList =
+        {
+            {"bmp", [](const std::string &fileName)
+             {
+                 LOC_LOGD(module, "Getting Image instance from BMP constructor");
+                 return (ImageWrapper *)ImageFormatBMP::GetImageInstance(fileName);
              }},
-         {"jpg",[](const char * fileName){
-             LOC_LOGD(module, "Getting Image instance from JPG constructor");
-             return (ImageWrapper*)ImageFormatJPG::GetImageInstance(fileName);
-             }}
-    };
-    ImageInstanceGet_t ImageCache::GetConstructorForImage(const char * imageName)
+            {"jpg", [](const std::string &fileName)
+             {
+                 LOC_LOGD(module, "Getting Image instance from JPG constructor");
+                 return (ImageWrapper *)ImageFormatJPG::GetImageInstance(fileName);
+             }}};
+    ImageInstanceGet_t ImageCache::GetConstructorForImage(const std::string &imageName)
     {
-        const String ext = ImageWrapper::GetExtension(imageName);
-        if(ext.isEmpty())
+        const std::string ext = ImageWrapper::GetExtension(imageName);
+        LOC_LOGD(module, "Looking for constructor for extension %s", ext.c_str());
+        for (auto c : ConstructorList)
         {
-            return NULL;   
-        }
-        LOC_LOGD(module,"Looking for constructor for extension %s", ext.c_str());
-        for(auto c : ConstructorList) 
-        {
-            if(ext.equals(c.first.c_str()))
+            if (ext == c.first)
             {
-                LOC_LOGD(module,"Found Constructor for image type %s", ext.c_str());
+                LOC_LOGD(module, "Found Constructor for image type %s", ext.c_str());
                 return c.second;
             }
         }
         return NULL;
     }
-    ImageWrapper *ImageCache::GetImage(const char *imageName)
+    ImageWrapper *ImageCache::GetImage(const std::string &imageName)
     {
-        ImageWrapper *image = NULL;
-        if (!imageName || strlen(imageName) == 0)
+        if (ImageList.size() == 0)
         {
-            //LOC_LOGE(module, "No image name passed");
-            return NULL;
-        }
-        LOC_LOGV(module, "Looking for image %s", imageName);
-        for (auto i : ImageList)
-        {
-            if (strcmp(i->LogoName, imageName) == 0)
-            {
-                LOC_LOGV(module, "Returning cache entry for image %s", imageName);
-                image = i;
-                break;
-            }
-            else
-            {
-                LOC_LOGV(module, "Cache image %s != %s", i->LogoName, imageName);
-            }
-        }
-        if (!image)
-        {
-            LOC_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName);
+            // On the first call, insert a generic invalid image as the first element
             PrintMemInfo(__FUNCTION__, __LINE__);
-            auto constructor = GetConstructorForImage(imageName);
-            if(!constructor)
+            ImageList.push_back((ImageWrapper *)new ImageFormatJPG());
+            PrintMemInfo(__FUNCTION__, __LINE__);
+        }
+
+        if(imageName.empty())
+        {
+            return ImageList.front();
+        }
+        else
+        {
+            LOC_LOGV(module, "Looking for image %s", imageName.c_str());
+            for (auto i : ImageList)
             {
-                LOC_LOGE(module, "Unsupported file format %s", ImageWrapper::GetExtension(imageName));
-            }
-            else
-            {
-                image = constructor(imageName);
-                PrintMemInfo(__FUNCTION__, __LINE__);
-                if (image && image->valid)
+                if (i->LogoName == imageName)
                 {
-                    ImageList.push_back(image);
-                    PrintMemInfo(__FUNCTION__, __LINE__);
+                    LOC_LOGV(module, "Returning cache entry for image %s", imageName.c_str());
+                    return i;
                 }
-                else
-                {
-                    LOC_LOGE(module, "Invalid image %s", imageName);
-                    FREE_AND_NULL(image);
-                }
-                LOC_LOGD(module, "Done caching image");
             }
         }
-        return image;
+        LOC_LOGD(module, "Image cache entry not found for %s. Adding it.", imageName.c_str());
+        PrintMemInfo(__FUNCTION__, __LINE__);
+        ImageInstanceGet_t constructor = GetConstructorForImage(imageName);
+        if (!constructor)
+        {
+            LOC_LOGE(module, "Unsupported file format %s", ImageWrapper::GetExtension(imageName).c_str());
+            return ImageList.front();
+        }
+        else
+        {
+            PrintMemInfo(__FUNCTION__, __LINE__);
+            ImageWrapper * newImage=constructor(imageName);
+            LOC_LOGD(module,"Caching image name %s [%s]",newImage->LogoName.c_str(), newImage->valid?"VALID":"INVALID");
+            ImageList.push_back(newImage);
+            PrintMemInfo(__FUNCTION__, __LINE__);
+        }
+        ImageWrapper * returnedImage=ImageList.back();
+        LOC_LOGD(module,"Returning image name %s [%s]",returnedImage->LogoName.c_str(), returnedImage->valid?"VALID":"INVALID");
+        return ImageList.back(); // guaranteed to return at least the empty image
     }
 }

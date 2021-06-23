@@ -3,37 +3,29 @@
 #include "ConfigHelper.h"
 #include "globals.hpp"
 #include "Webserver.h"
-#include "BleKeyboard.h"
-#include <WiFi.h>              // Wifi support
+#include <WiFi.h>    // Wifi support
 #include <ESPmDNS.h> // DNS functionality
 #include "ConfigLoad.h"
-#include <ArduinoJson.h>       // Using ArduinoJson to read and write config files
-#include <AsyncTCP.h>          //Async Webserver support header
+#include <AsyncTCP.h> //Async Webserver support header
 #include "Webserver.h"
 #include "WString.h"
 #include "Storage.h"
 namespace FreeTouchDeck
 {
   static const char *module = "ConfigHelper";
-  extern BleKeyboard bleKeyboard;
   AsyncWebServer webserver(80);
   Wificonfig wificonfig;
   using namespace fs;
   using namespace std;
+  
   void stopBT()
   {
     PrintMemInfo(__FUNCTION__, __LINE__);
     LOC_LOGD(module, "Terminating BLE Keyboard");
     // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
-    bleKeyboard.end();
+    StopBluetooth();
     PrintMemInfo(__FUNCTION__, __LINE__);
-    LOC_LOGD(module, "Terminating BT");
-    // Stop BLE from interfering with our WIFI signal
-    btStop();
-    // esp_bt_controller_disable();
-    // esp_bt_controller_deinit();
-    // esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
-    LOC_LOGI(module, "BLE Stopped");
+
   }
 
   bool startWebServer()
@@ -240,54 +232,16 @@ namespace FreeTouchDeck
 */
   bool saveWifiSSID(String ssid)
   {
-
-    ftdfs->remove("/config/wificonfig.json");
-    File file = ftdfs->open("/config/wificonfig.json", "w");
-
-    DynamicJsonDocument doc(384);
-
-    JsonObject wificonfigobject = doc.to<JsonObject>();
-
-    wificonfigobject["ssid"] = ssid;
-    wificonfigobject["password"] = wificonfig.password;
-    wificonfigobject["wifimode"] = wificonfig.wifimode;
-    wificonfigobject["wifihostname"] = wificonfig.hostname;
-    wificonfigobject["attempts"] = wificonfig.attempts;
-    wificonfigobject["attemptdelay"] = wificonfig.attemptdelay;
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      LOC_LOGW(module, "Failed to write to file");
-      return false;
-    }
-    file.close();
-    return true;
+    FREE_AND_NULL(wificonfig.ssid);
+    wificonfig.ssid = ps_strdup(ssid.c_str());
+    return Commit(&wificonfig);
   }
 
   bool saveWifiPW(String password)
   {
-
-    ftdfs->remove("/config/wificonfig.json");
-    File file = ftdfs->open("/config/wificonfig.json", "w");
-
-    DynamicJsonDocument doc(384);
-
-    JsonObject wificonfigobject = doc.to<JsonObject>();
-
-    wificonfigobject["ssid"] = wificonfig.ssid;
-    wificonfigobject["password"] = password;
-    wificonfigobject["wifimode"] = wificonfig.wifimode;
-    wificonfigobject["wifihostname"] = wificonfig.hostname;
-    wificonfigobject["attempts"] = wificonfig.attempts;
-    wificonfigobject["attemptdelay"] = wificonfig.attemptdelay;
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      LOC_LOGW(module, "Failed to write to file");
-      return false;
-    }
-    file.close();
-    return true;
+    FREE_AND_NULL(wificonfig.password);
+    wificonfig.ssid = ps_strdup(password.c_str());
+    return Commit(&wificonfig);
   }
 
   bool saveWifiMode(String wifimode)
@@ -298,124 +252,39 @@ namespace FreeTouchDeck
       LOC_LOGW(module, "WiFi Mode not supported. Try WIFI_STA or WIFI_AP.");
       return false;
     }
-
-    ftdfs->remove("/config/wificonfig.json");
-    File file = ftdfs->open("/config/wificonfig.json", "w");
-
-    DynamicJsonDocument doc(384);
-
-    JsonObject wificonfigobject = doc.to<JsonObject>();
-
-    wificonfigobject["ssid"] = wificonfig.ssid;
-    wificonfigobject["password"] = wificonfig.password;
-    wificonfigobject["wifimode"] = wifimode;
-    wificonfigobject["wifihostname"] = wificonfig.hostname;
-    wificonfigobject["attempts"] = wificonfig.attempts;
-    wificonfigobject["attemptdelay"] = wificonfig.attemptdelay;
-
-    if (serializeJsonPretty(doc, file) == 0)
-    {
-      LOC_LOGW(module, "Failed to write to file");
-      return false;
-    }
-    file.close();
-    return true;
+    FREE_AND_NULL(wificonfig.wifimode);
+    wificonfig.ssid = ps_strdup(wifimode.c_str());
+    return Commit(&wificonfig);
   }
-
 
   bool resetconfig(String file)
   {
 
-    if (file != "menu1" && file != "menu2" && file != "menu3" && file != "menu4" && file != "menu5" && file != "homescreen" && file != "general")
+    if (file != "menus" && file != "general")
     {
-      LOC_LOGW(module, "Invalid reset option. Choose: menu1, menu2, menu3, menu4, menu5, homescreen, or general");
+      LOC_LOGW(module, "Invalid reset option. Choose: menus or general");
       return false;
     }
 
-    if (file == "menu1" || file == "menu2" || file == "menu3" || file == "menu4" || file == "menu5")
+    if (file == "menus")
     {
-      // Reset a menu config
+      // Reset menu config
+      // Delete the json file
 
-      // Delete the corrupted json file
-      String filetoremove = "/config/" + file;
-      if (!filetoremove.endsWith(".json"))
+      ftdfs->remove("/config/menus.json");
+      if (!CopyFile("/config/default.json", "/config/menus.json", ftdfs, ftdfs))
       {
-        filetoremove = filetoremove + ".json";
+        LOC_LOGE(module, "Error copying default menu structure");
+        return false;
       }
-
-      ftdfs->stremove(filetoremove);
-
-      // Copy default.json to the new config file
-      File defaultfile = ftdfs->open("/config/default.json", "r");
-
-      size_t n;
-      uint8_t buf[64];
-
-      if (defaultfile)
-      {
-        File newfile = ftdfs->stopen(filetoremove, "w");
-        if (newfile)
-        {
-          while ((n = defaultfile.read(buf, sizeof(buf))) > 0)
-          {
-            newfile.write(buf, n);
-          }
-          // Close the newly created file
-          newfile.close();
-        }
-        LOC_LOGI(module, "Done resetting.");
-        LOC_LOGI(module, "Type \"restart\" to reload configuration.");
-
-        // Close the default.json file
-        defaultfile.close();
-        return true;
-      }
-    }
-    else if (file == "homescreen")
-    {
-
-      // Reset the homescreen
-      // For this we do not need to open a default file because we can easily write it ourselfs
-      String filetoremove = "/config/" + file;
-      if (!filetoremove.endsWith(".json"))
-      {
-        filetoremove = filetoremove + ".json";
-      }
-
-      ftdfs->stremove(filetoremove);
-
-      File newfile = ftdfs->stopen(filetoremove, "w");
-      newfile.print(R"(
-{
-"logo0: "question.bmp",
-"logo1: "question.bmp",
-"logo2: "question.bmp",
-"logo3: "question.bmp",
-"logo4: "question.bmp",
-"logo5: "settings.bmp"
-})");
-
-      newfile.close();
-      LOC_LOGI(module, "Done resetting homescreen.");
-      LOC_LOGI(module, "Type \"restart\" to reload configuration.");
       return true;
     }
     else if (file == "general")
     {
-
-      // Reset the general config
-      // For this we do not need to open a default file because we can easily write it ourselfs
-
-      String filetoremove = "/config/" + file;
-      if (!filetoremove.endsWith(".json"))
-      {
-        filetoremove = filetoremove + ".json";
-      }
-
-      ftdfs->stremove(filetoremove);
+      ftdfs->remove("/config/general.json");
       SetGeneralConfigDefaults();
       saveConfig(false);
-      LOC_LOGI(module, "Done resetting general config.");
+      LOC_LOGI(module, "Done resetting general configuration.");
       LOC_LOGI(module, "Type \"restart\" to reload configuration.");
       return true;
     }
@@ -425,5 +294,38 @@ namespace FreeTouchDeck
     }
 
     return false;
+  }
+  cJSON *toJson(Wificonfig *wificonfig)
+  {
+    cJSON *doc = cJSON_CreateObject();
+    cJSON_AddStringToObject(doc, "ssid", wificonfig->ssid);
+    cJSON_AddStringToObject(doc, "password", wificonfig->password);
+    cJSON_AddStringToObject(doc, "wifimode", wificonfig->wifimode);
+    cJSON_AddStringToObject(doc, "wifihostname", wificonfig->hostname);
+    cJSON_AddNumberToObject(doc, "attempts", wificonfig->attempts);
+    cJSON_AddNumberToObject(doc, "attemptdelay", wificonfig->attemptdelay);
+    return doc;
+  }
+  bool Commit(Wificonfig *wificonfig)
+  {
+    cJSON *doc = toJson(wificonfig);
+    if (doc)
+    {
+      return SaveJsonToFile("/config/wificonfig.json", doc, true);
+    }
+    else
+    {
+      LOC_LOGE(module, "Unable to save wifi configuration");
+    }
+    return false;
+  }
+  void EraseWifiConfig(Wificonfig *config)
+  {
+    FREE_AND_NULL(config->ssid);
+    FREE_AND_NULL(config->wifimode);
+    FREE_AND_NULL(config->password);
+    FREE_AND_NULL(config->hostname);
+    config->attemptdelay = 0;
+    config->attempts = 0;
   }
 }

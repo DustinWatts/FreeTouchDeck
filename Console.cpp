@@ -6,22 +6,21 @@
 #include "ConfigLoad.h"
 namespace FreeTouchDeck
 {
-    static const char * module = "Console";
+    static const char *module = "Console";
     String readLine()
     {
         String ret;
         int c = Serial.read();
         while (c >= 0 && c != '\r' && c != '\n')
         {
-            Serial.print((char)c);
             ret += (char)c;
             c = Serial.read();
         }
-        while (c >= 0 && c == '\r' && c == '\n')
+        while (c >= 0 && (c == '\r' || c == '\n'))
         {
-            Serial.print(c);
-            Serial.read();
+            c = Serial.read();
         }
+        LOC_LOGD(module, "Processing: %s", ret.c_str());
         return ret;
     }
     void processSerial()
@@ -30,9 +29,8 @@ namespace FreeTouchDeck
 
         if (Serial.available())
         {
-
             String command = readLine();
-
+            Serial.printf("Executing command %s\n", command.c_str());
             if (command == "cal")
             {
                 ftdfs->remove(CALIBRATION_FILE);
@@ -47,7 +45,7 @@ namespace FreeTouchDeck
                 {
                     generalconfig.LogLevel = lev;
                     LOC_LOGI(module, "Log level changed to %d", generalconfig.LogLevel);
-                    saveConfig(false);
+                    QueueSaving();
                 }
                 else
                 {
@@ -107,7 +105,7 @@ namespace FreeTouchDeck
                 if (rot <= 3 && rot >= 0)
                 {
                     generalconfig.screenrotation = rot;
-                    saveConfig(false);
+                    QueueSaving();
                     LOC_LOGI(module, "Screen rotation was updated to %d", generalconfig.screenrotation);
                 }
             }
@@ -115,7 +113,7 @@ namespace FreeTouchDeck
             {
                 generalconfig.reverse_x_touch = !generalconfig.reverse_x_touch;
                 LOC_LOGI(module, "X axis touch reverse set to %s", generalconfig.reverse_x_touch ? "YES" : "NO");
-                saveConfig(false);
+                QueueSaving();
             }
             else if (command.startsWith("rows"))
             {
@@ -123,7 +121,7 @@ namespace FreeTouchDeck
                 value.trim();
                 generalconfig.rowscount = value.toInt();
                 LOC_LOGI(module, "Rows count set to %d", generalconfig.rowscount);
-                saveConfig(false);
+                QueueSaving();
             }
             else if (command.startsWith("cols"))
             {
@@ -131,19 +129,19 @@ namespace FreeTouchDeck
                 value.trim();
                 generalconfig.colscount = value.toInt();
                 LOC_LOGI(module, "Rows count set to %d", generalconfig.colscount);
-                saveConfig(false);
+                QueueSaving();
             }
             else if (command == "revy")
             {
                 generalconfig.reverse_y_touch = !generalconfig.reverse_y_touch;
                 LOC_LOGI(module, "Y axis touch reverse set to %s", generalconfig.reverse_y_touch ? "YES" : "NO");
-                saveConfig(false);
+                QueueSaving();
             }
             else if (command == "invaxis")
             {
                 generalconfig.flip_touch_axis = !generalconfig.flip_touch_axis;
                 LOC_LOGI(module, "Touch axis flip set to %s", generalconfig.flip_touch_axis ? "YES" : "NO");
-                saveConfig(false);
+                QueueSaving();
             }
             else if (command.startsWith("setssid"))
             {
@@ -292,9 +290,9 @@ namespace FreeTouchDeck
                     tempfile.close();
                     if (!cancel)
                     {
-                        if (loadConfig(tempName))
+                        if (loadConfig(tempName, true))
                         {
-                            saveConfig(false);
+                            QueueSaving();
                         }
                     }
                 }
@@ -331,6 +329,10 @@ loglevel (0-5) : increase log details for some activities - warning: more logs w
 dir : show the content of the file system
 memory : show memory usage
 )");
+            }
+            else
+            {
+                LOC_LOGE(module, "Invalid command [%s]. Use help to get a list", command.c_str());
             }
         }
     }

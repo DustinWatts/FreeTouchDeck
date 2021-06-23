@@ -6,7 +6,8 @@ namespace FreeTouchDeck
   {
     GOING_TO_SLEEP,
     BEEP,
-    STARTUP
+    STARTUP,
+    ERROR
   };
   void HandleAudio(Sounds sound);
 }

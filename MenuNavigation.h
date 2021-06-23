@@ -9,6 +9,7 @@ namespace FreeTouchDeck {
     bool ScreenLock(TickType_t xTicksToWait) ;
     void ScreenUnlock() ;
     char *MenusToJson(bool withSystem = false);
+    cJSON *MenusToJsonObject(bool withSystem = false);
     Menu *GetActiveScreen();
     Menu *GetScreen(const char *name, bool lock=true);
     bool SaveFullFormat();

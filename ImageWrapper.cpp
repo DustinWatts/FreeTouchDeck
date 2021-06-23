@@ -8,7 +8,11 @@ namespace FreeTouchDeck
     {
         valid = false;
     }
-    bool ImageWrapper::IsExtensionMatch(const char * extension, const char * name)
+    // uint16_t ImageWrapper::GetPixelColor() {return 0;}
+    // bool ImageWrapper::LoadImageDetails() {return false;}
+    // const String& ImageWrapper::GetDescription() { static String strDesc=""; return strDesc;}
+    // void ImageWrapper::Draw(int16_t x, int16_t y, bool transparent){LOC_LOGE(module,"Unsupported");};
+    bool ImageWrapper::IsExtensionMatch(const char * extension, const std::string &name)
     {
         char fileName[101] = {0};
         String ext = FileName(fileName,sizeof(fileName), name);
@@ -17,33 +21,23 @@ namespace FreeTouchDeck
         ext.toLowerCase();
         return ext.endsWith(extension);
     }
-
     ImageWrapper::~ImageWrapper()
     {
 
     }
-    const char * ImageWrapper::GetExtension(const char * fileName)
+    const std::string &ImageWrapper::GetExtension(const std::string &fileName)
     {
-        const char * ext = strstr(fileName,".");
-        static const char * empty="";
-        if(ext)
-        {
-            ext++;
-            LOC_LOGD(module,"%s has extension %s",fileName,ext);
-        }
-        else 
-        {
-            LOC_LOGE(module,"Extension for file %s not found", fileName);
-            ext=empty;
-        }
+        static std::string ext;
+        ext=fileName.substr(fileName.find_last_of(".")+1);
+        LOC_LOGD(module,"%s has extension %s",fileName.c_str(),ext.c_str());
         return ext;
     }
-    char *ImageWrapper::FileName(char *buffer, size_t buffSize, const char * name)
+    char *ImageWrapper::FileName(char *buffer, size_t buffSize, const std::string& name)
     {
         const char *logoPathTemplate = "/logos/%s";
-        size_t len = strlen(logoPathTemplate) + strlen((const char *)name);
+        size_t len = strlen(logoPathTemplate) + name.length();
         memset(buffer, 0x00, buffSize);
-        snprintf(buffer, buffSize, logoPathTemplate, name);
+        snprintf(buffer, buffSize, logoPathTemplate, name.c_str());
         return buffer;
     }
     char *ImageWrapper::FileName(char *buffer, size_t buffSize)
@@ -51,23 +45,23 @@ namespace FreeTouchDeck
         return FileName(buffer,buffSize,LogoName);
     }
 
-    ImageWrapper::ImageWrapper(const char *imageName)
+    ImageWrapper::ImageWrapper(const std::string  &imageName)
     {
-        LOC_LOGD(module,"Instantiating Image Wrapper for %s", STRING_OR_DEFAULT(imageName,""));
+        LOC_LOGD(module,"Instantiating Image Wrapper for %s",imageName.c_str());
         if (!SetNameAndPath(imageName))
         {
             LOC_LOGE(module, "Unknown image.");
-            strncpy(LogoName, "Unknown", sizeof(LogoName));
+            LogoName = "?";
             valid = false;
         }
     }
-    bool ImageWrapper::SetNameAndPath(const char *imageName)
+    bool ImageWrapper::SetNameAndPath(const std::string &imageName)
     {
-        if (!imageName && strlen(imageName) == 0)
+        if (imageName.length() == 0)
         {
             return false;
         }
-        strncpy(LogoName, imageName, sizeof(LogoName));
+        LogoName = imageName;
         return true;
     }
 

@@ -2,9 +2,11 @@
 #include "globals.hpp"
 #include "UserConfig.h"
 #include "FTAction.h"
-namespace FreeTouchDeck {
-    
-  enum class LogLevels
+#include <type_traits>
+namespace FreeTouchDeck
+{
+
+    enum class LogLevels
     {
         NONE = 0,
         ERROR,
@@ -35,35 +37,48 @@ namespace FreeTouchDeck {
         char *deviceName;
         char *manufacturer;
         uint16_t helperdelay;
-        int ledBrightness;
+        uint8_t ledBrightness;
         LogLevels LogLevel;
     };
     extern Config generalconfig;
-
-bool GetValueOrDefault(cJSON *value, char **valuePointer, const char *defaultValue);
-bool GetValueOrDefault(cJSON *value, uint16_t *valuePointer, uint16_t defaultValue);
-bool GetValueOrDefault(cJSON *value, uint8_t *valuePointer, uint8_t defaultValue);
-bool GetValueOrDefault(cJSON *value, bool *valuePointer, bool defaultValue);
-bool GetValueOrDefault(cJSON *doc, const char *name, char **valuePointer, const char *defaultValue);
-bool GetValueOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue);
-bool GetValueOrDefault(cJSON *doc, const char *name, uint8_t *valuePointer, uint8_t defaultValue);
-void GetValueOrDefault(cJSON *doc, const char *name, bool *valuePointer, bool defaultValue);
-bool GetColorOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue);
-bool GetColorOrDefault(cJSON *doc, const char *name, uint32_t *valuePointer, uint32_t defaultValue);
-char *GetModifierFromNumber(int modifier);
-void SetGeneralConfigDefaults();
-/**
+    bool GetValueOrDefault(cJSON *value, char **valuePointer, const char *defaultValue);
+    bool GetValueOrDefault(cJSON *value, std::string &valuePointer, const char *defaultValue);
+    bool GetValueOrDefault(cJSON *value, uint16_t *valuePointer, uint16_t defaultValue);
+    bool GetValueOrDefault(cJSON *value, uint8_t *valuePointer, uint8_t defaultValue);
+    bool GetValueOrDefault(cJSON *value, bool *valuePointer, bool defaultValue);
+    bool GetValueOrDefault(cJSON *doc, const char *name, char **valuePointer, const char *defaultValue);
+    bool GetValueOrDefault(cJSON *doc, const char *name, std::string &valuePointer, const char *defaultValue);
+    bool GetValueOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue);
+    bool GetValueOrDefault(cJSON *doc, const char *name, uint8_t *valuePointer, uint8_t defaultValue);
+    void GetValueOrDefault(cJSON *doc, const char *name, bool *valuePointer, bool defaultValue);
+    bool GetColorOrDefault(cJSON *doc, const char *name, uint16_t *valuePointer, uint16_t defaultValue);
+    bool GetColorOrDefault(cJSON *doc, const char *name, uint32_t *valuePointer, uint32_t defaultValue);
+    char *GetModifierFromNumber(int modifier);
+    void SetGeneralConfigDefaults();
+    void QueueSaving();
+    /**
 * @brief This function loads the menu configuration.
 *
-* @param String the config to be loaded
+* @param[in] const char * the config to be loaded
+* @param[in] bool save if changes were found
 *
 * @return none
 *
 * @note Options for values are: colors, homescreen, menu1, menu2, menu3
          menu4, and menu5
 */
-bool loadConfig(const char *name);
-bool loadGeneralConfig();
-bool saveConfig(bool serial);
-extern const char * generalConfigFile;
+    bool loadConfig(const char *name, bool saveifchanged=false);
+    bool loadGeneralConfig();
+    bool saveConfig(bool serial);
+    cJSON *GetConfigJson();
+    extern const char *generalConfigFile;
+    template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
+    void HasConfigElementChanged(const char *name, T currentVal, T newVal, bool &result, const char * module)
+  {
+    if (currentVal != newVal)
+    {
+      LOC_LOGI(module, "Configuration element %s change from %d to %d", name, currentVal, newVal);
+      result = true;
+    }
+  }
 }

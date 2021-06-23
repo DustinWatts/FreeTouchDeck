@@ -1,12 +1,11 @@
 
 #include "globals.hpp"
 #include "MenuNavigation.h"
-#include <BleKeyboard.h>
+#include "System.h"
 #include "Audio.h"
-#include "ArduinoJson.h"
 #include "DrawHelper.h"
 #include "FTAction.h"
-extern BleKeyboard bleKeyboard;
+#include "ConfigHelper.h"
 namespace FreeTouchDeck
 {
     bool SetSleep(FTAction *action)
@@ -34,16 +33,16 @@ namespace FreeTouchDeck
             }
         }
         // save the configuration
-        saveConfig(false);
+        QueueSaving();
     }
     bool ChangeBrightness(FTAction *action)
     {
         auto operation = action->GetParameter(0);
-        if (operation == "BRIGHTNESS_UP")
+        if (strcmp(operation.c_str(), "BRIGHTNESS_UP") == 0)
         {
             generalconfig.ledBrightness = min(generalconfig.ledBrightness + LED_BRIGHTNESS_INCREMENT, 255);
         }
-        else if (operation == "BRIGHTNESS_DOWN")
+        else if (strcmp(operation.c_str(), "BRIGHTNESS_DOWN") == 0)
         {
             generalconfig.ledBrightness = max(generalconfig.ledBrightness - LED_BRIGHTNESS_INCREMENT, 50);
         }
@@ -52,7 +51,7 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "Unknown Brightness action %s", operation.c_str());
         }
         ledcWrite(0, generalconfig.ledBrightness);
-        saveConfig(false);
+        QueueSaving();
         return true;
     }
 
@@ -69,11 +68,7 @@ namespace FreeTouchDeck
 
     bool printinfo(FTAction *dummy)
     {
-        SetSmallestFont(1);
-        tft.fillScreen(TFT_BLACK);
-        tft.setTextColor(TFT_WHITE, TFT_BLACK);
-        tft.setCursor(0, tft.fontHeight() + 1);
-
+        ClearScreen();
         tft.printf("Version: %s\n", versionnumber);
 
 #ifdef touchInterruptPin
@@ -111,12 +106,12 @@ namespace FreeTouchDeck
         // tft.println(" kB");
         tft.print("BLE Keyboard version: ");
         tft.println(BLE_KEYBOARD_VERSION);
-        tft.print("ArduinoJson version: ");
-        tft.println(ARDUINOJSON_VERSION);
         tft.print("TFT_eSPI version: ");
         tft.println(TFT_ESPI_VERSION);
         tft.println("ESP-IDF: ");
         tft.println(esp_get_idf_version());
+        tft.println();
+        TFTPrintMemInfo();
         return true;
     }
     bool FontTest(FTAction *action)
@@ -143,7 +138,7 @@ namespace FreeTouchDeck
         Menu *menu = GetLatchScreen(action);
         if (menu)
         {
-            LOC_LOGD(module, "Running Latch Action on Menu %s", menu->Name);
+            LOC_LOGD(module, "Running Latch Action on Menu %s", menu->Name.c_str());
             success = menu->Button(action);
             if (!success)
             {
@@ -156,8 +151,8 @@ namespace FreeTouchDeck
         }
         return success;
     }
-    
-    ActionCallbackMap_t UserActions = {
+
+    const ActionCallbackMap_t UserActions = {
         {"BRIGHTNESS_UP", ChangeBrightness},
         {"BRIGHTNESS_DOWN", ChangeBrightness},
         {"STARTSLEEP", [](FTAction *action)
@@ -174,7 +169,7 @@ namespace FreeTouchDeck
          }},
         {"MENU", [](FTAction *action)
          {
-             const char * screen=action->FirstParameter();
+             const char *screen = action->FirstParameter();
              LOC_LOGD(module, "Activating screen %s", screen);
              return SetActiveScreen(screen);
          }},
@@ -182,6 +177,13 @@ namespace FreeTouchDeck
         {"BEEP", [](FTAction *action)
          {
              generalconfig.beep = !generalconfig.beep;
+             LOC_LOGI(module,"Beep is now %s",generalconfig.beep?"ACTIVE":"INACTIVE");
+             QueueSaving();
+             return true;
+         }},
+        {"SAVECONFIG", [](FTAction *action)
+         {
+             LOC_LOGI(module,"Saving configuration");
              return saveConfig(false);
          }},
         {"INFO", printinfo},
@@ -196,7 +198,7 @@ namespace FreeTouchDeck
              delay(atol(action->FirstParameter()));
              return true;
          }},
-         
+
         {"RELEASEALL", [](FTAction *action)
          {
              bleKeyboard.releaseAll();
@@ -204,5 +206,5 @@ namespace FreeTouchDeck
          }},
         {"LATCH", RunLatchAction}};
 
-    ActionQueueType_t UserActionsKeyboardQueue = {"DELAY","RELEASEALL" };
+    ActionQueueType_t UserActionsKeyboardQueue = {"DELAY", "RELEASEALL"};
 }

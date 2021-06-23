@@ -18,9 +18,10 @@ namespace FreeTouchDeck
     static const char *module = "System";
     volatile unsigned long previousMillis = 0;
     unsigned long SleepInterval = 0;
-
+    BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
     RTC_NOINIT_ATTR SystemMode restartReason = SystemMode::STANDARD;
     SystemMode RunMode = SystemMode::STANDARD;
+
     IRAM_ATTR char *ps_strdup(const char *fmt)
     {
         // Duplicate string values, calling our own
@@ -42,13 +43,24 @@ namespace FreeTouchDeck
         }
         return o;
     }
-    IRAM_ATTR void *malloc_fn(size_t sz)
+    void StopBluetooth()
+    {
+        bleKeyboard.end();
+        LOC_LOGD(module, "Terminating BT");
+        // Stop BLE from interfering with our WIFI signal
+        btStop();
+        // esp_bt_controller_disable();
+        // esp_bt_controller_deinit();
+        // esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
+        LOC_LOGI(module, "BLE Stopped");
+    }
+    void *malloc_fn(size_t sz)
     {
         void *ptr = NULL;
         ptr = malloc(sz);
         if (!ptr)
         {
-            LOC_LOGE(module, "free_iram: %d ", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
+            LOC_LOGE(module, "Memory allocation failed for %d bytes. free_iram: %d ", sz, heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
             drawErrorMessage(true, module, "Memory allocation failed");
         }
         else
@@ -63,6 +75,50 @@ namespace FreeTouchDeck
         static cJSON_Hooks hooks;
         hooks.malloc_fn = &malloc_fn;
         cJSON_InitHooks(&hooks);
+    }
+    char *AllocPrintJson(cJSON *doc, bool freeDoc)
+    {
+        char *outStr = cJSON_Print(doc);
+        if (freeDoc)
+        {
+            cJSON_Delete(doc);
+        }
+        if (!outStr)
+        {
+            LOC_LOGE(module, "Error generating text for json");
+            return NULL;
+        }
+        return outStr;
+    }
+    bool SaveJsonToFile(const char *fileName, cJSON *content, bool freeDoc)
+    {
+        PrintMemInfo(__FUNCTION__, __LINE__);
+        char *contentString = AllocPrintJson(content, freeDoc);
+        bool result = false;
+        if (!ISNULLSTRING(contentString))
+        {
+            fs::File file = ftdfs->open(fileName, "w");
+            if (!file)
+            {
+                LOC_LOGE(module, "Error opening target file %s", STRING_OR_DEFAULT(fileName, "?"));
+            }
+            else
+            {
+                size_t written = file.write((uint8_t *)contentString, strlen(contentString));
+                file.close();
+                if (written != strlen(contentString))
+                {
+                    LOC_LOGE(module, "File %s could not be fully written to. Wrote %d bytes of %d bytes", STRING_OR_DEFAULT(fileName, "?"), written, strlen(contentString));
+                }
+                else
+                {
+                    result = true;
+                }
+            }
+            FREE_AND_NULL(contentString);
+        }
+        PrintMemInfo(__FUNCTION__, __LINE__);
+        return result;
     }
     void InitSystem()
     {
@@ -144,11 +200,14 @@ namespace FreeTouchDeck
         HandleAudio(Sounds::STARTUP);
         // Calibrate the touch screen and retrieve the scaling factors
         touch_calibrate();
-
-        //CacheBitmaps();
         LoadAllMenus();
-
         LOC_LOGI(module, "All config files loaded");
+        //------------------BLE Initialization ------------------------------------------------------------------------
+        LOC_LOGI(module, "Starting BLE Keyboard");
+        bleKeyboard.deviceName = generalconfig.deviceName;
+        bleKeyboard.deviceManufacturer = generalconfig.manufacturer;
+        bleKeyboard.begin();
+        PrintMemInfo(__FILE__, __LINE__);
     }
 
     void ChangeMode(SystemMode newMode)
@@ -193,42 +252,65 @@ namespace FreeTouchDeck
         }
         PrintMemInfo(__FUNCTION__, __LINE__);
     }
-    void PrintMemInfo()
+    void PrintMemStats()
+    {
+        static unsigned long t = 0;
+        if(millis() >t)
+        {
+            PrintBasicMemInfo();
+            t=millis()+5000;
+        }
+    }
+    void PrintBasicMemInfo()
     {
         static size_t prev_free = 0;
-        static size_t prev_min_free = 0;
-        if (generalconfig.LogLevel < LogLevels::DEBUG)
-            return;
-        //LOC_LOGI(module, "free_iram: %d, delta: %d", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-        //LOC_LOGI(module, "min_free_iram: %d, delta: %d", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-        Serial.printf( "free_iram: %d, delta: %d\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
-        Serial.printf( "min_free_iram: %d, delta: %d\n", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_min_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        static size_t prev_free_8 = 0;
+        static size_t prev_free_32 = 0;
+        Serial.printf("Memory: free ram 32bits[f:%d,l:%d,d:%d], 8bits[f:%d,l:%d,d:%d], internal:[f:%d,l:%d,d:%d] \n",
+                      heap_caps_get_free_size(MALLOC_CAP_32BIT), heap_caps_get_largest_free_block(MALLOC_CAP_32BIT), prev_free_32 > 0 ? prev_free_32 - heap_caps_get_free_size(MALLOC_CAP_32BIT) : 0,
+                      heap_caps_get_free_size(MALLOC_CAP_8BIT), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), prev_free_8 > 0 ? prev_free_8 - heap_caps_get_free_size(MALLOC_CAP_8BIT) : 0,
+                      heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
         prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
-        prev_min_free = heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL);
+        prev_free_8 = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+        prev_free_32 = heap_caps_get_free_size(MALLOC_CAP_32BIT);
     }
-    void PrintMemInfo(const char * fn, uint16_t line)
+#ifdef PRINT_MEM_INFO
+
+    void PrintMemInfo(const char *fn, uint16_t line)
     {
-                static size_t prev_free = 0;
 
-        Serial.printf( "%s[%d]free_iram: %d, delta: %d\n",fn,line, heap_caps_get_free_size(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
+        static size_t prev_free = 0;
+        static size_t prev_free_8 = 0;
+        static size_t prev_free_32 = 0;
+        if(generalconfig.LogLevel <LogLevels::VERBOSE) return;
+        Serial.printf("%s[%d]free ram 32bits[f:%d,l:%d,d:%d], 8bits[f:%d,l:%d,d:%d], internal:[f:%d,l:%d,d:%d] \n",
+                      fn, line, heap_caps_get_free_size(MALLOC_CAP_32BIT), heap_caps_get_largest_free_block(MALLOC_CAP_32BIT), prev_free_32 > 0 ? prev_free_32 - heap_caps_get_free_size(MALLOC_CAP_32BIT) : 0,
+                      heap_caps_get_free_size(MALLOC_CAP_8BIT), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), prev_free_8 > 0 ? prev_free_8 - heap_caps_get_free_size(MALLOC_CAP_8BIT) : 0,
+                      heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL), prev_free > 0 ? prev_free - heap_caps_get_free_size(MALLOC_CAP_INTERNAL) : 0);
         prev_free = heap_caps_get_free_size(MALLOC_CAP_INTERNAL);
+        prev_free_8 = heap_caps_get_free_size(MALLOC_CAP_8BIT);
+        prev_free_32 = heap_caps_get_free_size(MALLOC_CAP_32BIT);
     }
-
+#else
+#define PrintMemInfo(fn, line)
+#endif
     void TFTPrintMemInfo()
     {
-        tft.printf("free_iram: %d\n", heap_caps_get_free_size(MALLOC_CAP_INTERNAL));
-        tft.printf("min_free_iram: %d\n", heap_caps_get_minimum_free_size(MALLOC_CAP_INTERNAL));
+        tft.printf("free ram 32bits[%d,%d], 8bits[%d,%d], internal:[%d,%d] \n",
+                   heap_caps_get_free_size(MALLOC_CAP_32BIT), heap_caps_get_largest_free_block(MALLOC_CAP_32BIT),
+                   heap_caps_get_free_size(MALLOC_CAP_8BIT), heap_caps_get_largest_free_block(MALLOC_CAP_8BIT),
+                   heap_caps_get_free_size(MALLOC_CAP_INTERNAL), heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
     }
     void WaitTouchReboot()
     {
         uint16_t t_x;
         uint16_t t_y;
-        PrintScreenMessage(false,"Press screen to restart");
+        PrintScreenMessage(false, "Press screen to restart");
         while (true)
         {
             if (getTouch(&t_x, &t_y))
             {
-                PrintScreenMessage(false,"Restarting...");
+                PrintScreenMessage(false, "Restarting...");
                 delay(2000);
                 ESP.restart();
             }
@@ -301,6 +383,7 @@ namespace FreeTouchDeck
     void touchInit()
     {
 
+        PrintMemInfo(__FUNCTION__, __LINE__);
 #ifdef USECAPTOUCH
 #ifdef CUSTOM_TOUCH_SDA
         if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
@@ -315,6 +398,7 @@ namespace FreeTouchDeck
             LOC_LOGI(module, "Capacitive touch started");
         }
 #endif
+        PrintMemInfo(__FUNCTION__, __LINE__);
     }
     void DumpCJson(cJSON *doc)
     {
@@ -416,7 +500,7 @@ namespace FreeTouchDeck
             //
             HandleSleepConfig();
             // disable sleep for next time
-            saveConfig(false);
+            QueueSaving();
             return false;
         }
         else
@@ -436,39 +520,52 @@ namespace FreeTouchDeck
     {
         uint16_t t_x = 0;
         uint16_t t_y = 0;
-        bool pressed = getTouch(&t_x, &t_y);
-        if (RunMode == SystemMode::CONFIG || RunMode == SystemMode::CONSOLE)
+        try
         {
-            delay(100);
-            if (pressed)
+            bool pressed = getTouch(&t_x, &t_y);
+            if (RunMode == SystemMode::CONFIG || RunMode == SystemMode::CONSOLE)
             {
-                ESP.restart();
+                delay(100);
+                if (pressed)
+                {
+                    ESP.restart();
+                }
+                return;
             }
-            return;
+            handleDisplay(pressed, t_x, t_y);
+            LOC_LOGV(module, "Checking for screen actions");
+            FTAction *Action = PopScreenQueue();
+            if (Action)
+            {
+                ResetSleep();
+                Action->Execute();
+            }
         }
-        handleDisplay(pressed, t_x, t_y);
-        LOC_LOGV(module, "Checking for screen actions");
-        FTAction *Action = PopScreenQueue();
-        if (Action)
+        catch (const std::exception &e)
         {
-            ResetSleep();
-            Action->Execute();
+            std::cerr << e.what() << '\n';
         }
     }
 
     void HandleActions()
     {
         LOC_LOGV(module, "Checking for regular actions");
-        FTAction *Action = NULL;
-        Action = PopQueue();
-        if (Action && !FTAction::Stopped)
+        try
         {
-            ResetSleep();
-            Action->Execute();
+            FTAction *Action = NULL;
+            Action = PopQueue();
+            if (Action && !FTAction::Stopped)
+            {
+                ResetSleep();
+                Action->Execute();
+            }
+            FTAction::Stopped = false;
         }
-        FTAction::Stopped = false;
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+        }
     }
-
 };
 
 // Overloading global new operator

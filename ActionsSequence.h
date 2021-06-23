@@ -8,11 +8,13 @@ class ActionsSequences
     public:
     char *ConfigSequence;
    // bool NeedsReleaseAll;
-    std::list<FTAction *> Actions;
+    std::vector<FTAction *> Actions;
     bool Execute();
+    bool HasKeyboardAction();
     bool Parse(cJSON * actionJson);
     bool Parse(const char * actionString);
+    ActionsSequences();
 };
 
-typedef std::list<ActionsSequences> ActionSequencesList;
+typedef std::vector<ActionsSequences > ActionSequencesList;
 };

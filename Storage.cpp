@@ -14,90 +14,117 @@ namespace FreeTouchDeck
     FileSystem_t *FSInternal = new FileSystem_t(
         SPIFFS, "SPIFFS",
         []()
-        { 
+        {
             LOC_LOGV(module, "Starting SPIFFS");
-            return SPIFFS.begin(); },
+            return SPIFFS.begin();
+        },
         []()
-        { 
+        {
             LOC_LOGV(module, "SPIFFS, returning total bytes");
-            return (size_t)SPIFFS.totalBytes(); },
+            return (size_t)SPIFFS.totalBytes();
+        },
         []()
-        {             LOC_LOGV(module, "SPIFFS, returning Used bytes");
-            return (size_t)SPIFFS.usedBytes(); },
+        {
+            LOC_LOGV(module, "SPIFFS, returning Used bytes");
+            return (size_t)SPIFFS.usedBytes();
+        },
         []()
         { return "Internal"; },
         [](const char *path, const char *mode)
-        { 
-            LOC_LOGV(module, "SPIFFS handler Opening file %s",path);
-            return SPIFFS.open(path, mode); },
-        [](const char *name)
-{ 
-            LOC_LOGV(module, "SPIFFS checking if %s exists",name);
-            return SPIFFS.exists(name); },
+        {
+            LOC_LOGV(module, "SPIFFS handler Opening file %s", path);
+            return SPIFFS.open(path, mode);
+        },
         [](const char *name)
         {
-            LOC_LOGV(module, "SPIFFS handler removing file %s",name);
-             return SPIFFS.remove(name); },
+            LOC_LOGV(module, "SPIFFS checking if %s exists", name);
+            return SPIFFS.exists(name);
+        },
+        [](const char *name)
+        {
+            LOC_LOGV(module, "SPIFFS handler removing file %s", name);
+            return SPIFFS.remove(name);
+        },
         [](const char *from, const char *to)
-        { 
-            LOC_LOGV(module, "SPIFFS handler renaming %s to %s",from,to);
-            return SPIFFS.rename(from, to); },
-        [](const char *name)
-        { LOC_LOGV(module, "SPIFFS handler creating directory %s",name);
-        return SPIFFS.mkdir(name); },
+        {
+            LOC_LOGV(module, "SPIFFS handler renaming %s to %s", from, to);
+            return SPIFFS.rename(from, to);
+        },
         [](const char *name)
         {
-            LOC_LOGV(module, "SPIFFS handler removing directory %s",name);
-             return SPIFFS.rmdir(name); },
+            LOC_LOGV(module, "SPIFFS handler creating directory %s", name);
+            return SPIFFS.mkdir(name);
+        },
+        [](const char *name)
+        {
+            LOC_LOGV(module, "SPIFFS handler removing directory %s", name);
+            return SPIFFS.rmdir(name);
+        },
         [](const String &path, const char *mode)
-        { 
-            LOC_LOGV(module, "Opening file %s",path.c_str());
-            return SPIFFS.open(path, mode); },
+        {
+            LOC_LOGV(module, "Opening file %s", path.c_str());
+            return SPIFFS.open(path, mode);
+        },
         [](const String &name)
-        { 
-            LOC_LOGV(module, "SPIFFS checking if %s exists",name.c_str());
-            return SPIFFS.exists(name); },
+        {
+            LOC_LOGV(module, "SPIFFS checking if %s exists", name.c_str());
+            return SPIFFS.exists(name);
+        },
         [](const String &name)
-        { 
-            LOC_LOGV(module, "SPIFFS handler removing file %s",name.c_str());
-            return SPIFFS.remove(name); },
+        {
+            LOC_LOGV(module, "SPIFFS handler removing file %s", name.c_str());
+            return SPIFFS.remove(name);
+        },
         [](const String &from, const String &to)
-        { LOC_LOGV(module, "SPIFFS handler renaming %s to %s",from.c_str(), to.c_str());
-        return SPIFFS.rename(from, to); },
+        {
+            LOC_LOGV(module, "SPIFFS handler renaming %s to %s", from.c_str(), to.c_str());
+            return SPIFFS.rename(from, to);
+        },
         [](const String &name)
-        { 
-            LOC_LOGV(module, "SPIFFS handler creating directory %s",name.c_str());
-            return SPIFFS.mkdir(name); },
+        {
+            LOC_LOGV(module, "SPIFFS handler creating directory %s", name.c_str());
+            return SPIFFS.mkdir(name);
+        },
         [](const String &name)
-        { LOC_LOGV(module, "SPIFFS handler removing directory %s",name.c_str());
-        return SPIFFS.rmdir(name); },
+        {
+            LOC_LOGV(module, "SPIFFS handler removing directory %s", name.c_str());
+            return SPIFFS.rmdir(name);
+        },
         []()
-            { LOC_LOGV(module, "SPIFFS handler inserted true");
-            return true; },
+        {
+            LOC_LOGV(module, "SPIFFS handler inserted true");
+            return true;
+        },
         false,
-         []()
-        { 
+        []()
+        {
             LOC_LOGV(module, "Stopping SPIFFS");
             SPIFFS.end();
-            return true; });
+            return true;
+        });
 
     FileSystem_t *FileSystems[] = {
 #ifdef SDDAT3
         new FileSystem_t(
             SD, "SD Card",
             []()
-            { LOC_LOGV(module,"SD Card Handler: Begin");
-                return SD.begin(SDDAT3); },
-            []()
-            { 
-                LOC_LOGV(module,"SD Card Handler: totalBytes");
-                return (size_t)SD.totalBytes(); },
-            []()
-            { LOC_LOGV(module,"SD Card Handler: usedBytes");
-            return (size_t)SD.usedBytes(); },
+            {
+                LOC_LOGV(module, "SD Card Handler: Begin");
+                return SD.begin(SDDAT3);
+            },
             []()
             {
-                LOC_LOGV(module,"SD Card Handler: cardType");
+                LOC_LOGV(module, "SD Card Handler: totalBytes");
+                return (size_t)SD.totalBytes();
+            },
+            []()
+            {
+                LOC_LOGV(module, "SD Card Handler: usedBytes");
+                return (size_t)SD.usedBytes();
+            },
+            []()
+            {
+                LOC_LOGV(module, "SD Card Handler: cardType");
                 switch ((size_t)SD.cardType())
                 {
                     ENUM_TO_STRING_HELPER_SIMPLE(CARD_NONE);
@@ -113,62 +140,79 @@ namespace FreeTouchDeck
             [](const char *path, const char *mode)
             {
                 checkStatusHold();
-                LOC_LOGV(module,"SD Card Handler: Open");
+                LOC_LOGV(module, "SD Card Handler: Open");
                 return SD.open(path, mode);
             },
             [](const char *name)
-            { 
-                LOC_LOGV(module,"SD Card Handler: Exists");
-                return checkStatusHold() && SD.exists(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: Exists");
+                return checkStatusHold() && SD.exists(name);
+            },
             [](const char *name)
-            { 
-                LOC_LOGV(module,"SD Card Handler: remove");
-                return checkStatusHold() && SD.remove(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: remove");
+                return checkStatusHold() && SD.remove(name);
+            },
             [](const char *from, const char *to)
-            { 
-                LOC_LOGV(module,"SD Card Handler: rename");
-                return checkStatusHold() && SD.rename(from, to); },
+            {
+                LOC_LOGV(module, "SD Card Handler: rename");
+                return checkStatusHold() && SD.rename(from, to);
+            },
             [](const char *name)
-            { LOC_LOGV(module,"SD Card Handler: mkdir");
-            return checkStatusHold() && SD.mkdir(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: mkdir");
+                return checkStatusHold() && SD.mkdir(name);
+            },
             [](const char *name)
-            { LOC_LOGV(module,"SD Card Handler: rmdir");
-            return checkStatusHold() && SD.rmdir(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: rmdir");
+                return checkStatusHold() && SD.rmdir(name);
+            },
             [](const String &path, const char *mode)
             {
                 checkStatusHold();
-                LOC_LOGV(module,"SD Card Handler: string open");
+                LOC_LOGV(module, "SD Card Handler: string open");
                 return SD.open(path, mode);
             },
             [](const String &name)
-            { LOC_LOGV(module,"SD Card Handler: string exists");
-            return checkStatusHold() && SD.exists(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: string exists");
+                return checkStatusHold() && SD.exists(name);
+            },
             [](const String &name)
-            { 
-                LOC_LOGV(module,"SD Card Handler: string remove");
-                return checkStatusHold() && SD.remove(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: string remove");
+                return checkStatusHold() && SD.remove(name);
+            },
             [](const String &from, const String &to)
-            { LOC_LOGV(module,"SD Card Handler: string rename");
-            return checkStatusHold() && SD.rename(from, to); },
+            {
+                LOC_LOGV(module, "SD Card Handler: string rename");
+                return checkStatusHold() && SD.rename(from, to);
+            },
             [](const String &name)
-            { LOC_LOGV(module,"SD Card Handler: string mkdir");
-            return checkStatusHold() && SD.mkdir(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: string mkdir");
+                return checkStatusHold() && SD.mkdir(name);
+            },
             [](const String &name)
-            { LOC_LOGV(module,"SD Card Handler: string rmdir");
-            return checkStatusHold() && SD.rmdir(name); },
+            {
+                LOC_LOGV(module, "SD Card Handler: string rmdir");
+                return checkStatusHold() && SD.rmdir(name);
+            },
             []()
             {
-                // is there a way to check if the media is inserted? 
-                LOC_LOGV(module,"SD Card Handler: inserted true");
+                // is there a way to check if the media is inserted?
+                LOC_LOGV(module, "SD Card Handler: inserted true");
                 return true;
             },
             true,
-         []()
-        { 
-            LOC_LOGD(module, "Stopping SD");
-            SD.end();
-            
-            return true; }),
+            []()
+            {
+                LOC_LOGD(module, "Stopping SD");
+                SD.end();
+
+                return true;
+            }),
 #endif
         FSInternal,
         NULL};
@@ -186,6 +230,7 @@ namespace FreeTouchDeck
             else
             {
                 LOC_LOGI(module, "Initializing storage %s", STRING_OR_DEFAULT(currentFS->Name, "N/A"));
+                PrintMemInfo(__FUNCTION__, __LINE__);
                 if (!currentFS->Begin())
                 {
                     LOC_LOGI(module, "File system %s could not be initialized", (STRING_OR_DEFAULT(currentFS->Name, "")));
@@ -200,6 +245,7 @@ namespace FreeTouchDeck
                         ftdfs = currentFS;
                     }
                 }
+                PrintMemInfo(__FUNCTION__, __LINE__);
             }
         } while (true);
         if (!isStorageInitialized())
@@ -245,16 +291,16 @@ namespace FreeTouchDeck
     size_t GetFileSize(const char *filename, FileSystem_t *toSystem)
     {
         size_t fileSize = 0;
-        File target = toSystem->open(filename, FILE_READ);
+        fs::File target = toSystem->open(filename, FILE_READ);
         if (target)
         {
             fileSize = target.size();
-            LOC_LOGD(module, "File %s on %s is %d bytes. Closing file", filename,toSystem->Name, target.size());
+            LOC_LOGD(module, "File %s on %s is %d bytes. Closing file", filename, toSystem->Name, target.size());
             target.close();
         }
         else
         {
-            LOC_LOGE(module, "Error opening file %s on %s", filename,toSystem->Name);
+            LOC_LOGE(module, "Error opening file %s on %s", filename, toSystem->Name);
         }
         return fileSize;
     }
@@ -273,7 +319,11 @@ namespace FreeTouchDeck
         LOC_LOGD(module, "Checking if file %s exists", STRING_OR_DEFAULT(filename, "n/a"));
         return checkExists(filename, ftdfs);
     }
-    bool CopyFile(File *source, FileSystem_t *toSystem)
+    bool CopyFile(fs::File *source, FileSystem_t *toSystem)
+    {
+        return CopyFile(source, source->name(), toSystem);
+    }
+    bool CopyFile(fs::File *source, const char *targetName, FileSystem_t *toSystem)
     {
         bool success = true;
         success = checkErrorFileSystem(toSystem);
@@ -293,31 +343,30 @@ namespace FreeTouchDeck
             }
             source->seek(0);
         }
-        if(success)
+        if (success)
         {
-            PrintScreenMessage(false, "Copying %s (%d bytes) to %s ", STRING_OR_DEFAULT(source->name(), "n/a"), source->size(), STRING_OR_DEFAULT(toSystem->Name, "n/a"));
+            PrintScreenMessage(false, "Copying %s (%d bytes) to %s on %s ", STRING_OR_DEFAULT(source->name(), "n/a"), source->size(), targetName, STRING_OR_DEFAULT(toSystem->Name, "n/a"));
         }
-        if (success && checkExists(source->name() ))
+        if (success && checkExists(targetName))
         {
-
-            size_t targetSize=GetFileSize(source->name(), toSystem);
+            size_t targetSize = GetFileSize(targetName, toSystem);
             if (targetSize == 0)
             {
-                PrintScreenMessage(false,"Removing empty file on %s",toSystem->Name);
-                toSystem->remove(source->name());
+                PrintScreenMessage(false, "Removing empty file on %s", toSystem->Name);
+                toSystem->remove(targetName);
             }
             else
             {
-                PrintScreenMessage(false,"File %s exists on %s", source->name(), toSystem->Name);
+                PrintScreenMessage(false, "File %s exists on %s", targetName, toSystem->Name);
                 return true;
             }
         }
         if (success)
         {
-            File target = toSystem->open(source->name(), FILE_WRITE);
+            File target = toSystem->open(targetName, FILE_WRITE);
             if (target)
             {
-                char buffer[501]={0};
+                char buffer[501] = {0};
                 size_t remaining = source->size();
                 size_t readBytes = 0;
                 while (remaining > 0 && success)
@@ -325,8 +374,8 @@ namespace FreeTouchDeck
                     readBytes = source->readBytes(buffer, sizeof(buffer));
                     if (readBytes == 0)
                     {
-                        PrintScreenMessage(false, "Could not read from %s! (size=%d bytes), buffer size is (%d), file position is %d",source->name(),source->size(), sizeof(buffer),source->position());
-                        success=false;
+                        PrintScreenMessage(false, "Could not read from %s! (size=%d bytes), buffer size is (%d), file position is %d", source->name(), source->size(), sizeof(buffer), source->position());
+                        success = false;
                         break;
                     }
                     else
@@ -334,10 +383,10 @@ namespace FreeTouchDeck
                         remaining -= readBytes;
                         if (target.write((uint8_t *)buffer, readBytes) != readBytes)
                         {
-                            PrintScreenMessage(false,"File copy error. Could not write %d bytes to %s on %s", readBytes, target.name(), STRING_OR_DEFAULT(toSystem->Name, "N/A"));
+                            PrintScreenMessage(false, "File copy error. Could not write %d bytes to %s on %s", readBytes, target.name(), STRING_OR_DEFAULT(toSystem->Name, "N/A"));
                             success = false;
                         }
-                        LOC_LOGD(module,"%d/%d bytes copied",source->size()-remaining,source->size());
+                        LOC_LOGD(module, "%d/%d bytes copied", source->size() - remaining, source->size());
                     }
                 }
                 target.flush();
@@ -345,14 +394,35 @@ namespace FreeTouchDeck
             }
             else
             {
-                PrintScreenMessage(false,"Opening %s failed on target %s",source->name(), toSystem->Name);
+                PrintScreenMessage(false, "Opening %s failed on target %s", targetName, toSystem->Name);
                 return false;
             }
         }
         if (!success)
         {
-            PrintScreenMessage(false,"Unable to copy file %s to %s", STRING_OR_DEFAULT(source->name(), "N/A"), toSystem ? STRING_OR_DEFAULT(toSystem->Name, "") : "N/A");
+            PrintScreenMessage(false, "Unable to copy file %s to %s on %s", STRING_OR_DEFAULT(source->name(), "N/A"), targetName, toSystem ? STRING_OR_DEFAULT(toSystem->Name, "") : "N/A");
         }
+        return success;
+    }
+    bool CopyFile(const char *source, FileSystem_t *fromSystem, FileSystem_t *toSystem)
+    {
+        return CopyFile(source, source, fromSystem, toSystem);
+    }
+    bool CopyFile(const char *source, const char *target, FileSystem_t *fromSystem, FileSystem_t *toSystem)
+    {
+        bool success = false;
+        fs::File sourceFile = fromSystem->open(source, FILE_READ);
+        if (!sourceFile || sourceFile.size() == 0 || sourceFile.isDirectory())
+        {
+            if (sourceFile)
+            {
+                sourceFile.close();
+            }
+            LOC_LOGE(module, "Unable to open source file, or source file is empty");
+            return false;
+        }
+        success = CopyFile(&sourceFile, target, toSystem);
+        sourceFile.close();
         return success;
     }
     bool CopyDirectory(const char *source, FileSystem_t *toSystem)
@@ -384,9 +454,9 @@ namespace FreeTouchDeck
         File file = root.openNextFile();
         while (file)
         {
-            if (strncmp(file.name(), source, strlen(source)) == 0 )
+            if (strncmp(file.name(), source, strlen(source)) == 0)
             {
-                LOC_LOGI(module, "Found file %s, size %d", file.name(),file.size());
+                LOC_LOGI(module, "Found file %s, size %d", file.name(), file.size());
                 if (!CopyFile(&file, toSystem))
                 {
                     PrintScreenMessage(false, "Stopping copy due to error.");
@@ -419,7 +489,7 @@ namespace FreeTouchDeck
         }
         else
         {
-            LOC_LOGD(module,"Showing directory content");
+            LOC_LOGD(module, "Showing directory content");
             ShowDir();
             PrintScreenMessage(true, "Initializing %s for first use. Creating directory /config", ftdfs->Name);
             PrintScreenMessage(false, "Creating directory /config");
@@ -443,7 +513,7 @@ namespace FreeTouchDeck
         return true;
     }
 
-    void ShowDir(FileSystem_t * targetFS)
+    void ShowDir(FileSystem_t *targetFS)
     {
         if (!checkErrorFileSystem(targetFS))
             return;
@@ -462,7 +532,32 @@ namespace FreeTouchDeck
     }
     void ShowDir()
     {
-       ShowDir(ftdfs);
+        ShowDir(ftdfs);
+    }
+    bool ShowFileContent(const char * fileName, FileSystem_t * fileSystem)
+    {
+        bool success = false;
+        char buffer[55]={0};
+        fs::File sourceFile = fileSystem->open(fileName, FILE_READ);
+        if (!sourceFile || sourceFile.size() == 0 || sourceFile.isDirectory())
+        {
+            if (sourceFile)
+            {
+                sourceFile.close();
+            }
+            LOC_LOGE(module, "Unable to open source file, or source file is empty");
+            return false;
+        }
+        size_t readBytes=0;
+        do
+        {
+            readBytes=sourceFile.readBytes(buffer, sizeof(buffer)-1);
+            buffer[readBytes]='\0';
+            Serial.print(buffer);
+        }while(readBytes>0);
+        sourceFile.close();
+        Serial.println();
+        return success;        
     }
 
     FileSystem_t::FileSystem_t(
@@ -505,6 +600,6 @@ namespace FreeTouchDeck
         strmdir = _str_rmdir;
         inserted = _inserted;
         External = _external;
-        end=_end;
+        end = _end;
     }
 };

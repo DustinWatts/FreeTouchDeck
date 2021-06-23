@@ -15,7 +15,7 @@
 	"rowscount": 3,
 	"colscount": 3,
 	"keydelay": 0,
-	"ledbrightness": 225,
+	"ledbrightness": 255,
 	"textsize": 1,
-	"backgroundcolor": 0
+	"backgroundcolor": "#000000"
 }

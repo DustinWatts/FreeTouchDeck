@@ -9,10 +9,13 @@ namespace FreeTouchDeck
     {
     public:
         void Draw(int16_t x, int16_t y, bool transparent);
-        ImageFormatJPG(const char *imageName);
-        static ImageFormatJPG * GetImageInstance(const char *imageName);
+        ImageFormatJPG(const std::string &imageName);
+        ImageFormatJPG();
+        static ImageFormatJPG * GetImageInstance(const std::string &imageName);
         const String& GetDescription();
+        const std::string &GetLogoName();
         uint16_t GetPixelColor();
+        bool IsValid();
     private:
         uint16_t PixelColor;
         static bool Transparent;

@@ -19,7 +19,6 @@ namespace FreeTouchDeck
     bool SetLargestFont();
     bool SetLargerFont();
     void DrawSplash();
-    void CacheBitmaps();
     extern TFT_eSPI tft;
     const char *convertRGB656ToHTMLRGB888(unsigned long rgb565);
     unsigned int convertHTMLRGB888ToRGB565(const char *html);
@@ -37,7 +36,7 @@ namespace FreeTouchDeck
 */
   inline unsigned int convertRGB888ToRGB565(unsigned long rgb)
   {
-    return (((rgb & 0xf80000) >> 8) | ((rgb & 0xfc00) >> 5) | ((rgb & 0xf8) >> 3));
+    return tft.color24to16(rgb);
   }
 inline unsigned int convertRGB888ToRGB565(uint8_t * rgb, uint8_t depth)
   {
@@ -55,5 +54,5 @@ inline unsigned int convertRGB888ToRGB565(uint8_t * rgb, uint8_t depth)
       }
       return 0;
   }
-    extern std::list<std::string> Messages;
+    extern std::vector<std::string> Messages;
 }

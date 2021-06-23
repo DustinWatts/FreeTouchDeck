@@ -1,6 +1,7 @@
 #pragma once
 #include "WString.h"
 #include "ESPAsyncWebServer.h"
+#include "cJSON.h"
 namespace FreeTouchDeck
 {
     /**
@@ -13,7 +14,7 @@ namespace FreeTouchDeck
 *
 * @note none
 */
-String handleFileList(String path);
+cJSON * handleFileList(const char * path);
 String handleAPISList();
 /**
 * @brief This function returns information about FreeTouchDeck in a json 
@@ -25,7 +26,7 @@ String handleAPISList();
 *
 * @note none
 */
-String handleInfo();
+cJSON * AllocGetInfoJson();
 /**
 * @brief This function handles error.htm template processing.
 *

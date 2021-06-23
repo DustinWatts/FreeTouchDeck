@@ -20,13 +20,13 @@ Input  : const char * message
 Output : none
 Note   : none
 */
-  std::list<std::string> Messages;
+  std::vector<std::string> Messages;
   void drawErrorMessage(bool stop, const char *module, const char *fmt, ...)
   {
     va_list args;
     va_start(args, fmt);
     char *message = NULL;
-    char *printmsg = message;
+    const char *printmsg = fmt;
     size_t msg_size = 0;
 
     msg_size = vsnprintf(NULL, 0, fmt, args) + 4;
@@ -36,29 +36,22 @@ Note   : none
     {
       ESP_LOGE(module, "Could not allocate %d bytes of memory to display message on screen", msg_size);
       stop = true;
+      tft.println(fmt);
     }
     else
     {
       vsprintf(message, fmt, args);
       printmsg = message;
       LOC_LOGE(module, "%s", message);
+      displayInit();
+      ClearScreen();
+      tft.println(printmsg);
+      FREE_AND_NULL(message);
     }
     va_end(args);
-    displayInit();
-    if (stop)
-    {
-      SetActiveScreen("criticalmessage");
-    }
-
-    tft.fillScreen(TFT_BLACK);
-    SetSmallestFont(1);
-    tft.setTextSize(1);
-    tft.setCursor(0, tft.fontHeight() + 1);
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);
-    tft.println(printmsg);
+  
     TFTPrintMemInfo();
-
-    FREE_AND_NULL(message);
+    
     uint16_t t_x;
     uint16_t t_y;
     while (stop)
@@ -126,7 +119,7 @@ Note   : none
       }
     }
   }
-  std::list<const GFXfont *> FontsList;
+  std::vector<const GFXfont *> FontsList;
   const GFXfont *CurrentFont = LABEL_FONT;
   const GFXfont *DefaultFont = LABEL_FONT;
   const GFXfont *GetCurrentFont()
@@ -159,7 +152,7 @@ Note   : none
   }
   bool SetSmallestFont(int whichOne)
   {
-    std::list<const GFXfont *>::iterator it = FontsList.begin();
+    std::vector<const GFXfont *>::iterator it = FontsList.begin();
     std::advance(it, whichOne);
     if (it != FontsList.end())
     {
@@ -232,7 +225,6 @@ Note   : none
   void ClearScreen()
   {
     SetSmallestFont(1);
-    tft.setTextSize(1);
     tft.setCursor(0, tft.fontHeight() + 1);
     tft.fillScreen(generalconfig.backgroundColour);
     tft.setTextColor(generalconfig.DefaultTextColor, generalconfig.backgroundColour);
@@ -305,8 +297,8 @@ Note   : none
   void DrawSplash()
   {
     LOC_LOGD(module, "Loading splash screen bitmap.");
-    ImageWrapper *splash = ImageCache::GetImage("freetouchdeck_logo.jpg");
-    if (splash)
+    auto splash = ImageCache::GetImage("freetouchdeck_logo.jpg");
+    if (splash->valid)
     {
       LOC_LOGD(module, "splash screen bitmap loaded. Drawing");
       splash->Draw(tft.width() / 2, tft.height() / 2, false);
@@ -316,26 +308,7 @@ Note   : none
       LOC_LOGW(module, "Unable to draw the splash screen.");
     }
   }
-  void CacheBitmaps()
-  {
-    // Preload all bitmaps
-    File root = ftdfs->open("/", FILE_READ);
-    File file = root.openNextFile();
-    PrintMemInfo(__FUNCTION__, __LINE__);
-    while (file)
-    {
-      String FileName = file.name();
-      if (FileName.endsWith(".bmp"))
-      {
-        int start = FileName.lastIndexOf("/") + 1;
-        FileName = FileName.substring(start);
-        LOC_LOGV(module, "Caching bitmap from file %s, with name %s", file.name(), FileName.c_str());
-        FreeTouchDeck::ImageWrapper *image = ImageCache::GetImage(FileName.c_str());
-        LOC_LOGV(module, "Adding menu completed. Getting next file");
-      }
-      file = root.openNextFile();
-    }
-  }
+
 
   /**
 * @brief This functions accepts a HTML including the # colour code 
@@ -379,7 +352,7 @@ Note   : none
 
   unsigned long convertRGB656ToRGB888(unsigned long rgb565)
   {
-    return (unsigned long)(rgb565 & 0xF800 << 8) | (rgb565 & 0x7E0 << 5) | (rgb565 & 0x1F << 3);
+    return tft.color16to24(rgb565);
   }
   const char *convertRGB656ToHTMLRGB888(unsigned long rgb565)
   {

@@ -14,7 +14,7 @@ namespace FreeTouchDeck
     FTAction *beepClearLatchAction = new FTAction(ParametersList_t({"LATCH", "Preferences", "Beep", "OFF"}));
     FTAction *criticalMessage = new FTAction(ParametersList_t({"MENU", "criticalmessage"}));
     const char *MenuActionTemplate = "{MENU:%s}";
-    std::list<Menu *> PrevScreen;
+    std::vector<Menu *> PrevScreen;
     static const char *configMenu =
         R"({
 	"name": "Preferences",
@@ -80,7 +80,7 @@ namespace FreeTouchDeck
 	})";
     static const char *module = "MenuNavigation";
     using namespace std;
-    std::list<Menu *> Menus;
+    std::vector<Menu *> Menus;
     SemaphoreHandle_t xScreenSemaphore = xSemaphoreCreateMutex();
     bool ScreenLock(TickType_t xTicksToWait)
     {
@@ -144,14 +144,12 @@ namespace FreeTouchDeck
                 {
                     Match = GetScreen("home");
                 }
-                // stop executing any pending keyboard action
-                EmptyQueue();
             }
             else
             {
                 for (auto m : Menus)
                 {
-                    if (!strcmp(m->Name, name))
+                    if (!strcmp(m->Name.c_str(), name))
                     {
                         Match = m;
                     }
@@ -162,7 +160,7 @@ namespace FreeTouchDeck
             {
                 LOC_LOGD(module, "Screen %s not found", name);
             }
-            else 
+            else
             {
                 LOC_LOGD(module, "Screen %s was found", name);
             }
@@ -183,7 +181,7 @@ namespace FreeTouchDeck
         PrintMemInfo(__FUNCTION__, __LINE__);
         if (Match)
         {
-            if (Active && Match && strcmp(Active->Name, Match->Name) == 0)
+            if (Active && Match && strcmp(Active->Name.c_str(), Match->Name.c_str()) == 0)
             {
                 LOC_LOGD(module, "Screen %s is already active", name);
             }
@@ -198,11 +196,11 @@ namespace FreeTouchDeck
                     Active->Deactivate();
                 }
                 Match->Activate();
-                if(strcmp("home",Match->Name)==0 && PrevScreen.size()>0)
+                if (strcmp("home", Match->Name.c_str()) == 0 && PrevScreen.size() > 0)
                 {
-                    LOC_LOGD(module,"Returning to home from lower level menu. Clearing navigation stack");
+                    LOC_LOGD(module, "Returning to home from lower level menu. Clearing navigation stack");
                     PrevScreen.clear();
-                }                
+                }
 
                 ScreenUnlock();
                 result = true;
@@ -216,20 +214,6 @@ namespace FreeTouchDeck
         return result;
     }
 
-    void DeleteMenuEntry(const char *name)
-    {
-        Menu *existing = GetScreen(name, false);
-        if (existing)
-        {
-            LOC_LOGD(module, "Removing existing menu %s", name);
-            delete (existing);
-            Menus.remove(existing);
-        }
-        else
-        {
-            LOC_LOGD(module, "Menu %s is new", STRING_OR_DEFAULT(name, "?"));
-        }
-    }
     bool AddReplaceMenuEntry(Menu *menu)
     {
         if (!menu)
@@ -237,9 +221,18 @@ namespace FreeTouchDeck
             LOC_LOGE(module, "Invalid menu object!");
             return false;
         }
-        LOC_LOGD(module, "Checking if menu %s exists", STRING_OR_DEFAULT(menu->Name, "?"));
-        DeleteMenuEntry(menu->Name);
-        LOC_LOGD(module, "Adding menu %s to the list", STRING_OR_DEFAULT(menu->Name, "?"));
+        LOC_LOGD(module, "Checking if menu %s already exists in list of %d", menu->Name.c_str(), Menus.size());
+        for (int i = 0; i < Menus.size(); i++)
+        {
+            if (Menus[i]->Name == menu->Name)
+            {
+                LOC_LOGD(module, "Replacing existing menu %s in the structure", menu->Name.c_str());
+                delete (Menus[i]);
+                Menus[i] = menu;
+                return true;
+            }
+        }
+        LOC_LOGD(module, "Adding menu %s to the list", menu->Name.c_str());
         Menus.push_back(menu);
         return true;
     }
@@ -247,7 +240,19 @@ namespace FreeTouchDeck
     {
         // This function assumes that the menu collection
         // object will be locked
-        Menu *menu = new Menu(menuJson);
+        Menu *menu = NULL;
+        LOC_LOGD(module, "Instantiating new menu from a JSON object");
+        PrintMemInfo(__FUNCTION__, __LINE__);
+        try
+        {
+            menu = new Menu(menuJson);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+
+        PrintMemInfo(__FUNCTION__, __LINE__);
         return AddReplaceMenuEntry(menu);
     }
     bool PushJsonMenu(const char *menuString)
@@ -256,7 +261,7 @@ namespace FreeTouchDeck
         // object will be locked
         Menu *menu = NULL;
         bool result = true;
-
+        PrintMemInfo(__FUNCTION__, __LINE__);
         cJSON *doc = cJSON_Parse(menuString);
         if (!doc)
         {
@@ -285,6 +290,7 @@ namespace FreeTouchDeck
             }
         }
         cJSON_Delete(doc);
+        PrintMemInfo(__FUNCTION__, __LINE__);
         return result;
     }
 
@@ -300,7 +306,7 @@ namespace FreeTouchDeck
     bool compare_nocase(const Menu *first, const Menu *second)
     {
         unsigned int i = 0;
-        while ((i < strlen(first->Name)) && (i < strlen(second->Name)))
+        while ((i < first->Name.length()) && (i < second->Name.length()))
         {
             if (tolower(first->Name[i]) < tolower(second->Name[i]))
                 return true;
@@ -308,9 +314,9 @@ namespace FreeTouchDeck
                 return false;
             ++i;
         }
-        return (strlen(first->Name) < strlen(second->Name));
+        return (first->Name.length()) < second->Name.length();
     }
-    bool GenerateHomeScreen(bool sortFirst)
+    bool GenerateHomeScreen()
     {
         FTButton *oldButton = NULL;
         LOC_LOGD(module, "Generating home screen");
@@ -323,11 +329,6 @@ namespace FreeTouchDeck
         cJSON_AddNumberToObject(home, Menu::JsonLabelRowsCount, generalconfig.rowscount);
         if (Menus.size() > 0)
         {
-            // sort by alphabetical order
-            if (sortFirst)
-            {
-                Menus.sort(compare_nocase);
-            }
 
             cJSON *buttons = cJSON_CreateArray();
             for (auto menu : Menus)
@@ -335,16 +336,21 @@ namespace FreeTouchDeck
                 if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
                 {
                     cJSON *button = cJSON_CreateObject();
-                    cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, STRING_OR_DEFAULT(menu->Label, STRING_OR_DEFAULT(menu->Name, "")));
-                    if (!ISNULLSTRING(menu->Icon))
+                    cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, menu->Label.c_str());
+                    if (!menu->Icon.empty())
                     {
-                        cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, menu->Icon);
+                        cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, menu->Icon.c_str());
                     }
                     cJSON *actions = cJSON_CreateArray();
-                    char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + strlen(menu->Name));
-                    sprintf(menuActionString, MenuActionTemplate, menu->Name);
+                    char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + menu->Name.length());
+                    sprintf(menuActionString, MenuActionTemplate, menu->Name.c_str());
                     cJSON_AddItemToArray(actions, cJSON_CreateString(menuActionString));
                     FREE_AND_NULL(menuActionString);
+                    // if the menu has an action, make sure it is also added
+                    for (ActionsSequences &a : menu->Actions)
+                    {
+                        cJSON_AddItemToArray(actions, cJSON_CreateString(a.ConfigSequence));
+                    }
                     cJSON_AddItemToObject(button, FTButton::JsonLabelActions, actions);
                     DumpCJson(button);
                     cJSON_AddItemToArray(buttons, button);
@@ -372,7 +378,7 @@ namespace FreeTouchDeck
         }
         return true;
     }
-    bool GenerateHomeScreenObject(bool sortFirst)
+    bool GenerateHomeScreenObject()
     {
         LOC_LOGD(module, "Generating home screen");
         // todo:  for "OLDHOME" menu types,
@@ -380,22 +386,19 @@ namespace FreeTouchDeck
         Menu *home = new Menu(MenuTypes::ROOT, "home", "", "", generalconfig.rowscount, generalconfig.colscount, generalconfig.backgroundColour, generalconfig.DefaultOutline, generalconfig.DefaultTextColor, generalconfig.DefaultTextSize);
         if (Menus.size() > 0)
         {
-            // sort by alphabetical order
-            if (sortFirst)
-            {
-                Menus.sort(compare_nocase);
-            }
+
             for (auto menu : Menus)
             {
                 if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
                 {
-                    FTButton *button = new FTButton(ButtonTypes::STANDARD, STRING_OR_DEFAULT(menu->Label, STRING_OR_DEFAULT(menu->Name, "")), menu->Icon, "", generalconfig.DefaultOutline, generalconfig.DefaultTextSize, generalconfig.DefaultTextColor);
+                    LOC_LOGD(module,"Creating home screen button for menu %s", menu->Label.c_str());
+                    auto button = FTButton(ButtonTypes::STANDARD, menu->Label.c_str(), menu->Icon.c_str(), "", generalconfig.DefaultOutline, generalconfig.DefaultTextSize, generalconfig.DefaultTextColor);
                     ActionsSequences sequences;
-                    char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + strlen(menu->Name));
-                    sprintf(menuActionString, MenuActionTemplate, menu->Name);
+                    char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + menu->Name.length());
+                    sprintf(menuActionString, MenuActionTemplate, menu->Name.c_str());
                     sequences.Parse(menuActionString);
                     FREE_AND_NULL(menuActionString);
-                    button->Sequences.push_back(sequences);
+                    button.Sequences.push_back(sequences);
                     home->AddButton(button);
                 }
             }
@@ -442,6 +445,7 @@ namespace FreeTouchDeck
     {
         bool result = false;
         LOC_LOGI(module, "Loading menu structure from %s", fileName);
+        PrintMemInfo(__FUNCTION__, __LINE__);
         File menus = ftdfs->open(fileName, FILE_READ);
         if (!menus || menus.size() == 0)
         {
@@ -466,8 +470,8 @@ namespace FreeTouchDeck
             }
         }
         menus.close();
-  
         FREE_AND_NULL(fullbuffer);
+        PrintMemInfo(__FUNCTION__, __LINE__);
         return result;
     }
     void LoadAllMenus()
@@ -477,7 +481,7 @@ namespace FreeTouchDeck
             if (LoadFullFormat())
             {
                 LoadSystemMenus();
-                GenerateHomeScreenObject(false);
+                GenerateHomeScreenObject();
             }
             else
             {
@@ -496,9 +500,9 @@ namespace FreeTouchDeck
     {
         return GetScreen(action->FirstParameter());
     }
-    char *MenusToJson(bool withSystem)
+
+    cJSON *MenusToJsonObject(bool withSystem)
     {
-        char *json = NULL;
         cJSON *menusArray = cJSON_CreateArray();
         LOC_LOGD(module, "Locking menu object");
         if (ScreenLock(portMAX_DELAY / portTICK_PERIOD_MS))
@@ -507,16 +511,10 @@ namespace FreeTouchDeck
             {
                 if ((m->Type == MenuTypes::SYSTEM || m->Type == MenuTypes::HOMESYSTEM) && !withSystem)
                     continue; // don't output system menus as they are built-in
-                LOC_LOGD(module, "Converting menu %s", STRING_OR_DEFAULT(m->Name, "unknown"));
+                LOC_LOGD(module, "Converting menu %s", m->Name.c_str());
                 PrintMemInfo(__FUNCTION__, __LINE__);
                 cJSON *menuEntry = m->ToJSON();
                 cJSON_AddItemToArray(menusArray, menuEntry);
-                json = cJSON_Print(menuEntry);
-                if (json)
-                {
-                    LOC_LOGD(module, "%s", json);
-                    FREE_AND_NULL(json);
-                }
             }
             LOC_LOGD(module, "Unlocking menu object");
             ScreenUnlock();
@@ -527,6 +525,12 @@ namespace FreeTouchDeck
         }
         PrintMemInfo(__FUNCTION__, __LINE__);
         LOC_LOGD(module, "Menus were converted to JSON structure. Converting to string");
+        return menusArray;
+    }
+    char *MenusToJson(bool withSystem)
+    {
+        cJSON *menusArray = MenusToJsonObject(withSystem);
+        char *json = NULL;
         json = cJSON_Print(menusArray);
         if (json)
         {

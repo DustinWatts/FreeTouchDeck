@@ -41,7 +41,7 @@ For Capacitive touch:
 - ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
 - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
 - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-- ArduinoJson (version 6.16.1 or higher), available through Library Manager
+- TJpg_Decoder (version 0.0.3 or higher), available through Library Manager or https://github.com/Bodmer/TJpg_Decoder
 
 If you use capacitive touch:
 - FT6236 (latest version), download from: https://github.com/DustinWatts/FT6236
