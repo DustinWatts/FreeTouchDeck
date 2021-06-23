@@ -554,12 +554,11 @@ namespace FreeTouchDeck
         {
             FTAction *Action = NULL;
             Action = PopQueue();
-            if (Action && !FTAction::Stopped)
+            if (Action)
             {
                 ResetSleep();
                 Action->Execute();
             }
-            FTAction::Stopped = false;
         }
         catch (const std::exception &e)
         {

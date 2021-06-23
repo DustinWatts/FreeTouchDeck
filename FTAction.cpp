@@ -15,7 +15,6 @@ static char printBuffer[201] = {0};
 
 namespace FreeTouchDeck
 {
-    bool FTAction::Stopped = false;
     const char *splitterFormat = "%[^.:,]%*s";
     const char *separatorFormat = "%[ .:,]";
     SemaphoreHandle_t xQueueSemaphore = xSemaphoreCreateMutex();
@@ -328,7 +327,6 @@ namespace FreeTouchDeck
         if (getTouch(&t_x, &t_y))
         {
             EmptyQueue();
-            LOC_LOGI(module, "Stopping action playback.");
             return true;
         }
         return false;
@@ -362,19 +360,15 @@ namespace FreeTouchDeck
         Type = ActionTypes::LOCAL;
         Parameters = parameters;
     }
-    void FTAction::Stop()
-    {
-        FTAction::Stopped = true;
-    }
     void FTAction::Execute()
     {
+        bool wasStopped = false;
         MediaKeyReport MediaKey;
         LOC_LOGD(module, "Executing Action %s", toString());
         if (checkForStop())
         {
             return;
         }
-        FTAction::Stopped = false;
         switch (Type)
         {
         case ActionTypes::NONE:
@@ -403,11 +397,8 @@ namespace FreeTouchDeck
                         // individually
                         bleKeyboard.press(ks);
                         delay(generalconfig.keyDelay);
-                        checkForStop();
-                        if (FTAction::Stopped)
-                        {
-                            break;
-                        }
+                        wasStopped=checkForStop();
+                        if(wasStopped) break;
                         
                     }
                 }
@@ -423,12 +414,8 @@ namespace FreeTouchDeck
                         delay(HoldTime);
                         bleKeyboard.release(ks);
                         delay(generalconfig.keyDelay);
-                        checkForStop();
-                        if (FTAction::Stopped)
-                        {
-                            break;
-                        }
-                        
+                        wasStopped=checkForStop();
+                        if(wasStopped) break;
                     }
                 }
             }
@@ -438,7 +425,7 @@ namespace FreeTouchDeck
         default:
             break;
         }
-        if (FTAction::Stopped && NeedsRelease)
+        if (wasStopped && NeedsRelease)
         {
             bleKeyboard.releaseAll();
         }
@@ -495,11 +482,10 @@ namespace FreeTouchDeck
             }
             QueueUnlock();
         }
-        FTAction::Stop();
     }
     size_t QueueSize()
     {
-        return Queue.size()+ScreenQueue.size();
+        return Queue.size() + ScreenQueue.size();
     }
     FTAction *PopQueue()
     {

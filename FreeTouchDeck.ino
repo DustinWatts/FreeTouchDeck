@@ -172,7 +172,7 @@ void setup()
   // ---------------- Start the first keypad -------------
 
   // Draw background
-  if (!GetActiveScreen())
+  if (RunMode== SystemMode::STANDARD && !GetActiveScreen())
   {
     // only set active screen to home if no screen is already active
     // for example don't active home if drawError was called
