@@ -1,13 +1,21 @@
 {
+	"sleepenable": true,
+	"beep": false,
 	"menubuttoncolor": "#009bf4",
 	"functionbuttoncolor": "#00efcb",
 	"latchcolor": "#fe0149",
 	"background": "#000000",
-	"sleepenable": true,
-	"sleeptimer": 10,
-	"beep": true,
-	"modifier1": 130,
-	"modifier2": 129,
-	"modifier3": 0,
-	"helperdelay": 500
+	"outline": "#ffffff",
+	"textcolor": "#ffffff",
+	"loglevel": 3,
+	"sleeptimer": 60,
+	"manufacturer": "Made by me",
+	"devicename": "FreeTouchDeck",
+	"helperdelay": 0,
+	"rowscount": 3,
+	"colscount": 3,
+	"keydelay": 0,
+	"ledbrightness": 255,
+	"textsize": 1,
+	"backgroundcolor": "#000000"
 }
