@@ -303,12 +303,10 @@ namespace FreeTouchDeck
     }
     void WaitTouchReboot()
     {
-        uint16_t t_x;
-        uint16_t t_y;
         PrintScreenMessage(false, "Press screen to restart");
         while (true)
         {
-            if (getTouch(&t_x, &t_y))
+            if (isTouched())
             {
                 PrintScreenMessage(false, "Restarting...");
                 delay(2000);

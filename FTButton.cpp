@@ -15,6 +15,7 @@ namespace FreeTouchDeck
         switch (type)
         {
             ENUM_TO_STRING_HELPER(ButtonTypes, STANDARD);
+            ENUM_TO_STRING_HELPER(ButtonTypes, MENU);
             ENUM_TO_STRING_HELPER(ButtonTypes, LATCH);
         default:
             return "Unknown button type";
@@ -66,8 +67,19 @@ namespace FreeTouchDeck
         Outline = outline;
         TextSize = textSize;
         TextColor = textColor;
+        MenuBackgroundColor = generalconfig.backgroundColour;
         LOC_LOGD(module, "Button type is [%s], Label: [%s], Logo : [%s], Draw type is [%s]", enum_to_string(ButtonType), Label.c_str(), _jsonLogo.c_str(),IsLabel ? "LABEL" : "IMAGE");
         PrintMemInfo(__FUNCTION__, __LINE__);
+    }
+    bool FTButton::IsMenu()
+    {
+        if(ButtonType==ButtonTypes::MENU) return true;
+        for(auto al : Sequences)
+        {
+            if(al.HasMenuAction())
+            return true;
+        }
+        return false;
     }
     FTButton::FTButton(const char *jsonString, bool isShared)
     {
@@ -227,7 +239,7 @@ namespace FreeTouchDeck
                 }
             }
             LOC_LOGD(module, "Label draw of button [%s] [%d pixels]", buttonLabel, ButtonWidth);
-            BGColor = convertRGB888ToRGB565(BackgroundColor);
+            BGColor = convertRGB888ToRGB565(IsMenu()?generalconfig.functionButtonColour:BackgroundColor);
         }
         else
         {
@@ -237,7 +249,7 @@ namespace FreeTouchDeck
             {
                 LOC_LOGV(module, "Corner pixel is black, drawing transparent with default background color");
                 transparent = true;
-                BGColor = convertRGB888ToRGB565(BackgroundColor);
+                BGColor = convertRGB888ToRGB565(IsMenu()?generalconfig.functionButtonColour:BackgroundColor);
             }
             else
             {
@@ -450,7 +462,8 @@ namespace FreeTouchDeck
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelOutline, convertRGB888oHTMLRGB888(Outline));
         }
-        if (BackgroundColor != MenuBackgroundColor)
+        uint32_t baseColor=IsMenu()?generalconfig.functionButtonColour:MenuBackgroundColor;
+        if (BackgroundColor != baseColor)
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelBackground, convertRGB888oHTMLRGB888(BackgroundColor));
         }
@@ -516,7 +529,6 @@ namespace FreeTouchDeck
             LOC_LOGD(module, "Latched logo: %s", _jsonLatchedLogo.c_str());
         }
         GetColorOrDefault(button, FTButton::JsonLabelOutline, &Outline, generalconfig.DefaultOutline);
-        GetColorOrDefault(button, FTButton::JsonLabelBackground, &BackgroundColor, MenuBackgroundColor);
         GetColorOrDefault(button, FTButton::JsonLabelTextColor, &TextColor, generalconfig.DefaultTextColor);
         GetValueOrDefault(button, FTButton::JsonLabelTextSize, &TextSize, generalconfig.DefaultTextSize);
 
@@ -541,6 +553,10 @@ namespace FreeTouchDeck
                 }
             }
         }
+        // re-determine color at the end, since we need to know if there are menu actions 
+        ButtonType=IsMenu()?ButtonTypes::MENU:ButtonType;
+        GetColorOrDefault(button, FTButton::JsonLabelBackground, &BackgroundColor, IsMenu()?generalconfig.functionButtonColour:MenuBackgroundColor);
+
         PrintMemInfo(__FUNCTION__, __LINE__);
     }
     FTButton::FTButton(cJSON *button)
