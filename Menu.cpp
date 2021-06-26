@@ -81,6 +81,20 @@ namespace FreeTouchDeck
         {
             FTButton::BackButton->Release();
         }
+        if (buttons.size() == 0)
+        {
+            if (Actions.size() > 0)
+            {
+                // Some empty screens might be defined with a default
+                // action. e.g. go back to previous menu, home screen, etc.
+                for (auto action : Actions)
+                {
+                    action.Execute();
+                }
+                // debounce
+                delay(50);
+            }
+        }        
     }
     void Menu::Activate()
     {
@@ -154,19 +168,6 @@ namespace FreeTouchDeck
             else
             {
                 FTButton::BackButton->UnPress();
-            }
-        }
-        if (!foundPressedButton && buttons.size() == 0)
-        {
-            if (Actions.size() > 0)
-            {
-                // Some empty screens might be defined with a default
-                // action. e.g. go back to previous menu, home screen, etc.
-                for (auto action : Actions)
-                {
-                    action.Execute();
-                    foundPressedButton = true;
-                }
             }
         }
         else if (!foundPressedButton)

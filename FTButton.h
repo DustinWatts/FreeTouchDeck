@@ -11,6 +11,7 @@ namespace FreeTouchDeck
     {
         NONE,
         STANDARD,
+        MENU,
         LATCH,
         ENDLIST
     };
@@ -65,7 +66,7 @@ namespace FreeTouchDeck
         static const char *backButtonTemplate;
         static const char *homeButtonTemplate;
         bool IsShared = false;
-
+        bool IsMenu();
         std::vector<ActionsSequences> Sequences;
         FTButton(cJSON *button);
         FTButton();

@@ -3,10 +3,20 @@ namespace FreeTouchDeck
 {
     bool ActionsSequences::HasKeyboardAction()
     {
+        return HasAction(ActionTypes::KEYBOARD);
+    }
+    bool ActionsSequences::HasMenuAction()
+    {
+        return HasAction(ActionTypes::LOCAL,"MENU");
+    }
+    bool ActionsSequences::HasAction(ActionTypes actionType, const char * name)
+    {
         for (FTAction * action : Actions)
         {
-            if(action->Type == ActionTypes::KEYBOARD)
-            return true;
+            if(action->Type == actionType && (ISNULLSTRING(name) || strcmp(name,action->ActionName())==0 ))
+            {
+                return true;
+            }
         }
         return false;
     }

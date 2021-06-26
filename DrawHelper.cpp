@@ -52,11 +52,9 @@ Note   : none
   
     TFTPrintMemInfo();
     
-    uint16_t t_x;
-    uint16_t t_y;
     while (stop)
     {
-      if (getTouch(&t_x, &t_y))
+      if (isTouched())
       {
         tft.println("Restarting...");
         delay(1000);

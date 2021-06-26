@@ -337,6 +337,7 @@ namespace FreeTouchDeck
                 {
                     cJSON *button = cJSON_CreateObject();
                     cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, menu->Label.c_str());
+                    cJSON_AddStringToObject(button, FTButton::JsonLabelType, enum_to_string(ButtonTypes::MENU));
                     if (!menu->Icon.empty())
                     {
                         cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, menu->Icon.c_str());

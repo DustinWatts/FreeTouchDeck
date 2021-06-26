@@ -322,9 +322,7 @@ namespace FreeTouchDeck
     }
     bool checkForStop()
     {
-        uint16_t t_x = 0;
-        uint16_t t_y = 0;
-        if (getTouch(&t_x, &t_y))
+        if (isTouched())
         {
             EmptyQueue();
             return true;
@@ -364,7 +362,7 @@ namespace FreeTouchDeck
     {
         bool wasStopped = false;
         MediaKeyReport MediaKey;
-        LOC_LOGD(module, "Executing Action %s", toString());
+        LOC_LOGI(module, "Executing Action %s", toString());
         if (checkForStop())
         {
             return;
@@ -383,7 +381,14 @@ namespace FreeTouchDeck
             {
                 MediaKey[0] = Values[0];
                 MediaKey[1] = Values[1];
-                bleKeyboard.write(MediaKey);
+                if (NeedsRelease)
+                {
+                    bleKeyboard.press(MediaKey);
+                }
+                else
+                {
+                    bleKeyboard.write(MediaKey);
+                }
                 delay(generalconfig.keyDelay);
             }
             else
@@ -408,7 +413,7 @@ namespace FreeTouchDeck
                     {
                         if (HoldTime > 0)
                         {
-                            LOC_LOGD(module, "Pressing key with hold of %d ms", HoldTime);
+                            LOC_LOGI(module, "Pressing key with hold of %d ms", HoldTime);
                         }
                         bleKeyboard.press(ks);
                         delay(HoldTime);
@@ -427,6 +432,7 @@ namespace FreeTouchDeck
         }
         if (wasStopped && NeedsRelease)
         {
+            LOC_LOGI(module,"Releasing all keys");
             bleKeyboard.releaseAll();
         }
     }
@@ -439,12 +445,12 @@ namespace FreeTouchDeck
             break;
         case ActionTypes::LOCAL:
         case ActionTypes::KEYBOARD:
-            snprintf(printBuffer, sizeof(printBuffer), "Type: %s, value: ", enum_to_string(Type));
+            snprintf(printBuffer, sizeof(printBuffer), "%s:%s:",IsScreen()?"SCREEN":"LOCAL", enum_to_string(Type));
             for (auto p : Parameters)
             {
                 snprintf(printBuffer, sizeof(printBuffer), "%s %s", printBuffer, p.c_str());
             }
-            snprintf(printBuffer, sizeof(printBuffer), "%s, Values count: %d", printBuffer, Values.size());
+            snprintf(printBuffer, sizeof(printBuffer), "%s, Values count: %d, %s", printBuffer, Values.size(), NeedsRelease?"NEEDS RELEASE":"");
             break;
         default:
             break;
