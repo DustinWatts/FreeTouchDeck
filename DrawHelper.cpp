@@ -269,13 +269,13 @@ Note   : none
     vsprintf(formatted_message, message, args);
     LOC_LOGI(module, "%s", formatted_message);
     va_end(args);
-    screenbuffer.push_back(formatted_message);
-    FREE_AND_NULL(formatted_message);
     if (clear)
     {
       screenbuffer.clear();
       ClearScreen();
     }
+    screenbuffer.push_back(formatted_message);
+    FREE_AND_NULL(formatted_message);    
     if ((tft.getCursorY() + tft.fontHeight() ) > tft.height())
     {
       // This is where we start removing top lines
