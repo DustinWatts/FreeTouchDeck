@@ -1,6 +1,7 @@
 # Development Version To-Do:
 
 - [ ] RELEASEALL Doesn't work correctly when in one action.
+- [ ] Add a margin around the menus so we can have an offset from the edge off the screen
 - [ ] Function buttons all have the same black colour
 - [X] Dealing with the above -> we need a way to distinguish between MENU and FUNCTION button.
 - [ ] Responsiveness is not always optimal (maybe switch back to task?).
