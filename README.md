@@ -1,11 +1,13 @@
 # Development Version To-Do:
 
 - [ ] RELEASEALL Doesn't work correctly when in one action.
-- [ ] Function/menu buttons all have the same black colour, except the back button.
-- [ ] Dealing with the above -> we need a way to distinguish between MENU and FUNCTION button.
+- [ ] Function buttons all have the same black colour
+- [X] Dealing with the above -> we need a way to distinguish between MENU and FUNCTION button.
 - [ ] Responsiveness is not always optimal (maybe switch back to task?).
 - [ ] We need a configurator!
 - [ ] Create a binary for easy flashing.
+- [ ] Clean up icons, they are pretty noisy
+- [ ] Write the docs! :)
 
 # FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.

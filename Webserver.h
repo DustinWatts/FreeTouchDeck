@@ -16,6 +16,18 @@ namespace FreeTouchDeck
 */
 cJSON * handleFileList(const char * path);
 String handleAPISList();
+
+/**
+* @brief This function returns the general configuration in a json 
+         formatted string.
+*
+* @param none
+*
+* @return String
+*
+* @note none
+*/
+cJSON * AllocGetGeneralJson();
 /**
 * @brief This function returns information about FreeTouchDeck in a json 
          formatted string.
