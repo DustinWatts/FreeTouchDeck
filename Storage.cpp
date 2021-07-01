@@ -4,6 +4,7 @@
 #include "SPIFFS.h"
 #ifdef SDDAT3
 #include "SD.h"
+time_t sd_start_op;
 #endif
 namespace FreeTouchDeck
 {
@@ -110,7 +111,7 @@ namespace FreeTouchDeck
             []()
             {
                 LOC_LOGV(module, "SD Card Handler: Begin");
-                return SD.begin(SDDAT3);
+                return SD.begin(SDDAT3);;
             },
             []()
             {
@@ -139,78 +140,91 @@ namespace FreeTouchDeck
             },
             [](const char *path, const char *mode)
             {
-                checkStatusHold();
                 LOC_LOGV(module, "SD Card Handler: Open");
-                return SD.open(path, mode);
+                sd_start_op = millis();
+                fs:File f = SD.open(path, mode);
+                checkStatusHold();
+                return f;
             },
             [](const char *name)
             {
                 LOC_LOGV(module, "SD Card Handler: Exists");
-                return checkStatusHold() && SD.exists(name);
+                sd_start_op = millis();
+                return  SD.exists(name) && checkStatusHold();
             },
             [](const char *name)
             {
                 LOC_LOGV(module, "SD Card Handler: remove");
-                return checkStatusHold() && SD.remove(name);
+                sd_start_op = millis();
+                return SD.remove(name) && checkStatusHold();
             },
             [](const char *from, const char *to)
             {
                 LOC_LOGV(module, "SD Card Handler: rename");
-                return checkStatusHold() && SD.rename(from, to);
+                sd_start_op = millis();
+                return SD.rename(from, to) && checkStatusHold();
             },
             [](const char *name)
             {
                 LOC_LOGV(module, "SD Card Handler: mkdir");
-                return checkStatusHold() && SD.mkdir(name);
+                sd_start_op = millis();
+                return SD.mkdir(name) && checkStatusHold();
             },
             [](const char *name)
             {
                 LOC_LOGV(module, "SD Card Handler: rmdir");
-                return checkStatusHold() && SD.rmdir(name);
+                sd_start_op = millis();
+                return SD.rmdir(name) && checkStatusHold();
             },
             [](const String &path, const char *mode)
             {
+                LOC_LOGV(module, "SD Card Handler: String Open");
+                sd_start_op = millis();
+                fs:File f = SD.open(path, mode);
                 checkStatusHold();
-                LOC_LOGV(module, "SD Card Handler: string open");
-                return SD.open(path, mode);
+                return f;
             },
             [](const String &name)
             {
                 LOC_LOGV(module, "SD Card Handler: string exists");
-                return checkStatusHold() && SD.exists(name);
+                sd_start_op = millis();
+                return SD.exists(name) && checkStatusHold();
             },
             [](const String &name)
             {
                 LOC_LOGV(module, "SD Card Handler: string remove");
-                return checkStatusHold() && SD.remove(name);
+                sd_start_op = millis();
+                return SD.remove(name) && checkStatusHold();
             },
             [](const String &from, const String &to)
             {
                 LOC_LOGV(module, "SD Card Handler: string rename");
-                return checkStatusHold() && SD.rename(from, to);
+                sd_start_op = millis();
+                return SD.rename(from, to) && checkStatusHold();
             },
             [](const String &name)
             {
                 LOC_LOGV(module, "SD Card Handler: string mkdir");
-                return checkStatusHold() && SD.mkdir(name);
+                sd_start_op = millis();
+                return SD.mkdir(name) && checkStatusHold();
             },
             [](const String &name)
             {
                 LOC_LOGV(module, "SD Card Handler: string rmdir");
-                return checkStatusHold() && SD.rmdir(name);
+                sd_start_op = millis();
+                return SD.rmdir(name) && checkStatusHold();
             },
             []()
             {
-                // is there a way to check if the media is inserted?
-                LOC_LOGV(module, "SD Card Handler: inserted true");
-                return true;
+                // If the media was ejected, some operations will take longer 
+                // to execute
+                return millis()-sd_start_op<600;
             },
             true,
             []()
             {
                 LOC_LOGD(module, "Stopping SD");
                 SD.end();
-
                 return true;
             }),
 #endif
@@ -259,7 +273,8 @@ namespace FreeTouchDeck
     {
         while (!ftdfs->inserted())
         {
-            PrintScreenMessage(false, "Please insert %s and press to continue", ftdfs->Name);
+            PrintScreenMessage(true, "Please insert %s", ftdfs->Name);
+            WaitTouchReboot();
         }
         return true;
     }
