@@ -52,38 +52,7 @@ namespace FreeTouchDeck
     }
   }
   
-  cJSON * AllocGetGeneralJson()
-  {
-    
-    cJSON * generalConfig = cJSON_CreateObject();
-    float freemem = ftdfs->totalBytes() - ftdfs->usedBytes();
-    
-    cJSON_AddStringToObject(generalConfig,"Manufacturer",generalconfig.manufacturer);
-    cJSON_AddNumberToObject(generalConfig,"LogLevel",int(generalconfig.LogLevel));
-    cJSON_AddNumberToObject(generalConfig,"menuButtonColour",generalconfig.menuButtonColour);
-    cJSON_AddNumberToObject(generalConfig,"functionButtonColour",generalconfig.functionButtonColour);
-    cJSON_AddNumberToObject(generalConfig,"backgroundColour",generalconfig.backgroundColour);
-    cJSON_AddNumberToObject(generalConfig,"latchedColour",generalconfig.latchedColour);
-    cJSON_AddNumberToObject(generalConfig,"DefaultOutline",generalconfig.DefaultOutline);
-    cJSON_AddNumberToObject(generalConfig,"DefaultTextColor",generalconfig.DefaultTextColor);
-    cJSON_AddNumberToObject(generalConfig,"DefaultTextSize",generalconfig.DefaultTextSize);
-    cJSON_AddNumberToObject(generalConfig,"colscount",generalconfig.colscount);
-    cJSON_AddNumberToObject(generalConfig,"rowscount",generalconfig.rowscount);
-    cJSON_AddStringToObject(generalConfig,"sleepenable",generalconfig.sleepenable?"Enabled":"Disabled");
-    cJSON_AddNumberToObject(generalConfig,"keyDelay",generalconfig.keyDelay);
-    cJSON_AddStringToObject(generalConfig,"beep",generalconfig.beep?"Enabled":"Disabled");
-    cJSON_AddStringToObject(generalConfig,"flip_touch_axis",generalconfig.flip_touch_axis?"Yes":"No");
-    cJSON_AddStringToObject(generalConfig,"reverse_x_touch",generalconfig.reverse_x_touch?"Yes":"No");
-    cJSON_AddStringToObject(generalConfig,"reverse_y_touch",generalconfig.reverse_y_touch?"Yes":"No");
-    cJSON_AddNumberToObject(generalConfig,"screenrotation",generalconfig.screenrotation);
-    cJSON_AddNumberToObject(generalConfig,"helperdelay",generalconfig.helperdelay);
-    cJSON_AddNumberToObject(generalConfig,"ledBrightness",generalconfig.ledBrightness);
-    
-    return generalConfig;
-
-  }
-
-  cJSON * AllocGetInfoJson()
+    cJSON * AllocGetInfoJson()
   {
 
     cJSON * infoDoc = cJSON_CreateArray();
@@ -463,7 +432,7 @@ Note   : none
     webserver.on("/useractions.json", HTTP_GET, [](AsyncWebServerRequest *request){RespondWithJSON(request,UserActionsJson());});
     webserver.on("/keynames.json", HTTP_GET, [](AsyncWebServerRequest *request){RespondWithJSON(request,KeyNamesJson());});
     webserver.on("/info", HTTP_GET, [](AsyncWebServerRequest *request) { RespondWithJSON(request, AllocGetInfoJson()) ; });
-    webserver.on("/general.json", HTTP_GET, [](AsyncWebServerRequest *request) { RespondWithJSON(request, AllocGetGeneralJson()) ; });
+    webserver.on("/general.json", HTTP_GET, [](AsyncWebServerRequest *request) { RespondWithJSON(request, GetConfigJson()) ; });
 
     //----------- 404 handler -----------------
 

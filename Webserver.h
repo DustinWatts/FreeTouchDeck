@@ -27,17 +27,6 @@ String handleAPISList();
 *
 * @note none
 */
-cJSON * AllocGetGeneralJson();
-/**
-* @brief This function returns information about FreeTouchDeck in a json 
-         formatted string.
-*
-* @param none
-*
-* @return String
-*
-* @note none
-*/
 cJSON * AllocGetInfoJson();
 /**
 * @brief This function handles error.htm template processing.
