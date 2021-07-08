@@ -57,7 +57,7 @@
 AXP20X_Class *power = new AXP20X_Class();
 #endif
 static const char *module = "FreeTouchDeck";
-const char *versionnumber = "0.9.11";
+const char *versionnumber = "1.0.0-dev";
 #include <pgmspace.h> // PROGMEM support header
 #include "Arduino.h"
 #include <SPI.h>
