@@ -57,19 +57,13 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.13";
+const char *versionnumber = "0.9.14";
 
-    /* Version 0.9.13.
+    /* Version 0.9.14.
      *  
-     * Fix: Issue #54 Not all filenames are allowed for uploading.
-     * Fix: Increase the size of DynamicJsonDocument to 1500 to support larger configs
-     * Fix in ESP32-BLE-Keyboard: Changed to 115 keys (for F13-F24), added NUMPAD keys
-     * 
-     * Added: NUMPAD keys to configurator and Action.h (action 12)
-     * Added: PrintScreen, HOME, END, and ESCAPE to Action.h and configurator
-     *
-     * 
-     * 
+     *  Added the ability to change the displayed menu using serial. 
+     *  Use for example https://github.com/DustinWatts/active-window-follow to have
+     *  FreeTouchDeck follow the active window on your computer.
     */
 
 #include <pgmspace.h> // PROGMEM support header
@@ -620,6 +614,45 @@ void loop(void)
       String file = Serial.readString();
       Serial.printf("[INFO]: Resetting %s.json now\n", file.c_str());
       resetconfig(file);
+    }
+    
+    else if(command == "menu1" && pageNum !=1)
+    {
+      pageNum = 1;
+      drawKeypad();
+      Serial.println("Auto Switched to Menu 1");
+    }
+  
+    else if(command == "menu2" && pageNum !=3)
+    {
+
+      pageNum = 2;
+      drawKeypad();
+      Serial.println("Auto Switched to Menu 2");
+    }
+   
+    else if(command == "menu3" && pageNum !=3)
+    {
+
+      pageNum = 3;
+      drawKeypad();
+      Serial.println("Auto Switched to Menu 3");
+    }
+
+    else if(command == "menu4" && pageNum !=4)
+    {
+
+      pageNum = 4;
+      drawKeypad();
+      Serial.println("Auto Switched to Menu 4");
+    }
+
+    else if(command == "menu5" && pageNum !=5)
+    {
+
+      pageNum = 5;
+      drawKeypad();
+      Serial.println("Auto Switched to Menu 5");
     }
   }
   
