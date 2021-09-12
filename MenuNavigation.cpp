@@ -393,7 +393,7 @@ namespace FreeTouchDeck
                 if (menu->Type == MenuTypes::HOME || menu->Type == MenuTypes::HOMESYSTEM)
                 {
                     LOC_LOGD(module,"Creating home screen button for menu %s", menu->Label.c_str());
-                    auto button = FTButton(ButtonTypes::STANDARD, menu->Label.c_str(), menu->Icon.c_str(), "", generalconfig.DefaultOutline, generalconfig.DefaultTextSize, generalconfig.DefaultTextColor);
+                    auto button = FTButton(ButtonTypes::STANDARD, menu->Label.c_str(), "", menu->Icon.c_str(), "", generalconfig.DefaultOutline, generalconfig.DefaultTextSize, generalconfig.DefaultTextColor);
                     ActionsSequences sequences;
                     char *menuActionString = (char *)malloc_fn(strlen(MenuActionTemplate) + menu->Name.length());
                     sprintf(menuActionString, MenuActionTemplate, menu->Name.c_str());

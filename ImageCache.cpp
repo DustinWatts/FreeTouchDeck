@@ -66,7 +66,7 @@ namespace FreeTouchDeck
         ImageInstanceGet_t constructor = GetConstructorForImage(imageName);
         if (!constructor)
         {
-            LOC_LOGE(module, "Unsupported file format %s", ImageWrapper::GetExtension(imageName).c_str());
+            LOC_LOGE(module, "Unsupported %s file format %s", imageName.c_str(), ImageWrapper::GetExtension(imageName).c_str());
             return ImageList.front();
         }
         else

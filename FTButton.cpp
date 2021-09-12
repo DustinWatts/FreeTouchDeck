@@ -25,6 +25,7 @@ namespace FreeTouchDeck
     const char *FTButton::JsonLabelLogo = "logo";
     const char *FTButton::JsonLabelType = "type";
     const char *FTButton::JsonLabelLabel = "label";
+    const char *FTButton::JsonLabelLatchedLabel = "latchedlabel";
     const char *FTButton::JsonLabelActions = "actions";
     const char *FTButton::JsonLabelOutline = "outline";
     const char *FTButton::JsonLabelBackground = "backgroundcolor";
@@ -45,11 +46,12 @@ namespace FreeTouchDeck
     {
         ButtonType = ButtonTypes::NONE;
     }
-    FTButton::FTButton(ButtonTypes buttonType, const char *label, const char *logo, const char *latchedLogo, uint32_t outline, uint8_t textSize, uint32_t textColor)
+    FTButton::FTButton(ButtonTypes buttonType, const char *label, const char *latchedLabel, const char *logo, const char *latchedLogo, uint32_t outline, uint8_t textSize, uint32_t textColor)
     {
         PrintMemInfo(__FUNCTION__, __LINE__);
         ButtonType = buttonType;
         Label = label;
+        LatchedLabel = latchedLabel;
         IsLabel=true;
         if (!ISNULLSTRING(logo))
         {
@@ -218,6 +220,9 @@ namespace FreeTouchDeck
             SetDefaultFont();
             tft.setTextSize(TextSize);
             buttonLabel = Label.c_str();
+            if (Latched && !LatchedLabel.empty()) {
+                buttonLabel = LatchedLabel.c_str();
+            }
             int16_t textWidth = tft.textWidth(buttonLabel, 0);
             while (textWidth > TextAdjustedWidth)
             {
@@ -281,7 +286,7 @@ namespace FreeTouchDeck
             tft.drawRoundRect(X + 2, Y + 2, ButtonWidth - 4, ButtonHeight - 4, r, BGColor);
         }
 
-        if (ButtonType == ButtonTypes::LATCH && !LatchedLogo()->valid)
+        if (ButtonType == ButtonTypes::LATCH && !LatchedLogo()->valid && LatchedLabel.empty())
         {
             // Draw a rounded rectangle in the button corner
             uint32_t roundRectWidth = ButtonWidth / 4;
@@ -445,6 +450,10 @@ namespace FreeTouchDeck
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelLabel, Label.c_str());
         }
+        if (!LatchedLabel.empty())
+        {
+            cJSON_AddStringToObject(button, FTButton::JsonLabelLatchedLabel, LatchedLabel.c_str());
+        }
         if (!_jsonLogo.empty())
         {
             cJSON_AddStringToObject(button, FTButton::JsonLabelLogo, _jsonLogo.c_str());
@@ -516,6 +525,7 @@ namespace FreeTouchDeck
         ButtonType = parse_button_types(buttonType);
         FREE_AND_NULL(buttonType);
         GetValueOrDefault(button, FTButton::JsonLabelLabel, Label, NULL);
+        GetValueOrDefault(button, FTButton::JsonLabelLatchedLabel, LatchedLabel, NULL);
         GetValueOrDefault(button, FTButton::JsonLabelLogo, _jsonLogo, NULL);
         IsLabel = !ImageCache::GetImage(_jsonLogo)->valid;
         if (Label.empty())
