@@ -39,6 +39,7 @@ namespace FreeTouchDeck
         uint16_t helperdelay;
         uint8_t ledBrightness;
         LogLevels LogLevel;
+        uint16_t memStatsDelay;
     };
     extern Config generalconfig;
     bool GetValueOrDefault(cJSON *value, char **valuePointer, const char *defaultValue);

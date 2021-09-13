@@ -98,6 +98,7 @@ namespace FreeTouchDeck
     generalconfig.deviceName = ps_strdup(defaultDeviceName);
     FREE_AND_NULL(generalconfig.manufacturer);
     generalconfig.manufacturer = ps_strdup(defaultManufacturerName);
+    generalconfig.memStatsDelay = 5000;
   }
 
   bool GetValueOrDefault(cJSON *value, char **valuePointer, const char *defaultValue)
@@ -464,6 +465,8 @@ namespace FreeTouchDeck
     GetValueOrDefault(cJSON_GetObjectItem(doc, "ledbrightness"), (uint8_t *)&generalconfig.ledBrightness, 255);
     GetValueOrDefault(cJSON_GetObjectItem(doc, "textsize"), &generalconfig.DefaultTextSize, KEY_TEXTSIZE);
 
+    GetValueOrDefault(cJSON_GetObjectItem(doc, "memstatsdelay"), &generalconfig.memStatsDelay, 5000);
+
     cJSON_Delete(doc);
 
     if (generalconfig.LogLevel >= LogLevels::VERBOSE)
@@ -567,6 +570,7 @@ namespace FreeTouchDeck
     cJSON_AddNumberToObject(doc, "keydelay", generalconfig.keyDelay);
     cJSON_AddNumberToObject(doc, "ledbrightness", generalconfig.ledBrightness);
     cJSON_AddNumberToObject(doc, "textsize", generalconfig.DefaultTextSize);
+    cJSON_AddNumberToObject(doc, "memstatsdelay", generalconfig.memStatsDelay);
     return doc;
   }
   bool saveConfig(bool serial)

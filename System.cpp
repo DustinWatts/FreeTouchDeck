@@ -254,11 +254,14 @@ namespace FreeTouchDeck
     }
     void PrintMemStats()
     {
+        if (generalconfig.memStatsDelay == 0) {
+            return;
+        }
         static unsigned long t = 0;
         if(millis() >t)
         {
             PrintBasicMemInfo();
-            t=millis()+5000;
+            t=millis()+generalconfig.memStatsDelay;
         }
     }
     void PrintBasicMemInfo()
