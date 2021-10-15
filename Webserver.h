@@ -29,7 +29,13 @@ String handleFileList(String path)
       output += "{\"";
       output += filecount;
       output += "\":\"";
-      output += String(file.name()).substring(7);
+
+      #ifdef ESP_ARDUINO_VERSION_MAJOR  
+        output += String(file.name());
+      #else
+        output += String(file.name()).substring(7);
+      #endif
+       
       output += "\"}";
       file = root.openNextFile();
       filecount++;
