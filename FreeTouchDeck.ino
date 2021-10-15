@@ -57,18 +57,20 @@
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
-const char *versionnumber = "0.9.14";
+const char *versionnumber = "0.9.15";
 
-    /* Version 0.9.14.
+    /* Version 0.9.15.
      *  
-     *  Added the ability to change the displayed menu using serial. 
-     *  Use for example https://github.com/DustinWatts/active-window-follow to have
-     *  FreeTouchDeck follow the active window on your computer.
+     *  Saving the LED backlight brightness to EEPROM
+     *  Save latch states to memory before sleep. Only before sleep, not before power down. 
+     *  Followers also work with freetouchdeck-helper
+     *  Do not auto change (using followers) when in menu 7 (configurator mode)
     */
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
 #include <SPIFFS.h>   // Filesystem support header
+#include <Preferences.h> // Used to store states before sleep/reboot
 
 #include <TFT_eSPI.h> // The TFT_eSPI library
 
@@ -101,6 +103,8 @@ BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
 AsyncWebServer webserver(80);
 
 TFT_eSPI tft = TFT_eSPI();
+
+Preferences savedStates;
 
 // Define the storage to be used. For now just SPIFFS.
 #define FILESYSTEM SPIFFS
@@ -290,6 +294,21 @@ void setup()
   Serial.setDebugOutput(true);
   Serial.println("");
 
+  Serial.println("[INFO]: Loading saved brightness state");
+  savedStates.begin("ftd", false);
+  
+  ledBrightness = savedStates.getInt("ledBrightness", 255);
+
+  Serial.println("[INFO]: Reading latch stated back from memory:");
+  savedStates.getBytes("latched", islatched, sizeof(islatched));
+
+  for(int i = 0; i < sizeof(islatched); i++){
+
+  Serial.print(islatched[i]);
+    
+  }
+  Serial.println("");
+
 #ifdef USECAPTOUCH
 #ifdef CUSTOM_TOUCH_SDA
   if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
@@ -327,6 +346,7 @@ void setup()
 
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
+
 
   // -------------- Start filesystem ----------------------
 
@@ -616,14 +636,14 @@ void loop(void)
       resetconfig(file);
     }
     
-    else if(command == "menu1" && pageNum !=1)
+    else if(command == "menu1" && pageNum !=1 && pageNum != 7)
     {
       pageNum = 1;
       drawKeypad();
       Serial.println("Auto Switched to Menu 1");
     }
   
-    else if(command == "menu2" && pageNum !=3)
+    else if(command == "menu2" && pageNum !=2 && pageNum != 7)
     {
 
       pageNum = 2;
@@ -631,7 +651,7 @@ void loop(void)
       Serial.println("Auto Switched to Menu 2");
     }
    
-    else if(command == "menu3" && pageNum !=3)
+    else if(command == "menu3" && pageNum !=3 && pageNum != 7)
     {
 
       pageNum = 3;
@@ -639,7 +659,7 @@ void loop(void)
       Serial.println("Auto Switched to Menu 3");
     }
 
-    else if(command == "menu4" && pageNum !=4)
+    else if(command == "menu4" && pageNum !=4 && pageNum != 7)
     {
 
       pageNum = 4;
@@ -647,7 +667,7 @@ void loop(void)
       Serial.println("Auto Switched to Menu 4");
     }
 
-    else if(command == "menu5" && pageNum !=5)
+    else if(command == "menu5" && pageNum !=5 && pageNum != 7)
     {
 
       pageNum = 5;
@@ -817,7 +837,17 @@ void loop(void)
         ledcWrite(2, 0);
         }
 #endif
+        Serial.println("[INFO]: Saving latched states");
 
+//        You could uncomment this to see the latch stated before going to sleep
+//        for(int i = 0; i < sizeof(islatched); i++){
+//      
+//        Serial.print(islatched[i]);
+//          
+//        }
+//        Serial.println("");
+
+        savedStates.putBytes("latched", &islatched, sizeof(islatched));
         esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
         esp_deep_sleep_start();
       }

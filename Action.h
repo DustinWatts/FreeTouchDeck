@@ -465,6 +465,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
       {
         ledBrightness = ledBrightness - 25;
         ledcWrite(0, ledBrightness);
+        savedStates.putInt("ledBrightness", ledBrightness);
       }
       break;
     case 3: // Display Brightness Up
@@ -472,6 +473,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
       {
         ledBrightness = ledBrightness + 25;
         ledcWrite(0, ledBrightness);
+        savedStates.putInt("ledBrightness", ledBrightness);
       }
       break;
     case 4: // Sleep Enabled
