@@ -1,0 +1,21 @@
+[submodule "lib/TFT_eSPI"]
+	path = lib/TFT_eSPI
+	url = https://github.com/Bodmer/TFT_eSPI.git
+[submodule "lib/Adafruit-GFX-Library"]
+	path = lib/Adafruit-GFX-Library
+	url = https://github.com/adafruit/Adafruit-GFX-Library.git
+[submodule "lib/ESP32-BLE-Keyboard"]
+	path = lib/ESP32-BLE-Keyboard
+	url = https://github.com/DustinWatts/ESP32-BLE-Keyboard.git
+[submodule "lib/ESPAsyncWebServer"]
+	path = lib/ESPAsyncWebServer
+	url = https://github.com/me-no-dev/ESPAsyncWebServer.git
+[submodule "lib/AsyncTCP"]
+	path = lib/AsyncTCP
+	url = https://github.com/me-no-dev/AsyncTCP.git
+[submodule "lib/ArduinoJson"]
+	path = lib/ArduinoJson
+	url = https://github.com/bblanchon/ArduinoJson.git
+[submodule "lib/LittleFS"]
+	path = lib/LittleFS
+	url = https://github.com/lorol/LITTLEFS.git
