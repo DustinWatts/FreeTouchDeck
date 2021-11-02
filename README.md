@@ -1,3 +1,7 @@
+# IMPORTANT NOTE!
+
+The development version is intended for development only. Things might not work. Use the -master branch for a working and tested version of FreeTOuchDeck. If you like to join development, feel free to do so! You can join my Discord server or send PR's. If you like to have a working verison of FreeTouchDeck, don't use this version.
+
 # Development Version To-Do:
 
 - [ ] RELEASEALL Doesn't work correctly when in one action.
