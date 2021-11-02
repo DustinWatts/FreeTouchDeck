@@ -6,8 +6,8 @@
 /* ------------------------------------------------------------------------ */
 
 //#define MAKERFABTOUCH
-#define ESP32TOUCHDOWN
-//#define ESP32DEVKIT
+//#define ESP32TOUCHDOWN
+#define ESP32DEVKIT
 //#define ARDUINO_TWATCH
 
 /* ------------------------------------------------------------------------ */
