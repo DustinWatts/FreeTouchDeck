@@ -15,13 +15,7 @@ https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-insta
 
 ### Mixing files of different versions may cause some unexpected behavior!
 
-Important to realise is that since this is a beta version, changes to te code happen frequently. The FreeTouchDeck.ino and other files (for example in the data folder) rely on each other, they come as one. So when you download the new version, make sure that you only use the files that come with the current download, and not files from other versions. Best practise is to completely delete the old version and then download/clone the new version to make sure you do not accidently mix files from different versions. **After downloading/cloning the latest version, make sure to also upload the "data" folder again using 'ESP32 Sketch Data Upload".**
-
-# Beta Version!
-
-This version is in it's very early stages of development. Chances are that if you are not using the exact
-same setup as I am, you will run in to problems. But that is what this version is for: finding out what is needed
-to make FreeTouchDeck work across most ESP's and TFT screens. Also there is a lack of documentation which is gradually being written.
+The FreeTouchDeck.ino and other files (for example in the data folder) rely on each other, they come as one. So when you download the new version, make sure that you only use the files that come with the current download, and not files from other versions. Best practise is to completely delete the old version and then download/clone the new version to make sure you do not accidently mix files from different versions. **After downloading/cloning the latest version, make sure to also upload the "data" folder again using 'ESP32 Sketch Data Upload".**
 
 # Hardware used
 
@@ -32,8 +26,7 @@ For Resistive touch:
 - an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and XPT2046 resitive touch controller
 
 For Capacitive touch:
-- an ESP32 DEVKIT V1 (WROOM32) (Partition scheme: NO OTA with 2MB app and 2MB SPIFFS)
-- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and FT6236 capacitive touch controller
+- an ESP32 TouchDown: https://www.esp32touchdown.com/
 
 # !- Library Dependencies -!
 - Adafruit-GFX-Library (version 1.10.0 or higher), available through Library Manager
