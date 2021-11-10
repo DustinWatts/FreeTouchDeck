@@ -29,15 +29,15 @@ For Capacitive touch:
 - an ESP32 TouchDown: https://www.esp32touchdown.com/
 
 # !- Library Dependencies -!
-- Adafruit-GFX-Library (version 1.10.0 or higher), available through Library Manager
-- TFT_eSPI (version 2.2.14 or higher), available through Library Manager
-- ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
+- Adafruit-GFX-Library (tested with version 1.10.4), available through Library Manager
+- TFT_eSPI (tested with version 2.3.70), available through Library Manager
+- ESP32-BLE-Keyboard (latest version) download from: https://github.com/T-vK/ESP32-BLE-Keyboard
 - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
 - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-- ArduinoJson (version 6.16.1 or higher), available through Library Manager
+- ArduinoJson (tested with version 6.17.3), available through Library Manager
 
 If you use capacitive touch:
-- FT6236 (latest version), download from: https://github.com/DustinWatts/FT6236
+- Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
 
 # Combiner PCB for an ESP32 DevKit C (38-pin only) + ILI9488 Touch Module:
 

@@ -15,15 +15,15 @@
   These are those libraries:
 
       !----------------------------- Library Dependencies --------------------------- !
-      - Adafruit-GFX-Library (version 1.10.0 or above), available through Library Manager
-      - TFT_eSPI (version 2.2.14 or above), available through Library Manager
-      - ESP32-BLE-Keyboard (forked) (latest version) download from: https://github.com/DustinWatts/ESP32-BLE-Keyboard
+      - Adafruit-GFX-Library (tested with version 1.10.4), available through Library Manager
+      - TFT_eSPI (tested with version 2.3.70), available through Library Manager
+      - ESP32-BLE-Keyboard (latest version) download from: https://github.com/T-vK/ESP32-BLE-Keyboard
       - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
       - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-      - ArduinoJson (version 6.16.1 or above), available through Library Manager
+      - ArduinoJson (tested with version 6.17.3), available through Library Manager
 
-      --- If you use Capacitive touch ---
-      - Dustin Watts FT6236 Library (version 1.0.1), https://github.com/DustinWatts/FT6236
+      --- If you use Capacitive touch (ESP32 TouchDown) ---
+      - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
       
   The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
   It has to be runs at least once when using resistive touch. After that you can set 
@@ -40,7 +40,7 @@
 
 // ------- Uncomment the next line if you use capacitive touch -------
 // (THE ESP32 TOUCHDOWN USES THIS!)
-//#define USECAPTOUCH
+#define USECAPTOUCH
 
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
 //#define CUSTOM_TOUCH_SDA 26
@@ -55,17 +55,26 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+#define speakerPin 26
 
-const char *versionnumber = "0.9.15";
+// ------- NimBLE definition, use only if the NimBLE library is installed 
+// and if you are using the original ESP32-BLE-Keyboard library by T-VK -------
+#define USE_NIMBLE
 
-    /* Version 0.9.15.
+const char *versionnumber = "0.9.16";
+
+  /* Version 0.9.16.
+   * 
+   * Compatibility with the T-vK ESP32-BLE-Keyboard because of recent changes in the library means
+   * that it is no longer needed to use my fork of the library.
+   * This also enables usage with NimBLE if people want to. Use the USE_NIMBLE definition and make sure
+   * to have the latest Arduino NimBLE installed.
+  */
+
+    /* TODO NEXT VERSION
      *  
-     *  Saving the LED backlight brightness to EEPROM
-     *  Save latch states to memory before sleep. Only before sleep, not before power down. 
-     *  Followers also work with freetouchdeck-helper
-     *  Do not auto change (using followers) when in menu 7 (configurator mode)
-    */
+     * - get image height/width and use it in bmp drawing.
+     */
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -75,11 +84,22 @@ const char *versionnumber = "0.9.15";
 #include <TFT_eSPI.h> // The TFT_eSPI library
 
 #include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
+
+#if defined(USE_NIMBLE)
+
+#include "NimBLEDevice.h"   // Additional BLE functionaity using NimBLE
+#include "NimBLEUtils.h"    // Additional BLE functionaity using NimBLE
+#include "NimBLEBeacon.h"   // Additional BLE functionaity using NimBLE
+
+#else
+
 #include "BLEDevice.h"   // Additional BLE functionaity
 #include "BLEUtils.h"    // Additional BLE functionaity
 #include "BLEBeacon.h"   // Additional BLE functionaity
-#include "esp_sleep.h"   // Additional BLE functionaity
 
+#endif // USE_NIMBLE
+
+#include "esp_sleep.h"   // Additional BLE functionaity
 #include "esp_bt_main.h"   // Additional BLE functionaity
 #include "esp_bt_device.h" // Additional BLE functionaity
 

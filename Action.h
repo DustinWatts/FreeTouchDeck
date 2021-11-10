@@ -497,52 +497,52 @@ void bleKeyboardAction(int action, int value, char *symbol)
     switch (value)
     {
       case 0:
-        bleKeyboard.write(NUM_0);
+        bleKeyboard.write(KEY_NUM_0);
         break;
       case 1:
-        bleKeyboard.write(NUM_1);
+        bleKeyboard.write(KEY_NUM_1);
         break;
       case 2:
-        bleKeyboard.write(NUM_2);
+        bleKeyboard.write(KEY_NUM_2);
         break;
       case 3:
-        bleKeyboard.write(NUM_3);
+        bleKeyboard.write(KEY_NUM_3);
         break;
       case 4:
-        bleKeyboard.write(NUM_4);
+        bleKeyboard.write(KEY_NUM_4);
         break;
       case 5:
-        bleKeyboard.write(NUM_5);
+        bleKeyboard.write(KEY_NUM_5);
         break;
       case 6:
-        bleKeyboard.write(NUM_6);
+        bleKeyboard.write(KEY_NUM_6);
         break;
       case 7:
-        bleKeyboard.write(NUM_7);
+        bleKeyboard.write(KEY_NUM_7);
         break;
       case 8:
-        bleKeyboard.write(NUM_8);
+        bleKeyboard.write(KEY_NUM_8);
         break;
       case 9:
-        bleKeyboard.write(NUM_9);
+        bleKeyboard.write(KEY_NUM_9);
         break;
       case 10:
-        bleKeyboard.write(NUM_SLASH);
+        bleKeyboard.write(KEY_NUM_SLASH);
         break;
       case 11:
-        bleKeyboard.write(NUM_ASTERIX);
+        bleKeyboard.write(KEY_NUM_ASTERISK);
         break;
       case 12:
-        bleKeyboard.write(NUM_MINUS);
+        bleKeyboard.write(KEY_NUM_MINUS);
         break;
       case 13:
-        bleKeyboard.write(NUM_PLUS);
+        bleKeyboard.write(KEY_NUM_PLUS);
         break;
       case 14:
-        bleKeyboard.write(NUM_ENTER);
+        bleKeyboard.write(KEY_NUM_ENTER);
         break;
       case 15:
-        bleKeyboard.write(NUM_PERIOD);
+        bleKeyboard.write(KEY_NUM_PERIOD);
         break;
     }
     break;
