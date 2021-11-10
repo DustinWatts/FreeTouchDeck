@@ -40,7 +40,7 @@
 
 // ------- Uncomment the next line if you use capacitive touch -------
 // (THE ESP32 TOUCHDOWN USES THIS!)
-#define USECAPTOUCH
+//#define USECAPTOUCH
 
 // ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
 //#define CUSTOM_TOUCH_SDA 26
@@ -55,11 +55,11 @@
 #define touchInterruptPin GPIO_NUM_27
 
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-#define speakerPin 26
+//#define speakerPin 26
 
 // ------- NimBLE definition, use only if the NimBLE library is installed 
 // and if you are using the original ESP32-BLE-Keyboard library by T-VK -------
-#define USE_NIMBLE
+//#define USE_NIMBLE
 
 const char *versionnumber = "0.9.16";
 
