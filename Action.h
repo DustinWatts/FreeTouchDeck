@@ -546,6 +546,32 @@ void bleKeyboardAction(int action, int value, char *symbol)
         break;
     }
     break;
+    case 13: // Custom functions
+    switch (value)
+    {
+      case 1:
+        userAction1();
+        break;
+      case 2:
+        userAction2();
+        break;
+      case 3:
+        userAction3();
+        break;
+      case 4:
+        userAction4();
+        break;
+      case 5:
+        userAction5();
+        break;
+      case 6:
+        userAction6();
+        break;
+      case 7:
+        userAction7();
+        break;
+    }
+    break;
   default:
     //If nothing matches do nothing
     break;

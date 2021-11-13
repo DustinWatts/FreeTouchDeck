@@ -61,14 +61,15 @@
 // and if you are using the original ESP32-BLE-Keyboard library by T-VK -------
 //#define USE_NIMBLE
 
-const char *versionnumber = "0.9.16";
+const char *versionnumber = "0.9.17";
 
   /* Version 0.9.16.
    * 
-   * Compatibility with the T-vK ESP32-BLE-Keyboard because of recent changes in the library means
-   * that it is no longer needed to use my fork of the library.
-   * This also enables usage with NimBLE if people want to. Use the USE_NIMBLE definition and make sure
-   * to have the latest Arduino NimBLE installed.
+   * Added UserActions. In the UserAction.h file there are a few functions you can define and
+   * select through the configurator. The functions have to written before compiling. These functions 
+   * are then hardcoded. Look at UserActions.h for some examples.
+   * 
+   * Added some missing characters. 
   */
 
     /* TODO NEXT VERSION
@@ -300,6 +301,7 @@ TFT_eSPI_Button key[6];
 #include "ConfigLoad.h"
 #include "DrawHelper.h"
 #include "ConfigHelper.h"
+#include "UserActions.h"
 #include "Action.h"
 #include "Webserver.h"
 #include "Touch.h"
