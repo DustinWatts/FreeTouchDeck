@@ -1,9 +1,12 @@
-![](https://dcbadge.vercel.app/api/shield/693862273864827012)
-
 # FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
-### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
+# Install Using The Web Installer (recommended!)
+
+Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
+
+# User Guide
+The User Guide will help you with installing and configuring if you want to build the project yourself: ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
 
 # ESP32 TouchDown users
 
