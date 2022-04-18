@@ -1,3 +1,5 @@
+![](https://discord-md-badge.vercel.app/api/shield/693862273864827012)
+
 # FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
