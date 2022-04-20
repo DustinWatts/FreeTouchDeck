@@ -1,4 +1,10 @@
 # FreeTouchDeck
+[![](https://badgen.net/github/last-commit/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/commits/master)
+[![](https://badgen.net/github/release/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/releases)
+[![](https://badgen.net/badge/chat/on%20discord/5165f6)](https://discord.gg/RE3XevS)
+[![](https://badgen.net/github/license/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/blob/master/LICENSE)
+[![](https://badgen.net/badge/watch/on%20youtube/ff0000)](https://www.youtube.com/watch?v=s2X4BQ9VmEU)
+
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 # Install Using The Web Installer (recommended!)
