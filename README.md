@@ -1,7 +1,21 @@
 # FreeTouchDeck
+[![](https://badgen.net/github/last-commit/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/commits/master)
+[![](https://badgen.net/github/release/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/releases)
+[![](https://img.shields.io/discord/693862273864827012?color=5165f6&label=chat%20on%20Discord)](https://discord.gg/RE3XevS)
+[![](https://badgen.net/github/license/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/blob/master/LICENSE)
+[![](https://badgen.net/badge/watch/on%20youtube/ff0000)](https://www.youtube.com/watch?v=s2X4BQ9VmEU)
+[![](https://img.shields.io/twitter/follow/DustinWattsNL)](https://twitter.com/DustinWattsNL)
+
+
+
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
-### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
+# Install Using The Web Installer (recommended!)
+
+Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
+
+# User Guide
+The User Guide will help you with installing and configuring if you want to build the project yourself: ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
 
 # ESP32 TouchDown users
 
