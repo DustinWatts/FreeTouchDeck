@@ -595,6 +595,9 @@ if(generalconfig.beep){
     islatched[28] = 1;
   }
 #endif
+
+  Serial.println("[INFO]: Boot completed and successful!");
+
 }
 
 //--------------------- LOOP ---------------------------------------------------------------------
