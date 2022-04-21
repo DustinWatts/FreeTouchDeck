@@ -426,7 +426,9 @@ void setup()
 
 // Calibrate the touch screen and retrieve the scaling factors
 #ifndef USECAPTOUCH
+  Serial.println("[INFO]: Waiting for touch calibration...");
   touch_calibrate();
+  Serial.println("[INFO]: Touch calibration completed!");
 #endif
 
   // Let's first check if all the files we need exist
