@@ -1584,8 +1584,13 @@ void printinfo()
   float freemem = SPIFFS.totalBytes() - SPIFFS.usedBytes();
   tft.print(freemem / 1000);
   tft.println(" kB");
+#if defined(USEUSBHID)
+  tft.println("Using USB Keyboard");
+#else
   tft.print("BLE Keyboard version: ");
   tft.println(BLE_KEYBOARD_VERSION);
+#endif //if defined(USEUSBHID)
+  
   tft.print("ArduinoJson version: ");
   tft.println(ARDUINOJSON_VERSION);
   tft.print("TFT_eSPI version: ");

@@ -78,6 +78,9 @@ void bleKeyboardAction(int action, int value, char *symbol)
     }
     break;
   case 3: // Send Media Key
+#if defined(USEUSBHID)
+
+#else
     switch (value)
     {
     case 1:
@@ -106,6 +109,7 @@ void bleKeyboardAction(int action, int value, char *symbol)
       break;
     }
     break;
+#endif //if defined(USEUSBHID)
   case 4: // Send Character
     bleKeyboard.print(symbol);
     break;

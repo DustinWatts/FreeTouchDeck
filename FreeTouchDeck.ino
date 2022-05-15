@@ -42,13 +42,13 @@
 // (THE ESP32 TOUCHDOWN USES THIS!)
 //#define USECAPTOUCH
 
-// ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
-//#define CUSTOM_TOUCH_SDA 26
-//#define CUSTOM_TOUCH_SCL 27
+// ------- If your board is capapble of USB HID you can undefine this -
 
-// PAY ATTENTION! Even if resistive touch is not used, the TOUCH pin has to be defined!
-// It can be a random unused pin.
-// TODO: Find a way around this!
+//#define USEUSBHID
+
+// ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
+//#define CUSTOM_TOUCH_SDA 17
+//#define CUSTOM_TOUCH_SCL 18
 
 // ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
 // The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
@@ -61,21 +61,12 @@
 // and if you are using the original ESP32-BLE-Keyboard library by T-VK -------
 //#define USE_NIMBLE
 
-const char *versionnumber = "0.9.17";
+const char *versionnumber = "0.9.18a";
 
-  /* Version 0.9.16.
+  /* Version 0.9.18a.
    * 
-   * Added UserActions. In the UserAction.h file there are a few functions you can define and
-   * select through the configurator. The functions have to written before compiling. These functions 
-   * are then hardcoded. Look at UserActions.h for some examples.
-   * 
-   * Added some missing characters. 
+   * Adding ESP32-S3 support
   */
-
-    /* TODO NEXT VERSION
-     *  
-     * - get image height/width and use it in bmp drawing.
-     */
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
@@ -84,21 +75,39 @@ const char *versionnumber = "0.9.17";
 
 #include <TFT_eSPI.h> // The TFT_eSPI library
 
-#include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
+#if defined(USEUSBHID)
+
+  #include "USB.h"
+  #include "USBHIDKeyboard.h"
+  #include "Keydefines.h"
+  USBHIDKeyboard bleKeyboard;
+  
+#else
+  
+  #include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
+  BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
+
+    // Checking for BLE Keyboard version
+  #ifndef BLE_KEYBOARD_VERSION
+    #warning Old BLE Keyboard version detected. Please update.
+    #define BLE_KEYBOARD_VERSION "Outdated"
+  #endif // !defined(BLE_KEYBOARD_VERSION) 
+  
+#endif // if
 
 #if defined(USE_NIMBLE)
 
-#include "NimBLEDevice.h"   // Additional BLE functionaity using NimBLE
-#include "NimBLEUtils.h"    // Additional BLE functionaity using NimBLE
-#include "NimBLEBeacon.h"   // Additional BLE functionaity using NimBLE
+  #include "NimBLEDevice.h"   // Additional BLE functionaity using NimBLE
+  #include "NimBLEUtils.h"    // Additional BLE functionaity using NimBLE
+  #include "NimBLEBeacon.h"   // Additional BLE functionaity using NimBLE
 
 #else
 
-#include "BLEDevice.h"   // Additional BLE functionaity
-#include "BLEUtils.h"    // Additional BLE functionaity
-#include "BLEBeacon.h"   // Additional BLE functionaity
+  #include "BLEDevice.h"   // Additional BLE functionaity
+  #include "BLEUtils.h"    // Additional BLE functionaity
+  #include "BLEBeacon.h"   // Additional BLE functionaity
 
-#endif // USE_NIMBLE
+#endif // defined(USE_NIMBLE)
 
 #include "esp_sleep.h"   // Additional BLE functionaity
 #include "esp_bt_main.h"   // Additional BLE functionaity
@@ -114,12 +123,10 @@ const char *versionnumber = "0.9.17";
 #include <ESPmDNS.h> // DNS functionality
 
 #ifdef USECAPTOUCH
-#include <Wire.h>
-#include <FT6236.h>
-FT6236 ts = FT6236();
-#endif
-
-BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
+  #include <Wire.h>
+  #include <FT6236.h>
+  FT6236 ts = FT6236();
+#endif // defined(USECAPTOUCH)
 
 AsyncWebServer webserver(80);
 
@@ -289,12 +296,6 @@ char* jsonfilefail = "";
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
 
-// Checking for BLE Keyboard version
-#ifndef BLE_KEYBOARD_VERSION
-  #warning Old BLE Keyboard version detected. Please update.
-  #define BLE_KEYBOARD_VERSION "Outdated"
-#endif  
-
 //--------- Internal references ------------
 // (this needs to be below all structs etc..)
 #include "ScreenHelper.h"
@@ -332,11 +333,11 @@ void setup()
   Serial.println("");
 
 #ifdef USECAPTOUCH
-#ifdef CUSTOM_TOUCH_SDA
-  if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
-#else
-  if (!ts.begin(40))
-#endif
+  #ifdef CUSTOM_TOUCH_SDA
+    if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
+  #else
+    if (!ts.begin(40))
+  #endif // defined(CUSTOM_TOUCH_SDA)
   {
     Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
   }
@@ -344,15 +345,15 @@ void setup()
   {
     Serial.println("[INFO]: Capacitive touch started!");
   }
-#endif
+#endif // defined(USECAPTOUCH)
 
-  // Setup PWM channel and attach pin 32
+  // Setup PWM channel and attach pin bl_pin
   ledcSetup(0, 5000, 8);
 #ifdef TFT_BL
   ledcAttachPin(TFT_BL, 0);
 #else
-  ledcAttachPin(32, 0);
-#endif
+  ledcAttachPin(backlightPin, 0);
+#endif // defined(TFT_BL)
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // --------------- Init Display -------------------------
@@ -429,7 +430,7 @@ void setup()
   Serial.println("[INFO]: Waiting for touch calibration...");
   touch_calibrate();
   Serial.println("[INFO]: Touch calibration completed!");
-#endif
+#endif // !defined(USECAPTOUCH)
 
   // Let's first check if all the files we need exist
   if (!checkfile("/config/general.json"))
@@ -514,7 +515,7 @@ if(generalconfig.beep){
   ledcWrite(2, 0);
 }
 
-#endif
+#endif // defined(speakerPin)
 
   if(!loadConfig("homescreen")){
     Serial.println("[WARNING]: homescreen.json seems to be corrupted!");
@@ -565,12 +566,28 @@ if(generalconfig.beep){
 
   //------------------BLE Initialization ------------------------------------------------------------------------
 
+#if defined(USEUSBHID)
+
+  // initialize control over the keyboard:
+  bleKeyboard.begin();
+  USB.begin();  
+
+#else
+
   Serial.println("[INFO]: Starting BLE");
   bleKeyboard.begin();
 
+#endif //if defined(USEUSBHID)
+
   // ---------------- Printing version numbers -----------------------------------------------
+  
+#if defined(USEUSBHID)
+  Serial.println("[INFO]: Using USB Keyboard");
+#else
   Serial.print("[INFO]: BLE Keyboard version: ");
   Serial.println(BLE_KEYBOARD_VERSION);
+#endif //if defined(USEUSBHID)
+
   Serial.print("[INFO]: ArduinoJson version: ");
   Serial.println(ARDUINOJSON_VERSION);
   Serial.print("[INFO]: TFT_eSPI version: ");
@@ -596,7 +613,7 @@ if(generalconfig.beep){
     Serial.println(" minutes");
     islatched[28] = 1;
   }
-#endif
+#endif // defined(touchInterruptPin)
 
   Serial.println("[INFO]: Boot completed and successful!");
 
@@ -741,7 +758,7 @@ void loop(void)
 
     pressed = tft.getTouch(&t_x, &t_y);
 
-#endif
+#endif // defined(USECAPTOUCH)
 
     if (pressed)
     {     
@@ -779,7 +796,7 @@ void loop(void)
 
     pressed = tft.getTouch(&t_x, &t_y);
 
-#endif
+#endif // defined(USECAPTOUCH)
 
     if (pressed)
     {     
@@ -818,7 +835,7 @@ void loop(void)
 
     pressed = tft.getTouch(&t_x, &t_y);
 
-#endif
+#endif // defined(USECAPTOUCH)
 
     if (pressed)
     {     
@@ -863,7 +880,7 @@ void loop(void)
         ledcDetachPin(speakerPin);
         ledcWrite(2, 0);
         }
-#endif
+#endif // defined(speakerPin)
         Serial.println("[INFO]: Saving latched states");
 
 //        You could uncomment this to see the latch stated before going to sleep
@@ -879,7 +896,7 @@ void loop(void)
         esp_deep_sleep_start();
       }
     }
-#endif
+#endif // defined(touchInterruptPin)
 
     // Touch coordinates are stored here
     uint16_t t_x = 0, t_y = 0;
@@ -906,7 +923,7 @@ void loop(void)
 
     pressed = tft.getTouch(&t_x, &t_y);
 
-#endif
+#endif // defined(USECAPTOUCH)
 
     // Check if the X and Y coordinates of the touch are within one of our buttons
     for (uint8_t b = 0; b < 6; b++)

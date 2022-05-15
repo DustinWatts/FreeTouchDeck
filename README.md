@@ -8,7 +8,9 @@
 
 
 
-For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
+For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE. 
+
+***Version 0.9.18a remark: This version might be unstable due to current work on adding support for the ESP32-S3. Last stable is 0.9.17 which you can find in the Releases section.***
 
 # Install Using The Web Installer (recommended!)
 

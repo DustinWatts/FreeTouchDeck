@@ -22,15 +22,6 @@ void userAction1(){
 }
 
 void userAction2(){
-
-  // (Windows Only) This functions opens the calculator and does some simple mathematics.
-
-  bleKeyboard.write(KEY_MEDIA_CALCULATOR);
-  delay(1000); // after opening an app, a longer delay is required for the app to completely launch.
-  bleKeyboard.print("22/7");
-  delay(USER_ACTION_DELAY);
-  bleKeyboard.write(KEY_RETURN);
-  delay(USER_ACTION_DELAY);  
   
 }
 

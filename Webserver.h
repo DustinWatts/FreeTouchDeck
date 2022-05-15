@@ -123,11 +123,21 @@ String handleInfo()
   output += String(freemem / 1000);
   output += " kB\"},";
 
+#if defined(USEUSBHID)
+
+  output += "{\"";
+  output += "Using USB Keyboard";
+  output += "\"},";
+
+#else
+
   output += "{\"";
   output += "BLE Keyboard Version";
   output += "\":\"";
   output += String(BLE_KEYBOARD_VERSION);
   output += "\"},";
+
+#endif //if defined(USEUSBHID)
 
   output += "{\"";
   output += "ArduinoJson Version";
