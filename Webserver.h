@@ -126,7 +126,9 @@ String handleInfo()
 #if defined(USEUSBHID)
 
   output += "{\"";
-  output += "Using USB Keyboard";
+  output += "Keyboard Type";
+  output += "\":\"";
+  output += String("Using USB");
   output += "\"},";
 
 #else
