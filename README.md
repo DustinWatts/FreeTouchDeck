@@ -14,10 +14,14 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 # Install Using The Web Installer (recommended!)
 
-Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
+Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: ***https://install.freetouchdeck.com/*** Chrome, Edge, and Opera only at the moment.
 
 # User Guide
-The User Guide will help you with installing and configuring if you want to build the project yourself: ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
+The User Guide will help you with installing and configuring if you want to build the project yourself: 
+### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
+
+Another great source is the Instructables that will guide your step by step: 
+### [Instructable](https://www.instructables.com/A-Bluetooth-ESP32-TFT-Touch-Macro-Keypad/)
 
 # ESP32 TouchDown users
 
