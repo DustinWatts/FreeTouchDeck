@@ -1581,7 +1581,7 @@ void printinfo()
 #endif
 
   tft.print("Free Storage: ");
-  float freemem = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+  float freemem = FILESYSTEM.totalBytes() - FILESYSTEM.usedBytes();
   tft.print(freemem / 1000);
   tft.println(" kB");
 #if defined(USEUSBHID)
@@ -1599,4 +1599,44 @@ void printinfo()
   tft.println(esp_get_idf_version());
 
   displayinginfo = true;
+}
+
+/**
+* @brief This function allow for drawing a single button which is not part of the
+        button class. It should be manually checked for touched.
+*
+* @param int32_t x
+         int32_t y
+         int32_t w 
+         int32_t h 
+         int32_t r 
+         uint32_t color
+         uint32_t outline 
+         char *label
+*
+* @return none
+*
+* @note Use the X and Y coordinates and check in the loop if it was pressed.
+*/
+
+void drawSingleButton(int32_t x, int32_t y, int32_t w, int32_t h, uint32_t color, uint32_t outline, String label) 
+{
+
+ //Draw the button
+  uint8_t r = min(w, h) / 4; // Corner radius
+  tft.fillRoundRect(x, y, w, h, r, color);
+  tft.drawRoundRect(x, y, w, h, r, outline);
+
+  //Print the label
+  tft.setTextColor(TFT_WHITE,color);
+  tft.setTextSize(2);  
+  uint8_t tempdatum = tft.getTextDatum();
+  tft.setTextDatum(MC_DATUM);
+  uint16_t tempPadding = tft.getTextPadding();
+  tft.setTextPadding(0);
+
+  tft.drawString(label, x + (w/2), y + (h/2));
+  tft.setTextDatum(tempdatum);
+  tft.setTextPadding(tempPadding);
+
 }

@@ -61,16 +61,25 @@
 // and if you are using the original ESP32-BLE-Keyboard library by T-VK -------
 //#define USE_NIMBLE
 
+// Define the filesystem to be used. For now just SPIFFS.
+#define FILESYSTEM SPIFFS
+
+#include <SPIFFS.h>     // Filesystem support header
+//#include <LittleFS.h>   // Filesystem support header
+
 const char *versionnumber = "0.9.18a";
 
   /* Version 0.9.18a.
    * 
    * Adding ESP32-S3 support
+   * Trying to add LitteFS Support
+   * Fix #89
+   * Fix #90
   */
 
 #include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
-#include <SPIFFS.h>   // Filesystem support header
+  
 #include <Preferences.h> // Used to store states before sleep/reboot
 
 #include <TFT_eSPI.h> // The TFT_eSPI library
@@ -133,9 +142,6 @@ AsyncWebServer webserver(80);
 TFT_eSPI tft = TFT_eSPI();
 
 Preferences savedStates;
-
-// Define the storage to be used. For now just SPIFFS.
-#define FILESYSTEM SPIFFS
 
 // This is the file name used to store the calibration data
 // You can change this to create new calibration files.
@@ -375,17 +381,17 @@ void setup()
 
   if (!FILESYSTEM.begin())
   {
-    Serial.println("[ERROR]: SPIFFS initialisation failed!");
-    drawErrorMessage("Failed to init SPIFFS! Did you upload the data folder?");
+    Serial.println("[ERROR]: FILESYSTEM initialisation failed!");
+    drawErrorMessage("Failed to init FILESYSTEM! Did you upload the data folder?");
     while (1)
       yield(); // We stop here
   }
-  Serial.println("[INFO]: SPIFFS initialised.");
+  Serial.println("[INFO]: FILESYSTEM initialised.");
 
   // Check for free space
 
   Serial.print("[INFO]: Free Space: ");
-  Serial.println(SPIFFS.totalBytes() - SPIFFS.usedBytes());
+  Serial.println(FILESYSTEM.totalBytes() - FILESYSTEM.usedBytes());
 
   //------------------ Load Wifi Config ----------------------------------------------
 
@@ -722,9 +728,46 @@ void loop(void)
   
   if (pageNum == 7)
   {
+      uint16_t t_x = 0, t_y = 0;
+      boolean pressed = false;
 
-    // If the pageNum is set to 7, do not draw anything on screen or check for touch
-    // and start handeling incomming web requests.
+    // If pageNum = 7, we are in STA or AP mode.
+    // We no check if the button is pressed, and if so restart.
+#ifdef USECAPTOUCH
+    if (ts.touched())
+    {
+
+      // Retrieve a point
+      TS_Point p = ts.getPoint();
+
+      //Flip things around so it matches our screen rotation
+      p.x = map(p.x, 0, 320, 320, 0);
+      t_y = p.x;
+      t_x = p.y;
+
+      pressed = true;
+    }
+
+#else
+
+    pressed = tft.getTouch(&t_x, &t_y);
+
+#endif // defined(USECAPTOUCH)
+
+    if (pressed)
+    {     
+      // If pressed check if the touch falls within the restart button
+      // drawSingleButton(140, 180, 200, 80, generalconfig.menuButtonColour, TFT_WHITE, "Restart");
+      if (t_x > 140 && t_x < 340){
+        if (t_y > 180 && t_y < 260){
+          // Touch falls within the boundaries of our button so we restart
+          Serial.println("[WARNING]: Restarting");
+          ESP.restart();
+        }
+      }
+
+    }
+
   }
   else if (pageNum == 8)
   {

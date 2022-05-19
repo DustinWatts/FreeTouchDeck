@@ -273,7 +273,7 @@ uint16_t getBMPColor(const char *filename)
 
   // Open File
   File bmpImage;
-  bmpImage = SPIFFS.open(filename, FILE_READ);
+  bmpImage = FILESYSTEM.open(filename, FILE_READ);
 
   int32_t dataStartingOffset = readNbytesInt(&bmpImage, 0x0A, 4);
   int16_t pixelsize = readNbytesInt(&bmpImage, 0x1C, 2);

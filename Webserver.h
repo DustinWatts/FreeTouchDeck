@@ -107,7 +107,7 @@ String handleAPISList()
 String handleInfo()
 {
 
-  float freemem = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+  float freemem = FILESYSTEM.totalBytes() - FILESYSTEM.usedBytes();
 
   String output = "[";
 
@@ -254,7 +254,7 @@ void handleJSONUpload(AsyncWebServerRequest *request, String filename, size_t in
     filename = "/config/" + filename; // TODO: Does the config directory need to be hardcoded?
 
     // Open the file on first call and store the file handle in the request object
-    request->_tempFile = SPIFFS.open(filename, "w");
+    request->_tempFile = FILESYSTEM.open(filename, "w");
   }
   if (len)
   {
@@ -292,7 +292,7 @@ void handleAPIUpload(AsyncWebServerRequest *request, String filename, size_t ind
     filename = "/uploads/" + filename; // TODO: Does the uploads directory need to be hardcoded?
 
     // Open the file on first call and store the file handle in the request object
-    request->_tempFile = SPIFFS.open(filename, "w");
+    request->_tempFile = FILESYSTEM.open(filename, "w");
   }
   if (len)
   {
@@ -308,8 +308,8 @@ void handleAPIUpload(AsyncWebServerRequest *request, String filename, size_t ind
   }
 }
 
-/* --------------- Checking for free space on SPIFFS ---------------- 
-Purpose: This checks if the free memory on the SPIFFS is bigger then a set threshold
+/* --------------- Checking for free space on FILESYSTEM ---------------- 
+Purpose: This checks if the free memory on the FILESYSTEM is bigger then a set threshold
 Input  : none
 Output : boolean
 Note   : none
@@ -317,8 +317,8 @@ Note   : none
 
 bool spaceLeft()
 {
-  float minmem = 100000.00; // Always leave 100 kB free pace on SPIFFS
-  float freeMemory = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+  float minmem = 100000.00; // Always leave 100 kB free pace on FILESYSTEM
+  float freeMemory = FILESYSTEM.totalBytes() - FILESYSTEM.usedBytes();
   Serial.printf("[INFO]: Free memory left: %f bytes\n", freeMemory);
   if (freeMemory < minmem)
   {
@@ -350,7 +350,7 @@ void handleUpload(AsyncWebServerRequest *request, String filename, size_t index,
     Serial.printf("[INFO]: File Upload Start: %s\n", filename.c_str());
     filename = "/logos/" + filename;
     // Open the file on first call and store the file handle in the request object
-    request->_tempFile = SPIFFS.open(filename, "w");
+    request->_tempFile = FILESYSTEM.open(filename, "w");
   }
   if (len)
   {
@@ -1863,9 +1863,9 @@ void handlerSetup()
       Serial.printf("[INFO]: Deleting file: %s\n", p->value().c_str());
       String filename = "/logos/";
       filename += p->value().c_str();
-      if (SPIFFS.exists(filename))
+      if (FILESYSTEM.exists(filename))
       {
-        SPIFFS.remove(filename);
+        FILESYSTEM.remove(filename);
       }
 
       resultFiles += p->value().c_str();
