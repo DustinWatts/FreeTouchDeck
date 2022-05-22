@@ -17,7 +17,7 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
 
 # User Guide
-The User Guide will help you with installing and configuring if you want to build the project yourself: ### [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
+The User Guide will help you with installing and configuring if you want to build the project yourself: [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
 
 # ESP32 TouchDown users
 
@@ -26,6 +26,10 @@ And if you wish to use the speaker uncomment the line `//#define speakerPin 26`
 
 If FreeTouchDeck came pre-installed, you can find how to set up the configurator here:   
 https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-installed
+
+# Helper app
+
+I wrote a helper app for Windows/macOS/Linux that will help you start applications, run scripts and can auto-switch FreeTouchDeck to a page you choose when an application comes in to focus. You can find it here: https://github.com/DustinWatts/FreeTouchDeck-Helper
 
 # Delete the old clone and use the new
 
