@@ -1,2 +1,21 @@
-- name: Compile with Aruino CLI
-  uses: ArminJo/arduino-test-compile@v3.0.0
+# This work flow compiles Freetouchdeck for the ESP32 
+# Creared 29-5-2022
+# by Dustin Watts
+name: Compile for ESP32
+on: [workflow_dispatch, push, pull_request]
+jobs:
+  build:
+    name: Test compiling for ESP32
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Test compile for Arduino
+      uses: ArminJo/arduino-test-compile@v3.0.0
+      with: 
+        arduino-board-fqbn: esp32:esp32
+        platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+        required-libraries: Servo,Adafruit NeoPixel
+
