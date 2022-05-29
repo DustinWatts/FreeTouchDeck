@@ -20,18 +20,18 @@ jobs:
         path: CustomLibrary_ESP32-BLE-Keyboard # must contain string "Custom"
 
     - name: Checkout second custom library
-        uses: actions/checkout@v3
-        with:
-          repository: me-no-dev/ESPAsyncWebServer
-          ref: master
-          path: CustomLibrary_ESPAsyncWebServer # must contain string "Custom"
+      uses: actions/checkout@v3
+      with:
+        repository: me-no-dev/ESPAsyncWebServer
+        ref: master
+        path: CustomLibrary_ESPAsyncWebServer # must contain string "Custom"
 
-      - name: Checkout thrid custom library # This name must be different from the one above
-        uses: actions/checkout@v3
-        with:
-          repository: me-no-dev/AsyncTCP
-          ref: master
-          path: CustomLibrary_AsyncTCP # This path must be different from the one above but must also contain string "Custom
+    - name: Checkout thrid custom library # This name must be different from the one above
+      uses: actions/checkout@v3
+      with:
+        repository: me-no-dev/AsyncTCP
+        ref: master
+        path: CustomLibrary_AsyncTCP # This path must be different from the one above but must also contain string "Custom
 
     - name: Test compile for Arduino
       uses: ArminJo/arduino-test-compile@v3.0.0
