@@ -12,10 +12,32 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Checkout custom library
+      uses: actions/checkout@v3
+      with:
+        repository: T-vK/ESP32-BLE-Keyboard
+        ref: master
+        path: CustomLibrary_ESP32-BLE-Keyboard # must contain string "Custom"
+
+    - name: Checkout second custom library
+        uses: actions/checkout@v3
+        with:
+          repository: me-no-dev/ESPAsyncWebServer
+          ref: master
+          path: CustomLibrary_ESPAsyncWebServer # must contain string "Custom"
+
+      - name: Checkout thrid custom library # This name must be different from the one above
+        uses: actions/checkout@v3
+        with:
+          repository: me-no-dev/AsyncTCP
+          ref: master
+          path: CustomLibrary_AsyncTCP # This path must be different from the one above but must also contain string "Custom
+
     - name: Test compile for Arduino
       uses: ArminJo/arduino-test-compile@v3.0.0
       with: 
-        arduino-board-fqbn: esp32:esp32
+        arduino-board-fqbn: esp32:esp32:esp32 
         platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-        required-libraries: Servo,Adafruit NeoPixel
+        equired-libraries: Adafruit-GFX-Library,TFT_eSPI,ArduinoJson
+        extra-arduino-cli-args: "--warnings default --build-property build.partitions=no_ota"
 
