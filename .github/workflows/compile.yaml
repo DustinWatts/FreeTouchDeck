@@ -33,9 +33,29 @@ jobs:
         ref: master
         path: CustomLibrary_AsyncTCP # This path must be different from the one above but must also contain string "Custom
 
+    - name: Checkout fourth custom library # This name must be different from the one above
+      uses: actions/checkout@v3
+      with:
+        repository: adafruit/Adafruit-GFX-Library
+        ref: master
+        path: CustomLibrary_Adafruit-GFX-Library # This path must be different from the one above but must also contain string
+
+    - name: Checkout fifth custom library # This name must be different from the one above
+      uses: actions/checkout@v3
+      with:
+        repository: bblanchon/ArduinoJson
+        ref: master
+        path: CustomLibrary_ArduinoJson # This path must be different from the one above but must also contain string
+
+    - name: Checkout sixth custom library # This name must be different from the one above
+      uses: actions/checkout@v3
+      with:
+        repository: Bodmer/TFT_eSPI
+        ref: master
+        path: CustomLibrary_TFT_eSPI # This path must be different from the one above but must also contain string
+
     - name: Test compile for Arduino
       uses: ArminJo/arduino-test-compile@v3.0.0
       with: 
         arduino-board-fqbn: esp32:esp32:esp32:PartitionScheme=no_ota
         platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
-        required-libraries: ArduinoJson, Adafruit GFX Library, TFT_eSPI
