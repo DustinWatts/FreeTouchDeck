@@ -1,0 +1,2 @@
+- name: Compile with Aruino CLI
+  uses: ArminJo/arduino-test-compile@v3.0.0
