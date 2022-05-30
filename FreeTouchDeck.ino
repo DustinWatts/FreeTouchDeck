@@ -39,10 +39,10 @@
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
-// (THE ESP32 TOUCHDOWN USES THIS!)
+// (The ESP32 TOUCHDOWN and the ESP32 TouchDown S3 uses this!)
 //#define USECAPTOUCH
 
-// ------- If your board is capapble of USB HID you can undefine this -
+// ------- If your board is capapble of USB HID you can uncomment this -
 
 //#define USEUSBHID
 
