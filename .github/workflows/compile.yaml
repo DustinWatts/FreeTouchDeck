@@ -19,36 +19,36 @@ jobs:
       with:
         repository: T-vK/ESP32-BLE-Keyboard
         ref: master
-        path: CustomLibrary_ESP32-BLE-Keyboard # must contain string "Custom"
+        path: CustomLibrary_ESP32-BLE-Keyboard 
 
     - name: Checkout ESPAsyncWebServer library
       uses: actions/checkout@v3
       with:
         repository: me-no-dev/ESPAsyncWebServer
         ref: master
-        path: CustomLibrary_ESPAsyncWebServer # must contain string "Custom"
+        path: CustomLibrary_ESPAsyncWebServer
 
-    - name: Checkout AsyncTCP library # This name must be different from the one above
+    - name: Checkout AsyncTCP library
       uses: actions/checkout@v3
       with:
         repository: me-no-dev/AsyncTCP
         ref: master
-        path: CustomLibrary_AsyncTCP # This path must be different from the one above but must also contain string "Custom
+        path: CustomLibrary_AsyncTCP
 
-    - name: Checkout Adafruit-GFX-Library library # This name must be different from the one above
+    - name: Checkout Adafruit-GFX-Library library
       uses: actions/checkout@v3
       with:
         repository: adafruit/Adafruit-GFX-Library
         ref: master
-        path: CustomLibrary_Adafruit-GFX-Library # This path must be different from the one above but must also contain string
+        path: CustomLibrary_Adafruit-GFX-Library
 
-    - name: Checkout TFT_eSPI library # This name must be different from the one above
+    - name: Checkout custom TFT_eSPI library
       uses: actions/checkout@v3
       with:
-        repository: Bodmer/TFT_eSPI
+        repository: DustinWatts/TFT_eSPI
         ref: master
-        path: CustomLibrary_TFT_eSPI # This path must be different from the one above but must also contain string
-
+        path: CustomLibrary_TFT_eSPI 
+        
     - name: Test compile with Arduino CLI
       uses: ArminJo/arduino-test-compile@v3
       with: 
