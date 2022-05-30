@@ -1,9 +1,7 @@
 # This work flow compiles Freetouchdeck for the ESP32 
-# Creared 29-5-2022
+# Created 29-5-2022
 # by Dustin Watts
 name: Test Compile for ESP32 on Arduino Core
-description: 'Compile sketches Using all Libraries for the ESP32 arduino-cli and check for errors'
-Author: Dustin Watts
 
 on: [workflow_dispatch, push, pull_request]
 
