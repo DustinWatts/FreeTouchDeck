@@ -69,8 +69,22 @@ Before compiling and uploading the FreeTouchDeck.ino sketch, you will have to ed
 
 The next section is `Section 2`. This also depends on what hardware you are using. For example for an ESP32 you'll have to uncomment the correct #define(s) under `EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP`. Also if your TFT has the blacklight control pin available you will have to uncomment the lines found under `#define TFT_BL` and `#define TFT_BACKLIGHT_ON`.  
 
-"Section 3" can be left alone.   
+"Section 3" can be left alone.
+
+## Support Me
+
+If you like what I am doing you there are a number of ways you can support me. 
+
+You can follow me on Twitter: [@dustinwattsnl](https://twitter.com/dustinwattsnl "Follow me on Twitter")
+
+You can subscrive to my channel on Youtube: [/DustinWatts](https://www.youtube.com/dustinwatts "Subscrive to my YouTube channel")
+
+And can support me by becoming a patron on Patreon:
+https://www.patreon.com/dustinwatts
+
+You can also make a one time donation using PayPal.me:
+https://www.paypal.me/dustinwattsnl
 
 # Help
 
-You can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
+For quick acces to help you can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
