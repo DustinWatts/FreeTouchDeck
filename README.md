@@ -79,7 +79,7 @@ You can follow me on Twitter: [@dustinwattsnl](https://twitter.com/dustinwattsnl
 
 You can subscrive to my channel on Youtube: [/DustinWatts](https://www.youtube.com/dustinwatts "Subscrive to my YouTube channel")
 
-And can support me by becoming a patron on Patreon:
+You can support me by becoming a patron on Patreon:
 https://www.patreon.com/dustinwatts
 
 You can also make a one time donation using PayPal.me:
