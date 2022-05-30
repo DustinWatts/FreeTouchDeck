@@ -55,7 +55,7 @@ jobs:
       uses: ArminJo/arduino-test-compile@v3.0.0
       with: 
         arduino-board-fqbn: esp32:esp32:esp32:PartitionScheme=no_ota
-        cli-version: 0.11.0
+        cli-version: 0.22.0
         extra-arduino-cli-args: "--warnings default"
         platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
         required-libraries: ArduinoJson
