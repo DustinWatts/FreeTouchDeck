@@ -73,18 +73,15 @@ The next section is `Section 2`. This also depends on what hardware you are usin
 
 ## Support Me
 
-If you like what I am doing you there are a number of ways you can support me. 
+If you like what I am doing, there are a number of ways you can support me. 
 
-You can follow me on Twitter: [@dustinwattsnl](https://twitter.com/dustinwattsnl "Follow me on Twitter")
+| Platform | Link|
+|:-----:|:-----|
+| [<img src="https://github.com/DustinWatts/small_logos/blob/main/twitter_logo.png" alt="Twtter" width="24"/>](https://twitter.com/dustinwattsnl "Follow me on Twitter") | You can follow me on Twitter: [@dustinwattsnl](https://twitter.com/dustinwattsnl "Follow me on Twitter")|
+| [<img src="https://github.com/DustinWatts/small_logos/blob/main/youtube_logo.png" alt="YouTube" width="32"/>](https://www.youtube.com/dustinwatts "Subscrive to my YouTube channel") | You can subscribe to my channel on Youtube: [/dustinWatts](https://www.youtube.com/dustinwatts "Subscribe to my YouTube channel") |
+| [<img src="https://github.com/DustinWatts/small_logos/blob/main/patreon_logo.png" alt="Patreon" width="32"/>](https://www.patreon.com/dustinwatts) | You can support me by becoming a patron on Patreon: https://www.patreon.com/dustinwatts |
+| [<img src="https://github.com/DustinWatts/small_logos/blob/main/paypalme_logo.png" alt="PayPal.me" width="32"/>](https://www.paypal.me/dustinwattsnl) | You can make a one time donation using PayPal.me: https://www.paypal.me/dustinwattsnl |
 
-You can subscrive to my channel on Youtube: [/DustinWatts](https://www.youtube.com/dustinwatts "Subscrive to my YouTube channel")
-
-You can support me by becoming a patron on Patreon:
-https://www.patreon.com/dustinwatts
-
-You can also make a one time donation using PayPal.me:
-https://www.paypal.me/dustinwattsnl
-
-## Help
+## Get help
 
 For quick acces to help you can join my Discord server where I have a dedicated #freetouchdeck channel. https://discord.gg/RE3XevS
