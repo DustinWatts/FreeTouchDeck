@@ -49,8 +49,8 @@ jobs:
         ref: master
         path: CustomLibrary_TFT_eSPI # This path must be different from the one above but must also contain string
 
-    - name: Test compile for Arduino
-      uses: ArminJo/arduino-test-compile@v3.0.0
+    - name: Test compile with Arduino CLI
+      uses: ArminJo/arduino-test-compile@v3
       with: 
         arduino-board-fqbn: esp32:esp32:esp32:PartitionScheme=no_ota
         cli-version: 0.22.0
