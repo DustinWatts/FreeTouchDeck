@@ -362,7 +362,11 @@ void setup()
 
 #ifdef USECAPTOUCH
   #ifdef GT911
+    delay(30);
     ts.begin();
+    delay(30);
+    ts.reset();
+    delay(30);
     ts.setRotation(TOUCH_ROTATION);
     Serial.println("[INFO]: Capacitive touch started! (GT911)");
   #else
