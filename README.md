@@ -65,6 +65,7 @@ or just a GT911 touch screen
 
 If you use capacitive touch:
 - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
+
 or incase of a GT911 touch screen (like the ESP3248S035 capative has):
 - TAMCTec GT911 Library (version 1.0.2), https://github.com/TAMCTec/gt911-arduino
 
