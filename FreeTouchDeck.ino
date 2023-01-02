@@ -157,7 +157,7 @@ const char *versionnumber = "0.9.18a";
   #ifdef GT911
     #include <TAMC_GT911.h>
     TAMC_GT911 ts = TAMC_GT911(TOUCH_SDA, TOUCH_SCL, TOUCH_INT, TOUCH_RST, TOUCH_WIDTH, TOUCH_HEIGHT);
-  else
+  #else
     #include <FT6236.h>
     FT6236 ts = FT6236();
   #endif
