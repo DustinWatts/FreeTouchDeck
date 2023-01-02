@@ -70,8 +70,11 @@
 
 // ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
 // The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
-#define touchInterruptPin GPIO_NUM_27
-
+#ifdef GT911
+  #define touchInterruptPin GPIO_NUM_21 //Default for ESP3248S035
+#else
+  #define touchInterruptPin GPIO_NUM_27 //Default for ESP32 TOUCHDOWN
+#endif
 // ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
 //#define speakerPin 26
 
@@ -157,6 +160,7 @@ const char *versionnumber = "0.9.18a";
   else
     #include <FT6236.h>
     FT6236 ts = FT6236();
+  #endif
 #endif // defined(USECAPTOUCH)
 
 AsyncWebServer webserver(80);
