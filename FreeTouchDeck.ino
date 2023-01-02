@@ -1846,7 +1846,7 @@ void loop(void)
           }
         }
 
-        delay(200); // UI debouncing
+        delay(10); // UI debouncing
       }
     }
   }
