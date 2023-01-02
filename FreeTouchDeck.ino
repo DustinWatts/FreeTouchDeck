@@ -24,6 +24,9 @@
 
       --- If you use Capacitive touch (ESP32 TouchDown) ---
       - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
+
+      --- If you use Capacitive touch (GT911 touchscreen) ---
+      - TAMCTEC GT911 library (version 1.0.2 or newer), https://github.com/TAMCTec/gt911-arduino -
       
   The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
   It has to be runs at least once when using resistive touch. After that you can set 
@@ -41,6 +44,21 @@
 // ------- Uncomment the next line if you use capacitive touch -------
 // (The ESP32 TOUCHDOWN and the ESP32 TouchDown S3 uses this!)
 //#define USECAPTOUCH
+//#define GT911 // Enable this together with USECAPTOUCH to enable support for a GT911 touchscreen
+
+// ------- Set the pins on which the GT911 is connected and the screensize+rotation -------
+// Default is for the capative touch version of the ESP3248S035
+#define TOUCH_SDA  33 //33
+#define TOUCH_SCL  32 //32
+#define TOUCH_INT 21 //21
+#define TOUCH_RST 25 //25
+#define TOUCH_WIDTH  480 //480
+#define TOUCH_HEIGHT 320 //320
+#define TOUCH_ROTATION ROTATION_LEFT //(Default: ROTATION_LEFT)Possible values(or smth): ROTATION_LEFT  ROTATION_RIGHT  ROTATION_NORMAL ROTATION_INVERSED
+
+// Set the width and height of your screen here:
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT 320
 
 // ------- If your board is capapble of USB HID you can uncomment this -
 
@@ -133,8 +151,12 @@ const char *versionnumber = "0.9.18a";
 
 #ifdef USECAPTOUCH
   #include <Wire.h>
-  #include <FT6236.h>
-  FT6236 ts = FT6236();
+  #ifdef GT911
+    #include <TAMC_GT911.h>
+    TAMC_GT911 ts = TAMC_GT911(TOUCH_SDA, TOUCH_SCL, TOUCH_INT, TOUCH_RST, TOUCH_WIDTH, TOUCH_HEIGHT);
+  else
+    #include <FT6236.h>
+    FT6236 ts = FT6236();
 #endif // defined(USECAPTOUCH)
 
 AsyncWebServer webserver(80);
@@ -152,10 +174,6 @@ Preferences savedStates;
 // again, otherwise it will only be done once.
 // Repeat calibration if you change the screen rotation.
 #define REPEAT_CAL false
-
-// Set the width and height of your screen here:
-#define SCREEN_WIDTH 480
-#define SCREEN_HEIGHT 320
 
 // Keypad start position, centre of the first button
 #define KEY_X SCREEN_WIDTH / 6
@@ -339,6 +357,11 @@ void setup()
   Serial.println("");
 
 #ifdef USECAPTOUCH
+  #ifdef GT911
+    ts.begin();
+    ts.setRotation(TOUCH_ROTATION);
+    Serial.println("[INFO]: Capacitive touch started! (GT911)");
+  #else
   #ifdef CUSTOM_TOUCH_SDA
     if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
   #else
@@ -349,8 +372,9 @@ void setup()
   }
   else
   {
-    Serial.println("[INFO]: Capacitive touch started!");
+    Serial.println("[INFO]: Capacitive touch started! (FT6236)");
   }
+#endif
 #endif // defined(USECAPTOUCH)
 
   // Setup PWM channel and attach pin bl_pin
@@ -629,7 +653,9 @@ if(generalconfig.beep){
 
 void loop(void)
 {
-  
+#ifdef GT911
+  ts.read();
+#endif
   // Check if there is data available on the serial input that needs to be handled.
   
   if (Serial.available())
@@ -734,6 +760,21 @@ void loop(void)
     // If pageNum = 7, we are in STA or AP mode.
     // We no check if the button is pressed, and if so restart.
 #ifdef USECAPTOUCH
+  #ifdef GT911
+    if (ts.isTouched)
+    {
+      for (int i = 0; i < ts.touches; i++) {
+        //Serial.print("Touch "); Serial.print(i + 1); Serial.print(": ");;
+        //Serial.print("  x: "); Serial.print(ts.points[i].x);
+        //Serial.print("  y: "); Serial.print(ts.points[i].y);
+        //Serial.println(' ');
+        //Flip things around so it matches our screen rotation
+        t_x = map(ts.points[i].x, 0, 480, 480, 0);
+        t_y = map(ts.points[i].y, 0, 320, 320, 0);
+      }
+      pressed = true;
+    }
+  #else
     if (ts.touched())
     {
 
@@ -747,6 +788,7 @@ void loop(void)
 
       pressed = true;
     }
+    #endif
 
 #else
 
@@ -783,6 +825,21 @@ void loop(void)
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
+  #ifdef GT911
+    if (ts.isTouched)
+    {
+      for (int i = 0; i < ts.touches; i++) {
+        //Serial.print("Touch "); Serial.print(i + 1); Serial.print(": ");;
+        //Serial.print("  x: "); Serial.print(ts.points[i].x);
+        //Serial.print("  y: "); Serial.print(ts.points[i].y);
+        //Serial.println(' ');
+        //Flip things around so it matches our screen rotation
+        t_x = map(ts.points[i].x, 0, 480, 480, 0);
+        t_y = map(ts.points[i].y, 0, 320, 320, 0);
+      }
+      pressed = true;
+    }
+  #else
     if (ts.touched())
     {
 
@@ -796,6 +853,7 @@ void loop(void)
 
       pressed = true;
     }
+    #endif
 
 #else
 
@@ -821,6 +879,21 @@ void loop(void)
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
+  #ifdef GT911
+    if (ts.isTouched)
+    {
+      for (int i = 0; i < ts.touches; i++) {
+        //Serial.print("Touch "); Serial.print(i + 1); Serial.print(": ");;
+        //Serial.print("  x: "); Serial.print(ts.points[i].x);
+        //Serial.print("  y: "); Serial.print(ts.points[i].y);
+        //Serial.println(' ');
+        //Flip things around so it matches our screen rotation
+        t_x = map(ts.points[i].x, 0, 480, 480, 0);
+        t_y = map(ts.points[i].y, 0, 320, 320, 0);
+      }
+      pressed = true;
+    }
+  #else
     if (ts.touched())
     {
 
@@ -834,6 +907,7 @@ void loop(void)
 
       pressed = true;
     }
+    #endif
 
 #else
 
@@ -860,6 +934,21 @@ void loop(void)
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
+  #ifdef GT911
+    if (ts.isTouched)
+    {
+      for (int i = 0; i < ts.touches; i++) {
+        //Serial.print("Touch "); Serial.print(i + 1); Serial.print(": ");;
+        //Serial.print("  x: "); Serial.print(ts.points[i].x);
+        //Serial.print("  y: "); Serial.print(ts.points[i].y);
+        //Serial.println(' ');
+        //Flip things around so it matches our screen rotation
+        t_x = map(ts.points[i].x, 0, 480, 480, 0);
+        t_y = map(ts.points[i].y, 0, 320, 320, 0);
+      }
+      pressed = true;
+    }
+  #else
     if (ts.touched())
     {
 
@@ -873,6 +962,7 @@ void loop(void)
 
       pressed = true;
     }
+    #endif
 
 #else
 
@@ -948,6 +1038,21 @@ void loop(void)
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
+  #ifdef GT911
+    if (ts.isTouched)
+    {
+      for (int i = 0; i < ts.touches; i++) {
+        //Serial.print("Touch "); Serial.print(i + 1); Serial.print(": ");;
+        //Serial.print("  x: "); Serial.print(ts.points[i].x);
+        //Serial.print("  y: "); Serial.print(ts.points[i].y);
+        //Serial.println(' ');
+        //Flip things around so it matches our screen rotation
+        t_x = map(ts.points[i].x, 0, 480, 480, 0);
+        t_y = map(ts.points[i].y, 0, 320, 320, 0);
+      }
+      pressed = true;
+    }
+  #else
     if (ts.touched())
     {
 
@@ -961,6 +1066,7 @@ void loop(void)
 
       pressed = true;
     }
+    #endif
 
 #else
 
