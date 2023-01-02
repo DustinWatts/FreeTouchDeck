@@ -27,6 +27,10 @@ And if you wish to use the speaker uncomment the line `//#define speakerPin 26`
 If FreeTouchDeck came pre-installed, you can find how to set up the configurator here:   
 https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-installed
 
+## ESP3248S035 Capative / GT911 touchscreen TouchDown users
+
+Make sure to uncomment the line `//#define USECAPTOUCH` and `//#define GT911`
+
 ## Helper app
 
 I wrote a helper app for Windows/macOS/Linux that will help you start applications, run scripts and can auto-switch FreeTouchDeck to a page you choose when an application comes in to focus. You can find it here: https://github.com/DustinWatts/FreeTouchDeck-Helper
