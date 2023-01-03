@@ -825,6 +825,9 @@ void loop(void)
     if (!displayinginfo)
     {
       printinfo();
+      #ifdef GT911
+        delay(3000);
+      #endif
     }
 
     uint16_t t_x = 0, t_y = 0;
