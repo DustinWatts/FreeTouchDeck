@@ -59,9 +59,9 @@
   #endif //defined(AUTO_BRIGHTNESS)
   //Touchscreen related
   //Possible fixes (for touchscreen button spamming and the info page directly closing):
-    //#define POSSIBLE_SPAM_FIX_1 // makes it read the touch info 5 times instead of once a loop
-    //#define POSSIBLE_SPAM_FIX_2 // diffrent way of reading the touches, does cause the screen to only have 1 touch point
-    //#define LONGER_DELAY //adds a bit more delay in the loop which might fix some touch issues
+    #define POSSIBLE_SPAM_FIX_1 // makes it read the touch info 5 times instead of once a loop
+    #define POSSIBLE_SPAM_FIX_2 // diffrent way of reading the touches, does cause the screen to only have 1 touch point
+    #define LONGER_DELAY //adds a bit more delay in the loop which might fix some touch issues
   #define GT911
 #endif // defined(esp3248s035c)
 
@@ -73,6 +73,10 @@
   #define TOUCH_RST 25 //25
   #define TOUCH_ROTATION ROTATION_RIGHT //(Default: ROTATION_RIGHT)Possible values(or smth): ROTATION_LEFT  ROTATION_RIGHT  ROTATION_NORMAL ROTATION_INVERSED
 #endif
+
+// Set the width and height of your screen here:
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT 320
 
 // ------- If your board is capapble of USB HID you can uncomment this -
 
@@ -203,10 +207,6 @@ Preferences savedStates;
 // again, otherwise it will only be done once.
 // Repeat calibration if you change the screen rotation.
 #define REPEAT_CAL false
-
-// Set the width and height of your screen here:
-#define SCREEN_WIDTH 480
-#define SCREEN_HEIGHT 320
 
 // Keypad start position, centre of the first button
 #define KEY_X SCREEN_WIDTH / 6
