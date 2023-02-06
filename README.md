@@ -53,7 +53,7 @@ For Capacitive touch:
 - an ESP32 TouchDown: https://www.esp32touchdown.com/
 or
 - an ESP3248S035 capacitive: aliexpress.com/item/1005004632953455.html
-or just a GT911 touch screen (for problems send a dm on discord to Raycast#7373)
+or just a GT911 touch screen (in case of problems include @Raycast#7373 in your message on Discord or here)
 
 ## !- Library Dependencies -!
 - Adafruit-GFX-Library (tested with version 1.10.4), available through Library Manager
