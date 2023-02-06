@@ -52,7 +52,7 @@ For Resistive touch:
 For Capacitive touch:
 - an ESP32 TouchDown: https://www.esp32touchdown.com/
 or
-- an ESP3248S035 capative: aliexpress.com/item/1005004632953455.html
+- an ESP3248S035 capacitive: aliexpress.com/item/1005004632953455.html
 or just a GT911 touch screen (for problems send a dm on discord to Raycast#7373)
 
 ## !- Library Dependencies -!
@@ -66,7 +66,7 @@ or just a GT911 touch screen (for problems send a dm on discord to Raycast#7373)
 If you use capacitive touch:
 - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
 
-or in case of a GT911 touch screen (like the ESP3248S035 capative has):
+or in case of a GT911 touchscreen (like the ESP3248S035 capacitive has):
 - TAMCTec GT911 Library (version 1.0.2), https://github.com/TAMCTec/gt911-arduino
 
 ## Combiner PCB for an ESP32 DevKit C (38-pin only) + ILI9488 Touch Module:
