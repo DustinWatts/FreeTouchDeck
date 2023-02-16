@@ -12,6 +12,10 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 ***Version 0.9.18a remark: This version might be unstable due to current work on adding support for the ESP32-S3. Last stable is 0.9.17 which you can find in the Releases section.***
 
+## We are looking for (web) developers!
+
+We are looking for (web) developers who are willing to help out updating the configurator (or changing it completely!) to work with all the new features that the Development branch offers. Once we have a working configurator, the Development branch will replace the current master as FreeTouchDeck version 2.0. As a token of my appreciation, you can get (if you will) an ESP32 TouchDown S3 at cost price before it releases! Also you will be credited here, in the source code and in the documentation. If you want to join, let us know on Discord: https://discord.gg/RE3XevS
+
 ## Install Using The Web Installer (recommended!)
 
 Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
