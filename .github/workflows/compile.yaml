@@ -1,5 +1,5 @@
 # This work flow compiles Freetouchdeck for the ESP32 
-# Created 29-5-2022
+# Created 29-5-2022 edited on 06-02-2023.
 # by Dustin Watts
 name: Test Compile for ESP32 on Arduino Core
 
@@ -54,6 +54,6 @@ jobs:
       with: 
         arduino-board-fqbn: esp32:esp32:esp32:PartitionScheme=no_ota
         cli-version: 0.22.0
-        extra-arduino-cli-args: "--warnings default"
+        extra-arduino-cli-args: "--warnings more"
         platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
         required-libraries: ArduinoJson
