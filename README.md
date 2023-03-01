@@ -27,7 +27,7 @@ And if you wish to use the speaker uncomment the line `//#define speakerPin 26`
 If FreeTouchDeck came pre-installed, you can find how to set up the configurator here:   
 https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-installed
 
-## ESP32-3248S035 Capative / GT911 touchscreen users
+## ESP32-3248S035 Capacitive / GT911 touchscreen users
 
 Make sure to uncomment the line `//#define esp323248s035c` if you use a ESP32-3248S035 Capacitive or `//#define GT911` If you have a GT911 touchscreen
 
