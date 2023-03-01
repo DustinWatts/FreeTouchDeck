@@ -65,7 +65,7 @@
 //#define GT911 //no need to set this if you use a esp323248s035c, setting it wont affect anything tho
 // (The esp322432s028r uses the below one!)
 //#define esp322432s028r
-// (Uncomment this if you use a resistive touchscreen)
+// (Uncomment this if you use a resistive touchscreen, not needed for the esp322432s028r)
 //#define ResistiveTouch
 
 
