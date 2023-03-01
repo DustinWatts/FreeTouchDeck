@@ -71,7 +71,8 @@ For Resistive touch:
 
 For Capacitive touch:
 - an ESP32 TouchDown: https://www.esp32touchdown.com/
-or
+
+Hardware used by Raycast:
 - an ESP3248S035 capacitive: aliexpress.com/item/1005004632953455.html
 or just a GT911 touch screen (in case of problems include @Raycast#7373 in your message on Discord or here)
 
