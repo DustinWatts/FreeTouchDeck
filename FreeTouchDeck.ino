@@ -25,7 +25,7 @@
       --- If you use a ESP32 TouchDown ---
       - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
 
-      --- If you use a GT911 touchscreen or the esp3248s035 capacitive board ---
+      --- If you use a GT911 touchscreen or the esp323248s035 capacitive board ---
       - TAMCTEC GT911 library (version 1.0.2 or newer), https://github.com/TAMCTec/gt911-arduino
 
       --- If you use the esp322432s028 resistive board ---
@@ -59,10 +59,10 @@
 // ------- Uncomment the line of the device/touchscreen you use -------
 // (The ESP32 TOUCHDOWN and the ESP32 TouchDown S3 uses this!)
 //#define TouchDown
-// (The esp3248s035 capacitive uses the below one!)
-//#define esp3248s035c
+// (The esp323248s035 capacitive uses the below one!)
+//#define esp323248s035c
 // (The gt911 touchscreen uses the lowest one)
-//#define GT911 //no need to set this if you use a esp3248s035c, setting it wont affect anything tho
+//#define GT911 //no need to set this if you use a esp323248s035c, setting it wont affect anything tho
 // (The esp322432s028r uses the below one!)
 //#define esp322432s028r
 // (Uncomment this if you use a resistive touchscreen)
@@ -74,8 +74,8 @@
 //Possible global (affects all devices) button spam fix (makes it a bit less)
 #define SpamFix
 
-// ------- Settings for the esp3248s035 capacitive board -------
-#ifdef esp3248s035c
+// ------- Settings for the esp323248s035 capacitive board -------
+#ifdef esp323248s035c
 //Brightness related stuff, an option to change the color and disable the led light on the board will come soon
 #define AUTO_BRIGHTNESS //disable this if you dont want auto brightness
 #ifdef AUTO_BRIGHTNESS
@@ -88,8 +88,8 @@ unsigned int iLightTolerance = 20; //the required diffrence in brightness before
 #define GT911_Possible_Spam_Fix2 // diffrent way of reading the touches, does cause the screen to only have 1 touch point
 #define LONGER_DELAY //adds a bit more delay in the loop which might fix some touch issues
 #define GT911
-#endif // defined(esp3248s035c)
-// ------- Settings for the GT911 touchscreen (default is for the esp3248s035c board)-------
+#endif // defined(esp323248s035c)
+// ------- Settings for the GT911 touchscreen (default is for the esp323248s035c board)-------
 #ifdef GT911
 #define TOUCH_SDA  33 //33
 #define TOUCH_SCL  32 //32
@@ -103,11 +103,11 @@ unsigned int iLightTolerance = 20; //the required diffrence in brightness before
 //Brightness related stuff, an option to change the color and disable the led light on the board will come soon
 #define AUTO_BRIGHTNESS //disable this if you dont want auto brightness
 #ifdef AUTO_BRIGHTNESS
-#define LIGHT_SENSOR 34 //A test to see if it uses the same pin as the esp3248s035c
+#define LIGHT_SENSOR 34 //A test to see if it uses the same pin as the esp323248s035c
 uint8_t AutoOffset = 0; //change this number to change the offset of the auto brightness
 unsigned int iLightTolerance = 20; //the required diffrence in brightness before it updates the brightness of the screen
 #endif //defined(AUTO_BRIGHTNESS)
-#endif // defined(esp3248s035c)
+#endif // defined(esp323248s035c)
 
 // ------- Settings for the ESP32 TouchDown board -------
 #ifdef TouchDown
@@ -129,7 +129,7 @@ unsigned int iLightTolerance = 20; //the required diffrence in brightness before
 
 // ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
 // The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
-#define touchInterruptPin GPIO_NUM_27 //Broken on esp3248s035c and probably esp322432s028r
+#define touchInterruptPin GPIO_NUM_27 //Broken on esp323248s035c and probably esp322432s028r
 
 
 
@@ -154,7 +154,7 @@ unsigned int iLightTolerance = 20; //the required diffrence in brightness before
 #define DefaultRes
 #endif
 
-//Set your resolution here (default is for the ESP32 Touchdown and esp3248s035c)
+//Set your resolution here (default is for the ESP32 Touchdown and esp323248s035c)
 //No need to change anything if you use a esp322432s028r
 #ifdef DefaultRes
 #define SCREEN_WIDTH 480
@@ -274,7 +274,7 @@ uint8_t ConvertedLightLevel = 0;
 uint8_t OffsetLightLevel = 0;
 uint8_t OffsetLast = 0;
 uint8_t iSomething = 0;
-#ifdef esp3248s035c
+#ifdef esp323248s035c
 #define LIGHT_SENSOR 34 //no need to change this
 #endif
 #endif

@@ -27,9 +27,9 @@ And if you wish to use the speaker uncomment the line `//#define speakerPin 26`
 If FreeTouchDeck came pre-installed, you can find how to set up the configurator here:   
 https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-installed
 
-## ESP32-48S035 Capative / GT911 touchscreen users
+## ESP32-3248S035 Capative / GT911 touchscreen users
 
-Make sure to uncomment the line `//#define esp3248s035c` if you use a ESP32-48S035 Capacitive or `//#define GT911` If you have a GT911 touchscreen
+Make sure to uncomment the line `//#define esp323248s035c` if you use a ESP32-3248S035 Capacitive or `//#define GT911` If you have a GT911 touchscreen
 
 ## ESP32-2432S028 Resistive touchscreen users
 
@@ -86,7 +86,7 @@ or just a GT911 touch screen (in case of problems include @Raycast#7373 in your 
 If you use capacitive touch:
 - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
 
-or in case of a GT911 touchscreen (like the ESP32-48S035 capacitive has):
+or in case of a GT911 touchscreen (like the ESP32-3248S035 capacitive has):
 - TAMCTec GT911 Library (version 1.0.2), https://github.com/TAMCTec/gt911-arduino
 
 Incase your XPT2046 touchscreen doesn't work by default (or when you use a ESP32-2432S028 resistive):
