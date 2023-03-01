@@ -9,7 +9,7 @@
 * @note If USECAPTOUCH is defined we do not need to calibrate touch
 */
 
-#if !defined(USECAPTOUCH)
+#ifdef(ResistiveTouch)
 void touch_calibrate()
 {
   uint16_t calData[5];
@@ -74,4 +74,4 @@ void touch_calibrate()
     }
   }
 }
-#endif //!defined(USECAPTOUCH)
+#endif //defined(ResistiveTouch)

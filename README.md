@@ -12,10 +12,6 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
 ***Version 0.9.18a remark: This version might be unstable due to current work on adding support for the ESP32-S3. Last stable is 0.9.17 which you can find in the Releases section.***
 
-## We are looking for (web) developers!
-
-We are looking for (web) developers who are willing to help out updating the configurator (or changing it completely!) to work with all the new features that the Development branch offers. Once we have a working configurator, the Development branch will replace the current master as FreeTouchDeck version 2.0. As a token of my appreciation, you can get (if you will) an ESP32 TouchDown S3 at cost price before it releases! Also you will be credited here, in the source code and in the documentation. If you want to join, let us know on Discord: https://discord.gg/RE3XevS
-
 ## Install Using The Web Installer (recommended!)
 
 Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
@@ -25,15 +21,35 @@ The User Guide will help you with installing and configuring if you want to buil
 
 ## ESP32 TouchDown users
 
-Make sure to uncomment the line `//#define USECAPTOUCH`!   
+Make sure to uncomment the line `//#define TouchDown`!   
 And if you wish to use the speaker uncomment the line `//#define speakerPin 26`
 
 If FreeTouchDeck came pre-installed, you can find how to set up the configurator here:   
 https://github.com/DustinWatts/esp32-touchdown/wiki/With-FreeTouchDeck-pre-installed
 
-## ESP3248S035 Capative / GT911 touchscreen users
+## ESP32-48S035 Capative / GT911 touchscreen users
 
-Make sure to uncomment the line `//#define USECAPTOUCH` and `//#define GT911`
+Make sure to uncomment the line `//#define esp3248s035c` if you use a ESP32-48S035 Capacitive or `//#define GT911` If you have a GT911 touchscreen
+
+## ESP32-2432S028 Resistive touchscreen users
+
+Make sure to uncomment the line `//#define esp322432s028r`
+
+
+## Resistive Touchscreen users
+
+Make sure to uncomment the line `//#define ResistiveTouch`
+
+## XPT2046 Touchscreen users
+
+If FreeTouchDeck doesn't work by default, you can try it another way by doing the following things:
+
+1. Install the following library: https://github.com/Bodmer/TFT_Touch
+2. Uncomment the line `//#define esp322432s028r`
+3. Comment the autobrightness option for the esp322432s028r
+4. Change the resolution to match the resolution for your screen (the screen resolution in the line after #ifdef esp322432s028r)
+5. Change the pins at the touchscreen part for the esp322432s028r (is a bit further down in the file) to match your pin layout
+6. Try and see if it works
 
 ## Helper app
 
@@ -70,8 +86,11 @@ or just a GT911 touch screen (in case of problems include @Raycast#7373 in your 
 If you use capacitive touch:
 - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
 
-or in case of a GT911 touchscreen (like the ESP3248S035 capacitive has):
+or in case of a GT911 touchscreen (like the ESP32-48S035 capacitive has):
 - TAMCTec GT911 Library (version 1.0.2), https://github.com/TAMCTec/gt911-arduino
+
+Incase your XPT2046 touchscreen doesn't work by default (or when you use a ESP32-2432S028 resistive):
+- TFT_Touch library (Latest version), https://github.com/Bodmer/TFT_Touch
 
 ## Combiner PCB for an ESP32 DevKit C (38-pin only) + ILI9488 Touch Module:
 
