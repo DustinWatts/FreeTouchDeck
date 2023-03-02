@@ -526,7 +526,7 @@ pressed = tft.getTouch(&t_x, &t_y);
 
 #ifdef SpamFix
   if (prevthing) {
-    bool pressed = false
+    bool pressed = false;
   }
 #endif
 }
