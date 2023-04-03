@@ -12,7 +12,7 @@
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE. 
 
 ***
-***Due to constant improvements in the `-main` branche, getting the latest code straight from the `-main` branche (by dowloading it as a ZIP for example) might be unstable. If you want a stable and tested version, download the latest release from the [Releases](https://github.com/DustinWatts/FreeTouchDeck/releases) page.***
+***Due to constant improvements in the `-master` branche, getting the latest code straight from the `-master` branche (by dowloading it as a ZIP for example) might be unstable. If you want a stable and tested version, download the latest release from the [Releases](https://github.com/DustinWatts/FreeTouchDeck/releases) page.***
 
 ***The current latest stable is 0.9.17.***
 ***
