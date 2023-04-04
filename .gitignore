@@ -4,3 +4,5 @@ data/config/wificonfig.json
 .vscode/c_cpp_properties.json
 .vscode/arduino.json
 .vscode/settings.json
+.c_cpp_properties
+.pio
