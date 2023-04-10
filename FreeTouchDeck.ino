@@ -42,6 +42,8 @@
 // (The ESP32 TOUCHDOWN and the ESP32 TouchDown S3 uses this!)
 //#define USECAPTOUCH
 
+//#define ESP32TouchDownS3
+
 // ------- If your board is capapble of USB HID you can uncomment this -
 
 //#define USEUSBHID
@@ -311,8 +313,9 @@ TFT_eSPI_Button key[6];
 #include "UserActions.h"
 #include "Action.h"
 #include "Webserver.h"
-#include "Touch.h"
-
+#ifndef ESP32TouchDownS3
+  #include "Touch.h"
+#endif // ESP32TouchDownS3
 //-------------------------------- SETUP --------------------------------------------------------------
 
 void setup()
