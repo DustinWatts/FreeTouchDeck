@@ -1,5 +1,6 @@
 # FreeTouchDeck
 [![](https://badgen.net/github/last-commit/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/commits/master)
+[![](https://badgen.net/badge/0.9.17%20compile/succes/green)](https://badgen.net/badge/0.9.17%20compile/succes/green)
 [![](https://badgen.net/github/release/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/releases)
 [![](https://img.shields.io/discord/693862273864827012?color=5165f6&label=chat%20on%20Discord)](https://discord.gg/RE3XevS)
 [![](https://badgen.net/github/license/DustinWatts/FreeTouchDeck)](https://github.com/DustinWatts/FreeTouchDeck/blob/master/LICENSE)
@@ -10,7 +11,11 @@
 
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE. 
 
-***Version 0.9.18a remark: This version might be unstable due to current work on adding support for the ESP32-S3. Last stable is 0.9.17 which you can find in the Releases section.***
+***
+***Due to constant improvements in the `-master` branche, getting the latest code straight from the `-master` branche (by dowloading it as a ZIP for example) might be unstable. If you want a stable and tested version, download the latest release from the [Releases](https://github.com/DustinWatts/FreeTouchDeck/releases) page.***
+
+***The current latest stable is 0.9.17.***
+***
 
 ## We are looking for (web) developers!
 
@@ -21,7 +26,9 @@ We are looking for (web) developers who are willing to help out updating the con
 Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
 
 ## User Guide
-The User Guide will help you with installing and configuring if you want to build the project yourself: [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki)
+The User Guide will help you with installing and configuring if you want to build the project yourself: [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki).
+
+There is also an 'Instructable' which is a complete build guide including wiring the screen and ESP32 on [Instructables](https://www.instructables.com/A-Bluetooth-ESP32-TFT-Touch-Macro-Keypad/).
 
 ## ESP32 TouchDown users
 
@@ -69,11 +76,19 @@ https://github.com/DustinWatts/ESP32_TFT_Combiner
 
 ## TFT_eSPI configuration
 
-Before compiling and uploading the FreeTouchDeck.ino sketch, you will have to edit the **user_setup.h** file included with the TFT_eSPI library. This can be found in your Arduino skechtbook folder under "libraries". If you have not renamed the TFT_eSPI library folder, the file **user_setup.h** can be found in **TFT_eSPI-master**. Here you will have to uncomment the lines that apply to you hardware configuration. For example: if you have an TFT with an ILI9488 driver, you will have to uncomment that line under `Section 1`. Make sure all the other drivers are commented out!  
+Before compiling and uploading the FreeTouchDeck.ino sketch, you will have to edit the **user_setup.h** file included with the TFT_eSPI library. This can be found in your Arduino skechtbook folder under "libraries". If you have not renamed the TFT_eSPI library folder, the file **user_setup.h** can be found in **TFT_eSPI-master**. 
+
+You can find examples of **User_Setup.h** files in the folder called [user_setup.h Examples](https://github.com/DustinWatts/FreeTouchDeck/tree/master/user_setup.h%20Examples). Delete everything that is in the **User_Setup.h** file (so you have a blank file) and copy & paste the _contents_ of the file you need for your setup. Don't forget to save!
+
+If you do it manually you will have to uncomment the lines that apply to you hardware configuration. For example: if you have an TFT with an ILI9488 driver, you will have to uncomment that line under `Section 1`. Make sure all the other drivers are commented out!  
 
 The next section is `Section 2`. This also depends on what hardware you are using. For example for an ESP32 you'll have to uncomment the correct #define(s) under `EDIT THE PIN NUMBERS IN THE LINES FOLLOWING TO SUIT YOUR ESP32 SETUP`. Also if your TFT has the blacklight control pin available you will have to uncomment the lines found under `#define TFT_BL` and `#define TFT_BACKLIGHT_ON`.  
 
 "Section 3" can be left alone.
+
+## Cases
+
+In the [case/ESP32_TFT_Combiner_Case](https://github.com/DustinWatts/FreeTouchDeck/tree/master/case/ESP32_TFT_Combiner_Case) you can find a case with different tops (front) and bottoms (back). You can also find user made cases on [Thingiverse](https://www.thingiverse.com/search?q=FreeTouchDeck) by following the link or searching for `FreeTouchDeck` on Thingiverse, Printables or good old Google.
 
 ## Support Me
 
