@@ -1,13 +1,13 @@
 {
-	"menubuttoncolor": "#009bf4",
-	"functionbuttoncolor": "#00efcb",
-	"latchcolor": "#fe0149",
-	"background": "#000000",
-	"sleepenable": true,
-	"sleeptimer": 10,
-	"beep": true,
-	"modifier1": 130,
-	"modifier2": 129,
-	"modifier3": 0,
-	"helperdelay": 500
+  "menubuttoncolor": "#1d0047",
+  "functionbuttoncolor": "#70006c",
+  "latchcolor": "#b30033",
+  "background": "#000000",
+  "sleepenable": true,
+  "beep": false,
+  "sleeptimer": 10,
+  "modifier1": 130,
+  "modifier2": 129,
+  "modifier3": 0,
+  "helperdelay": 500
 }

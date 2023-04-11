@@ -1,8 +1,8 @@
 {
-	"ssid": "YOUR_WIFI_SSID",
-	"password": "YOUR_WIFI_PASSWORD",
-	"wifimode": "WIFI_STA",
-	"wifihostname": "freetouchdeck",
-	"attempts": 10,
-	"attemptdelay": 500
+  "ssid": "AbiJamun",
+  "password": "kC7yTF7R7fYmPHLg",
+  "wifimode": "WIFI_STA",
+  "wifihostname": "freetouchdeck",
+  "attempts": 10,
+  "attemptdelay": 500
 }
