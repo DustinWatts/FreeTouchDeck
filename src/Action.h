@@ -16,7 +16,10 @@
 void bleKeyboardAction(int action, int value, char *symbol) {
 
   Serial.println("[INFO]: BLE Keyboard action received");
-
+  if (!bleCombo.isConnected()) {
+    Serial.println("[WARN]: Ble not connected");
+    return;
+  }
   switch (action) {
   case 0:
     // No Action
