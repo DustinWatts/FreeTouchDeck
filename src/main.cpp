@@ -2,125 +2,141 @@
   Author: Dustin Watts
   Date: 27-08-2020
 
-  My thanks goes out to Brian Lough, Colin Hickey, and the people on my Discord server
-  for helping me a lot with the code and troubleshooting! https://discord.gg/RE3XevS
+  My thanks goes out to Brian Lough, Colin Hickey, and the people on my Discord
+  server for helping me a lot with the code and troubleshooting!
+  https://discord.gg/RE3XevS
 
-  FreeTouchDeck is based on the FreeDeck idea by Koriwi. It uses the TFT_eSPI library 
-  by Bodmer for the display and touch functionality and it uses an ESP32-BLE-Keyboard fork 
-  with a few modifications. For saving and loading configuration it uses ArduinoJson V6.
+  FreeTouchDeck is based on the FreeDeck idea by Koriwi. It uses the TFT_eSPI
+  library by Bodmer for the display and touch functionality and it uses an
+  ESP32-BLE-Keyboard fork with a few modifications. For saving and loading
+  configuration it uses ArduinoJson V6.
 
-  FreeTouchDeck uses some libraries from other sources. These must be installed for 
-  FreeTouchDeck to compile and run. 
-  
+  FreeTouchDeck uses some libraries from other sources. These must be installed
+  for FreeTouchDeck to compile and run.
+
   These are those libraries:
 
-      !----------------------------- Library Dependencies --------------------------- !
-      - Adafruit-GFX-Library (tested with version 1.10.4), available through Library Manager
+      !----------------------------- Library Dependencies
+  --------------------------- !
+      - Adafruit-GFX-Library (tested with version 1.10.4), available through
+  Library Manager
       - TFT_eSPI (tested with version 2.3.70), available through Library Manager
-      - ESP32-BLE-Keyboard (latest version) download from: https://github.com/T-vK/ESP32-BLE-Keyboard
-      - ESPAsyncWebserver (latest version) download from: https://github.com/me-no-dev/ESPAsyncWebServer
-      - AsyncTCP (latest version) download from: https://github.com/me-no-dev/AsyncTCP
-      - ArduinoJson (tested with version 6.17.3), available through Library Manager
+      - ESP32-BLE-Keyboard (latest version) download from:
+  https://github.com/T-vK/ESP32-BLE-Keyboard
+      - ESPAsyncWebserver (latest version) download from:
+  https://github.com/me-no-dev/ESPAsyncWebServer
+      - AsyncTCP (latest version) download from:
+  https://github.com/me-no-dev/AsyncTCP
+      - ArduinoJson (tested with version 6.17.3), available through Library
+  Manager
 
       --- If you use Capacitive touch (ESP32 TouchDown) ---
-      - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
-      
-  The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
-  It has to be runs at least once when using resistive touch. After that you can set 
-  REPEAT_CAL to false (default).
+      - Dustin Watts FT6236 Library (version 1.0.2),
+  https://github.com/DustinWatts/FT6236
 
-  !-- Make sure you have setup your TFT display and ESP setup correctly in TFT_eSPI/user_setup.h --!
-        
-        Select the right screen driver and the board (ESP32 is the only one tested) you are
-        using. Also make sure TOUCH_CS is defined correctly. TFT_BL is also be needed!
+  The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen
+  calibration data. It has to be runs at least once when using resistive touch.
+  After that you can set REPEAT_CAL to false (default).
 
-        You can find examples of User_Setup.h in the "user_setup.h Examples" folder.
-  
+  !-- Make sure you have setup your TFT display and ESP setup correctly in
+  TFT_eSPI/user_setup.h --!
+
+        Select the right screen driver and the board (ESP32 is the only one
+  tested) you are using. Also make sure TOUCH_CS is defined correctly. TFT_BL is
+  also be needed!
+
+        You can find examples of User_Setup.h in the "user_setup.h Examples"
+  folder.
+
 */
 
 // ------- Uncomment the next line if you use capacitive touch -------
 // (The ESP32 TOUCHDOWN and the ESP32 TouchDown S3 uses this!)
-//#define USECAPTOUCH
+// #define USECAPTOUCH
 
 // ------- If your board is capapble of USB HID you can uncomment this -
 
-//#define USEUSBHID
+// #define USEUSBHID
 
-// ------- Uncomment and populate the following if your cap touch uses custom i2c pins -------
-//#define CUSTOM_TOUCH_SDA 17
-//#define CUSTOM_TOUCH_SCL 18
+// ------- Uncomment and populate the following if your cap touch uses custom
+// i2c pins -------
+// #define CUSTOM_TOUCH_SDA 17
+// #define CUSTOM_TOUCH_SCL 18
 
-// ------- Uncomment the define below if you want to use SLEEP and wake up on touch -------
-// The pin where the IRQ from the touch screen is connected uses ESP-style GPIO_NUM_* instead of just pinnumber
-#define touchInterruptPin GPIO_NUM_27
+// ------- Uncomment the define below if you want to use SLEEP and wake up on
+// touch ------- The pin where the IRQ from the touch screen is connected uses
+// ESP-style GPIO_NUM_* instead of just pinnumber
+#define touchInterruptPin GPIO_NUM_14
 
-// ------- Uncomment the define below if you want to use a piezo buzzer and specify the pin where the speaker is connected -------
-//#define speakerPin 26
+// ------- Uncomment the define below if you want to use a piezo buzzer and
+// specify the pin where the speaker is connected -------
+// #define speakerPin 26
 
-// ------- NimBLE definition, use only if the NimBLE library is installed 
+// ------- NimBLE definition, use only if the NimBLE library is installed
 // and if you are using the original ESP32-BLE-Keyboard library by T-VK -------
-//#define USE_NIMBLE
+#define USE_NIMBLE
 
 // Define the filesystem to be used. For now just SPIFFS.
 #define FILESYSTEM SPIFFS
 
-#include <SPIFFS.h>     // Filesystem support header
-//#include <LittleFS.h>   // Filesystem support header
+#include <SPIFFS.h> // Filesystem support header
+// #include <LittleFS.h>   // Filesystem support header
 
 const char *versionnumber = "0.9.18a";
 
-  /* Version 0.9.18a.
-   * 
-   * Adding ESP32-S3 support
-   * Trying to add LitteFS Support
-   * Fix #89
-   * Fix #90
-  */
+/* Version 0.9.18a.
+ *
+ * Adding ESP32-S3 support
+ * Trying to add LitteFS Support
+ * Fix #89
+ * Fix #90
+ */
 
-#include <pgmspace.h> // PROGMEM support header
 #include <FS.h>       // Filesystem support header
-  
+#include <pgmspace.h> // PROGMEM support header
+
 #include <Preferences.h> // Used to store states before sleep/reboot
 
 #include <TFT_eSPI.h> // The TFT_eSPI library
 
 #if defined(USEUSBHID)
 
-  #include "USB.h"
-  #include "USBHIDKeyboard.h"
-  #include "Keydefines.h"
-  USBHIDKeyboard bleKeyboard;
-  
-#else
-  
-  #include <BleKeyboard.h> // BleKeyboard is used to communicate over BLE
-  BleKeyboard bleKeyboard("FreeTouchDeck", "Made by me");
+#include "Keydefines.h"
+#include "USB.h"
+#include "USBHIDKeyboard.h"
+USBHIDKeyboard bleKeyboard;
 
-    // Checking for BLE Keyboard version
-  #ifndef BLE_KEYBOARD_VERSION
-    #warning Old BLE Keyboard version detected. Please update.
-    #define BLE_KEYBOARD_VERSION "Outdated"
-  #endif // !defined(BLE_KEYBOARD_VERSION) 
-  
+#else
+
+#include <BLECombo.h> // BleKeyboard is used to communicate over BLE
+#include <keyvals.cpp>
+BLECombo bleCombo;
+
+// Checking for BLE Keyboard version
+#ifndef BLE_KEYBOARD_VERSION
+#warning Old BLE Keyboard version detected. Please update.
+#define BLE_KEYBOARD_VERSION "Outdated"
+#endif // !defined(BLE_KEYBOARD_VERSION)
+
 #endif // if
 
 #if defined(USE_NIMBLE)
 
-  #include "NimBLEDevice.h"   // Additional BLE functionaity using NimBLE
-  #include "NimBLEUtils.h"    // Additional BLE functionaity using NimBLE
-  #include "NimBLEBeacon.h"   // Additional BLE functionaity using NimBLE
+#include "NimBLEBeacon.h" // Additional BLE functionaity using NimBLE
+#include "NimBLEDevice.h" // Additional BLE functionaity using NimBLE
+#include "NimBLEUtils.h"  // Additional BLE functionaity using NimBLE
 
 #else
 
-  #include "BLEDevice.h"   // Additional BLE functionaity
-  #include "BLEUtils.h"    // Additional BLE functionaity
-  #include "BLEBeacon.h"   // Additional BLE functionaity
+#include "BLEBeacon.h" // Additional BLE functionaity
+#include "BLEDevice.h" // Additional BLE functionaity
+#include "BLEUtils.h"  // Additional BLE functionaity
 
 #endif // defined(USE_NIMBLE)
 
-#include "esp_sleep.h"   // Additional BLE functionaity
-#include "esp_bt_main.h"   // Additional BLE functionaity
 #include "esp_bt_device.h" // Additional BLE functionaity
+#include "esp_bt_main.h"   // Additional BLE functionaity
+#include "esp_sleep.h"     // Additional BLE functionaity
 
 #include <ArduinoJson.h> // Using ArduinoJson to read and write config files
 
@@ -132,9 +148,9 @@ const char *versionnumber = "0.9.18a";
 #include <ESPmDNS.h> // DNS functionality
 
 #ifdef USECAPTOUCH
-  #include <Wire.h>
-  #include <FT6236.h>
-  FT6236 ts = FT6236();
+#include <FT6236.h>
+#include <Wire.h>
+FT6236 ts = FT6236();
 #endif // defined(USECAPTOUCH)
 
 AsyncWebServer webserver(80);
@@ -154,8 +170,8 @@ Preferences savedStates;
 #define REPEAT_CAL false
 
 // Set the width and height of your screen here:
-#define SCREEN_WIDTH 480
-#define SCREEN_HEIGHT 320
+#define SCREEN_WIDTH 320
+#define SCREEN_HEIGHT 240
 
 // Keypad start position, centre of the first button
 #define KEY_X SCREEN_WIDTH / 6
@@ -186,15 +202,15 @@ uint8_t rowArray[6] = {0, 0, 0, 1, 1, 1};
 // Every button has a column associated with it
 uint8_t colArray[6] = {0, 1, 2, 0, 1, 2};
 
-//path to the directory the logo are in ! including leading AND trailing / !
+// path to the directory the logo are in ! including leading AND trailing / !
 char logopath[64] = "/logos/";
 
-// templogopath is used to hold the complete path of an image. It is empty for now.
+// templogopath is used to hold the complete path of an image. It is empty for
+// now.
 char templogopath[64] = "";
 
 // Struct to hold the logos per screen
-struct Logos
-{
+struct Logos {
   char logo0[32];
   char logo1[32];
   char logo2[32];
@@ -204,30 +220,27 @@ struct Logos
 };
 
 // Struct Action: 3 actions and 3 values per button
-struct Actions
-{
+struct Actions {
   uint8_t action0;
   uint8_t value0;
-  char symbol0[64];
+  char    symbol0[64];
   uint8_t action1;
   uint8_t value1;
-  char symbol1[64];
+  char    symbol1[64];
   uint8_t action2;
   uint8_t value2;
-  char symbol2[64];
+  char    symbol2[64];
 };
 
 // Each button has an action struct in it
-struct Button
-{
+struct Button {
   struct Actions actions;
-  bool latch;
-  char latchlogo[32];
+  bool           latch;
+  char           latchlogo[32];
 };
 
 // Each menu has 6 buttons
-struct Menu
-{
+struct Menu {
   struct Button button0;
   struct Button button1;
   struct Button button2;
@@ -237,40 +250,38 @@ struct Menu
 };
 
 // Struct to hold the general logos.
-struct Generallogos
-{
+struct Generallogos {
   char homebutton[64];
   char configurator[64];
 };
 
-//Struct to hold the general config like colours.
-struct Config
-{
+// Struct to hold the general config like colours.
+struct Config {
   uint16_t menuButtonColour;
   uint16_t functionButtonColour;
   uint16_t backgroundColour;
   uint16_t latchedColour;
-  bool sleepenable;
+  bool     sleepenable;
   uint16_t sleeptimer;
-  bool beep;
-  uint8_t modifier1;
-  uint8_t modifier2;
-  uint8_t modifier3;
+  bool     beep;
+  uint8_t  modifier1;
+  uint8_t  modifier2;
+  uint8_t  modifier3;
   uint16_t helperdelay;
 };
 
-struct Wificonfig
-{
-  char ssid[64];
-  char password[64];
-  char wifimode[9];
-  char hostname[64];
-  uint8_t attempts;
+struct Wificonfig {
+  char     ssid[64];
+  char     password[64];
+  char     wifimode[9];
+  char     hostname[64];
+  uint8_t  attempts;
   uint16_t attemptdelay;
 };
 
 // Array to hold all the latching statuses
-bool islatched[30] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+bool islatched[30] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 // Create instances of the structs
 Wificonfig wificonfig;
@@ -296,8 +307,8 @@ Menu menu6;
 
 unsigned long previousMillis = 0;
 unsigned long Interval = 0;
-bool displayinginfo;
-char* jsonfilefail = "";
+bool          displayinginfo;
+char         *jsonfilefail = "";
 
 // Invoke the TFT_eSPI button class and create all the button objects
 TFT_eSPI_Button key[6];
@@ -308,15 +319,15 @@ TFT_eSPI_Button key[6];
 #include "ConfigLoad.h"
 #include "DrawHelper.h"
 #include "ConfigHelper.h"
+#include "Touch.h"
 #include "UserActions.h"
 #include "Action.h"
 #include "Webserver.h"
-#include "Touch.h"
 
-//-------------------------------- SETUP --------------------------------------------------------------
+//-------------------------------- SETUP
+//--------------------------------------------------------------
 
-void setup()
-{
+void setup() {
 
   // Use serial port
   Serial.begin(115200);
@@ -325,30 +336,27 @@ void setup()
 
   Serial.println("[INFO]: Loading saved brightness state");
   savedStates.begin("ftd", false);
-  
+
   ledBrightness = savedStates.getInt("ledBrightness", 255);
 
   Serial.println("[INFO]: Reading latch stated back from memory:");
   savedStates.getBytes("latched", islatched, sizeof(islatched));
 
-  for(int i = 0; i < sizeof(islatched); i++){
+  for (int i = 0; i < sizeof(islatched); i++) {
 
-  Serial.print(islatched[i]);
-    
+    Serial.print(islatched[i]);
   }
   Serial.println("");
 
 #ifdef USECAPTOUCH
-  #ifdef CUSTOM_TOUCH_SDA
-    if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
-  #else
-    if (!ts.begin(40))
-  #endif // defined(CUSTOM_TOUCH_SDA)
+#ifdef CUSTOM_TOUCH_SDA
+  if (!ts.begin(40, CUSTOM_TOUCH_SDA, CUSTOM_TOUCH_SCL))
+#else
+  if (!ts.begin(40))
+#endif // defined(CUSTOM_TOUCH_SDA)
   {
     Serial.println("[WARNING]: Unable to start the capacitive touchscreen.");
-  }
-  else
-  {
+  } else {
     Serial.println("[INFO]: Capacitive touch started!");
   }
 #endif // defined(USECAPTOUCH)
@@ -359,7 +367,7 @@ void setup()
   ledcAttachPin(TFT_BL, 0);
 #else
   ledcAttachPin(backlightPin, 0);
-#endif // defined(TFT_BL)
+#endif                         // defined(TFT_BL)
   ledcWrite(0, ledBrightness); // Start @ initial Brightness
 
   // --------------- Init Display -------------------------
@@ -376,13 +384,12 @@ void setup()
   esp_sleep_wakeup_cause_t wakeup_reason;
   wakeup_reason = esp_sleep_get_wakeup_cause();
 
-
   // -------------- Start filesystem ----------------------
 
-  if (!FILESYSTEM.begin())
-  {
+  if (!FILESYSTEM.begin()) {
     Serial.println("[ERROR]: FILESYSTEM initialisation failed!");
-    drawErrorMessage("Failed to init FILESYSTEM! Did you upload the data folder?");
+    drawErrorMessage(
+        "Failed to init FILESYSTEM! Did you upload the data folder?");
     while (1)
       yield(); // We stop here
   }
@@ -393,15 +400,13 @@ void setup()
   Serial.print("[INFO]: Free Space: ");
   Serial.println(FILESYSTEM.totalBytes() - FILESYSTEM.usedBytes());
 
-  //------------------ Load Wifi Config ----------------------------------------------
+  //------------------ Load Wifi Config
+  //----------------------------------------------
 
   Serial.println("[INFO]: Loading Wifi Config");
-  if (!loadMainConfig())
-  {
+  if (!loadMainConfig()) {
     Serial.println("[WARNING]: Failed to load WiFi Credentials!");
-  }
-  else
-  {
+  } else {
     Serial.println("[INFO]: WiFi Credentials Loaded");
   }
 
@@ -412,14 +417,11 @@ void setup()
   // ------------------- Splash screen ------------------
 
   // If we are woken up we do not need the splash screen
-  if (wakeup_reason > 0)
-  {
+  if (wakeup_reason > 0) {
     // But we do draw something to indicate we are waking up
     tft.setTextFont(2);
     tft.println(" Waking up...");
-  }
-  else
-  {
+  } else {
 
     // Draw a splash screen
     drawBmp("/logos/freetouchdeck_logo.bmp", 0, 0);
@@ -439,129 +441,120 @@ void setup()
 #endif // !defined(USECAPTOUCH)
 
   // Let's first check if all the files we need exist
-  if (!checkfile("/config/general.json"))
-  {
+  if (!checkfile("/config/general.json")) {
     Serial.println("[ERROR]: /config/general.json not found!");
     while (1)
       yield(); // Stop!
   }
 
-  if (!checkfile("/config/homescreen.json"))
-  {
+  if (!checkfile("/config/homescreen.json")) {
     Serial.println("[ERROR]: /config/homescreen.json not found!");
     while (1)
       yield(); // Stop!
   }
 
-  if (!checkfile("/config/menu1.json"))
-  {
+  if (!checkfile("/config/menu1.json")) {
     Serial.println("[ERROR]: /config/menu1.json not found!");
     while (1)
       yield(); // Stop!
   }
 
-  if (!checkfile("/config/menu2.json"))
-  {
+  if (!checkfile("/config/menu2.json")) {
     Serial.println("[ERROR]: /config/menu2.json not found!");
     while (1)
       yield(); // Stop!
   }
 
-  if (!checkfile("/config/menu3.json"))
-  {
+  if (!checkfile("/config/menu3.json")) {
     Serial.println("[ERROR]: /config/menu3.json not found!");
     while (1)
       yield(); // Stop!
   }
 
-  if (!checkfile("/config/menu4.json"))
-  {
+  if (!checkfile("/config/menu4.json")) {
     Serial.println("[ERROR]: /config/menu4.json not found!");
     while (1)
       yield(); // Stop!
   }
 
-  if (!checkfile("/config/menu5.json"))
-  {
+  if (!checkfile("/config/menu5.json")) {
     Serial.println("[ERROR]: /config/menu5.json not found!");
     while (1)
       yield(); // Stop!
   }
 
   // After checking the config files exist, actually load them
-  if(!loadConfig("general")){
+  if (!loadConfig("general")) {
     Serial.println("[WARNING]: general.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset general'.");
     jsonfilefail = "general";
     pageNum = 10;
   }
 
-    // Setup PWM channel for Piezo speaker
+  // Setup PWM channel for Piezo speaker
 
 #ifdef speakerPin
   ledcSetup(2, 500, 8);
 
-if(generalconfig.beep){
-  ledcAttachPin(speakerPin, 2);
-  ledcWriteTone(2, 600);
-  delay(150);
-  ledcDetachPin(speakerPin);
-  ledcWrite(2, 0);
+  if (generalconfig.beep) {
+    ledcAttachPin(speakerPin, 2);
+    ledcWriteTone(2, 600);
+    delay(150);
+    ledcDetachPin(speakerPin);
+    ledcWrite(2, 0);
 
-  ledcAttachPin(speakerPin, 2);
-  ledcWriteTone(2, 800);
-  delay(150);
-  ledcDetachPin(speakerPin);
-  ledcWrite(2, 0);
+    ledcAttachPin(speakerPin, 2);
+    ledcWriteTone(2, 800);
+    delay(150);
+    ledcDetachPin(speakerPin);
+    ledcWrite(2, 0);
 
-  ledcAttachPin(speakerPin, 2);
-  ledcWriteTone(2, 1200);
-  delay(150);
-  ledcDetachPin(speakerPin);
-  ledcWrite(2, 0);
-}
+    ledcAttachPin(speakerPin, 2);
+    ledcWriteTone(2, 1200);
+    delay(150);
+    ledcDetachPin(speakerPin);
+    ledcWrite(2, 0);
+  }
 
 #endif // defined(speakerPin)
 
-  if(!loadConfig("homescreen")){
+  if (!loadConfig("homescreen")) {
     Serial.println("[WARNING]: homescreen.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset homescreen'.");
     jsonfilefail = "homescreen";
     pageNum = 10;
   }
-  if(!loadConfig("menu1")){
+  if (!loadConfig("menu1")) {
     Serial.println("[WARNING]: menu1.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset menu1'.");
     jsonfilefail = "menu1";
     pageNum = 10;
   }
-  if(!loadConfig("menu2")){
+  if (!loadConfig("menu2")) {
     Serial.println("[WARNING]: menu2.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset menu2'.");
     jsonfilefail = "menu2";
     pageNum = 10;
   }
-  if(!loadConfig("menu3")){
+  if (!loadConfig("menu3")) {
     Serial.println("[WARNING]: menu3.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset menu3'.");
     jsonfilefail = "menu3";
     pageNum = 10;
   }
-  if(!loadConfig("menu4")){
+  if (!loadConfig("menu4")) {
     Serial.println("[WARNING]: menu4.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset menu4'.");
     jsonfilefail = "menu4";
     pageNum = 10;
   }
-  if(!loadConfig("menu5")){
+  if (!loadConfig("menu5")) {
     Serial.println("[WARNING]: menu5.json seems to be corrupted!");
     Serial.println("[WARNING]: To reset to default type 'reset menu5'.");
     jsonfilefail = "menu5";
     pageNum = 10;
   }
   Serial.println("[INFO]: All configs loaded");
-
-  
 
   strcpy(generallogo.homebutton, "/logos/home.bmp");
   strcpy(generallogo.configurator, "/logos/wifi.bmp");
@@ -570,29 +563,30 @@ if(generalconfig.beep){
   // Setup the Font used for plain text
   tft.setFreeFont(LABEL_FONT);
 
-  //------------------BLE Initialization ------------------------------------------------------------------------
+  //------------------BLE Initialization
+  //------------------------------------------------------------------------
 
 #if defined(USEUSBHID)
 
   // initialize control over the keyboard:
-  bleKeyboard.begin();
-  USB.begin();  
+  Keyboard.begin();
+  USB.begin();
 
 #else
-
+  bleCombo.begin();
   Serial.println("[INFO]: Starting BLE");
-  bleKeyboard.begin();
 
-#endif //if defined(USEUSBHID)
+#endif // if defined(USEUSBHID)
 
-  // ---------------- Printing version numbers -----------------------------------------------
-  
+  // ---------------- Printing version numbers
+  // -----------------------------------------------
+
 #if defined(USEUSBHID)
   Serial.println("[INFO]: Using USB Keyboard");
 #else
   Serial.print("[INFO]: BLE Keyboard version: ");
   Serial.println(BLE_KEYBOARD_VERSION);
-#endif //if defined(USEUSBHID)
+#endif // if defined(USEUSBHID)
 
   Serial.print("[INFO]: ArduinoJson version: ");
   Serial.println(ARDUINOJSON_VERSION);
@@ -609,8 +603,7 @@ if(generalconfig.beep){
   drawKeypad();
 
 #ifdef touchInterruptPin
-  if (generalconfig.sleepenable)
-  {
+  if (generalconfig.sleepenable) {
     pinMode(touchInterruptPin, INPUT_PULLUP);
     Interval = generalconfig.sleeptimer * 60000;
     Serial.println("[INFO]: Sleep enabled.");
@@ -622,125 +615,104 @@ if(generalconfig.beep){
 #endif // defined(touchInterruptPin)
 
   Serial.println("[INFO]: Boot completed and successful!");
-
 }
 
-//--------------------- LOOP ---------------------------------------------------------------------
+//--------------------- LOOP
+//---------------------------------------------------------------------
 
-void loop(void)
-{
-  
-  // Check if there is data available on the serial input that needs to be handled.
-  
-  if (Serial.available())
-  {
+void loop(void) {
+
+  // Check if there is data available on the serial input that needs to be
+  // handled.
+
+  if (Serial.available()) {
 
     String command = Serial.readStringUntil(' ');
 
-    if (command == "cal")
-    {
+    if (command == "cal") {
       FILESYSTEM.remove(CALIBRATION_FILE);
       ESP.restart();
-    }
-    else if (command == "setssid")
-    {
+    } else if (command == "setssid") {
 
       String value = Serial.readString();
-      if (saveWifiSSID(value))
-      {
+      if (saveWifiSSID(value)) {
         Serial.printf("[INFO]: Saved new SSID: %s\n", value.c_str());
         loadMainConfig();
         Serial.println("[INFO]: New configuration loaded");
       }
-    }
-    else if (command == "setpassword")
-    {
+    } else if (command == "setpassword") {
       String value = Serial.readString();
-      if (saveWifiPW(value))
-      {
+      if (saveWifiPW(value)) {
         Serial.printf("[INFO]: Saved new Password: %s\n", value.c_str());
         loadMainConfig();
         Serial.println("[INFO]: New configuration loaded");
       }
-    }
-    else if (command == "setwifimode")
-    {
+    } else if (command == "setwifimode") {
       String value = Serial.readString();
-      if (saveWifiMode(value))
-      {
+      if (saveWifiMode(value)) {
         Serial.printf("[INFO]: Saved new WiFi Mode: %s\n", value.c_str());
         loadMainConfig();
         Serial.println("[INFO]: New configuration loaded");
       }
-    }
-    else if (command == "restart")
-    {
+    } else if (command == "restart") {
       Serial.println("[WARNING]: Restarting");
       ESP.restart();
     }
 
-    else if (command == "reset")
-    {
+    else if (command == "reset") {
       String file = Serial.readString();
       Serial.printf("[INFO]: Resetting %s.json now\n", file.c_str());
       resetconfig(file);
     }
-    
-    else if(command == "menu1" && pageNum !=1 && pageNum != 7)
-    {
+
+    else if (command == "menu1" && pageNum != 1 && pageNum != 7) {
       pageNum = 1;
       drawKeypad();
       Serial.println("Auto Switched to Menu 1");
     }
-  
-    else if(command == "menu2" && pageNum !=2 && pageNum != 7)
-    {
+
+    else if (command == "menu2" && pageNum != 2 && pageNum != 7) {
 
       pageNum = 2;
       drawKeypad();
       Serial.println("Auto Switched to Menu 2");
     }
-   
-    else if(command == "menu3" && pageNum !=3 && pageNum != 7)
-    {
+
+    else if (command == "menu3" && pageNum != 3 && pageNum != 7) {
 
       pageNum = 3;
       drawKeypad();
       Serial.println("Auto Switched to Menu 3");
     }
 
-    else if(command == "menu4" && pageNum !=4 && pageNum != 7)
-    {
+    else if (command == "menu4" && pageNum != 4 && pageNum != 7) {
 
       pageNum = 4;
       drawKeypad();
       Serial.println("Auto Switched to Menu 4");
     }
 
-    else if(command == "menu5" && pageNum !=5 && pageNum != 7)
-    {
+    else if (command == "menu5" && pageNum != 5 && pageNum != 7) {
 
       pageNum = 5;
       drawKeypad();
       Serial.println("Auto Switched to Menu 5");
     }
   }
-  
-  if (pageNum == 7)
-  {
-      uint16_t t_x = 0, t_y = 0;
-      boolean pressed = false;
+
+  if (pageNum == 7) {
+    uint16_t t_x = 0, t_y = 0;
+    boolean  pressed = false;
 
     // If pageNum = 7, we are in STA or AP mode.
     // We no check if the button is pressed, and if so restart.
 #ifdef USECAPTOUCH
-    if (ts.touched())
-    {
+    if (ts.touched()) {
 
       // Retrieve a point
       TS_Point p = ts.getPoint();
 
-      //Flip things around so it matches our screen rotation
+      // Flip things around so it matches our screen rotation
       p.x = map(p.x, 0, 320, 320, 0);
       t_y = p.x;
       t_x = p.y;
@@ -754,42 +726,38 @@ void loop(void)
 
 #endif // defined(USECAPTOUCH)
 
-    if (pressed)
-    {     
+    if (pressed) {
       // If pressed check if the touch falls within the restart button
-      // drawSingleButton(140, 180, 200, 80, generalconfig.menuButtonColour, TFT_WHITE, "Restart");
-      if (t_x > 140 && t_x < 340){
-        if (t_y > 180 && t_y < 260){
+      // drawSingleButton(140, 180, 200, 80, generalconfig.menuButtonColour,
+      // TFT_WHITE, "Restart");
+      if (t_x > 140 && t_x < 340) {
+        if (t_y > 180 && t_y < 260) {
           // Touch falls within the boundaries of our button so we restart
           Serial.println("[WARNING]: Restarting");
           ESP.restart();
         }
       }
-
     }
 
-  }
-  else if (pageNum == 8)
-  {
+  } else if (pageNum == 8) {
 
-    if (!displayinginfo)
-    {
+    if (!displayinginfo) {
       printinfo();
     }
 
     uint16_t t_x = 0, t_y = 0;
 
-    //At the beginning of a new loop, make sure we do not use last loop's touch.
+    // At the beginning of a new loop, make sure we do not use last loop's
+    // touch.
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
-    if (ts.touched())
-    {
+    if (ts.touched()) {
 
       // Retrieve a point
       TS_Point p = ts.getPoint();
 
-      //Flip things around so it matches our screen rotation
+      // Flip things around so it matches our screen rotation
       p.x = map(p.x, 0, 320, 320, 0);
       t_y = p.x;
       t_x = p.y;
@@ -803,31 +771,29 @@ void loop(void)
 
 #endif // defined(USECAPTOUCH)
 
-    if (pressed)
-    {     
+    if (pressed) {
       displayinginfo = false;
       pageNum = 6;
       tft.fillScreen(generalconfig.backgroundColour);
       drawKeypad();
     }
-  }
-  else if (pageNum == 9)
-  {
+  } else if (pageNum == 9) {
 
-    // We were unable to connect to WiFi. Waiting for touch to get back to the settings menu.
+    // We were unable to connect to WiFi. Waiting for touch to get back to the
+    // settings menu.
     uint16_t t_x = 0, t_y = 0;
 
-    //At the beginning of a new loop, make sure we do not use last loop's touch.
+    // At the beginning of a new loop, make sure we do not use last loop's
+    // touch.
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
-    if (ts.touched())
-    {
+    if (ts.touched()) {
 
       // Retrieve a point
       TS_Point p = ts.getPoint();
 
-      //Flip things around so it matches our screen rotation
+      // Flip things around so it matches our screen rotation
       p.x = map(p.x, 0, 320, 320, 0);
       t_y = p.x;
       t_x = p.y;
@@ -841,32 +807,30 @@ void loop(void)
 
 #endif // defined(USECAPTOUCH)
 
-    if (pressed)
-    {     
+    if (pressed) {
       // Return to Settings page
       displayinginfo = false;
       pageNum = 6;
       tft.fillScreen(generalconfig.backgroundColour);
       drawKeypad();
     }
-  }
-  else if (pageNum == 10)
-  {
+  } else if (pageNum == 10) {
 
-    // A JSON file failed to load. We are drawing an error message. And waiting for a touch.
+    // A JSON file failed to load. We are drawing an error message. And waiting
+    // for a touch.
     uint16_t t_x = 0, t_y = 0;
 
-    //At the beginning of a new loop, make sure we do not use last loop's touch.
+    // At the beginning of a new loop, make sure we do not use last loop's
+    // touch.
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
-    if (ts.touched())
-    {
+    if (ts.touched()) {
 
       // Retrieve a point
       TS_Point p = ts.getPoint();
 
-      //Flip things around so it matches our screen rotation
+      // Flip things around so it matches our screen rotation
       p.x = map(p.x, 0, 320, 320, 0);
       t_y = p.x;
       t_x = p.y;
@@ -880,59 +844,54 @@ void loop(void)
 
 #endif // defined(USECAPTOUCH)
 
-    if (pressed)
-    {     
+    if (pressed) {
       // Load home screen
       displayinginfo = false;
       pageNum = 0;
       tft.fillScreen(generalconfig.backgroundColour);
       drawKeypad();
     }
-  }
-  else
-  {
+  } else {
 
     // Check if sleep is enabled and if our timer has ended.
 
 #ifdef touchInterruptPin
-    if (generalconfig.sleepenable)
-    {
-      if (millis() > previousMillis + Interval)
-      {
+    if (generalconfig.sleepenable) {
+      if (millis() > previousMillis + Interval) {
 
         // The timer has ended and we are going to sleep  .
         tft.fillScreen(TFT_BLACK);
         Serial.println("[INFO]: Going to sleep.");
 #ifdef speakerPin
-        if(generalconfig.beep){
-        ledcAttachPin(speakerPin, 2);
-        ledcWriteTone(2, 1200);
-        delay(150);
-        ledcDetachPin(speakerPin);
-        ledcWrite(2, 0);
+        if (generalconfig.beep) {
+          ledcAttachPin(speakerPin, 2);
+          ledcWriteTone(2, 1200);
+          delay(150);
+          ledcDetachPin(speakerPin);
+          ledcWrite(2, 0);
 
-        ledcAttachPin(speakerPin, 2);
-        ledcWriteTone(2, 800);
-        delay(150);
-        ledcDetachPin(speakerPin);
-        ledcWrite(2, 0);
+          ledcAttachPin(speakerPin, 2);
+          ledcWriteTone(2, 800);
+          delay(150);
+          ledcDetachPin(speakerPin);
+          ledcWrite(2, 0);
 
-        ledcAttachPin(speakerPin, 2);
-        ledcWriteTone(2, 600);
-        delay(150);
-        ledcDetachPin(speakerPin);
-        ledcWrite(2, 0);
+          ledcAttachPin(speakerPin, 2);
+          ledcWriteTone(2, 600);
+          delay(150);
+          ledcDetachPin(speakerPin);
+          ledcWrite(2, 0);
         }
 #endif // defined(speakerPin)
         Serial.println("[INFO]: Saving latched states");
 
-//        You could uncomment this to see the latch stated before going to sleep
-//        for(int i = 0; i < sizeof(islatched); i++){
-//      
-//        Serial.print(islatched[i]);
-//          
-//        }
-//        Serial.println("");
+        //        You could uncomment this to see the latch stated before going
+        //        to sleep for(int i = 0; i < sizeof(islatched); i++){
+        //
+        //        Serial.print(islatched[i]);
+        //
+        //        }
+        //        Serial.println("");
 
         savedStates.putBytes("latched", &islatched, sizeof(islatched));
         esp_sleep_enable_ext0_wakeup(touchInterruptPin, 0);
@@ -944,17 +903,17 @@ void loop(void)
     // Touch coordinates are stored here
     uint16_t t_x = 0, t_y = 0;
 
-    //At the beginning of a new loop, make sure we do not use last loop's touch.
+    // At the beginning of a new loop, make sure we do not use last loop's
+    // touch.
     boolean pressed = false;
 
 #ifdef USECAPTOUCH
-    if (ts.touched())
-    {
+    if (ts.touched()) {
 
       // Retrieve a point
       TS_Point p = ts.getPoint();
 
-      //Flip things around so it matches our screen rotation
+      // Flip things around so it matches our screen rotation
       p.x = map(p.x, 0, 320, 320, 0);
       t_y = p.x;
       t_x = p.y;
@@ -968,231 +927,175 @@ void loop(void)
 
 #endif // defined(USECAPTOUCH)
 
-    // Check if the X and Y coordinates of the touch are within one of our buttons
-    for (uint8_t b = 0; b < 6; b++)
-    {
-      if (pressed && key[b].contains(t_x, t_y))
-      {
+    // Check if the X and Y coordinates of the touch are within one of our
+    // buttons
+    for (uint8_t b = 0; b < 6; b++) {
+      if (pressed && key[b].contains(t_x, t_y)) {
         key[b].press(true); // tell the button it is pressed
 
         // After receiving a valid touch reset the sleep timer
         previousMillis = millis();
-      }
-      else
-      {
+      } else {
         key[b].press(false); // tell the button it is NOT pressed
       }
     }
 
     // Check if any key has changed state
-    for (uint8_t b = 0; b < 6; b++)
-    {
-      if (key[b].justReleased())
-      {
+    for (uint8_t b = 0; b < 6; b++) {
+      if (key[b].justReleased()) {
 
         // Draw normal button space (non inverted)
 
         int col, row;
 
-        if (b == 0)
-        {
+        if (b == 0) {
           col = 0;
           row = 0;
-        }
-        else if (b == 1)
-        {
+        } else if (b == 1) {
           col = 1;
           row = 0;
-        }
-        else if (b == 2)
-        {
+        } else if (b == 2) {
           col = 2;
           row = 0;
-        }
-        else if (b == 3)
-        {
+        } else if (b == 3) {
           col = 0;
           row = 1;
-        }
-        else if (b == 4)
-        {
+        } else if (b == 4) {
           col = 1;
           row = 1;
-        }
-        else if (b == 5)
-        {
+        } else if (b == 5) {
           col = 2;
           row = 1;
         }
 
         int index;
 
-        if (pageNum == 2)
-        {
+        if (pageNum == 2) {
           index = b + 5;
-        }
-        else if (pageNum == 3)
-        {
+        } else if (pageNum == 3) {
           index = b + 10;
-        }
-        else if (pageNum == 4)
-        {
+        } else if (pageNum == 4) {
           index = b + 15;
-        }
-        else if (pageNum == 5)
-        {
+        } else if (pageNum == 5) {
           index = b + 20;
-        }
-        else if (pageNum == 6)
-        {
+        } else if (pageNum == 6) {
           index = b + 25;
-        }
-        else
-        {
+        } else {
           index = b;
         }
 
         uint16_t buttonBG;
-        bool drawTransparent;
+        bool     drawTransparent;
 
         uint16_t imageBGColor;
-        if (islatched[index] && b < 5)
-        {
+        if (islatched[index] && b < 5) {
           imageBGColor = getLatchImageBG(b);
-        }
-        else
-        {
+        } else {
           imageBGColor = getImageBG(b);
         }
 
-        if (imageBGColor > 0)
-        {
+        if (imageBGColor > 0) {
           buttonBG = imageBGColor;
           drawTransparent = false;
-        }
-        else
-        {
-          if (pageNum == 0)
-          {
+        } else {
+          if (pageNum == 0) {
             buttonBG = generalconfig.menuButtonColour;
             drawTransparent = true;
-          }
-          else
-          {
-            if (pageNum == 6 && b == 5)
-            {
+          } else {
+            if (pageNum == 6 && b == 5) {
               buttonBG = generalconfig.menuButtonColour;
               drawTransparent = true;
-            }
-            else
-            {
+            } else {
               buttonBG = generalconfig.functionButtonColour;
               drawTransparent = true;
             }
           }
         }
         tft.setFreeFont(LABEL_FONT);
-        key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                          KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                          KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE,
-                          "", KEY_TEXTSIZE);
+        key[b].initButton(
+            &tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+            KEY_Y + row * (KEY_H +
+                           KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+            KEY_W, KEY_H, TFT_WHITE, buttonBG, TFT_WHITE, "", KEY_TEXTSIZE);
         key[b].drawButton();
 
         // After drawing the button outline we call this to draw a logo.
-        if (islatched[index] && b < 5)
-        {
+        if (islatched[index] && b < 5) {
           drawlogo(b, col, row, drawTransparent, true);
-        }
-        else
-        {
+        } else {
           drawlogo(b, col, row, drawTransparent, false);
         }
       }
 
-      if (key[b].justPressed())
-      {
-        
-        // Beep
-        #ifdef speakerPin
-        if(generalconfig.beep){
+      if (key[b].justPressed()) {
+
+// Beep
+#ifdef speakerPin
+        if (generalconfig.beep) {
           ledcAttachPin(speakerPin, 2);
           ledcWriteTone(2, 600);
           delay(50);
           ledcDetachPin(speakerPin);
           ledcWrite(2, 0);
         }
-        #endif 
-        
+#endif
+
         int col, row;
 
-        if (b == 0)
-        {
+        if (b == 0) {
           col = 0;
           row = 0;
-        }
-        else if (b == 1)
-        {
+        } else if (b == 1) {
           col = 1;
           row = 0;
-        }
-        else if (b == 2)
-        {
+        } else if (b == 2) {
           col = 2;
           row = 0;
-        }
-        else if (b == 3)
-        {
+        } else if (b == 3) {
           col = 0;
           row = 1;
-        }
-        else if (b == 4)
-        {
+        } else if (b == 4) {
           col = 1;
           row = 1;
-        }
-        else if (b == 5)
-        {
+        } else if (b == 5) {
           col = 2;
           row = 1;
         }
 
         tft.setFreeFont(LABEL_FONT);
-        key[b].initButton(&tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
-                          KEY_Y + row * (KEY_H + KEY_SPACING_Y), // x, y, w, h, outline, fill, text
-                          KEY_W, KEY_H, TFT_WHITE, TFT_WHITE, TFT_WHITE,
-                          "", KEY_TEXTSIZE);
+        key[b].initButton(
+            &tft, KEY_X + col * (KEY_W + KEY_SPACING_X),
+            KEY_Y + row * (KEY_H +
+                           KEY_SPACING_Y), // x, y, w, h, outline, fill, text
+            KEY_W, KEY_H, TFT_WHITE, TFT_WHITE, TFT_WHITE, "", KEY_TEXTSIZE);
         key[b].drawButton();
 
-        //---------------------------------------- Button press handeling --------------------------------------------------
+        //---------------------------------------- Button press handeling
+        //--------------------------------------------------
 
-        if (pageNum == 0) //Home menu
+        if (pageNum == 0) // Home menu
         {
           if (b == 0) // Button 0
           {
             pageNum = 1;
             drawKeypad();
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
             pageNum = 2;
             drawKeypad();
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
             pageNum = 3;
             drawKeypad();
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
             pageNum = 4;
             drawKeypad();
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
             pageNum = 5;
             drawKeypad();
-          }
-          else if (b == 5) // Button 5
+          } else if (b == 5) // Button 5
           {
             pageNum = 6;
             drawKeypad();
@@ -1203,95 +1106,100 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(menu1.button0.actions.action0, menu1.button0.actions.value0, menu1.button0.actions.symbol0);
-            bleKeyboardAction(menu1.button0.actions.action1, menu1.button0.actions.value1, menu1.button0.actions.symbol1);
-            bleKeyboardAction(menu1.button0.actions.action2, menu1.button0.actions.value2, menu1.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu1.button0.latch)
-            {
-              if (islatched[0])
-              {
+            bleKeyboardAction(menu1.button0.actions.action0,
+                              menu1.button0.actions.value0,
+                              menu1.button0.actions.symbol0);
+            bleKeyboardAction(menu1.button0.actions.action1,
+                              menu1.button0.actions.value1,
+                              menu1.button0.actions.symbol1);
+            bleKeyboardAction(menu1.button0.actions.action2,
+                              menu1.button0.actions.value2,
+                              menu1.button0.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu1.button0.latch) {
+              if (islatched[0]) {
                 islatched[0] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[0] = 1;
               }
             }
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
-            bleKeyboardAction(menu1.button1.actions.action0, menu1.button1.actions.value0, menu1.button1.actions.symbol0);
-            bleKeyboardAction(menu1.button1.actions.action1, menu1.button1.actions.value1, menu1.button1.actions.symbol1);
-            bleKeyboardAction(menu1.button1.actions.action2, menu1.button1.actions.value2, menu1.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu1.button1.latch)
-            {
-              if (islatched[1])
-              {
+            bleKeyboardAction(menu1.button1.actions.action0,
+                              menu1.button1.actions.value0,
+                              menu1.button1.actions.symbol0);
+            bleKeyboardAction(menu1.button1.actions.action1,
+                              menu1.button1.actions.value1,
+                              menu1.button1.actions.symbol1);
+            bleKeyboardAction(menu1.button1.actions.action2,
+                              menu1.button1.actions.value2,
+                              menu1.button1.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu1.button1.latch) {
+              if (islatched[1]) {
                 islatched[1] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[1] = 1;
               }
             }
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
-            bleKeyboardAction(menu1.button2.actions.action0, menu1.button2.actions.value0, menu1.button2.actions.symbol0);
-            bleKeyboardAction(menu1.button2.actions.action1, menu1.button2.actions.value1, menu1.button2.actions.symbol1);
-            bleKeyboardAction(menu1.button2.actions.action2, menu1.button2.actions.value2, menu1.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu1.button2.latch)
-            {
-              if (islatched[2])
-              {
+            bleKeyboardAction(menu1.button2.actions.action0,
+                              menu1.button2.actions.value0,
+                              menu1.button2.actions.symbol0);
+            bleKeyboardAction(menu1.button2.actions.action1,
+                              menu1.button2.actions.value1,
+                              menu1.button2.actions.symbol1);
+            bleKeyboardAction(menu1.button2.actions.action2,
+                              menu1.button2.actions.value2,
+                              menu1.button2.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu1.button2.latch) {
+              if (islatched[2]) {
                 islatched[2] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[2] = 1;
               }
             }
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
-            bleKeyboardAction(menu1.button3.actions.action0, menu1.button3.actions.value0, menu1.button3.actions.symbol0);
-            bleKeyboardAction(menu1.button3.actions.action1, menu1.button3.actions.value1, menu1.button3.actions.symbol1);
-            bleKeyboardAction(menu1.button3.actions.action2, menu1.button3.actions.value2, menu1.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu1.button3.latch)
-            {
-              if (islatched[3])
-              {
+            bleKeyboardAction(menu1.button3.actions.action0,
+                              menu1.button3.actions.value0,
+                              menu1.button3.actions.symbol0);
+            bleKeyboardAction(menu1.button3.actions.action1,
+                              menu1.button3.actions.value1,
+                              menu1.button3.actions.symbol1);
+            bleKeyboardAction(menu1.button3.actions.action2,
+                              menu1.button3.actions.value2,
+                              menu1.button3.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu1.button3.latch) {
+              if (islatched[3]) {
                 islatched[3] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[3] = 1;
               }
             }
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
-            bleKeyboardAction(menu1.button4.actions.action0, menu1.button4.actions.value0, menu1.button4.actions.symbol0);
-            bleKeyboardAction(menu1.button4.actions.action1, menu1.button4.actions.value1, menu1.button4.actions.symbol1);
-            bleKeyboardAction(menu1.button4.actions.action2, menu1.button4.actions.value2, menu1.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu1.button4.latch)
-            {
-              if (islatched[4])
-              {
+            bleKeyboardAction(menu1.button4.actions.action0,
+                              menu1.button4.actions.value0,
+                              menu1.button4.actions.symbol0);
+            bleKeyboardAction(menu1.button4.actions.action1,
+                              menu1.button4.actions.value1,
+                              menu1.button4.actions.symbol1);
+            bleKeyboardAction(menu1.button4.actions.action2,
+                              menu1.button4.actions.value2,
+                              menu1.button4.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu1.button4.latch) {
+              if (islatched[4]) {
                 islatched[4] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[4] = 1;
               }
             }
-          }
-          else if (b == 5) // Button 5 / Back home
+          } else if (b == 5) // Button 5 / Back home
           {
             pageNum = 0;
             drawKeypad();
@@ -1302,95 +1210,100 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(menu2.button0.actions.action0, menu2.button0.actions.value0, menu2.button0.actions.symbol0);
-            bleKeyboardAction(menu2.button0.actions.action1, menu2.button0.actions.value1, menu2.button0.actions.symbol1);
-            bleKeyboardAction(menu2.button0.actions.action2, menu2.button0.actions.value2, menu2.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu2.button0.latch)
-            {
-              if (islatched[5])
-              {
+            bleKeyboardAction(menu2.button0.actions.action0,
+                              menu2.button0.actions.value0,
+                              menu2.button0.actions.symbol0);
+            bleKeyboardAction(menu2.button0.actions.action1,
+                              menu2.button0.actions.value1,
+                              menu2.button0.actions.symbol1);
+            bleKeyboardAction(menu2.button0.actions.action2,
+                              menu2.button0.actions.value2,
+                              menu2.button0.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu2.button0.latch) {
+              if (islatched[5]) {
                 islatched[5] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[5] = 1;
               }
             }
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
-            bleKeyboardAction(menu2.button1.actions.action0, menu2.button1.actions.value0, menu2.button1.actions.symbol0);
-            bleKeyboardAction(menu2.button1.actions.action1, menu2.button1.actions.value1, menu2.button1.actions.symbol1);
-            bleKeyboardAction(menu2.button1.actions.action2, menu2.button1.actions.value2, menu2.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu2.button1.latch)
-            {
-              if (islatched[6])
-              {
+            bleKeyboardAction(menu2.button1.actions.action0,
+                              menu2.button1.actions.value0,
+                              menu2.button1.actions.symbol0);
+            bleKeyboardAction(menu2.button1.actions.action1,
+                              menu2.button1.actions.value1,
+                              menu2.button1.actions.symbol1);
+            bleKeyboardAction(menu2.button1.actions.action2,
+                              menu2.button1.actions.value2,
+                              menu2.button1.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu2.button1.latch) {
+              if (islatched[6]) {
                 islatched[6] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[6] = 1;
               }
             }
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
-            bleKeyboardAction(menu2.button2.actions.action0, menu2.button2.actions.value0, menu2.button2.actions.symbol0);
-            bleKeyboardAction(menu2.button2.actions.action1, menu2.button2.actions.value1, menu2.button2.actions.symbol1);
-            bleKeyboardAction(menu2.button2.actions.action2, menu2.button2.actions.value2, menu2.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu2.button2.latch)
-            {
-              if (islatched[7])
-              {
+            bleKeyboardAction(menu2.button2.actions.action0,
+                              menu2.button2.actions.value0,
+                              menu2.button2.actions.symbol0);
+            bleKeyboardAction(menu2.button2.actions.action1,
+                              menu2.button2.actions.value1,
+                              menu2.button2.actions.symbol1);
+            bleKeyboardAction(menu2.button2.actions.action2,
+                              menu2.button2.actions.value2,
+                              menu2.button2.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu2.button2.latch) {
+              if (islatched[7]) {
                 islatched[7] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[7] = 1;
               }
             }
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
-            bleKeyboardAction(menu2.button3.actions.action0, menu2.button3.actions.value0, menu2.button3.actions.symbol0);
-            bleKeyboardAction(menu2.button3.actions.action1, menu2.button3.actions.value1, menu2.button3.actions.symbol1);
-            bleKeyboardAction(menu2.button3.actions.action2, menu2.button3.actions.value2, menu2.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu2.button3.latch)
-            {
-              if (islatched[8])
-              {
+            bleKeyboardAction(menu2.button3.actions.action0,
+                              menu2.button3.actions.value0,
+                              menu2.button3.actions.symbol0);
+            bleKeyboardAction(menu2.button3.actions.action1,
+                              menu2.button3.actions.value1,
+                              menu2.button3.actions.symbol1);
+            bleKeyboardAction(menu2.button3.actions.action2,
+                              menu2.button3.actions.value2,
+                              menu2.button3.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu2.button3.latch) {
+              if (islatched[8]) {
                 islatched[8] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[8] = 1;
               }
             }
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
-            bleKeyboardAction(menu2.button4.actions.action0, menu2.button4.actions.value0, menu2.button4.actions.symbol0);
-            bleKeyboardAction(menu2.button4.actions.action1, menu2.button4.actions.value1, menu2.button4.actions.symbol1);
-            bleKeyboardAction(menu2.button4.actions.action2, menu2.button4.actions.value2, menu2.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu2.button4.latch)
-            {
-              if (islatched[9])
-              {
+            bleKeyboardAction(menu2.button4.actions.action0,
+                              menu2.button4.actions.value0,
+                              menu2.button4.actions.symbol0);
+            bleKeyboardAction(menu2.button4.actions.action1,
+                              menu2.button4.actions.value1,
+                              menu2.button4.actions.symbol1);
+            bleKeyboardAction(menu2.button4.actions.action2,
+                              menu2.button4.actions.value2,
+                              menu2.button4.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu2.button4.latch) {
+              if (islatched[9]) {
                 islatched[9] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[9] = 1;
               }
             }
-          }
-          else if (b == 5) // Button 5 / Back home
+          } else if (b == 5) // Button 5 / Back home
           {
             pageNum = 0;
             drawKeypad();
@@ -1401,95 +1314,100 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(menu3.button0.actions.action0, menu3.button0.actions.value0, menu3.button0.actions.symbol0);
-            bleKeyboardAction(menu3.button0.actions.action1, menu3.button0.actions.value1, menu3.button0.actions.symbol1);
-            bleKeyboardAction(menu3.button0.actions.action2, menu3.button0.actions.value2, menu3.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu3.button0.latch)
-            {
-              if (islatched[10])
-              {
+            bleKeyboardAction(menu3.button0.actions.action0,
+                              menu3.button0.actions.value0,
+                              menu3.button0.actions.symbol0);
+            bleKeyboardAction(menu3.button0.actions.action1,
+                              menu3.button0.actions.value1,
+                              menu3.button0.actions.symbol1);
+            bleKeyboardAction(menu3.button0.actions.action2,
+                              menu3.button0.actions.value2,
+                              menu3.button0.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu3.button0.latch) {
+              if (islatched[10]) {
                 islatched[10] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[10] = 1;
               }
             }
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
-            bleKeyboardAction(menu3.button1.actions.action0, menu3.button1.actions.value0, menu3.button1.actions.symbol0);
-            bleKeyboardAction(menu3.button1.actions.action1, menu3.button1.actions.value1, menu3.button1.actions.symbol1);
-            bleKeyboardAction(menu3.button1.actions.action2, menu3.button1.actions.value2, menu3.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu3.button1.latch)
-            {
-              if (islatched[11])
-              {
+            bleKeyboardAction(menu3.button1.actions.action0,
+                              menu3.button1.actions.value0,
+                              menu3.button1.actions.symbol0);
+            bleKeyboardAction(menu3.button1.actions.action1,
+                              menu3.button1.actions.value1,
+                              menu3.button1.actions.symbol1);
+            bleKeyboardAction(menu3.button1.actions.action2,
+                              menu3.button1.actions.value2,
+                              menu3.button1.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu3.button1.latch) {
+              if (islatched[11]) {
                 islatched[11] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[11] = 1;
               }
             }
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
-            bleKeyboardAction(menu3.button2.actions.action0, menu3.button2.actions.value0, menu3.button2.actions.symbol0);
-            bleKeyboardAction(menu3.button2.actions.action1, menu3.button2.actions.value1, menu3.button2.actions.symbol1);
-            bleKeyboardAction(menu3.button2.actions.action2, menu3.button2.actions.value2, menu3.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu3.button2.latch)
-            {
-              if (islatched[12])
-              {
+            bleKeyboardAction(menu3.button2.actions.action0,
+                              menu3.button2.actions.value0,
+                              menu3.button2.actions.symbol0);
+            bleKeyboardAction(menu3.button2.actions.action1,
+                              menu3.button2.actions.value1,
+                              menu3.button2.actions.symbol1);
+            bleKeyboardAction(menu3.button2.actions.action2,
+                              menu3.button2.actions.value2,
+                              menu3.button2.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu3.button2.latch) {
+              if (islatched[12]) {
                 islatched[12] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[12] = 1;
               }
             }
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
-            bleKeyboardAction(menu3.button3.actions.action0, menu3.button3.actions.value0, menu3.button3.actions.symbol0);
-            bleKeyboardAction(menu3.button3.actions.action1, menu3.button3.actions.value1, menu3.button3.actions.symbol1);
-            bleKeyboardAction(menu3.button3.actions.action2, menu3.button3.actions.value2, menu3.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu3.button3.latch)
-            {
-              if (islatched[13])
-              {
+            bleKeyboardAction(menu3.button3.actions.action0,
+                              menu3.button3.actions.value0,
+                              menu3.button3.actions.symbol0);
+            bleKeyboardAction(menu3.button3.actions.action1,
+                              menu3.button3.actions.value1,
+                              menu3.button3.actions.symbol1);
+            bleKeyboardAction(menu3.button3.actions.action2,
+                              menu3.button3.actions.value2,
+                              menu3.button3.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu3.button3.latch) {
+              if (islatched[13]) {
                 islatched[13] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[13] = 1;
               }
             }
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
-            bleKeyboardAction(menu3.button4.actions.action0, menu3.button4.actions.value0, menu3.button4.actions.symbol0);
-            bleKeyboardAction(menu3.button4.actions.action1, menu3.button4.actions.value1, menu3.button4.actions.symbol1);
-            bleKeyboardAction(menu3.button4.actions.action2, menu3.button4.actions.value2, menu3.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu3.button4.latch)
-            {
-              if (islatched[14])
-              {
+            bleKeyboardAction(menu3.button4.actions.action0,
+                              menu3.button4.actions.value0,
+                              menu3.button4.actions.symbol0);
+            bleKeyboardAction(menu3.button4.actions.action1,
+                              menu3.button4.actions.value1,
+                              menu3.button4.actions.symbol1);
+            bleKeyboardAction(menu3.button4.actions.action2,
+                              menu3.button4.actions.value2,
+                              menu3.button4.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu3.button4.latch) {
+              if (islatched[14]) {
                 islatched[14] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[14] = 1;
               }
             }
-          }
-          else if (b == 5) // Button 5 / Back home
+          } else if (b == 5) // Button 5 / Back home
           {
             pageNum = 0;
             drawKeypad();
@@ -1500,95 +1418,100 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(menu4.button0.actions.action0, menu4.button0.actions.value0, menu4.button0.actions.symbol0);
-            bleKeyboardAction(menu4.button0.actions.action1, menu4.button0.actions.value1, menu4.button0.actions.symbol1);
-            bleKeyboardAction(menu4.button0.actions.action2, menu4.button0.actions.value2, menu4.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu4.button0.latch)
-            {
-              if (islatched[15])
-              {
+            bleKeyboardAction(menu4.button0.actions.action0,
+                              menu4.button0.actions.value0,
+                              menu4.button0.actions.symbol0);
+            bleKeyboardAction(menu4.button0.actions.action1,
+                              menu4.button0.actions.value1,
+                              menu4.button0.actions.symbol1);
+            bleKeyboardAction(menu4.button0.actions.action2,
+                              menu4.button0.actions.value2,
+                              menu4.button0.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu4.button0.latch) {
+              if (islatched[15]) {
                 islatched[15] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[15] = 1;
               }
             }
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
-            bleKeyboardAction(menu4.button1.actions.action0, menu4.button1.actions.value0, menu4.button1.actions.symbol0);
-            bleKeyboardAction(menu4.button1.actions.action1, menu4.button1.actions.value1, menu4.button1.actions.symbol1);
-            bleKeyboardAction(menu4.button1.actions.action2, menu4.button1.actions.value2, menu4.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu4.button1.latch)
-            {
-              if (islatched[16])
-              {
+            bleKeyboardAction(menu4.button1.actions.action0,
+                              menu4.button1.actions.value0,
+                              menu4.button1.actions.symbol0);
+            bleKeyboardAction(menu4.button1.actions.action1,
+                              menu4.button1.actions.value1,
+                              menu4.button1.actions.symbol1);
+            bleKeyboardAction(menu4.button1.actions.action2,
+                              menu4.button1.actions.value2,
+                              menu4.button1.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu4.button1.latch) {
+              if (islatched[16]) {
                 islatched[16] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[16] = 1;
               }
             }
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
-            bleKeyboardAction(menu4.button2.actions.action0, menu4.button2.actions.value0, menu4.button2.actions.symbol0);
-            bleKeyboardAction(menu4.button2.actions.action1, menu4.button2.actions.value1, menu4.button2.actions.symbol1);
-            bleKeyboardAction(menu4.button2.actions.action2, menu4.button2.actions.value2, menu4.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu4.button2.latch)
-            {
-              if (islatched[17])
-              {
+            bleKeyboardAction(menu4.button2.actions.action0,
+                              menu4.button2.actions.value0,
+                              menu4.button2.actions.symbol0);
+            bleKeyboardAction(menu4.button2.actions.action1,
+                              menu4.button2.actions.value1,
+                              menu4.button2.actions.symbol1);
+            bleKeyboardAction(menu4.button2.actions.action2,
+                              menu4.button2.actions.value2,
+                              menu4.button2.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu4.button2.latch) {
+              if (islatched[17]) {
                 islatched[17] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[17] = 1;
               }
             }
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
-            bleKeyboardAction(menu4.button3.actions.action0, menu4.button3.actions.value0, menu4.button3.actions.symbol0);
-            bleKeyboardAction(menu4.button3.actions.action1, menu4.button3.actions.value1, menu4.button3.actions.symbol1);
-            bleKeyboardAction(menu4.button3.actions.action2, menu4.button3.actions.value2, menu4.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu4.button3.latch)
-            {
-              if (islatched[18])
-              {
+            bleKeyboardAction(menu4.button3.actions.action0,
+                              menu4.button3.actions.value0,
+                              menu4.button3.actions.symbol0);
+            bleKeyboardAction(menu4.button3.actions.action1,
+                              menu4.button3.actions.value1,
+                              menu4.button3.actions.symbol1);
+            bleKeyboardAction(menu4.button3.actions.action2,
+                              menu4.button3.actions.value2,
+                              menu4.button3.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu4.button3.latch) {
+              if (islatched[18]) {
                 islatched[18] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[18] = 1;
               }
             }
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
-            bleKeyboardAction(menu4.button4.actions.action0, menu4.button4.actions.value0, menu4.button4.actions.symbol0);
-            bleKeyboardAction(menu4.button4.actions.action1, menu4.button4.actions.value1, menu4.button4.actions.symbol1);
-            bleKeyboardAction(menu4.button4.actions.action2, menu4.button4.actions.value2, menu4.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu4.button4.latch)
-            {
-              if (islatched[19])
-              {
+            bleKeyboardAction(menu4.button4.actions.action0,
+                              menu4.button4.actions.value0,
+                              menu4.button4.actions.symbol0);
+            bleKeyboardAction(menu4.button4.actions.action1,
+                              menu4.button4.actions.value1,
+                              menu4.button4.actions.symbol1);
+            bleKeyboardAction(menu4.button4.actions.action2,
+                              menu4.button4.actions.value2,
+                              menu4.button4.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu4.button4.latch) {
+              if (islatched[19]) {
                 islatched[19] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[19] = 1;
               }
             }
-          }
-          else if (b == 5) // Button 5 / Back home
+          } else if (b == 5) // Button 5 / Back home
           {
             pageNum = 0;
             drawKeypad();
@@ -1599,95 +1522,100 @@ void loop(void)
         {
           if (b == 0) // Button 0
           {
-            bleKeyboardAction(menu5.button0.actions.action0, menu5.button0.actions.value0, menu5.button0.actions.symbol0);
-            bleKeyboardAction(menu5.button0.actions.action1, menu5.button0.actions.value1, menu5.button0.actions.symbol1);
-            bleKeyboardAction(menu5.button0.actions.action2, menu5.button0.actions.value2, menu5.button0.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu5.button0.latch)
-            {
-              if (islatched[20])
-              {
+            bleKeyboardAction(menu5.button0.actions.action0,
+                              menu5.button0.actions.value0,
+                              menu5.button0.actions.symbol0);
+            bleKeyboardAction(menu5.button0.actions.action1,
+                              menu5.button0.actions.value1,
+                              menu5.button0.actions.symbol1);
+            bleKeyboardAction(menu5.button0.actions.action2,
+                              menu5.button0.actions.value2,
+                              menu5.button0.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu5.button0.latch) {
+              if (islatched[20]) {
                 islatched[20] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[20] = 1;
               }
             }
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
-            bleKeyboardAction(menu5.button1.actions.action0, menu5.button1.actions.value0, menu5.button1.actions.symbol0);
-            bleKeyboardAction(menu5.button1.actions.action1, menu5.button1.actions.value1, menu5.button1.actions.symbol1);
-            bleKeyboardAction(menu5.button1.actions.action2, menu5.button1.actions.value2, menu5.button1.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu5.button1.latch)
-            {
-              if (islatched[21])
-              {
+            bleKeyboardAction(menu5.button1.actions.action0,
+                              menu5.button1.actions.value0,
+                              menu5.button1.actions.symbol0);
+            bleKeyboardAction(menu5.button1.actions.action1,
+                              menu5.button1.actions.value1,
+                              menu5.button1.actions.symbol1);
+            bleKeyboardAction(menu5.button1.actions.action2,
+                              menu5.button1.actions.value2,
+                              menu5.button1.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu5.button1.latch) {
+              if (islatched[21]) {
                 islatched[21] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[21] = 1;
               }
             }
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
-            bleKeyboardAction(menu5.button2.actions.action0, menu5.button2.actions.value0, menu5.button2.actions.symbol0);
-            bleKeyboardAction(menu5.button2.actions.action1, menu5.button2.actions.value1, menu5.button2.actions.symbol1);
-            bleKeyboardAction(menu5.button2.actions.action2, menu5.button2.actions.value2, menu5.button2.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu5.button2.latch)
-            {
-              if (islatched[22])
-              {
+            bleKeyboardAction(menu5.button2.actions.action0,
+                              menu5.button2.actions.value0,
+                              menu5.button2.actions.symbol0);
+            bleKeyboardAction(menu5.button2.actions.action1,
+                              menu5.button2.actions.value1,
+                              menu5.button2.actions.symbol1);
+            bleKeyboardAction(menu5.button2.actions.action2,
+                              menu5.button2.actions.value2,
+                              menu5.button2.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu5.button2.latch) {
+              if (islatched[22]) {
                 islatched[22] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[22] = 1;
               }
             }
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
-            bleKeyboardAction(menu5.button3.actions.action0, menu5.button3.actions.value0, menu5.button3.actions.symbol0);
-            bleKeyboardAction(menu5.button3.actions.action1, menu5.button3.actions.value1, menu5.button3.actions.symbol1);
-            bleKeyboardAction(menu5.button3.actions.action2, menu5.button3.actions.value2, menu5.button3.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu5.button3.latch)
-            {
-              if (islatched[23])
-              {
+            bleKeyboardAction(menu5.button3.actions.action0,
+                              menu5.button3.actions.value0,
+                              menu5.button3.actions.symbol0);
+            bleKeyboardAction(menu5.button3.actions.action1,
+                              menu5.button3.actions.value1,
+                              menu5.button3.actions.symbol1);
+            bleKeyboardAction(menu5.button3.actions.action2,
+                              menu5.button3.actions.value2,
+                              menu5.button3.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu5.button3.latch) {
+              if (islatched[23]) {
                 islatched[23] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[23] = 1;
               }
             }
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
-            bleKeyboardAction(menu5.button4.actions.action0, menu5.button4.actions.value0, menu5.button4.actions.symbol0);
-            bleKeyboardAction(menu5.button4.actions.action1, menu5.button4.actions.value1, menu5.button4.actions.symbol1);
-            bleKeyboardAction(menu5.button4.actions.action2, menu5.button4.actions.value2, menu5.button4.actions.symbol2);
-            bleKeyboard.releaseAll();
-            if (menu5.button4.latch)
-            {
-              if (islatched[24])
-              {
+            bleKeyboardAction(menu5.button4.actions.action0,
+                              menu5.button4.actions.value0,
+                              menu5.button4.actions.symbol0);
+            bleKeyboardAction(menu5.button4.actions.action1,
+                              menu5.button4.actions.value1,
+                              menu5.button4.actions.symbol1);
+            bleKeyboardAction(menu5.button4.actions.action2,
+                              menu5.button4.actions.value2,
+                              menu5.button4.actions.symbol2);
+            bleCombo.keyReleaseAll();
+            if (menu5.button4.latch) {
+              if (islatched[24]) {
                 islatched[24] = 0;
-              }
-              else
-              {
+              } else {
                 islatched[24] = 1;
               }
             }
-          }
-          else if (b == 5) // Button 5 / Back home
+          } else if (b == 5) // Button 5 / Back home
           {
             pageNum = 0;
             drawKeypad();
@@ -1699,34 +1627,25 @@ void loop(void)
           if (b == 0) // Button 0
           {
             bleKeyboardAction(11, 1, 0);
-          }
-          else if (b == 1) // Button 1
+          } else if (b == 1) // Button 1
           {
             bleKeyboardAction(11, 2, 0);
-          }
-          else if (b == 2) // Button 2
+          } else if (b == 2) // Button 2
           {
             bleKeyboardAction(11, 3, 0);
-          }
-          else if (b == 3) // Button 3
+          } else if (b == 3) // Button 3
           {
             bleKeyboardAction(11, 4, 0);
-            if (islatched[28])
-            {
+            if (islatched[28]) {
               islatched[28] = 0;
-            }
-            else
-            {
+            } else {
               islatched[28] = 1;
             }
-          }
-          else if (b == 4) // Button 4
+          } else if (b == 4) // Button 4
           {
             pageNum = 8;
             drawKeypad();
-          }
-          else if (b == 5)
-          {
+          } else if (b == 5) {
             pageNum = 0;
             drawKeypad();
           }
