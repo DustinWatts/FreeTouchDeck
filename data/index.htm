@@ -7,14 +7,27 @@
     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1,
     user-scalable=no\" />
     <title>FreeTouchDeck Configurator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap"
+      rel="stylesheet"
+    />
     <style>
       body {
         text-align: center;
-        font-family: verdana;
+        font-family: "DM Sans", sans-serif;
         color: #000088;
         width: 99%;
       }
 
+      main {
+        max-width: 1200px;
+        width: 100%;
+        padding: 2rem;
+        margin: 2rem auto;
+        box-sizing: border-box;
+      }
       .pageloading {
         background-color: #ffffff;
         color: #1fa3ec;
@@ -51,6 +64,7 @@
       }
 
       .tab button {
+        font-size: 1rem;
         background-color: inherit;
         float: left;
         border: none;
@@ -58,7 +72,6 @@
         cursor: pointer;
         padding: 14px 16px;
         transition: 0.3s;
-        font-family: verdana;
         color: #000000;
       }
 
@@ -67,14 +80,12 @@
       }
 
       .tab button.active {
-        background-color: #1fa3ec;
+        background-color: #00649c;
+        color: white;
       }
 
       .tabcontent {
         display: none;
-        padding: 6px 12px;
-        border: 1px solid #1fa3ec;
-        border-top: none;
       }
 
       .ball-loader {
@@ -116,6 +127,23 @@
         animation-delay: 0.66s;
       }
 
+      td {
+        padding: 1rem;
+      }
+
+      select {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.9rem;
+      }
+
+      h1 {
+        padding: 1.5rem 0.5rem;
+      }
+
+      h3 {
+        margin: 0.5rem 0 1rem 0;
+      }
+
       @-webkit-keyframes grow {
         to {
           -webkit-transform: translateX(-50%) scale(0);
@@ -135,15 +163,15 @@
 
   <body>
     <!-- <div id="contentloading" class="pageloading"> Loading the configurator.</div> -->
-    <div id="contentloading" class="pageloading">Loading Configurator</div>
+    <!-- <div id="contentloading" class="pageloading">Loading Configurator</div>
 
     <div id="ball-loader" class="ball-loader">
       <div class="ball-loader-ball ball1"></div>
       <div class="ball-loader-ball ball2"></div>
       <div class="ball-loader-ball ball3"></div>
-    </div>
+    </div> -->
 
-    <div id="maincontent" style="display: none">
+    <div id="maincontent" style="display: block">
       <h1>FreeTouchDeck Configurator</h1>
       <form
         class="form"
@@ -190,7 +218,7 @@
 
         <form method="post" action="/restart">
           <button
-            style="float: right"
+            style="float: right; background-color: #ffaaaa"
             onclick="return confirm('Are you sure? Unsaved configuration will be lost!')"
             class="tablinks"
           >
@@ -223,1983 +251,2040 @@
         </button>
       </div>
 
-      <!-- Tab Intro -->
-      <div id="intro" class="tabcontent">
-        <h3>Welcome</h3>
-        <p>
-          Welcome to the configurator! Select an option/page from the top menu.
-          If you have any questions, join my Discord server:
-          <a href="https://discord.gg/RE3XevS" target="_blank"
-            >https://discord.gg/RE3XevS</a
-          ><br />
-          A guide on how to use the configurator can be found here:
-          <a
-            href="https://github.com/DustinWatts/FreeTouchDeck/wiki/3.-The-Configurator"
-            target="_blank"
-          >
-            FreeTouchDeck Wiki</a
-          >
-        </p>
-      </div>
-      <!-- Tab WiFi -->
-      <div id="wifi" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=wificonfig.json">download wificonfig.json</a>
-        </div>
-        <br />
-        <h3>WiFi Settings</h3>
-        <p></p>
-        <form method="post" id="savewifi" action="/saveconfig">
-          <div
-            style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
-          >
-            <label for="ssid">WiFi SSID:</label><br />
-            <input type="text" id="ssid" name="ssid" /><br /><br />
-
-            <label for="password">WiFi Password:</label><br />
-            <input
-              type="password"
-              id="password"
-              name="password"
-              autocomplete="new-password"
-            /><br />
-            <input type="checkbox" onclick="togglepassword()" />Show Password
-            <br /><br />
-
-            &nbsp;&nbsp;Wifi Mode:&nbsp;
-            <select class="wifimode" id="wifimode" name="wifimode">
-              <option value="WIFI_STA">Station</option>
-              <option value="WIFI_AP">Access Point</option></select
+      <main>
+        <!-- Tab Intro -->
+        <div id="intro" class="tabcontent">
+          <h3>Welcome</h3>
+          <p>
+            Welcome to the configurator! Select an option/page from the top
+            menu. If you have any questions, join my Discord server:
+            <a href="https://discord.gg/RE3XevS" target="_blank"
+              >https://discord.gg/RE3XevS</a
             ><br />
-
-            <label for="wifihostname">Wifi Hostname:</label>
-            <input type="text" id="wifihostname" name="wifihostname" /><br />
-
-            &nbsp;&nbsp;Connection attempts:&nbsp;
-            <select class="attempts" id="attempts" name="attempts">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="15">15</option>
-              <option value="20">20</option></select
-            ><br />
-
-            &nbsp;&nbsp;Delay between attempts:&nbsp;
-            <select class="attemptdelay" id="attemptdelay" name="attemptdelay">
-              <option value="100">100 ms</option>
-              <option value="500">500 ms</option>
-              <option value="1000">1000 ms</option>
-              <option value="2000">2000 ms</option></select
-            ><br />
-          </div>
-
-          <div
-            class="form"
-            style="width: 50%; text-align: : center; margin: auto;"
-          >
-            <input type="hidden" id="save" name="save" value="wifi" />
-            <br /><button style="cursor: pointer" form="savewifi" type="save">
-              Save WiFi Config
-            </button>
-          </div>
-        </form>
-      </div>
-      <!-- Tab General -->
-      <div id="general" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=general.json">download general.json</a>
-        </div>
-        <br />
-        <h3>General Settings</h3>
-        <p></p>
-        <div style="font-family: Arial, Helvetica, Sans-Serif; color: #000088">
-          <h2>Colors</h2>
-        </div>
-
-        <form method="post" id="generalconfig" action="/saveconfig">
-          <div
-            style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
-          >
-            &nbsp;&nbsp;Menu Button Colour:&nbsp;
-            <input
-              style="
-                width: 100px;
-                height: 30px;
-                padding: 1px;
-                border-radius: 0.3rem;
-              "
-              id="menubuttoncolor"
-              name="menubuttoncolor"
-              type="color"
-              value=""
-            />
-            &nbsp;&nbsp;Function Button Colour:&nbsp;
-            <input
-              style="
-                width: 100px;
-                height: 30px;
-                padding: 1px;
-                border-radius: 0.3rem;
-              "
-              id="functionbuttoncolor"
-              name="functionbuttoncolor"
-              type="color"
-              value=""
-            />
-            &nbsp;&nbsp;Latch Colour:&nbsp;
-            <input
-              style="
-                width: 100px;
-                height: 30px;
-                padding: 1px;
-                border-radius: 0.3rem;
-              "
-              id="latchcolor"
-              name="latchcolor"
-              type="color"
-              value=""
-            />
-            &nbsp;&nbsp;Background Colour:&nbsp;
-            <input
-              style="
-                width: 100px;
-                height: 30px;
-                padding: 1px;
-                border-radius: 0.3rem;
-              "
-              id="background"
-              name="background"
-              type="color"
-              value=""
-            />
-          </div>
-          <br />
-
-          <div
-            style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
-          >
-            <h2>Deep Sleep</h2>
-          </div>
-
-          &nbsp;&nbsp;Deep Sleep:&nbsp;
-          <select class="sleepenable" id="sleepenable" name="sleepenable">
-            <option value="true">Enabled</option>
-            <option value="false">Disabled</option>
-          </select>
-          &nbsp;&nbsp;Deep Sleep Timer:&nbsp;
-          <select class="sleeptimer" id="sleeptimer" name="sleeptimer">
-            <option value="10">10 Minutes</option>
-            <option value="20">20 Minutes</option>
-            <option value="30">30 Minutes</option>
-            <option value="60">60 Minutes</option>
-          </select>
-
-          <div
-            style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
-          >
-            <h2>Sound</h2>
-          </div>
-
-          &nbsp;&nbsp;Beep on Touch:&nbsp;
-          <select class="sleepenable" id="beep" name="beep">
-            <option value="true">Enabled</option>
-            <option value="false">Disabled</option>
-          </select>
-
-          <div
-            style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
-          >
-            <h2>FreeTouchDeck Helpers</h2>
-          </div>
-
-          &nbsp;&nbsp;Modifier 1:&nbsp;
-          <select class="modifier1" id="modifier1" name="modifier1">
-            <option value="0">None</option>
-            <option value="128">CTRL</option>
-            <option value="129">SHIFT</option>
-            <option value="130">ALT</option>
-            <option value="131">GUI</option>
-          </select>
-
-          &nbsp;&nbsp;Modifier 2:&nbsp;
-          <select class="modifier2" id="modifier2" name="modifier2">
-            <option value="0">None</option>
-            <option value="128">CTRL</option>
-            <option value="129">SHIFT</option>
-            <option value="130">ALT</option>
-            <option value="131">GUI</option>
-          </select>
-
-          &nbsp;&nbsp;Modifier 3:&nbsp;
-          <select class="modifier3" id="modifier3" name="modifier3">
-            <option value="0">None</option>
-            <option value="128">CTRL</option>
-            <option value="129">SHIFT</option>
-            <option value="130">ALT</option>
-            <option value="131">GUI</option>
-          </select>
-
-          <br />
-
-          &nbsp;&nbsp;Delay after helper (ms):&nbsp;
-          <select class="helperdelay" id="helperdelay" name="helperdelay">
-            <option value="0">0</option>
-            <option value="100">100</option>
-            <option value="200">200</option>
-            <option value="500">500</option>
-            <option value="1000">1000</option>
-          </select>
-
-          <div
-            class="form"
-            style="width: 50%; text-align: : center; margin: auto;"
-          >
-            <input type="hidden" id="save" name="save" value="general" />
-            <br /><button
-              style="cursor: pointer"
-              form="generalconfig"
-              type="save"
+            A guide on how to use the configurator can be found here:
+            <a
+              href="https://github.com/DustinWatts/FreeTouchDeck/wiki/3.-The-Configurator"
+              target="_blank"
             >
-              Save General Config
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Tab Home Menu -->
-      <div id="home" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=homescreen.json">download homescreen.json</a>
+              FreeTouchDeck Wiki</a
+            >
+          </p>
         </div>
-        <br />
-        <h3>Home Menu</h3>
-        <form method="post" id="savehomescreen" action="/saveconfig">
-          <table
-            style="
-              height: 170px;
-              width: 100%;
-              border: 1px solid #000088;
-              text-align: left;
-            "
-          >
-            <tbody>
-              <tr>
-                <td style="width: 33%">
-                  Menu 1
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="homescreenlogo0"
-                    name="homescreenlogo0"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Menu 2
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="homescreenlogo1"
-                    name="homescreenlogo1"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Menu 3
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="homescreenlogo2"
-                    name="homescreenlogo2"
-                  ></select>
-                </td>
-              </tr>
-              <tr>
-                <td style="width: 33%">
-                  Menu 4
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="homescreenlogo3"
-                    name="homescreenlogo3"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Menu 5
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="homescreenlogo4"
-                    name="homescreenlogo4"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Settings Menu
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="homescreenlogo5"
-                    name="homescreenlogo5"
-                  ></select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Tab WiFi -->
+        <div id="wifi" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=wificonfig.json"
+              >download wificonfig.json</a
+            >
+          </div>
+          <br />
+          <h3>WiFi Settings</h3>
+          <p></p>
+          <form method="post" id="savewifi" action="/saveconfig">
+            <div
+              style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
+            >
+              <label for="ssid">WiFi SSID:</label><br />
+              <input type="text" id="ssid" name="ssid" /><br /><br />
+
+              <label for="password">WiFi Password:</label><br />
+              <input
+                type="password"
+                id="password"
+                name="password"
+                autocomplete="new-password"
+              /><br />
+              <input type="checkbox" onclick="togglepassword()" />Show Password
+              <br /><br />
+
+              &nbsp;&nbsp;Wifi Mode:&nbsp;
+              <select class="wifimode" id="wifimode" name="wifimode">
+                <option value="WIFI_STA">Station</option>
+                <option value="WIFI_AP">Access Point</option></select
+              ><br />
+
+              <label for="wifihostname">Wifi Hostname:</label>
+              <input type="text" id="wifihostname" name="wifihostname" /><br />
+
+              &nbsp;&nbsp;Connection attempts:&nbsp;
+              <select class="attempts" id="attempts" name="attempts">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option></select
+              ><br />
+
+              &nbsp;&nbsp;Delay between attempts:&nbsp;
+              <select
+                class="attemptdelay"
+                id="attemptdelay"
+                name="attemptdelay"
+              >
+                <option value="100">100 ms</option>
+                <option value="500">500 ms</option>
+                <option value="1000">1000 ms</option>
+                <option value="2000">2000 ms</option></select
+              ><br />
+            </div>
+
+            <div
+              class="form"
+              style="width: 50%; text-align: : center; margin: auto;"
+            >
+              <input type="hidden" id="save" name="save" value="wifi" />
+              <br /><button style="cursor: pointer" form="savewifi" type="save">
+                Save WiFi Config
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Tab General -->
+        <div id="general" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=general.json">download general.json</a>
+          </div>
+          <br />
+          <h3>General Settings</h3>
+          <p></p>
           <div
-            class="form"
-            style="width: 50%; text-align: center; margin: auto"
+            style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
           >
-            <input type="hidden" id="save" name="save" value="homescreen" />
+            <h2>Colors</h2>
+          </div>
+
+          <form method="post" id="generalconfig" action="/saveconfig">
+            <div
+              style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
+            >
+              &nbsp;&nbsp;Menu Button Colour:&nbsp;
+              <input
+                style="
+                  width: 100px;
+                  height: 30px;
+                  padding: 1px;
+                  border-radius: 0.3rem;
+                "
+                id="menubuttoncolor"
+                name="menubuttoncolor"
+                type="color"
+                value=""
+              />
+              &nbsp;&nbsp;Function Button Colour:&nbsp;
+              <input
+                style="
+                  width: 100px;
+                  height: 30px;
+                  padding: 1px;
+                  border-radius: 0.3rem;
+                "
+                id="functionbuttoncolor"
+                name="functionbuttoncolor"
+                type="color"
+                value=""
+              />
+              &nbsp;&nbsp;Latch Colour:&nbsp;
+              <input
+                style="
+                  width: 100px;
+                  height: 30px;
+                  padding: 1px;
+                  border-radius: 0.3rem;
+                "
+                id="latchcolor"
+                name="latchcolor"
+                type="color"
+                value=""
+              />
+              &nbsp;&nbsp;Background Colour:&nbsp;
+              <input
+                style="
+                  width: 100px;
+                  height: 30px;
+                  padding: 1px;
+                  border-radius: 0.3rem;
+                "
+                id="background"
+                name="background"
+                type="color"
+                value=""
+              />
+            </div>
             <br />
-            <button style="cursor: pointer" form="savehomescreen" type="save">
-              Save Home Screen Config
-            </button>
-          </div>
-        </form>
-      </div>
 
-      <!-- Tab Menu 1 -->
-      <div id="menu1" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=menu1.json">download menu1.json</a>
-        </div>
-        <br />
-        <h3>Menu 1</h3>
-        <form method="post" id="savemenu1" action="/saveconfig">
-          <table
-            style="
-              height: 170px;
-              width: 100%;
-              border: 1px solid #000088;
-              text-align: left;
-            "
-          >
-            <tbody>
-              <tr>
-                <td style="width: 33%">
-                  Button 1
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen1logo0"
-                    name="screen1logo0"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen1button0action0"
-                    name="screen1button0action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button0value0"
-                    name="screen1button0value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen1button0action1"
-                    name="screen1button0action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button0value1"
-                    name="screen1button0value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen1button0action2"
-                    name="screen1button0action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button0value2"
-                    name="screen1button0value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen1button0latch"
-                    name="screen1button0latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen1latchlogo0"
-                    name="screen1latchlogo0"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 2
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen1logo1"
-                    name="screen1logo1"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen1button1action0"
-                    name="screen1button1action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button1value0"
-                    name="screen1button1value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen1button1action1"
-                    name="screen1button1action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button1value1"
-                    name="screen1button1value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen1button1action2"
-                    name="screen1button1action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button1value2"
-                    name="screen1button1value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen1button1latch"
-                    name="screen1button1latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen1latchlogo1"
-                    name="screen1latchlogo1"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 3
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen1logo2"
-                    name="screen1logo2"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen1button2action0"
-                    name="screen1button2action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button2value0"
-                    name="screen1button2value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen1button2action1"
-                    name="screen1button2action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button2value1"
-                    name="screen1button2value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen1button2action2"
-                    name="screen1button2action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button2value2"
-                    name="screen1button2value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen1button2latch"
-                    name="screen1button2latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen1latchlogo2"
-                    name="screen1latchlogo2"
-                  ></select>
-                </td>
-              </tr>
-              <tr>
-                <td style="width: 33%">
-                  Button 4
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen1logo3"
-                    name="screen1logo3"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen1button3action0"
-                    name="screen1button3action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button3value0"
-                    name="screen1button3value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen1button3action1"
-                    name="screen1button3action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button3value1"
-                    name="screen1button3value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen1button3action2"
-                    name="screen1button3action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button3value2"
-                    name="screen1button3value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen1button3latch"
-                    name="screen1button3latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen1latchlogo3"
-                    name="screen1latchlogo3"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 5
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen1logo4"
-                    name="screen1logo4"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen1button4action0"
-                    name="screen1button4action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button4value0"
-                    name="screen1button4value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen1button4action1"
-                    name="screen1button4action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button4value1"
-                    name="screen1button4value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen1button4action2"
-                    name="screen1button4action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen1button4value2"
-                    name="screen1button4value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen1button4latch"
-                    name="screen1button4latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen1latchlogo4"
-                    name="screen1latchlogo4"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 6
-                  <br />Image:
-                  <select class="images" id="screen1logo5" name="screen1logo5">
-                    <option value="home.bmp">home.bmp</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div
-            class="form"
-            style="width: 50%; text-align: : center; margin: auto;"
-          >
-            <input type="hidden" id="save" name="save" value="menu1" />
-            <br /><button style="cursor: pointer" form="savemenu1" type="save">
-              Save Menu 1 Config
-            </button>
-          </div>
-        </form>
-      </div>
-      <!-- Tab Menu 2 -->
-      <div id="menu2" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=menu2.json">download menu2.json</a>
-        </div>
-        <br />
-        <h3>Menu 2</h3>
+            <div
+              style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
+            >
+              <h2>Deep Sleep</h2>
+            </div>
 
-        <form method="post" id="savemenu2" action="/saveconfig">
-          <table
-            style="
-              height: 170px;
-              width: 100%;
-              border: 1px solid #000088;
-              text-align: left;
-            "
-          >
-            <tbody>
-              <tr>
-                <td style="width: 33%">
-                  Button 1
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen2logo0"
-                    name="screen2logo0"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen2button0action0"
-                    name="screen2button0action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button0value0"
-                    name="screen2button0value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen2button0action1"
-                    name="screen2button0action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button0value1"
-                    name="screen2button0value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen2button0action2"
-                    name="screen2button0action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button0value2"
-                    name="screen2button0value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen2button0latch"
-                    name="screen2button0latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen2latchlogo0"
-                    name="screen2latchlogo0"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 2
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen2logo1"
-                    name="screen2logo1"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen2button1action0"
-                    name="screen2button1action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button1value0"
-                    name="screen2button1value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen2button1action1"
-                    name="screen2button1action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button1value1"
-                    name="screen2button1value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen2button1action2"
-                    name="screen2button1action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button1value2"
-                    name="screen2button1value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen2button1latch"
-                    name="screen2button1latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen2latchlogo1"
-                    name="screen2latchlogo1"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 3
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen2logo2"
-                    name="screen2logo2"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen2button2action0"
-                    name="screen2button2action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button2value0"
-                    name="screen2button2value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen2button2action1"
-                    name="screen2button2action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button2value1"
-                    name="screen2button2value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen2button2action2"
-                    name="screen2button2action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button2value2"
-                    name="screen2button2value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen2button2latch"
-                    name="screen2button2latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen2latchlogo2"
-                    name="screen2latchlogo2"
-                  ></select>
-                </td>
-              </tr>
-              <tr>
-                <td style="width: 33%">
-                  Button 4
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen2logo3"
-                    name="screen2logo3"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen2button3action0"
-                    name="screen2button3action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button3value0"
-                    name="screen2button3value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen2button3action1"
-                    name="screen2button3action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button3value1"
-                    name="screen2button3value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen2button3action2"
-                    name="screen2button3action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button3value2"
-                    name="screen2button3value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen2button3latch"
-                    name="screen2button3latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen2latchlogo3"
-                    name="screen2latchlogo3"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 5
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen2logo4"
-                    name="screen2logo4"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen2button4action0"
-                    name="screen2button4action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button4value0"
-                    name="screen2button4value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen2button4action1"
-                    name="screen2button4action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button4value1"
-                    name="screen2button4value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen2button4action2"
-                    name="screen2button4action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen2button4value2"
-                    name="screen2button4value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen2button4latch"
-                    name="screen2button4latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen2latchlogo4"
-                    name="screen2latchlogo4"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 6
-                  <br />Image:
-                  <select class="images" id="screen2logo5" name="screen2logo5">
-                    <option value="home.bmp">home.bmp</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+            &nbsp;&nbsp;Deep Sleep:&nbsp;
+            <select class="sleepenable" id="sleepenable" name="sleepenable">
+              <option value="true">Enabled</option>
+              <option value="false">Disabled</option>
+            </select>
+            &nbsp;&nbsp;Deep Sleep Timer:&nbsp;
+            <select class="sleeptimer" id="sleeptimer" name="sleeptimer">
+              <option value="10">10 Minutes</option>
+              <option value="20">20 Minutes</option>
+              <option value="30">30 Minutes</option>
+              <option value="60">60 Minutes</option>
+            </select>
+
+            <div
+              style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
+            >
+              <h2>Sound</h2>
+            </div>
+
+            &nbsp;&nbsp;Beep on Touch:&nbsp;
+            <select class="sleepenable" id="beep" name="beep">
+              <option value="true">Enabled</option>
+              <option value="false">Disabled</option>
+            </select>
+
+            <div
+              style="font-family: Arial, Helvetica, Sans-Serif; color: #000088"
+            >
+              <h2>FreeTouchDeck Helpers</h2>
+            </div>
+
+            &nbsp;&nbsp;Modifier 1:&nbsp;
+            <select class="modifier1" id="modifier1" name="modifier1">
+              <option value="0">None</option>
+              <option value="128">CTRL</option>
+              <option value="129">SHIFT</option>
+              <option value="130">ALT</option>
+              <option value="131">GUI</option>
+            </select>
+
+            &nbsp;&nbsp;Modifier 2:&nbsp;
+            <select class="modifier2" id="modifier2" name="modifier2">
+              <option value="0">None</option>
+              <option value="128">CTRL</option>
+              <option value="129">SHIFT</option>
+              <option value="130">ALT</option>
+              <option value="131">GUI</option>
+            </select>
+
+            &nbsp;&nbsp;Modifier 3:&nbsp;
+            <select class="modifier3" id="modifier3" name="modifier3">
+              <option value="0">None</option>
+              <option value="128">CTRL</option>
+              <option value="129">SHIFT</option>
+              <option value="130">ALT</option>
+              <option value="131">GUI</option>
+            </select>
+
+            <br />
+
+            &nbsp;&nbsp;Delay after helper (ms):&nbsp;
+            <select class="helperdelay" id="helperdelay" name="helperdelay">
+              <option value="0">0</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+              <option value="500">500</option>
+              <option value="1000">1000</option>
+            </select>
+
+            <div
+              class="form"
+              style="width: 50%; text-align: : center; margin: auto;"
+            >
+              <input type="hidden" id="save" name="save" value="general" />
+              <br /><button
+                style="cursor: pointer"
+                form="generalconfig"
+                type="save"
+              >
+                Save General Config
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab Home Menu -->
+        <div id="home" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=homescreen.json"
+              >download homescreen.json</a
+            >
+          </div>
+          <br />
+          <h3>Home Menu</h3>
+          <form method="post" id="savehomescreen" action="/saveconfig">
+            <table
+              style="
+                height: 170px;
+                width: 100%;
+                border: 1px solid #000088;
+                text-align: left;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td style="width: 33%">
+                    Menu 1
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="homescreenlogo0"
+                      name="homescreenlogo0"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    Menu 2
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="homescreenlogo1"
+                      name="homescreenlogo1"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    Menu 3
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="homescreenlogo2"
+                      name="homescreenlogo2"
+                    ></select>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 33%">
+                    Menu 4
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="homescreenlogo3"
+                      name="homescreenlogo3"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    Menu 5
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="homescreenlogo4"
+                      name="homescreenlogo4"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    Settings Menu
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="homescreenlogo5"
+                      name="homescreenlogo5"
+                    ></select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              class="form"
+              style="width: 50%; text-align: center; margin: auto"
+            >
+              <input type="hidden" id="save" name="save" value="homescreen" />
+              <br />
+              <button style="cursor: pointer" form="savehomescreen" type="save">
+                Save Home Screen Config
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab Menu 1 -->
+        <div id="menu1" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=menu1.json">download menu1.json</a>
+          </div>
+          <br />
+          <h3>Menu 1</h3>
+          <form method="post" id="savemenu1" action="/saveconfig">
+            <table
+              style="
+                height: 170px;
+                width: 100%;
+                border: 1px solid #000088;
+                text-align: left;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 1</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen1logo0"
+                      name="screen1logo0"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen1button0action0"
+                      name="screen1button0action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button0value0"
+                      name="screen1button0value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen1button0action1"
+                      name="screen1button0action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button0value1"
+                      name="screen1button0value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen1button0action2"
+                      name="screen1button0action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button0value2"
+                      name="screen1button0value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen1button0latch"
+                      name="screen1button0latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen1latchlogo0"
+                      name="screen1latchlogo0"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 2</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen1logo1"
+                      name="screen1logo1"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen1button1action0"
+                      name="screen1button1action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button1value0"
+                      name="screen1button1value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen1button1action1"
+                      name="screen1button1action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button1value1"
+                      name="screen1button1value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen1button1action2"
+                      name="screen1button1action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button1value2"
+                      name="screen1button1value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen1button1latch"
+                      name="screen1button1latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen1latchlogo1"
+                      name="screen1latchlogo1"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 3</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen1logo2"
+                      name="screen1logo2"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen1button2action0"
+                      name="screen1button2action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button2value0"
+                      name="screen1button2value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen1button2action1"
+                      name="screen1button2action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button2value1"
+                      name="screen1button2value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen1button2action2"
+                      name="screen1button2action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button2value2"
+                      name="screen1button2value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen1button2latch"
+                      name="screen1button2latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen1latchlogo2"
+                      name="screen1latchlogo2"
+                    ></select>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 4</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen1logo3"
+                      name="screen1logo3"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen1button3action0"
+                      name="screen1button3action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button3value0"
+                      name="screen1button3value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen1button3action1"
+                      name="screen1button3action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button3value1"
+                      name="screen1button3value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen1button3action2"
+                      name="screen1button3action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button3value2"
+                      name="screen1button3value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen1button3latch"
+                      name="screen1button3latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen1latchlogo3"
+                      name="screen1latchlogo3"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 5</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen1logo4"
+                      name="screen1logo4"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen1button4action0"
+                      name="screen1button4action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button4value0"
+                      name="screen1button4value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen1button4action1"
+                      name="screen1button4action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button4value1"
+                      name="screen1button4value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen1button4action2"
+                      name="screen1button4action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen1button4value2"
+                      name="screen1button4value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen1button4latch"
+                      name="screen1button4latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen1latchlogo4"
+                      name="screen1latchlogo4"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 6</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen1logo5"
+                      name="screen1logo5"
+                    >
+                      <option value="home.bmp">home.bmp</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              class="form"
+              style="width: 50%; text-align: : center; margin: auto;"
+            >
+              <input type="hidden" id="save" name="save" value="menu1" />
+              <br /><button
+                style="cursor: pointer"
+                form="savemenu1"
+                type="save"
+              >
+                Save Menu 1 Config
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Tab Menu 2 -->
+        <div id="menu2" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=menu2.json">download menu2.json</a>
+          </div>
+          <br />
+          <h3>Menu 2</h3>
+
+          <form method="post" id="savemenu2" action="/saveconfig">
+            <table
+              style="
+                height: 170px;
+                width: 100%;
+                border: 1px solid #000088;
+                text-align: left;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 1</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen2logo0"
+                      name="screen2logo0"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen2button0action0"
+                      name="screen2button0action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button0value0"
+                      name="screen2button0value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen2button0action1"
+                      name="screen2button0action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button0value1"
+                      name="screen2button0value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen2button0action2"
+                      name="screen2button0action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button0value2"
+                      name="screen2button0value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen2button0latch"
+                      name="screen2button0latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen2latchlogo0"
+                      name="screen2latchlogo0"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 2</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen2logo1"
+                      name="screen2logo1"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen2button1action0"
+                      name="screen2button1action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button1value0"
+                      name="screen2button1value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen2button1action1"
+                      name="screen2button1action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button1value1"
+                      name="screen2button1value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen2button1action2"
+                      name="screen2button1action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button1value2"
+                      name="screen2button1value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen2button1latch"
+                      name="screen2button1latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen2latchlogo1"
+                      name="screen2latchlogo1"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 3</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen2logo2"
+                      name="screen2logo2"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen2button2action0"
+                      name="screen2button2action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button2value0"
+                      name="screen2button2value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen2button2action1"
+                      name="screen2button2action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button2value1"
+                      name="screen2button2value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen2button2action2"
+                      name="screen2button2action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button2value2"
+                      name="screen2button2value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen2button2latch"
+                      name="screen2button2latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen2latchlogo2"
+                      name="screen2latchlogo2"
+                    ></select>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 4</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen2logo3"
+                      name="screen2logo3"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen2button3action0"
+                      name="screen2button3action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button3value0"
+                      name="screen2button3value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen2button3action1"
+                      name="screen2button3action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button3value1"
+                      name="screen2button3value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen2button3action2"
+                      name="screen2button3action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button3value2"
+                      name="screen2button3value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen2button3latch"
+                      name="screen2button3latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen2latchlogo3"
+                      name="screen2latchlogo3"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 5</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen2logo4"
+                      name="screen2logo4"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen2button4action0"
+                      name="screen2button4action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button4value0"
+                      name="screen2button4value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen2button4action1"
+                      name="screen2button4action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button4value1"
+                      name="screen2button4value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen2button4action2"
+                      name="screen2button4action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen2button4value2"
+                      name="screen2button4value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen2button4latch"
+                      name="screen2button4latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen2latchlogo4"
+                      name="screen2latchlogo4"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 6</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen2logo5"
+                      name="screen2logo5"
+                    >
+                      <option value="home.bmp">home.bmp</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              class="form"
+              style="width: 50%; text-align: center; margin: auto"
+            >
+              <input type="hidden" id="save" name="save" value="menu2" />
+              <br /><button
+                style="cursor: pointer"
+                form="savemenu2"
+                type="save"
+              >
+                Save Menu 2 Config
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tab Menu 3 -->
+        <div id="menu3" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=menu3.json">download menu3.json</a>
+          </div>
+          <br />
+          <h3>Menu 3</h3>
+
+          <form method="post" id="savemenu3" action="/saveconfig">
+            <table
+              style="
+                height: 170px;
+                width: 100%;
+                border: 1px solid #000088;
+                text-align: left;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 1</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen3logo0"
+                      name="screen3logo0"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen3button0action0"
+                      name="screen3button0action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button0value0"
+                      name="screen3button0value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen3button0action1"
+                      name="screen3button0action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button0value1"
+                      name="screen3button0value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen3button0action2"
+                      name="screen3button0action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button0value2"
+                      name="screen3button0value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen3button0latch"
+                      name="screen3button0latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen3latchlogo0"
+                      name="screen3latchlogo0"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 2</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen3logo1"
+                      name="screen3logo1"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen3button1action0"
+                      name="screen3button1action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button1value0"
+                      name="screen3button1value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen3button1action1"
+                      name="screen3button1action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button1value1"
+                      name="screen3button1value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen3button1action2"
+                      name="screen3button1action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button1value2"
+                      name="screen3button1value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen3button1latch"
+                      name="screen3button1latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen3latchlogo1"
+                      name="screen3latchlogo1"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 3</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen3logo2"
+                      name="screen3logo2"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen3button2action0"
+                      name="screen3button2action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button2value0"
+                      name="screen3button2value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen3button2action1"
+                      name="screen3button2action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button2value1"
+                      name="screen3button2value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen3button2action2"
+                      name="screen3button2action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button2value2"
+                      name="screen3button2value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen3button2latch"
+                      name="screen3button2latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen3latchlogo2"
+                      name="screen3latchlogo2"
+                    ></select>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 4</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen3logo3"
+                      name="screen3logo3"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen3button3action0"
+                      name="screen3button3action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button3value0"
+                      name="screen3button3value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen3button3action1"
+                      name="screen3button3action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button3value1"
+                      name="screen3button3value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen3button3action2"
+                      name="screen3button3action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button3value2"
+                      name="screen3button3value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen3button3latch"
+                      name="screen3button3latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen3latchlogo3"
+                      name="screen3latchlogo3"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 5</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen3logo4"
+                      name="screen3logo4"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen3button4action0"
+                      name="screen3button4action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button4value0"
+                      name="screen3button4value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen3button4action1"
+                      name="screen3button4action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button4value1"
+                      name="screen3button4value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen3button4action2"
+                      name="screen3button4action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen3button4value2"
+                      name="screen3button4value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen3button4latch"
+                      name="screen3button4latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen3latchlogo4"
+                      name="screen3latchlogo4"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 6</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen3logo5"
+                      name="screen3logo5"
+                    >
+                      <option value="home.bmp">home.bmp</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              class="form"
+              style="width: 50%; text-align: : center; margin: auto;"
+            >
+              <input type="hidden" id="save" name="save" value="menu3" />
+              <br /><button
+                style="cursor: pointer"
+                form="savemenu3"
+                type="save"
+              >
+                Save Menu 3 Config
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Tab Menu 4 -->
+        <div id="menu4" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=menu4.json">download menu4.json</a>
+          </div>
+          <br />
+          <h3>Menu 4</h3>
+          <form method="post" id="savemenu4" action="/saveconfig">
+            <table
+              style="
+                height: 170px;
+                width: 100%;
+                border: 1px solid #000088;
+                text-align: left;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 1</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen4logo0"
+                      name="screen4logo0"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen4button0action0"
+                      name="screen4button0action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button0value0"
+                      name="screen4button0value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen4button0action1"
+                      name="screen4button0action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button0value1"
+                      name="screen4button0value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen4button0action2"
+                      name="screen4button0action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button0value2"
+                      name="screen4button0value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen4button0latch"
+                      name="screen4button0latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen4latchlogo0"
+                      name="screen4latchlogo0"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 2</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen4logo1"
+                      name="screen4logo1"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen4button1action0"
+                      name="screen4button1action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button1value0"
+                      name="screen4button1value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen4button1action1"
+                      name="screen4button1action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button1value1"
+                      name="screen4button1value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen4button1action2"
+                      name="screen4button1action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button1value2"
+                      name="screen4button1value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen4button1latch"
+                      name="screen4button1latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen4latchlogo1"
+                      name="screen4latchlogo1"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 3</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen4logo2"
+                      name="screen4logo2"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen4button2action0"
+                      name="screen4button2action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button2value0"
+                      name="screen4button2value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen4button2action1"
+                      name="screen4button2action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button2value1"
+                      name="screen4button2value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen4button2action2"
+                      name="screen4button2action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button2value2"
+                      name="screen4button2value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen4button2latch"
+                      name="screen4button2latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen4latchlogo2"
+                      name="screen4latchlogo2"
+                    ></select>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 4</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen4logo3"
+                      name="screen4logo3"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen4button3action0"
+                      name="screen4button3action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button3value0"
+                      name="screen4button3value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen4button3action1"
+                      name="screen4button3action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button3value1"
+                      name="screen4button3value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen4button3action2"
+                      name="screen4button3action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button3value2"
+                      name="screen4button3value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen4button3latch"
+                      name="screen4button3latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen4latchlogo3"
+                      name="screen4latchlogo3"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 5</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen4logo4"
+                      name="screen4logo4"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen4button4action0"
+                      name="screen4button4action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button4value0"
+                      name="screen4button4value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen4button4action1"
+                      name="screen4button4action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button4value1"
+                      name="screen4button4value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen4button4action2"
+                      name="screen4button4action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen4button4value2"
+                      name="screen4button4value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen4button4latch"
+                      name="screen4button4latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen4latchlogo4"
+                      name="screen4latchlogo4"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 6</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen4logo5"
+                      name="screen4logo5"
+                    >
+                      <option value="home.bmp">home.bmp</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              class="form"
+              style="width: 50%; text-align: center; margin: auto"
+            >
+              <input type="hidden" id="save" name="save" value="menu4" />
+              <br /><button
+                style="cursor: pointer"
+                form="savemenu4"
+                type="save"
+              >
+                Save Menu 4 Config
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Tab Menu 5 -->
+        <div id="menu5" class="tabcontent">
+          <div style="float: right; font-size: 11px">
+            <a href="/download?file=menu5.json">download menu5.json</a>
+          </div>
+          <br />
+          <h3>Menu 5</h3>
+          <form method="post" id="savemenu5" action="/saveconfig">
+            <table
+              style="
+                height: 170px;
+                width: 100%;
+                border: 1px solid #000088;
+                text-align: left;
+              "
+            >
+              <tbody>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 1</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen5logo0"
+                      name="screen5logo0"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen5button0action0"
+                      name="screen5button0action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button0value0"
+                      name="screen5button0value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen5button0action1"
+                      name="screen5button0action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button0value1"
+                      name="screen5button0value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen5button0action2"
+                      name="screen5button0action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button0value2"
+                      name="screen5button0value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen5button0latch"
+                      name="screen5button0latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen5latchlogo0"
+                      name="screen5latchlogo0"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 2</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen5logo1"
+                      name="screen5logo1"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen5button1action0"
+                      name="screen5button1action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button1value0"
+                      name="screen5button1value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen5button1action1"
+                      name="screen5button1action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button1value1"
+                      name="screen5button1value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen5button1action2"
+                      name="screen5button1action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button1value2"
+                      name="screen5button1value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen5button1latch"
+                      name="screen5button1latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen5latchlogo1"
+                      name="screen5latchlogo1"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 3</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen5logo2"
+                      name="screen5logo2"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen5button2action0"
+                      name="screen5button2action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button2value0"
+                      name="screen5button2value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen5button2action1"
+                      name="screen5button2action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button2value1"
+                      name="screen5button2value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen5button2action2"
+                      name="screen5button2action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button2value2"
+                      name="screen5button2value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen5button2latch"
+                      name="screen5button2latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen5latchlogo2"
+                      name="screen5latchlogo2"
+                    ></select>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width: 33%">
+                    <h3>Button 4</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen5logo3"
+                      name="screen5logo3"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen5button3action0"
+                      name="screen5button3action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button3value0"
+                      name="screen5button3value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen5button3action1"
+                      name="screen5button3action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button3value1"
+                      name="screen5button3value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen5button3action2"
+                      name="screen5button3action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button3value2"
+                      name="screen5button3value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen5button3latch"
+                      name="screen5button3latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen5latchlogo3"
+                      name="screen5latchlogo3"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 5</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen5logo4"
+                      name="screen5logo4"
+                    ></select>
+                    <br />Action 1:
+                    <select
+                      class="actions"
+                      id="screen5button4action0"
+                      name="screen5button4action0"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button4value0"
+                      name="screen5button4value0"
+                    ></select>
+                    <br />Action 2:
+                    <select
+                      class="actions"
+                      id="screen5button4action1"
+                      name="screen5button4action1"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button4value1"
+                      name="screen5button4value1"
+                    ></select>
+                    <br />Action 3:
+                    <select
+                      class="actions"
+                      id="screen5button4action2"
+                      name="screen5button4action2"
+                    ></select>
+                    <select
+                      class="actions"
+                      id="screen5button4value2"
+                      name="screen5button4value2"
+                    ></select>
+                    <br />Latch?
+                    <input
+                      type="checkbox"
+                      id="screen5button4latch"
+                      name="screen5button4latch"
+                    />
+                    latch to:
+                    <select
+                      class="images"
+                      id="screen5latchlogo4"
+                      name="screen5latchlogo4"
+                    ></select>
+                  </td>
+                  <td style="width: 33%">
+                    <h3>Button 6</h3>
+                    <br />Image:
+                    <select
+                      class="images"
+                      id="screen5logo5"
+                      name="screen5logo5"
+                    >
+                      <option value="home.bmp">home.bmp</option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div
+              class="form"
+              style="width: 50%; text-align: : center; margin: auto;"
+            >
+              <input type="hidden" id="save" name="save" value="menu5" />
+              <br /><button
+                style="cursor: pointer"
+                form="savemenu5"
+                type="save"
+              >
+                Save Menu 5 Config
+              </button>
+            </div>
+          </form>
+        </div>
+        <!-- Upload Logo -->
+        <div id="uploadimage" class="tabcontent">
+          <h3>Upload a new logo</h3>
+          <div style="width: 70%; text-align: left; margin: auto">
+            You can customize the logos that are used. If you upload a file with
+            a name that already exists, the file is <u>overwritten</u>. You can
+            only upload .bmp images. There images should be in a 24-bit RGB
+            format and should be no more then 75x75 pixels. Smaller images are
+            supported.<br /><br />
+
+            Images that are used for Elgato's Stream Deck are also supported.
+            These should also be in a 24-bit RGB format. You can convert these
+            using free online tools like
+            <a
+              href="https://online-converting.com/image/convert2bmp/"
+              target="_blank"
+              >https://online-converting.com/image/convert2bmp/</a
+            >.<br /><br />
+
+            FreeTouchDeck will check the colour of the first pixel in the image.
+            If that pixel is black (#000000), all black pixels will be rendered
+            as transparent and the button colour chosen in the "General" tab
+            will be used. If that pixel has a colour, the button will have that
+            colour so that the image blends in nicely.
+          </div>
           <div
             class="form"
             style="width: 50%; text-align: center; margin: auto"
           >
-            <input type="hidden" id="save" name="save" value="menu2" />
-            <br /><button style="cursor: pointer" form="savemenu2" type="save">
-              Save Menu 2 Config
+            <input
+              form="uploadfile"
+              type="file"
+              name="name"
+              accept=".bmp"
+              multiple
+            /><br /><br />
+            <button style="cursor: pointer" form="uploadfile" type="save">
+              Upload
             </button>
           </div>
-        </form>
-      </div>
-
-      <!-- Tab Menu 3 -->
-      <div id="menu3" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=menu3.json">download menu3.json</a>
         </div>
-        <br />
-        <h3>Menu 3</h3>
 
-        <form method="post" id="savemenu3" action="/saveconfig">
-          <table
-            style="
-              height: 170px;
-              width: 100%;
-              border: 1px solid #000088;
-              text-align: left;
-            "
-          >
-            <tbody>
-              <tr>
-                <td style="width: 33%">
-                  Button 1
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen3logo0"
-                    name="screen3logo0"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen3button0action0"
-                    name="screen3button0action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button0value0"
-                    name="screen3button0value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen3button0action1"
-                    name="screen3button0action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button0value1"
-                    name="screen3button0value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen3button0action2"
-                    name="screen3button0action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button0value2"
-                    name="screen3button0value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen3button0latch"
-                    name="screen3button0latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen3latchlogo0"
-                    name="screen3latchlogo0"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 2
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen3logo1"
-                    name="screen3logo1"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen3button1action0"
-                    name="screen3button1action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button1value0"
-                    name="screen3button1value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen3button1action1"
-                    name="screen3button1action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button1value1"
-                    name="screen3button1value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen3button1action2"
-                    name="screen3button1action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button1value2"
-                    name="screen3button1value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen3button1latch"
-                    name="screen3button1latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen3latchlogo1"
-                    name="screen3latchlogo1"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 3
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen3logo2"
-                    name="screen3logo2"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen3button2action0"
-                    name="screen3button2action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button2value0"
-                    name="screen3button2value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen3button2action1"
-                    name="screen3button2action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button2value1"
-                    name="screen3button2value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen3button2action2"
-                    name="screen3button2action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button2value2"
-                    name="screen3button2value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen3button2latch"
-                    name="screen3button2latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen3latchlogo2"
-                    name="screen3latchlogo2"
-                  ></select>
-                </td>
-              </tr>
-              <tr>
-                <td style="width: 33%">
-                  Button 4
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen3logo3"
-                    name="screen3logo3"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen3button3action0"
-                    name="screen3button3action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button3value0"
-                    name="screen3button3value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen3button3action1"
-                    name="screen3button3action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button3value1"
-                    name="screen3button3value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen3button3action2"
-                    name="screen3button3action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button3value2"
-                    name="screen3button3value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen3button3latch"
-                    name="screen3button3latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen3latchlogo3"
-                    name="screen3latchlogo3"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 5
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen3logo4"
-                    name="screen3logo4"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen3button4action0"
-                    name="screen3button4action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button4value0"
-                    name="screen3button4value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen3button4action1"
-                    name="screen3button4action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button4value1"
-                    name="screen3button4value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen3button4action2"
-                    name="screen3button4action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen3button4value2"
-                    name="screen3button4value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen3button4latch"
-                    name="screen3button4latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen3latchlogo4"
-                    name="screen3latchlogo4"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 6
-                  <br />Image:
-                  <select class="images" id="screen3logo5" name="screen3logo5">
-                    <option value="home.bmp">home.bmp</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- File Editor -->
+        <div id="editor" class="tabcontent">
+          <h3>Remove files</h3>
+
           <div
             class="form"
-            style="width: 50%; text-align: : center; margin: auto;"
-          >
-            <input type="hidden" id="save" name="save" value="menu3" />
-            <br /><button style="cursor: pointer" form="savemenu3" type="save">
-              Save Menu 3 Config
-            </button>
-          </div>
-        </form>
-      </div>
-      <!-- Tab Menu 4 -->
-      <div id="menu4" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=menu4.json">download menu4.json</a>
+            id="deletefilelist"
+            style="width: 20%; text-align: left; margin: auto"
+          ></div>
         </div>
-        <br />
-        <h3>Menu 4</h3>
-        <form method="post" id="savemenu4" action="/saveconfig">
-          <table
-            style="
-              height: 170px;
-              width: 100%;
-              border: 1px solid #000088;
-              text-align: left;
-            "
-          >
-            <tbody>
-              <tr>
-                <td style="width: 33%">
-                  Button 1
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen4logo0"
-                    name="screen4logo0"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen4button0action0"
-                    name="screen4button0action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button0value0"
-                    name="screen4button0value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen4button0action1"
-                    name="screen4button0action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button0value1"
-                    name="screen4button0value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen4button0action2"
-                    name="screen4button0action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button0value2"
-                    name="screen4button0value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen4button0latch"
-                    name="screen4button0latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen4latchlogo0"
-                    name="screen4latchlogo0"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 2
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen4logo1"
-                    name="screen4logo1"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen4button1action0"
-                    name="screen4button1action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button1value0"
-                    name="screen4button1value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen4button1action1"
-                    name="screen4button1action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button1value1"
-                    name="screen4button1value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen4button1action2"
-                    name="screen4button1action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button1value2"
-                    name="screen4button1value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen4button1latch"
-                    name="screen4button1latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen4latchlogo1"
-                    name="screen4latchlogo1"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 3
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen4logo2"
-                    name="screen4logo2"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen4button2action0"
-                    name="screen4button2action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button2value0"
-                    name="screen4button2value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen4button2action1"
-                    name="screen4button2action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button2value1"
-                    name="screen4button2value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen4button2action2"
-                    name="screen4button2action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button2value2"
-                    name="screen4button2value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen4button2latch"
-                    name="screen4button2latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen4latchlogo2"
-                    name="screen4latchlogo2"
-                  ></select>
-                </td>
-              </tr>
-              <tr>
-                <td style="width: 33%">
-                  Button 4
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen4logo3"
-                    name="screen4logo3"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen4button3action0"
-                    name="screen4button3action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button3value0"
-                    name="screen4button3value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen4button3action1"
-                    name="screen4button3action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button3value1"
-                    name="screen4button3value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen4button3action2"
-                    name="screen4button3action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button3value2"
-                    name="screen4button3value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen4button3latch"
-                    name="screen4button3latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen4latchlogo3"
-                    name="screen4latchlogo3"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 5
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen4logo4"
-                    name="screen4logo4"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen4button4action0"
-                    name="screen4button4action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button4value0"
-                    name="screen4button4value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen4button4action1"
-                    name="screen4button4action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button4value1"
-                    name="screen4button4value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen4button4action2"
-                    name="screen4button4action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen4button4value2"
-                    name="screen4button4value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen4button4latch"
-                    name="screen4button4latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen4latchlogo4"
-                    name="screen4latchlogo4"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 6
-                  <br />Image:
-                  <select class="images" id="screen4logo5" name="screen4logo5">
-                    <option value="home.bmp">home.bmp</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Upload JSON -->
+        <div id="uploadjson" class="tabcontent">
+          <h3>Upload a JSON Config File</h3>
+          <div style="width: 70%; text-align: left; margin: auto">
+            You can upload a previously downloaded JSON file to save you some
+            time from having to configure a whole menu. The filename should be
+            the menu name (all lower-case), e.g. menu1.json for Menu 1,
+            menu2.json for Menu 2, etc. It is also a good idea to validate your
+            .json file if you made any manual modifications. You can do that
+            using
+            <a href="https://jsonlint.com/" target="_blank">JSONLint</a
+            ><br /><br />
+          </div>
+
           <div
             class="form"
             style="width: 50%; text-align: center; margin: auto"
           >
-            <input type="hidden" id="save" name="save" value="menu4" />
-            <br /><button style="cursor: pointer" form="savemenu4" type="save">
-              Save Menu 4 Config
+            <input
+              form="uploadjsonfile"
+              type="file"
+              name="name"
+              accept=".json"
+            /><br /><br />
+            <button style="cursor: pointer" form="uploadjsonfile" type="save">
+              Upload JSON
             </button>
           </div>
-        </form>
-      </div>
-      <!-- Tab Menu 5 -->
-      <div id="menu5" class="tabcontent">
-        <div style="float: right; font-size: 11px">
-          <a href="/download?file=menu5.json">download menu5.json</a>
         </div>
-        <br />
-        <h3>Menu 5</h3>
-        <form method="post" id="savemenu5" action="/saveconfig">
-          <table
-            style="
-              height: 170px;
-              width: 100%;
-              border: 1px solid #000088;
-              text-align: left;
-            "
-          >
-            <tbody>
-              <tr>
-                <td style="width: 33%">
-                  Button 1
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen5logo0"
-                    name="screen5logo0"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen5button0action0"
-                    name="screen5button0action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button0value0"
-                    name="screen5button0value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen5button0action1"
-                    name="screen5button0action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button0value1"
-                    name="screen5button0value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen5button0action2"
-                    name="screen5button0action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button0value2"
-                    name="screen5button0value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen5button0latch"
-                    name="screen5button0latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen5latchlogo0"
-                    name="screen5latchlogo0"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 2
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen5logo1"
-                    name="screen5logo1"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen5button1action0"
-                    name="screen5button1action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button1value0"
-                    name="screen5button1value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen5button1action1"
-                    name="screen5button1action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button1value1"
-                    name="screen5button1value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen5button1action2"
-                    name="screen5button1action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button1value2"
-                    name="screen5button1value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen5button1latch"
-                    name="screen5button1latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen5latchlogo1"
-                    name="screen5latchlogo1"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 3
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen5logo2"
-                    name="screen5logo2"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen5button2action0"
-                    name="screen5button2action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button2value0"
-                    name="screen5button2value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen5button2action1"
-                    name="screen5button2action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button2value1"
-                    name="screen5button2value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen5button2action2"
-                    name="screen5button2action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button2value2"
-                    name="screen5button2value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen5button2latch"
-                    name="screen5button2latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen5latchlogo2"
-                    name="screen5latchlogo2"
-                  ></select>
-                </td>
-              </tr>
-              <tr>
-                <td style="width: 33%">
-                  Button 4
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen5logo3"
-                    name="screen5logo3"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen5button3action0"
-                    name="screen5button3action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button3value0"
-                    name="screen5button3value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen5button3action1"
-                    name="screen5button3action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button3value1"
-                    name="screen5button3value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen5button3action2"
-                    name="screen5button3action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button3value2"
-                    name="screen5button3value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen5button3latch"
-                    name="screen5button3latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen5latchlogo3"
-                    name="screen5latchlogo3"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 5
-                  <br />Image:
-                  <select
-                    class="images"
-                    id="screen5logo4"
-                    name="screen5logo4"
-                  ></select>
-                  <br />Action 1:
-                  <select
-                    class="actions"
-                    id="screen5button4action0"
-                    name="screen5button4action0"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button4value0"
-                    name="screen5button4value0"
-                  ></select>
-                  <br />Action 2:
-                  <select
-                    class="actions"
-                    id="screen5button4action1"
-                    name="screen5button4action1"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button4value1"
-                    name="screen5button4value1"
-                  ></select>
-                  <br />Action 3:
-                  <select
-                    class="actions"
-                    id="screen5button4action2"
-                    name="screen5button4action2"
-                  ></select>
-                  <select
-                    class="actions"
-                    id="screen5button4value2"
-                    name="screen5button4value2"
-                  ></select>
-                  <br />Latch?
-                  <input
-                    type="checkbox"
-                    id="screen5button4latch"
-                    name="screen5button4latch"
-                  />
-                  latch to:
-                  <select
-                    class="images"
-                    id="screen5latchlogo4"
-                    name="screen5latchlogo4"
-                  ></select>
-                </td>
-                <td style="width: 33%">
-                  Button 6
-                  <br />Image:
-                  <select class="images" id="screen5logo5" name="screen5logo5">
-                    <option value="home.bmp">home.bmp</option>
-                  </select>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- INFO -->
+        <div id="info" class="tabcontent">
+          <h3>About FreeTouchDeck</h3>
           <div
-            class="form"
-            style="width: 50%; text-align: : center; margin: auto;"
-          >
-            <input type="hidden" id="save" name="save" value="menu5" />
-            <br /><button style="cursor: pointer" form="savemenu5" type="save">
-              Save Menu 5 Config
-            </button>
-          </div>
-        </form>
-      </div>
-      <!-- Upload Logo -->
-      <div id="uploadimage" class="tabcontent">
-        <h3>Upload a new logo</h3>
-        <div style="width: 70%; text-align: left; margin: auto">
-          You can customize the logos that are used. If you upload a file with a
-          name that already exists, the file is <u>overwritten</u>. You can only
-          upload .bmp images. There images should be in a 24-bit RGB format and
-          should be no more then 75x75 pixels. Smaller images are supported.<br /><br />
-
-          Images that are used for Elgato's Stream Deck are also supported.
-          These should also be in a 24-bit RGB format. You can convert these
-          using free online tools like
-          <a
-            href="https://online-converting.com/image/convert2bmp/"
-            target="_blank"
-            >https://online-converting.com/image/convert2bmp/</a
-          >.<br /><br />
-
-          FreeTouchDeck will check the colour of the first pixel in the image.
-          If that pixel is black (#000000), all black pixels will be rendered as
-          transparent and the button colour chosen in the "General" tab will be
-          used. If that pixel has a colour, the button will have that colour so
-          that the image blends in nicely.
+            id="infocontent"
+            style="width: 40%; text-align: left; margin: auto"
+          ></div>
+          <p></p>
         </div>
-        <div
-          class="form"
-          style="width: 10%; text-align: : center; margin: auto;"
-        >
-          <input
-            form="uploadfile"
-            type="file"
-            name="name"
-            accept=".bmp"
-            multiple
-          /><br /><br />
-          <button style="cursor: pointer" form="uploadfile" type="save">
-            Upload
-          </button>
-        </div>
-      </div>
-
-      <!-- File Editor -->
-      <div id="editor" class="tabcontent">
-        <h3>Remove files</h3>
-
-        <div
-          class="form"
-          id="deletefilelist"
-          style="width: 20%; text-align: left; margin: auto"
-        ></div>
-      </div>
-
-      <!-- Upload JSON -->
-      <div id="uploadjson" class="tabcontent">
-        <h3>Upload a JSON Config File</h3>
-        <div style="width: 70%; text-align: left; margin: auto">
-          You can upload a previously downloaded JSON file to save you some time
-          from having to configure a whole menu. The filename should be the menu
-          name (all lower-case), e.g. menu1.json for Menu 1, menu2.json for Menu
-          2, etc. It is also a good idea to validate your .json file if you made
-          any manual modifications. You can do that using
-          <a href="https://jsonlint.com/" target="_blank">JSONLint</a
-          ><br /><br />
-        </div>
-
-        <div class="form" style="width: 10%; text-align: center; margin: auto">
-          <input
-            form="uploadjsonfile"
-            type="file"
-            name="name"
-            accept=".json"
-          /><br /><br />
-          <button style="cursor: pointer" form="uploadjsonfile" type="save">
-            Upload JSON
-          </button>
-        </div>
-      </div>
-
-      <!-- INFO -->
-      <div id="info" class="tabcontent">
-        <h3>About FreeTouchDeck</h3>
-        <div
-          id="infocontent"
-          style="width: 40%; text-align: left; margin: auto"
-        ></div>
-        <p></p>
-      </div>
+      </main>
     </div>
 
     <!-- Password toggle -->
@@ -3068,7 +3153,7 @@
           })
           .change();
 
-        // Menu1Button 1
+        // Menu1<h3>Button 1</h3>
         $.each(items, function () {
           $("<option />")
             .attr("value", this.value)
@@ -3488,7 +3573,7 @@
           })
           .change();
 
-        // Menu1Button 1
+        // Menu1<h3>Button 1</h3>
         $.each(items, function () {
           $("<option />")
             .attr("value", this.value)
@@ -3908,7 +3993,7 @@
           })
           .change();
 
-        // menu3Button 1
+        // menu3<h3>Button 1</h3>
         $.each(items, function () {
           $("<option />")
             .attr("value", this.value)
@@ -4328,7 +4413,7 @@
           })
           .change();
 
-        // menu4Button 1
+        // menu4<h3>Button 1</h3>
         $.each(items, function () {
           $("<option />")
             .attr("value", this.value)
@@ -4748,7 +4833,7 @@
           })
           .change();
 
-        // menu5Button 1
+        // menu5<h3>Button 1</h3>
         $.each(items, function () {
           $("<option />")
             .attr("value", this.value)
