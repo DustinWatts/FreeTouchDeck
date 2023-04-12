@@ -563,6 +563,31 @@ void bleKeyboardAction(int action, int value, char *symbol) {
       break;
     }
     break;
+  case 14: // Mouse
+    switch (value) {
+    case 1:
+      bleCombo.mouseClick(MOUSE_LEFT);
+      break;
+    case 2:
+      bleCombo.mouseClick(MOUSE_RIGHT);
+      break;
+    case 3:
+      bleCombo.mouseClick(MOUSE_MIDDLE);
+      break;
+    case 4:
+      bleCombo.mouseMove(0, 0, 20); // scroll down
+      break;
+    case 5:
+      bleCombo.mouseMove(0, 0, -20); // scroll up
+      break;
+    case 6:
+      bleCombo.mouseMove(0, 0, 0, 20); // scroll right
+      break;
+    case 7:
+      bleCombo.mouseMove(0, 0, 0, -20); // scroll left
+      break;
+    }
+    break;
   default:
     // If nothing matches do nothing
     break;
