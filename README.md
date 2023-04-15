@@ -14,6 +14,111 @@ The development version is intended for development only. Things might not work.
 - [ ] Clean up icons, they are pretty noisy
 - [ ] Write the docs! :)
 
+# List of all Actions for use in menus.json
+
+Below is a list of all built-in actions you can use in menus.json. Text (and also numbers) that are not between `{}` will be printed as plain text.
+
+For example: `This is an example{BACKSPACE}`, will print: 
+
+`This is an example`, then backspace will be pressed once and the final result will be `This is an exampl`. This will happen pretty fast so chances are that you wouldn't even see the last `e` being printed, you will just see the final result.
+
+**Modifier Keys:**
+
+- {LEFT_CTRL}
+- {LEFT_SHIFT}
+- {LEFT_ALT}
+- {LEFT_GUI}
+- {RIGHT_CTRL}
+- {RIGHT_SHIFT}
+- {RIGHT_ALT}
+- {RIGHT_GUI}
+
+**Media Keys:**
+
+- {MUTE}
+- {VOLUME_DOWN}
+- {VOLUME_UP}
+- {PLAY_PAUSE}
+- {STOP}
+- {NEXT_TRACK}
+- {PREVIOUS_TRACK}
+- {WWW_HOME}
+- {LOCAL_MACHINE_BROWSER}
+- {CALCULATOR}
+- {WWW_BOOKMARKS}
+- {WWW_SEARCH}
+- {WWW_STOP}
+- {WWW_BACK}
+- {CONSUMER_CONTROL_CONFIGURATION}
+- {EMAIL_READER}
+
+**Function Keys:**
+
+- {F1}
+- {F2}
+- {F3}
+- {F4}
+- {F5}
+- {F6}
+- {F7}
+- {F8}
+- {F9}
+- {F10}
+- {F11}
+- {F12}
+- {F13}
+- {F14}
+- {F15}
+- {F16}
+- {F17}
+- {F18}
+- {F19}
+- {F20}
+- {F21}
+- {F22}
+- {F23}
+- {F24}
+
+**Return, tab, delete, etc.:**
+
+- {UP_ARROW}
+- {DOWN_ARROW}
+- {LEFT_ARROW}
+- {RIGHT_ARROW}
+- {BACKSPACE}
+- {TAB}
+- {RETURN}
+- {PAGE_UP}
+- {PAGE_DOWN}
+- {DELETE}
+- {ESC}
+- {HOME}
+- {END}
+- {INSERT}
+- {PRTSC}
+- {HOME}
+- {END}
+- {CAPS_LOCK}
+
+**Numpad Keys:**
+
+- {NUM_0}
+- {NUM_1}
+- {NUM_2}
+- {NUM_3}
+- {NUM_4}
+- {NUM_5}
+- {NUM_6}
+- {NUM_7}
+- {NUM_8}
+- {NUM_9}
+- {NUM_SLASH}
+- {NUM_ASTERISK}
+- {NUM_MINUS}
+- {NUM_PLUS}
+- {NUM_ENTER}
+- {NUM_PERIOD}
+
 # FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
 
