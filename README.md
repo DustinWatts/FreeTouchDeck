@@ -1,6 +1,6 @@
 # IMPORTANT NOTE!
 
-The development version is intended for development only. Things might not work. Use the -master branch for a working and tested version of FreeTOuchDeck. If you like to join development, feel free to do so! You can join my Discord server or send PR's. If you like to have a working verison of FreeTouchDeck, don't use this version.
+The development version is intended for development only. Things might not work. Use the -master branch for a working and tested version of FreeTouchDeck. If you like to join development, feel free to do so! You can join my Discord server or send PR's. If you like to have a working verison of FreeTouchDeck, don't use this version.
 
 # Development Version To-Do:
 
@@ -118,6 +118,12 @@ For example: `This is an example{BACKSPACE}`, will print:
 - {NUM_PLUS}
 - {NUM_ENTER}
 - {NUM_PERIOD}
+
+**Special Actions:**
+
+- {MENU:_name_}
+- {DELAY:_milliseconds_}
+- {RELEASEALL}
 
 # FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
