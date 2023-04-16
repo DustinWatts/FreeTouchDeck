@@ -48,9 +48,7 @@ I wrote a helper app for Windows/macOS/Linux that will help you start applicatio
 
 The FreeTouchDeck.ino and other files (for example in the data folder) rely on each other, they come as one. So when you download the new version, make sure that you only use the files that come with the current download, and not files from other versions. Best practise is to completely delete the old version and then download/clone the new version to make sure you do not accidently mix files from different versions. **After downloading/cloning the latest version, make sure to also upload the "data" folder again using 'ESP32 Sketch Data Upload".**
 
-## Hardware used
-
-The hardware I currenlty use is:
+## Supported Hardware
 
 For Resistive touch:
 - an ESP32 DEVKIT V1 (WROOM32) (Partition scheme: NO OTA with 2MB app and 2MB SPIFFS)
@@ -58,6 +56,8 @@ For Resistive touch:
 
 For Capacitive touch:
 - an ESP32 TouchDown: https://www.esp32touchdown.com/
+
+If you try to run FTD on something other than the boards above, it might not work. Support for custom combinations of boards and screens is out of the scope of support. I will try and help you if you run in to something, but issues here on Github are not dealt with and will be closed with this reason.
 
 ## !- Library Dependencies -!
 - Adafruit-GFX-Library (tested with version 1.10.4), available through Library Manager
