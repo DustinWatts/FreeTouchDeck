@@ -59,7 +59,16 @@ For Capacitive touch:
 
 If you try to run FTD on something other than the boards above, it might not work. Support for custom combinations of boards and screens is out of the scope of support. I will try and help you if you run in to something, but issues here on Github are not dealt with and will be closed with this reason.
 
-## !- Library Dependencies -!
+## Community support
+
+Lot's of people have made FreeTouchDeck work on other hardware then the above hardware. Although not offically suported. I will list those forks here.
+
+- ESP32-3248S035 Capacitive / GT911 touchscreen: https://github.com/Raycast7373/FreeTouchDeck
+- ESP32-2432S028 Resistive touchscreen users: https://github.com/Raycast7373/FreeTouchDeck
+
+I will also point you to my Discord (https://discord.gg/RE3XevS) Where these people are active. If you have a custom build/fork for a board you would like listed here, contact me and I will add it to the list. 
+
+## Library Dependencies
 - Adafruit-GFX-Library (tested with version 1.10.4), available through Library Manager
 - TFT_eSPI (tested with version 2.3.70), available through Library Manager
 - ESP32-BLE-Keyboard (latest version) download from: https://github.com/T-vK/ESP32-BLE-Keyboard
