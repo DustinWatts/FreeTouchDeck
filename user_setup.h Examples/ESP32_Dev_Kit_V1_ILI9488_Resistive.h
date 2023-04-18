@@ -9,7 +9,6 @@ This version is for a 38-pin ESP32 DevKitC and an ILI9488 screen with resistive 
 #define ILI9488_DRIVER     // WARNING: Do not connect ILI9488 display SDO to MISO if other devices share the SPI bus (TFT SDO does NOT tristate when CS is high)
 
 #define TFT_BL   32            // LED back-light control pin
-#define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW)
 
 #define TFT_MISO 19
 #define TFT_MOSI 23
