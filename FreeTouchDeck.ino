@@ -73,6 +73,10 @@ const char *versionnumber = "0.9.18a";
 
   /* Version 0.9.18a.
    * 
+   * Added option to start WiFi, without stopping BLE and starting webserver
+   *  startWifiStation(false, false) will keep Keyboard in combination with WiFi
+   *  this is to try and add API calls together with BLE Keyboard. For this, use
+   *  the original T-vK BLE Keyboard library. 
    * Adding ESP32-S3 support
    * Trying to add LitteFS Support
    * Fix #89

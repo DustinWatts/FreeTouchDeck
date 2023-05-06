@@ -1,6 +1,6 @@
 // Start as WiFi station
 
-bool startWifiStation(){
+bool startWifiStation(bool stopble, bool startwebserver){
   
   Serial.printf("[INFO]: Connecting to %s", wificonfig.ssid);
   if (String(WiFi.SSID()) != String(wificonfig.ssid))
@@ -22,30 +22,32 @@ bool startWifiStation(){
 
       }
     }
+      if(stopble){
+      // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
+        bleKeyboard.end();
+      
+        // Stop BLE from interfering with our WIFI signal
+        btStop();
+        esp_bt_controller_disable();
+        esp_bt_controller_deinit();
+        esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
 
-    // Delete the task bleKeyboard had create to free memory and to not interfere with AsyncWebServer
-      bleKeyboard.end();
-    
-      // Stop BLE from interfering with our WIFI signal
-      btStop();
-      esp_bt_controller_disable();
-      esp_bt_controller_deinit();
-      esp_bt_controller_mem_release(ESP_BT_MODE_BTDM);
-
-      Serial.println("");
-      Serial.println("[INFO]: BLE Stopped");  
+        Serial.println("");
+        Serial.println("[INFO]: BLE Stopped");
+        // Set pageNum to 7 so no buttons are displayed and touches are ignored
+        pageNum = 7;
+      }  
       Serial.print("[INFO]: Connected! IP address: ");
       Serial.println(WiFi.localIP());
-
-      MDNS.begin(wificonfig.hostname);
-      MDNS.addService("http", "tcp", 80);
     
-      // Set pageNum to 7 so no buttons are displayed and touches are ignored
-      pageNum = 7;
-    
-      // Start the webserver
-      webserver.begin();
-      Serial.println("[INFO]: Webserver started");
+      if(startwebserver){
+        // Open port 80
+        MDNS.begin(wificonfig.hostname);
+        MDNS.addService("http", "tcp", 80);
+        // Start the webserver
+        webserver.begin();
+        Serial.println("[INFO]: Webserver started");
+      }
       return true;
 }
 
@@ -170,7 +172,7 @@ void configmode()
 
   if (strcmp(wificonfig.wifimode, "WIFI_STA") == 0)
   {
-    if(!startWifiStation()){
+    if(!startWifiStation(true, true)){
       startDefaultAP();
       Serial.println("[WARNING]: Could not connect to AP, so started as AP.");
       tft.println("Started as AP because WiFi connection failed.");
