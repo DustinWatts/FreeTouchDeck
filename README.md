@@ -51,8 +51,10 @@ The FreeTouchDeck.ino and other files (for example in the data folder) rely on e
 ## Supported Hardware
 
 For Resistive touch:
-- an ESP32 DEVKIT V1 (WROOM32) (Partition scheme: NO OTA with 2MB app and 2MB SPIFFS)
-- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and XPT2046 resitive touch controller
+- an ESP32 DEVKIT V1 (WROOM32) (Partition scheme: NO OTA with 2MB app and 2MB SPIFFS) I used: https://s.click.aliexpress.com/e/_AmfI1H They call it "ESP32-WROOM-32D"
+- an 3.5" (480x320) TFT + Touchscreen with ILI9488 driver and XPT2046 resitive touch controller I used: https://s.click.aliexpress.com/e/_AMAa6B
+
+_the links are affiliate links_
 
 For Capacitive touch:
 - an ESP32 TouchDown: https://www.esp32touchdown.com/
