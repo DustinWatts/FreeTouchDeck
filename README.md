@@ -22,7 +22,8 @@ For example: `This is an example{BACKSPACE}`, will print:
 
 `This is an example`, then backspace will be pressed once and the final result will be `This is an exampl`. This will happen pretty fast so chances are that you wouldn't even see the last `e` being printed, you will just see the final result.
 
-**Modifier Keys:**
+<details>
+<summary>Modifier Keys:</summary>
 
 - {LEFT_CTRL}
 - {LEFT_SHIFT}
@@ -32,8 +33,10 @@ For example: `This is an example{BACKSPACE}`, will print:
 - {RIGHT_SHIFT}
 - {RIGHT_ALT}
 - {RIGHT_GUI}
+</details>
 
-**Media Keys:**
+<details>
+<summary>Media Keys:</summary>
 
 - {MUTE}
 - {VOLUME_DOWN}
@@ -51,8 +54,10 @@ For example: `This is an example{BACKSPACE}`, will print:
 - {WWW_BACK}
 - {CONSUMER_CONTROL_CONFIGURATION}
 - {EMAIL_READER}
+</details>
 
-**Function Keys:**
+<details>
+<summary>Function Keys:</summary>
 
 - {F1}
 - {F2}
@@ -78,8 +83,10 @@ For example: `This is an example{BACKSPACE}`, will print:
 - {F22}
 - {F23}
 - {F24}
+</details>
 
-**Return, tab, delete, etc.:**
+<details>
+<summary>Return, tab, delete, etc.:</summary>
 
 - {UP_ARROW}
 - {DOWN_ARROW}
@@ -99,8 +106,10 @@ For example: `This is an example{BACKSPACE}`, will print:
 - {HOME}
 - {END}
 - {CAPS_LOCK}
+</details>
 
-**Numpad Keys:**
+<details>
+<summary>**Numpad Keys:**</summary>
 
 - {NUM_0}
 - {NUM_1}
@@ -118,12 +127,18 @@ For example: `This is an example{BACKSPACE}`, will print:
 - {NUM_PLUS}
 - {NUM_ENTER}
 - {NUM_PERIOD}
+</details>
 
-**Special Actions:**
+<details>
+<summary>**Special Actions:**</summary>
 
 - {MENU:_name_}
 - {DELAY:_milliseconds_}
 - {RELEASEALL}
+
+</details>
+
+<br>
 
 # FreeTouchDeck
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE.
