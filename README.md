@@ -5,6 +5,7 @@ The development version is intended for development only. Things might not work.
 # Development Version To-Do:
 
 - [ ] RELEASEALL Doesn't work correctly when in one action.
+- [ ] bug: NUM_ASTERIX should be NUM_ASTERISK
 - [ ] Add a margin around the menus so we can have an offset from the edge off the screen
 - [ ] Function buttons all have the same black colour
 - [X] Dealing with the above -> we need a way to distinguish between MENU and FUNCTION button.
