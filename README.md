@@ -7,9 +7,11 @@
 [![](https://badgen.net/badge/watch/on%20youtube/ff0000)](https://www.youtube.com/watch?v=s2X4BQ9VmEU)
 [![](https://img.shields.io/twitter/follow/DustinWattsNL)](https://twitter.com/DustinWattsNL)
 
-
-
 For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE. 
+
+## !IMPORTANT!
+
+There are some breaking changes going from the ESP32 Arduino core version 2.x.x to version 3.x.x which can cause the code to not compile. I'm trying to fix all the ones I can find. But if you run in to one, please open an issue so I can fix it. Also, if you want to upload the code without any issues, one option is to downgrade to the v2.0.14 (which is the latest v2 arduino core) and everything should be fine. The best (and easiest) way is still using the **webinstaller** (see below), which is the recommend install method.
 
 ***
 ***Due to constant improvements in the `-master` branche, getting the latest code straight from the `-master` branche (by dowloading it as a ZIP for example) might be unstable. If you want a stable and tested version, download the latest release from the [Releases](https://github.com/DustinWatts/FreeTouchDeck/releases) page.***
