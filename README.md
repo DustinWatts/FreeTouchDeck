@@ -7,7 +7,7 @@
 [![](https://badgen.net/badge/watch/on%20youtube/ff0000)](https://www.youtube.com/watch?v=s2X4BQ9VmEU)
 [![](https://img.shields.io/twitter/follow/DustinWattsNL)](https://twitter.com/DustinWattsNL)
 
-For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen and BLE. 
+For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen, and BLE. 
 
 ## !IMPORTANT!
 
