@@ -24,6 +24,8 @@
 
       --- If you use Capacitive touch (ESP32 TouchDown) ---
       - Dustin Watts FT6236 Library (version 1.0.2), https://github.com/DustinWatts/FT6236
+      -or-
+      A new library that I created that has some more support for different FocalTech touch IC's.
       
   The FILESYSTEM (SPI FLASH filing system) is used to hold touch screen calibration data.
   It has to be runs at least once when using resistive touch. After that you can set 
