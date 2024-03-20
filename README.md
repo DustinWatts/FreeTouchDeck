@@ -7,11 +7,23 @@
 [![](https://badgen.net/badge/watch/on%20youtube/ff0000)](https://www.youtube.com/watch?v=s2X4BQ9VmEU)
 [![](https://img.shields.io/twitter/follow/DustinWattsNL)](https://twitter.com/DustinWattsNL)
 
-For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen, and BLE. 
+For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen, and BLE.
+
+## Install Using The Web Installer (recommended!)
+
+Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
+
+## Install yourself
+
+If you want to do it yourself you can use the Instrucables https://www.instructables.com/A-Bluetooth-ESP32-TFT-Touch-Macro-Keypad/ for a detailed install guide.
+
+ _**The ESP Data Upload Tool refered in the wiki or the Instrucables only works under Arduino IDE 1.x.x. But the great thing is you can have both IDE's installed next to each other.**_ 
 
 ## !IMPORTANT!
 
 There are some breaking changes going from the ESP32 Arduino core version 2.x.x to version 3.x.x which can cause the code to not compile. I'm trying to fix all the ones I can find. But if you run in to one, please open an issue so I can fix it. Also, if you want to upload the code without any issues, one option is to downgrade to the v2.0.14 (which is the latest v2 arduino core) and everything should be fine. The best (and easiest) way is still using the **webinstaller** (see below), which is the recommend install method.
+
+
 
 ***
 ***Due to constant improvements in the `-master` branche, getting the latest code straight from the `-master` branche (by dowloading it as a ZIP for example) might be unstable. If you want a stable and tested version, download the latest release from the [Releases](https://github.com/DustinWatts/FreeTouchDeck/releases) page.***
@@ -22,15 +34,6 @@ There are some breaking changes going from the ESP32 Arduino core version 2.x.x 
 ## We are looking for (web) developers!
 
 We are looking for (web) developers who are willing to help out updating the configurator (or changing it completely!) to work with all the new features that the Development branch offers. Once we have a working configurator, the Development branch will replace the current master as FreeTouchDeck version 2.0. As a token of my appreciation, you can get (if you will) an ESP32 TouchDown S3 at cost price before it releases! Also you will be credited here, in the source code and in the documentation. If you want to join, let us know on Discord: https://discord.gg/RE3XevS
-
-## Install Using The Web Installer (recommended!)
-
-Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
-
-## User Guide
-The User Guide will help you with installing and configuring if you want to build the project yourself: [User guide](https://github.com/DustinWatts/FreeTouchDeck/wiki).
-
-There is also an 'Instructable' which is a complete build guide including wiring the screen and ESP32 on [Instructables](https://www.instructables.com/A-Bluetooth-ESP32-TFT-Touch-Macro-Keypad/).
 
 ## ESP32 TouchDown users
 
