@@ -11,7 +11,7 @@ For interfacing with Windows/macOS/Linux using an ESP32, a touchscreen, and BLE.
 
 ## Install Using The Web Installer (recommended!)
 
-Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://install.freetouchdeck.com/) Chrome, Edge, and Opera only at the moment.
+Easy installation without the need for the Arduino IDE, and downloading and editing libraries is now available using ESP Web Tools. Visit this url to install FreeTouchDeck to your board via your browser: (https://dustinwatts.github.io/install-freetouchdeck/) Chrome, Edge, and Opera only at the moment.
 
 ## Install yourself
 
